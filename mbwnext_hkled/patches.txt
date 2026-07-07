@@ -4,3 +4,7 @@
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
+mbwnext_hkled.patches.add_production_plan_bom_button
+mbwnext_hkled.patches.rename_time_to_manufacture_field
+mbwnext_hkled.patches.adjust_work_order_schedule_fields
+mbwnext_hkled.patches.set_custom_field_module

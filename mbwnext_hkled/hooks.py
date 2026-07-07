@@ -43,7 +43,12 @@ app_license = "mit"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"BOM Template": "public/js/bom_template.js",
+	"Production Plan": "public/js/production_plan.js",
+	"Employee": "public/js/employee.js",
+	"Work Order": "public/js/work_order.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -52,6 +57,16 @@ app_license = "mit"
 # ------------------
 # include app icons in desk
 # app_include_icons = "mbwnext_hkled/public/icons.svg"
+
+# Fixtures
+# --------
+
+fixtures = [
+	{
+		"doctype": "Custom Field",
+		"filters": [["module", "=", "MBWNext HKLed"]],
+	}
+]
 
 # Home Pages
 # ----------
@@ -137,13 +152,11 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Work Order": {
+		"on_update": "mbwnext_hkled.controllers.python_hook.work_order.sync_employee_allocation_on_finish",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
