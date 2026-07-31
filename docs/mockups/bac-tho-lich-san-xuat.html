@@ -1,0 +1,894 @@
+<meta charset="utf-8">
+<title>Mockup — Bậc Thợ &amp; Lịch Sản Xuất (HKLED)</title>
+
+<style>
+	:root {
+		--ground: #f2f4f6;
+		--surface: #ffffff;
+		--sunken: #f7f9fa;
+		--ink: #1c2b36;
+		--ink-soft: #5c6a75;
+		--ink-faint: #8b97a1;
+		--line: #dfe4e8;
+		--line-soft: #eaeef1;
+		--decided: #0f766e;
+		--decided-bg: #ecfdf9;
+		--ask: #b45309;
+		--ask-bg: #fdf6e7;
+		--danger: #b42318;
+		--danger-bg: #fdf2f1;
+		--new: #1d4ed8;
+		--new-bg: #eef3fe;
+		--btn: #202a33;
+		--btn-ink: #ffffff;
+
+		--serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--ground: #14181c;
+			--surface: #1c2126;
+			--sunken: #22282e;
+			--ink: #e4e8ec;
+			--ink-soft: #a4aeb7;
+			--ink-faint: #7b868f;
+			--line: #2f363d;
+			--line-soft: #262c32;
+			--decided: #2dd4bf;
+			--decided-bg: #14262a;
+			--ask: #f0b458;
+			--ask-bg: #2a2317;
+			--danger: #f4a5a0;
+			--danger-bg: #2a1a19;
+			--new: #93c5fd;
+			--new-bg: #172538;
+			--btn: #e4e8ec;
+			--btn-ink: #14181c;
+		}
+	}
+	:root[data-theme="dark"] {
+		--ground: #14181c; --surface: #1c2126; --sunken: #22282e;
+		--ink: #e4e8ec; --ink-soft: #a4aeb7; --ink-faint: #7b868f;
+		--line: #2f363d; --line-soft: #262c32;
+		--decided: #2dd4bf; --decided-bg: #14262a;
+		--ask: #f0b458; --ask-bg: #2a2317;
+		--danger: #f4a5a0; --danger-bg: #2a1a19;
+		--new: #93c5fd; --new-bg: #172538;
+		--btn: #e4e8ec; --btn-ink: #14181c;
+	}
+	:root[data-theme="light"] {
+		--ground: #f2f4f6; --surface: #ffffff; --sunken: #f7f9fa;
+		--ink: #1c2b36; --ink-soft: #5c6a75; --ink-faint: #8b97a1;
+		--line: #dfe4e8; --line-soft: #eaeef1;
+		--decided: #0f766e; --decided-bg: #ecfdf9;
+		--ask: #b45309; --ask-bg: #fdf6e7;
+		--danger: #b42318; --danger-bg: #fdf2f1;
+		--new: #1d4ed8; --new-bg: #eef3fe;
+		--btn: #202a33; --btn-ink: #ffffff;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		background: var(--ground);
+		color: var(--ink);
+		font: 15px/1.6 var(--sans);
+		-webkit-font-smoothing: antialiased;
+	}
+	.page {
+		max-width: 940px;
+		margin: 0 auto;
+		padding: 40px 20px 80px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	/* ---------- giọng tài liệu: serif ---------- */
+	.doc-title {
+		font: 400 30px/1.2 var(--serif);
+		text-wrap: balance;
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+	.doc-meta {
+		color: var(--ink-soft);
+		font-size: 13.5px;
+		margin: 6px 0 0;
+		max-width: 66ch;
+	}
+	.doc-meta code, .mono { font-family: var(--mono); font-size: 0.88em; }
+	h2 {
+		font: 400 21px/1.3 var(--serif);
+		margin: 44px 0 4px;
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+	h2 .gap {
+		font: 600 10.5px/1.7 var(--mono);
+		letter-spacing: 0.04em;
+		color: var(--new);
+		background: var(--new-bg);
+		border-radius: 3px;
+		padding: 1px 7px;
+	}
+	.lede {
+		color: var(--ink-soft);
+		font-size: 14px;
+		margin: 0 0 14px;
+		max-width: 66ch;
+	}
+
+	/* ---------- nav dính ---------- */
+	.nav {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background: color-mix(in srgb, var(--ground) 88%, transparent);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--line);
+		margin: 28px -20px 0;
+		padding: 9px 20px;
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		font-size: 13px;
+	}
+	.nav a {
+		color: var(--ink-soft);
+		text-decoration: none;
+		padding: 4px 10px;
+		border-radius: 5px;
+	}
+	.nav a:hover, .nav a:focus-visible { background: var(--surface); color: var(--ink); }
+
+	/* ---------- khung giả lập ERPNext Desk ---------- */
+	.screen {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.screen-bar {
+		background: var(--sunken);
+		border-bottom: 1px solid var(--line);
+		padding: 7px 14px;
+		font: 500 11.5px/1.6 var(--mono);
+		color: var(--ink-faint);
+		letter-spacing: 0.03em;
+		display: flex;
+		justify-content: space-between;
+		gap: 10px;
+	}
+	.screen-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+	.dialog { max-width: 580px; }
+
+	.wo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+	.wo-head h3 { font: 600 17px/1.3 var(--sans); margin: 2px 0 0; }
+	.crumb { font-size: 12px; color: var(--ink-faint); }
+	.actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- field ---------- */
+	.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+	.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+	.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+	.fld > .lbl {
+		font-size: 11.5px;
+		color: var(--ink-soft);
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.lbl .req { color: var(--danger); }
+	.lbl .fn { font: 10.5px/1.6 var(--mono); color: var(--ink-faint); }
+	.val {
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		background: var(--surface);
+		padding: 7px 10px;
+		font-size: 13.5px;
+		min-height: 34px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.val.ro { background: var(--sunken); color: var(--ink-soft); }
+	.val.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+	.val.pick::after { content: "⌄"; margin-left: auto; color: var(--ink-faint); }
+	.val.locked { opacity: 0.45; }
+	select.val, input.val {
+		font: 13.5px var(--sans); color: inherit; width: 100%;
+		appearance: none;
+	}
+	input.val.num { text-align: right; }
+	.fld.dim { opacity: 0.42; }
+
+	/* ---------- tick ---------- */
+	.tick {
+		width: 15px; height: 15px; flex: none;
+		border: 1px solid var(--ink-faint);
+		border-radius: 3px;
+		display: inline-grid;
+		place-items: center;
+		background: var(--surface);
+		cursor: pointer;
+		padding: 0;
+	}
+	.tick[aria-checked="true"] { background: var(--decided); border-color: var(--decided); }
+	.tick[aria-checked="true"]::after {
+		content: "✓"; color: var(--surface); font: 700 10px/1 var(--sans);
+	}
+	:root[data-theme="dark"] .tick[aria-checked="true"]::after,
+	.tick[aria-checked="true"]::after { color: var(--surface); }
+	.tick:focus-visible, .btn:focus-visible, .nav a:focus-visible, select:focus-visible, input:focus-visible {
+		outline: 2px solid var(--new); outline-offset: 2px;
+	}
+	.switch { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+
+	/* ---------- bảng ---------- */
+	.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+	table { width: 100%; border-collapse: collapse; font-size: 13px; }
+	th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+	tbody tr:last-child td { border-bottom: 0; }
+	th {
+		background: var(--sunken);
+		font: 600 10.5px/1.6 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-faint);
+		white-space: nowrap;
+	}
+	td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+	tr.sum td { font-weight: 600; background: var(--sunken); }
+	tr.off td { color: var(--ink-faint); }
+	.grid-tools { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- nút ---------- */
+	.btn {
+		font: 500 13px/1.3 var(--sans);
+		padding: 7px 13px;
+		border-radius: 6px;
+		border: 1px solid var(--line);
+		background: var(--surface);
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.btn.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+	.btn.sm { padding: 5px 10px; font-size: 12px; }
+	.btn[hidden] { display: none; }
+
+	.state {
+		font: 600 10.5px/1.7 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 2px 9px;
+		border-radius: 20px;
+		background: var(--new-bg);
+		color: var(--new);
+	}
+
+	/* ---------- ghi chú: giọng serif, 2 màu ngữ nghĩa ---------- */
+	.note {
+		font: 14px/1.6 var(--serif);
+		border-left: 2px solid var(--decided);
+		background: var(--decided-bg);
+		padding: 11px 15px;
+		border-radius: 0 7px 7px 0;
+		margin: 12px 0 0;
+	}
+	.note.ask { border-left-color: var(--ask); background: var(--ask-bg); }
+	.note .tag {
+		font: 600 10.5px/1.6 var(--mono);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		display: block;
+		margin-bottom: 3px;
+		color: var(--decided);
+	}
+	.note.ask .tag { color: var(--ask); }
+	.alert {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--danger-bg);
+		border-left: 2px solid var(--danger);
+		color: var(--danger);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.alert[hidden], .ok-msg[hidden] { display: none; }
+	.ok-msg {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--decided-bg);
+		border-left: 2px solid var(--decided);
+		color: var(--decided);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.hint { font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+	.live {
+		font: 500 12.5px/1.6 var(--mono);
+		color: var(--decided);
+	}
+
+	/* ---------- danh sách câu hỏi ---------- */
+	.qlist { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+	.qlist li {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-left: 2px solid var(--ask);
+		border-radius: 0 8px 8px 0;
+		padding: 13px 16px;
+		display: flex;
+		gap: 12px;
+	}
+	.qlist .qn {
+		font: 600 12px/1.5 var(--mono);
+		color: var(--ask);
+		flex: none;
+		padding-top: 2px;
+	}
+	.qlist p { margin: 0; font-size: 14px; }
+	.qlist p + p { margin-top: 5px; color: var(--ink-soft); font-size: 13px; }
+
+	.plainlist { margin: 0; padding-left: 22px; font-size: 14px; }
+	.plainlist li { margin: 6px 0; }
+
+	.foot {
+		margin-top: 46px;
+		padding-top: 16px;
+		border-top: 1px solid var(--line);
+		font: 13px/1.6 var(--serif);
+		color: var(--ink-soft);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		* { transition: none !important; animation: none !important; }
+	}
+</style>
+
+<div class="page">
+
+	<header>
+		<h1 class="doc-title">Bậc Thợ &amp; Lịch Sản Xuất — mockup 4 màn hình</h1>
+		<p class="doc-meta">
+			HKLED · app <code>mbwnext_hkled</code> · dự án <code>PM-PRJ-00003</code> ·
+			tính năng <code>PM-FEAT-00008</code> (Phần II / III / IV)<br>
+			Số liệu minh hoạ lấy đúng theo site thật: nhân sự <b>Anh A / Anh B / Anh C</b>,
+			bậc thợ <b>Bậc 3–7</b> (nguồn lực 60–100%), ca <b>Sáng 08:00–11:45</b> và
+			<b>Chiều 13:15–17:00</b>.
+		</p>
+		<p class="doc-meta">
+			<b>Bấm thử được</b> những chỗ mà hành vi khó thấy trên ảnh tĩnh: tick “Là Tăng Ca”,
+			chọn nhân sự, nút “Bắt Đầu Sản Xuất”, và ô thời gian ở Công Việc Khác.
+			Trạng thái: <b style="color:var(--ask)">chờ duyệt</b> — duyệt xong mới viết logic.
+		</p>
+	</header>
+
+	<nav class="nav" aria-label="Bốn màn hình">
+		<a href="#s-a">A · Tạo nhanh lịch</a>
+		<a href="#s-b">B · Thêm đội vào lệnh</a>
+		<a href="#s-c">C · Lệnh sản xuất</a>
+		<a href="#s-d">D · Công việc khác</a>
+		<a href="#s-e">Không có giao diện</a>
+		<a href="#s-f">Câu hỏi</a>
+	</nav>
+
+	<!-- ══════════════════════════════════════════════ A -->
+	<h2 id="s-a">A. Tạo nhanh lịch làm việc theo đội <span class="gap">GAP-2</span></h2>
+	<p class="lede">
+		Vào <b>Lịch Làm Việc Nhân Sự</b> → danh sách → nút <b>Tạo Nhanh</b> trên thanh công cụ.
+		Mục đích: phân ca cho cả đội trong một lần thay vì tạo từng bản ghi.
+	</p>
+
+	<div class="screen dialog">
+		<div class="screen-bar"><span>Hộp thoại · Tạo Nhanh Lịch Làm Việc</span><span>✕</span></div>
+		<div class="screen-body">
+			<div class="fld">
+				<span class="lbl">Đội Sản Xuất <span class="req">*</span> <span class="fn">work_team</span></span>
+				<div class="val pick">Đội Lắp Ráp 1</div>
+			</div>
+
+			<div class="grid2">
+				<div class="fld">
+					<span class="lbl">Ngày <span class="req">*</span> <span class="fn">date</span></span>
+					<div class="val">01-08-2026</div>
+				</div>
+				<div class="fld" id="fld-shift">
+					<span class="lbl">Ca Làm Việc <span class="fn">shift_type</span></span>
+					<div class="val pick" id="v-shift">Ca Sáng</div>
+				</div>
+			</div>
+
+			<label class="switch">
+				<button class="tick" role="checkbox" aria-checked="false" id="ot" aria-label="Là Tăng Ca"></button>
+				Là Tăng Ca
+			</label>
+
+			<div class="grid2" id="ot-times">
+				<div class="fld dim">
+					<span class="lbl">Bắt Đầu <span class="fn">start</span></span>
+					<div class="val ro">18:00:00</div>
+				</div>
+				<div class="fld dim">
+					<span class="lbl">Kết Thúc <span class="fn">end</span></span>
+					<div class="val ro">21:00:00</div>
+				</div>
+			</div>
+			<p class="hint" id="ot-hint">
+				Chưa tăng ca — giờ lấy theo Ca Làm Việc, hai ô giờ khoá.
+			</p>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr>
+							<th style="width:40px"></th><th>Nhân sự</th><th>Bậc thợ</th>
+							<th class="n">Nguồn lực (%)</th>
+						</tr>
+					</thead>
+					<tbody id="team-a">
+						<tr><td><button class="tick" role="checkbox" aria-checked="true" aria-label="Chọn Anh A"></button></td>
+							<td>Anh A</td><td>Bậc 7</td><td class="n">100</td></tr>
+						<tr><td><button class="tick" role="checkbox" aria-checked="true" aria-label="Chọn Anh B"></button></td>
+							<td>Anh B</td><td>Bậc 7</td><td class="n">100</td></tr>
+						<tr><td><button class="tick" role="checkbox" aria-checked="true" aria-label="Chọn Anh C"></button></td>
+							<td>Anh C</td><td>Bậc 6</td><td class="n">90</td></tr>
+					</tbody>
+				</table>
+			</div>
+			<p class="hint">
+				Chọn đội → tự nạp nhân sự <i>Công nhân</i> đang <i>Active</i>, tick sẵn toàn bộ;
+				bỏ tick ai nghỉ. <span class="live" id="count-a">Sẽ tạo 3 lịch làm việc.</span>
+			</p>
+
+			<div class="actions" style="justify-content:flex-end">
+				<button class="btn primary">Tạo Lịch Làm Việc</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="note">
+		<span class="tag">Xử lý trùng lịch</span>
+		Dòng nào trùng lịch sẵn có thì <b>bỏ qua đúng dòng đó</b>, các dòng còn lại vẫn tạo —
+		không để một dòng làm hỏng cả lô. Kết thúc báo rõ:
+		“Đã tạo 2 lịch làm việc. Bỏ qua 1 dòng do trùng: Anh B — 01/08/2026 Ca Sáng.”
+	</div>
+
+	<!-- ══════════════════════════════════════════════ B -->
+	<h2 id="s-b">B. Thêm đội sản xuất vào lệnh <span class="gap">GAP-6</span></h2>
+	<p class="lede">
+		Nút <b>Thêm Đội Sản Xuất</b> nằm dưới bảng Nhân Công Tham Gia của lệnh sản xuất.
+	</p>
+
+	<div class="screen dialog">
+		<div class="screen-bar"><span>Hộp thoại · Thêm Đội Sản Xuất</span><span>✕</span></div>
+		<div class="screen-body">
+			<div class="fld">
+				<span class="lbl">Đội Sản Xuất <span class="req">*</span> <span class="fn">work_team</span></span>
+				<div class="val pick">Đội Lắp Ráp 1</div>
+			</div>
+			<div class="tw">
+				<table>
+					<thead>
+						<tr><th style="width:40px"></th><th>Nhân sự</th><th>Bậc thợ</th>
+							<th class="n">Nguồn lực (%)</th><th>Ghi chú</th></tr>
+					</thead>
+					<tbody id="team-b">
+						<tr><td><button class="tick" role="checkbox" aria-checked="true" aria-label="Chọn Anh A"></button></td>
+							<td>Anh A</td><td>Bậc 7</td><td class="n">100</td><td></td></tr>
+						<tr><td><button class="tick" role="checkbox" aria-checked="true" aria-label="Chọn Anh B"></button></td>
+							<td>Anh B</td><td>Bậc 7</td><td class="n">100</td><td></td></tr>
+						<tr class="off"><td><span class="tick" aria-hidden="true" style="opacity:.4"></span></td>
+							<td>Anh C</td><td>Bậc 6</td><td class="n">90</td><td>đã có trong bảng</td></tr>
+					</tbody>
+				</table>
+			</div>
+			<p class="hint">Nhân sự đã có trong bảng thì mờ đi và không tick được, tránh thêm trùng.</p>
+			<div class="actions" style="justify-content:flex-end">
+				<button class="btn primary">Xác Nhận</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="note">
+		<span class="tag">Đã chốt · C6</span>
+		Nút này <b>chỉ để chọn thành viên nhanh, không ràng buộc</b>. Sau khi thêm, người dùng vẫn
+		xoá/sửa từng dòng tự do; nhân sự đổi đội về sau <b>không</b> làm thay đổi bảng của lệnh
+		sản xuất đã tạo.
+	</div>
+
+	<!-- ══════════════════════════════════════════════ C -->
+	<h2 id="s-c">C. Lệnh sản xuất — bắt đầu &amp; sản lượng <span class="gap">GAP-3 · GAP-7</span></h2>
+	<p class="lede">
+		Con số trong ví dụ lấy nguyên từ tài liệu nghiệp vụ: 100 sản phẩm × 10 phút, ba nhân sự →
+		<b>478 phút</b>, kết thúc <b>08:28 ngày 24/06</b>.
+	</p>
+
+	<div class="screen">
+		<div class="screen-bar"><span>Lệnh Sản Xuất · MFG-WO-2026-00042</span><span>đã ghi nhận</span></div>
+		<div class="screen-body">
+			<div class="wo-head">
+				<div>
+					<div class="crumb">Lệnh Sản Xuất ›</div>
+					<h3>MFG-WO-2026-00042 <span class="state">In Process</span></h3>
+				</div>
+				<div class="actions">
+					<button class="btn primary" id="btn-start">Bắt Đầu Sản Xuất</button>
+					<button class="btn">Tính Lại Lịch</button>
+				</div>
+			</div>
+
+			<div class="grid3">
+				<div class="fld"><span class="lbl">Mặt Hàng</span><div class="val ro">DD11S200-3B3HT</div></div>
+				<div class="fld"><span class="lbl">Số Lượng</span><div class="val ro num">100</div></div>
+				<div class="fld"><span class="lbl">Thời Gian Sản Xuất 1 SP (Phút)</span><div class="val ro num">10</div></div>
+			</div>
+
+			<div class="grid2">
+				<div class="fld">
+					<span class="lbl">Thời Gian Bắt Đầu <span class="req">*</span> <span class="fn">custom_start_time</span></span>
+					<div class="val" id="v-start">23-06-2026 08:00:00</div>
+				</div>
+				<div class="fld">
+					<span class="lbl">Thời Điểm Cần Hoàn Thành <span class="fn">custom_required_completion_date__time</span></span>
+					<div class="val ro">24-06-2026 10:00:00</div>
+				</div>
+			</div>
+
+			<div class="grid3">
+				<div class="fld">
+					<span class="lbl">Thời Gian Kết Thúc Dự Kiến</span>
+					<div class="val ro" id="v-end">24-06-2026 08:28:00</div>
+				</div>
+				<div class="fld">
+					<span class="lbl">Tổng Thời Gian Dự Kiến (Phút)</span>
+					<div class="val ro num" id="v-total">478</div>
+				</div>
+				<div class="fld">
+					<span class="lbl">Đã Bắt Đầu Sản Xuất <span class="fn">custom_production_started</span></span>
+					<div class="val ro">
+						<span class="tick" id="v-flag" aria-hidden="true"></span>
+						<span id="v-flag-txt" style="font-size:12.5px">chưa ấn nút</span>
+					</div>
+				</div>
+			</div>
+
+			<p class="ok-msg" id="start-msg" hidden></p>
+
+			<div>
+				<p class="lbl" style="margin:0 0 6px">Nhân Công Tham Gia</p>
+				<div class="tw">
+					<table>
+						<thead>
+							<tr><th>Nhân sự</th><th>Bậc thợ</th><th class="n">Nguồn lực</th>
+								<th>Bắt đầu</th><th>Giới hạn tham gia</th><th>Kết thúc</th>
+								<th>Khoá BĐ</th><th>Khoá KT</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>Anh A</td><td>Bậc 7</td><td class="n">100</td>
+								<td>23/06 08:00</td><td>23/06 17:00</td><td>23/06 17:00</td>
+								<td><span class="tick" aria-hidden="true"></span></td>
+								<td><span class="tick" aria-hidden="true"></span></td></tr>
+							<tr><td>Anh B</td><td>Bậc 7</td><td class="n">100</td>
+								<td>23/06 13:15</td><td>—</td><td>24/06 08:28</td>
+								<td><span class="tick" aria-hidden="true"></span></td>
+								<td><span class="tick" aria-hidden="true"></span></td></tr>
+							<tr><td>Anh C</td><td>Bậc 6</td><td class="n">90</td>
+								<td>23/06 10:00</td><td>23/06 17:00</td><td>23/06 17:00</td>
+								<td><span class="tick" aria-hidden="true"></span></td>
+								<td><span class="tick" aria-hidden="true"></span></td></tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="grid-tools" style="margin-top:8px">
+					<button class="btn sm">+ Thêm Dòng</button>
+					<button class="btn sm">Thêm Đội Sản Xuất</button>
+				</div>
+			</div>
+
+			<div>
+				<p class="lbl" style="margin:0 0 6px">
+					Sản Lượng Nhân Viên — tự chia khi ấn Finish
+				</p>
+				<div class="tw">
+					<table>
+						<thead><tr><th>Nhân viên</th><th class="n">Số lượng</th><th>Ghi chú</th></tr></thead>
+						<tbody>
+							<tr><td>Anh A</td><td class="n">4</td><td style="color:var(--ink-faint)">phần nguyên + phần dư</td></tr>
+							<tr><td>Anh B</td><td class="n">3</td><td></td></tr>
+							<tr><td>Anh C</td><td class="n">3</td><td></td></tr>
+							<tr class="sum"><td>Tổng</td><td class="n">10</td><td></td></tr>
+						</tbody>
+					</table>
+				</div>
+				<p class="hint" style="margin-top:8px">
+					Ví dụ tài liệu: sản xuất được 10 cái cho 3 nhân sự → 4 / 3 / 3, phần dư cộng dòng đầu.
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="note">
+		<span class="tag">Đã chốt · C8</span>
+		Nút <b>Bắt Đầu Sản Xuất</b> chỉ hiện khi lệnh đang <b>In Process</b> và <b>chưa từng ấn</b>.
+		Ấn một lần: <i>Thời Gian Bắt Đầu</i> lấy giờ thực tế, lịch tự tính lại (dòng nào Khoá Bắt Đầu
+		thì giữ nguyên), cờ <i>Đã Bắt Đầu Sản Xuất</i> bật lên và nút ẩn đi.
+		<br><br>
+		<b>Vì sao phải có cờ riêng:</b> <i>Thời Gian Bắt Đầu</i> là trường bắt buộc nên luôn có giá trị
+		sẵn từ lúc tạo lệnh (giờ dự kiến) — không thể dùng “trống / không trống” để biết đã ấn nút hay chưa.
+	</div>
+
+	<div class="note">
+		<span class="tag">Đã chốt · C3 + C9</span>
+		Serial chỉ sinh cho mặt hàng có bật <i>Có Serial</i>, đánh số <b>liên tục theo đơn bán hàng</b>
+		nên hai lệnh cùng một đơn không trùng nhau:
+		<div class="grid-tools" style="margin:10px 0 8px">
+			<button class="btn sm" id="ser-so">Lệnh có mã đơn bán</button>
+			<button class="btn sm" id="ser-wo">Lệnh không có mã đơn bán</button>
+		</div>
+		<div class="tw" style="background:var(--surface)">
+			<table>
+				<thead><tr><th>Nguồn số</th><th>Lệnh thứ nhất</th><th>Lệnh thứ hai (cùng đơn)</th></tr></thead>
+				<tbody><tr id="ser-row">
+					<td class="mono">SAL-ORD-2026-00001</td>
+					<td class="mono">…-0001 → …-0010</td>
+					<td class="mono">…-0011 → …-0020</td>
+				</tr></tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- ══════════════════════════════════════════════ D -->
+	<h2 id="s-d">D. Công việc khác <span class="gap">GAP-8</span></h2>
+	<p class="lede">
+		Ghi nhận việc ngoài lệnh sản xuất (dọn xưởng, sửa máy…) để tính lương nhân công theo bậc thợ.
+		Sửa ô <b>Thời gian</b> bên dưới để xem hành vi kiểm tra.
+	</p>
+
+	<div class="screen">
+		<div class="screen-bar"><span>Công Việc Khác · OTASK-2026-00007</span><span>bản nháp</span></div>
+		<div class="screen-body">
+			<div class="grid2">
+				<div class="fld">
+					<span class="lbl">Tổng Thời Gian (Phút) <span class="req">*</span> <span class="fn">total_time</span></span>
+					<input class="val num" id="total" type="number" value="90" min="0" step="5" aria-label="Tổng thời gian, phút">
+				</div>
+				<div class="fld">
+					<span class="lbl">Ngày</span><div class="val">01-08-2026</div>
+				</div>
+			</div>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr><th>Nhân sự</th><th>Bậc thợ</th><th class="n">Thời gian (phút)</th>
+							<th class="n">Lương mỗi phút</th><th class="n">Lương nhân công</th></tr>
+					</thead>
+					<tbody id="ot-rows">
+						<tr data-rate="1080"><td>Anh A</td><td>Bậc 7</td>
+							<td class="n"><input class="val num" type="number" value="30" min="0" step="5" aria-label="Thời gian Anh A"></td>
+							<td class="n">1.080</td><td class="n wage">32.400</td></tr>
+						<tr data-rate="1080"><td>Anh B</td><td>Bậc 7</td>
+							<td class="n"><input class="val num" type="number" value="30" min="0" step="5" aria-label="Thời gian Anh B"></td>
+							<td class="n">1.080</td><td class="n wage">32.400</td></tr>
+						<tr data-rate="920"><td>Anh C</td><td>Bậc 6</td>
+							<td class="n"><input class="val num" type="number" value="30" min="0" step="5" aria-label="Thời gian Anh C"></td>
+							<td class="n">920</td><td class="n wage">27.600</td></tr>
+						<tr class="sum"><td colspan="2">Tổng</td><td class="n" id="sum-time">90</td>
+							<td></td><td class="n" id="sum-wage">92.400</td></tr>
+					</tbody>
+				</table>
+			</div>
+
+			<p class="ok-msg" id="ot-ok">Tổng khớp — lưu được.</p>
+			<p class="alert" id="ot-err" hidden></p>
+
+			<div class="actions" style="justify-content:flex-end">
+				<button class="btn primary">Lưu</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="note">
+		<span class="tag">Đã chốt · C5</span>
+		Chia đều chỉ là <b>giá trị gợi ý ban đầu</b> (khi đổi Tổng Thời Gian hoặc thêm/bớt dòng);
+		người dùng sửa tay từng dòng được, nhưng <b>chỉ lưu được khi tổng các dòng khớp tổng chung</b>.
+		Lương nhân công = lương mỗi phút của bậc thợ × thời gian, tính lại mỗi lần lưu.
+	</div>
+
+	<!-- ══════════════════════════════════════════════ E -->
+	<h2 id="s-e">Phần không có giao diện mới</h2>
+	<div class="screen"><div class="screen-body">
+		<ul class="plainlist">
+			<li><b>GAP-1</b> — doctype <i>Đội Sản Xuất</i> (chỉ hai trường: tên đội, mô tả) và trường
+				<i>Đội Sản Xuất</i> trên Nhân Sự. Kèm <b>C1</b>: <i>Bậc Thợ</i> thành <b>bắt buộc</b>
+				khi loại nhân sự là Công nhân.</li>
+			<li><b>GAP-4</b> — trường mới trên Đơn Bán Hàng (<i>Ghi chú</i>, <i>Thời Gian Bắt Đầu</i>,
+				<i>Time</i>) và Kế Hoạch Sản Xuất. <i>Thời Điểm Cần Hoàn Thành</i> ghép từ
+				<i>Delivery Date</i> + <i>Time</i> của đơn bán hàng.</li>
+			<li><b>GAP-5</b> — tạo lệnh sản xuất từ kế hoạch: tự thừa hưởng thời gian và tự thêm
+				nhân sự của đội vào bảng Nhân Công Tham Gia.</li>
+			<li><b>C7</b> — đổi ba nhãn còn tiếng Anh: <i>Employee Level</i> → <b>Bậc Thợ</b>,
+				<i>Performance Factor (%)</i> → <b>Nguồn Lực (%)</b>,
+				<i>Work Order Employee</i> → <b>Nhân Công Tham Gia</b>.</li>
+		</ul>
+	</div></div>
+
+	<!-- ══════════════════════════════════════════════ F -->
+	<h2 id="s-f">Bốn điểm nhờ người duyệt cho ý kiến</h2>
+	<ol class="qlist">
+		<li>
+			<span class="qn">01</span>
+			<div>
+				<p><b>Tạo nhanh lịch — một ngày hay một khoảng ngày?</b></p>
+				<p>Bản này giữ đúng tài liệu: một ngày mỗi lần tạo. Nếu thực tế phân ca cả tuần thì
+					đổi thành <i>Từ ngày – Đến ngày</i>, tạo cho mọi ngày trong khoảng. Cách nào tiện
+					hơn cho người phân ca?</p>
+			</div>
+		</li>
+		<li>
+			<span class="qn">02</span>
+			<div>
+				<p><b>Độ dài mã serial.</b></p>
+				<p>Mã đơn bán hàng của hệ thống khá dài, serial thành
+					<span class="mono">SAL-ORD-2026-00001-0001</span>. HKLED muốn rút gọn phần mã đơn,
+					hay để nguyên cho dễ truy xuất về đơn?</p>
+			</div>
+		</li>
+		<li>
+			<span class="qn">03</span>
+			<div>
+				<p><b>Sản lượng nhân viên có cho sửa tay sau khi Finish?</b></p>
+				<p>Ví dụ chia lại cho người làm nhiều hơn, thay vì chốt cứng theo công thức chia đều.</p>
+			</div>
+		</li>
+		<li>
+			<span class="qn">04</span>
+			<div>
+				<p><b>Cột “Ghi chú” ở bảng Sản Lượng Nhân Viên — giữ hay bỏ?</b></p>
+				<p>Hiện chỉ dùng để chú thích dòng nào nhận phần dư.</p>
+			</div>
+		</li>
+	</ol>
+
+	<p class="foot">
+		Duyệt xong sẽ tick <span class="mono">mockup_approved</span> trên app PM, rồi mới viết logic
+		theo thứ tự GAP-1 → GAP-4 → GAP-2 &amp; GAP-6 → GAP-5 → GAP-3 → GAP-7 → GAP-8.
+	</p>
+</div>
+
+<script>
+(function () {
+	"use strict";
+
+	function toggle(btn) {
+		var on = btn.getAttribute("aria-checked") === "true";
+		btn.setAttribute("aria-checked", on ? "false" : "true");
+		return !on;
+	}
+	function bindTick(btn, after) {
+		btn.addEventListener("click", function () { after(toggle(btn)); });
+		btn.addEventListener("keydown", function (e) {
+			if (e.key === " " || e.key === "Enter") { e.preventDefault(); after(toggle(btn)); }
+		});
+	}
+
+	/* ---- A: tăng ca khoá ô Ca, mở hai ô giờ ---- */
+	var ot = document.getElementById("ot");
+	var shiftFld = document.getElementById("fld-shift");
+	var shiftVal = document.getElementById("v-shift");
+	var otTimes = document.getElementById("ot-times");
+	var otHint = document.getElementById("ot-hint");
+
+	bindTick(ot, function (on) {
+		shiftFld.classList.toggle("dim", on);
+		shiftVal.classList.toggle("locked", on);
+		shiftVal.textContent = on ? "— khoá khi tăng ca —" : "Ca Sáng";
+		Array.prototype.forEach.call(otTimes.children, function (f) {
+			f.classList.toggle("dim", !on);
+			var v = f.querySelector(".val");
+			v.classList.toggle("ro", !on);
+		});
+		otHint.textContent = on
+			? "Tăng ca: ô Ca Làm Việc bị khoá, hai ô giờ mở ra — chỉ nhận trong khung 17:01–23:59."
+			: "Chưa tăng ca — giờ lấy theo Ca Làm Việc, hai ô giờ khoá.";
+	});
+
+	/* ---- A: đếm số lịch sẽ tạo ---- */
+	var rowsA = document.querySelectorAll("#team-a .tick");
+	var countA = document.getElementById("count-a");
+	function recount() {
+		var n = 0;
+		Array.prototype.forEach.call(rowsA, function (t) {
+			if (t.getAttribute("aria-checked") === "true") n++;
+		});
+		countA.textContent = n === 0
+			? "Chưa chọn nhân sự nào — nút Tạo sẽ báo lỗi."
+			: "Sẽ tạo " + n + " lịch làm việc.";
+	}
+	Array.prototype.forEach.call(rowsA, function (t) { bindTick(t, recount); });
+
+	/* ---- B: tick chọn thành viên ---- */
+	Array.prototype.forEach.call(document.querySelectorAll("#team-b .tick[role]"), function (t) {
+		bindTick(t, function () {});
+	});
+
+	/* ---- C: nút Bắt Đầu Sản Xuất, chỉ ấn một lần ---- */
+	var btnStart = document.getElementById("btn-start");
+	btnStart.addEventListener("click", function () {
+		var now = new Date();
+		function p(n) { return String(n).padStart(2, "0"); }
+		var stamp = p(now.getDate()) + "-" + p(now.getMonth() + 1) + "-" + now.getFullYear() +
+			" " + p(now.getHours()) + ":" + p(now.getMinutes()) + ":" + p(now.getSeconds());
+
+		document.getElementById("v-start").textContent = stamp;
+		document.getElementById("v-flag").setAttribute("aria-checked", "true");
+		document.getElementById("v-flag-txt").textContent = "đã ấn nút";
+		document.getElementById("v-end").textContent = "tính lại theo giờ thực tế";
+		document.getElementById("v-total").textContent = "478";
+
+		var msg = document.getElementById("start-msg");
+		msg.textContent = "Đã ghi Thời Gian Bắt Đầu = " + stamp +
+			" và tính lại lịch. Nút Bắt Đầu Sản Xuất đã ẩn, không ấn lại được.";
+		msg.hidden = false;
+		btnStart.hidden = true;
+	});
+
+	/* ---- C: xem hai kiểu nguồn số serial ---- */
+	var serRow = document.getElementById("ser-row");
+	function setSerial(source, first, second) {
+		serRow.children[0].textContent = source;
+		serRow.children[1].textContent = first;
+		serRow.children[2].textContent = second;
+	}
+	document.getElementById("ser-so").addEventListener("click", function () {
+		setSerial("SAL-ORD-2026-00001", "…-0001 → …-0010", "…-0011 → …-0020");
+	});
+	document.getElementById("ser-wo").addEventListener("click", function () {
+		setSerial("MFG-WO-2026-00042", "…-0001 → …-0010", "không áp dụng — mỗi lệnh một mã riêng");
+	});
+
+	/* ---- D: kiểm tra tổng thời gian ---- */
+	var total = document.getElementById("total");
+	var otBody = document.getElementById("ot-rows");
+	var sumTime = document.getElementById("sum-time");
+	var sumWage = document.getElementById("sum-wage");
+	var okMsg = document.getElementById("ot-ok");
+	var errMsg = document.getElementById("ot-err");
+	var vn = new Intl.NumberFormat("vi-VN");
+
+	function recalc() {
+		var sum = 0, wage = 0;
+		Array.prototype.forEach.call(otBody.querySelectorAll("tr[data-rate]"), function (tr) {
+			var mins = Number(tr.querySelector("input").value) || 0;
+			var rate = Number(tr.getAttribute("data-rate"));
+			sum += mins;
+			wage += mins * rate;
+			tr.querySelector(".wage").textContent = vn.format(mins * rate);
+		});
+		sumTime.textContent = vn.format(sum);
+		sumWage.textContent = vn.format(wage);
+
+		var goal = Number(total.value) || 0;
+		var diff = sum - goal;
+		if (diff === 0) {
+			okMsg.hidden = false;
+			errMsg.hidden = true;
+		} else {
+			okMsg.hidden = true;
+			errMsg.hidden = false;
+			errMsg.textContent = "Tổng thời gian các dòng (" + vn.format(sum) +
+				" phút) phải bằng Tổng Thời Gian (" + vn.format(goal) + " phút). Đang " +
+				(diff > 0 ? "vượt " : "thiếu ") + vn.format(Math.abs(diff)) + " phút.";
+		}
+	}
+	total.addEventListener("input", recalc);
+	otBody.addEventListener("input", recalc);
+	recalc();
+})();
+</script>

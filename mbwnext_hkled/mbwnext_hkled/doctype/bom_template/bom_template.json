@@ -11,6 +11,7 @@
   "is_active",
   "column_break_item_template",
   "item_template",
+  "rule_group",
   "section_break_components",
   "bom_component_table",
   "tab_formula",
@@ -49,6 +50,15 @@
    "label": "Mặt Hàng Cha",
    "link_filters": "[[\"Item\",\"has_variants\",\"=\",1]]",
    "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rule_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Nhóm Công Thức",
+   "options": "BOM Rule Group",
    "reqd": 1
   },
   {

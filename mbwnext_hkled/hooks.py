@@ -44,10 +44,10 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
-	"BOM Template": "public/js/bom_template.js",
-	"Production Plan": "public/js/production_plan.js",
-	"Employee": "public/js/employee.js",
-	"Work Order": "public/js/work_order.js",
+	"BOM Template": "controllers/js/bom_template.js",
+	"Production Plan": "controllers/js/production_plan.js",
+	"Employee": "controllers/js/employee.js",
+	"Work Order": "controllers/js/work_order.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}

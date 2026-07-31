@@ -26,7 +26,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Kiểu Thành Phần",
-   "options": "Theo Rule\nCố Định",
+   "options": "Cố Định\nSố Lượng Theo Công Thức\nTheo Rule",
    "reqd": 1
   },
   {
@@ -42,13 +42,13 @@
    "mandatory_depends_on": "eval:doc.component_type==\"Cố Định\""
   },
   {
-   "depends_on": "eval:doc.component_type==\"Cố Định\"",
+   "depends_on": "eval:doc.component_type!=\"Theo Rule\"",
    "fieldname": "item",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Mặt Hàng",
    "link_filters": "[[\"Item\",\"has_variants\",\"=\",0]]",
-   "mandatory_depends_on": "eval:doc.component_type==\"Cố Định\"",
+   "mandatory_depends_on": "eval:doc.component_type!=\"Theo Rule\"",
    "options": "Item"
   },
   {

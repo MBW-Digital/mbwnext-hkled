@@ -17,6 +17,16 @@ class BOMComponentTable(Document):
 				frappe.throw(
 					_("Row #{0}: Số Lượng phải lớn hơn 0 khi Kiểu Thành Phần là Cố Định").format(self.idx)
 				)
+		elif self.component_type == "Số Lượng Theo Công Thức":
+			# Item cố định, số lượng do Server Script hkled_resolve_bom_qty tính khi tạo BOM.
+			if not self.item:
+				frappe.throw(
+					_("Row #{0}: Mặt Hàng bắt buộc khi Kiểu Thành Phần là Số Lượng Theo Công Thức").format(
+						self.idx
+					)
+				)
+			self.qty = None
 		elif self.component_type == "Theo Rule":
+			# Cả Item (tra BOM Rule) và số lượng (Server Script) đều xác định lúc tạo BOM.
 			self.qty = None
 			self.item = None

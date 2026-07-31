@@ -36,23 +36,17 @@ class BOMTemplate(Document):
 	def validate_unique_rules(self):
 		seen = set()
 		for row in self.bom_rule:
-			key = (row.item_to_manufacture, row.bom_component)
+			key = (row.bom_component, row.condition_value)
 			if key in seen:
 				frappe.throw(
 					_(
-						"Row #{0}: Công Thức BOM bị trùng cho Mặt Hàng Sản Xuất {1} và Thành Phần BOM {2}"
-					).format(row.idx, frappe.bold(row.item_to_manufacture), frappe.bold(row.bom_component))
+						"Row #{0}: Công Thức BOM bị trùng cho Thành Phần BOM {1} và Giá Trị Điều Kiện {2}"
+					).format(row.idx, frappe.bold(row.bom_component), frappe.bold(row.condition_value))
 				)
 			seen.add(key)
 
 	def validate_rule_items(self):
 		for row in self.bom_rule:
-			if not frappe.db.get_value("Item", row.item_to_manufacture, "variant_of"):
-				frappe.throw(
-					_("Row #{0}: Mặt Hàng Sản Xuất {1} phải là mặt hàng biến thể").format(
-						row.idx, frappe.bold(row.item_to_manufacture)
-					)
-				)
 			if frappe.db.get_value("Item", row.item, "has_variants"):
 				frappe.throw(
 					_("Row #{0}: Nguyên Vật Liệu {1} không được là mặt hàng Template").format(
@@ -80,51 +74,54 @@ class BOMTemplate(Document):
 			)
 
 
+# Đặc tính quyết định việc chọn NVL cho thành phần "Theo Rule".
+# Trên site hkled.com đặc tính này tên là "Nguồn" (tài liệu thiết kế gọi là "Loại nguồn").
+CONDITION_ATTRIBUTE = "Nguồn"
+
+# Gợi ý Nhóm Công Thức theo prefix mã Item Template (mục 2.2 tài liệu thiết kế).
+# Chỉ dùng để điền sẵn cho người dùng, người dùng vẫn sửa được.
+RULE_GROUP_BY_PREFIX = (
+	(("DP01", "DP02", "DP03"), "P01_P03"),
+	(("DD01", "DD02", "DD03", "DD04", "DD05"), "D01_D05"),
+	(("DPTC", "DPTR", "DPXH", "DPTV", "DPVL", "DPKD"), "PTX"),
+	(("DXHB",), "XHB"),
+	(("DDQL",), "DQL"),
+	(("DD11", "DD12", "DD13", "DD14", "DD15"), "D11_D15"),
+)
+
+
 @frappe.whitelist()
-def get_template_attributes(item_template):
-	"""Trả về danh sách đặc tính và toàn bộ giá trị đặc tính của item cha (Item Template)."""
-	item = frappe.get_doc("Item", item_template)
-	result = []
-	for row in item.attributes:
-		attr_doc = frappe.get_cached_doc("Item Attribute", row.attribute)
-		result.append(
-			{
-				"attribute": row.attribute,
-				"values": [v.attribute_value for v in attr_doc.item_attribute_values],
-			}
+def get_rule_condition_values(item_template):
+	"""Trả về danh sách giá trị đặc tính điều kiện (Nguồn) đang thực sự được dùng bởi
+	các biến thể của item_template — dùng để sinh sẵn dòng BOM Rule (mục 2.4 tài liệu thiết kế).
+
+	Không sinh ma trận toàn bộ biến thể: mỗi giá trị "Nguồn" chỉ cần 1 dòng.
+	Nếu item cha chưa có biến thể nào, lấy toàn bộ giá trị khai báo trong Item Attribute.
+	"""
+	variants = frappe.get_all("Item", filters={"variant_of": item_template}, pluck="name")
+	values = []
+	if variants:
+		values = frappe.get_all(
+			"Item Variant Attribute",
+			filters={"parent": ["in", variants], "attribute": CONDITION_ATTRIBUTE},
+			pluck="attribute_value",
+			distinct=True,
 		)
-	return result
+	if not values:
+		values = frappe.get_all(
+			"Item Attribute Value",
+			filters={"parent": CONDITION_ATTRIBUTE},
+			pluck="attribute_value",
+			order_by="idx",
+		)
+
+	return {"attribute": CONDITION_ATTRIBUTE, "values": sorted(set(values))}
 
 
 @frappe.whitelist()
-def get_matching_variants(item_template, combos):
-	"""Trả về danh sách item biến thể của item_template khớp với ít nhất 1 tổ hợp
-	giá trị đặc tính trong combos (mỗi combo là dict {attribute: value})."""
-	if isinstance(combos, str):
-		combos = frappe.parse_json(combos)
-
-	all_variants = frappe.get_all("Item", filters={"variant_of": item_template}, pluck="name")
-	if not all_variants:
-		return []
-
-	matched_items = set()
-	for combo in combos:
-		if not combo:
-			continue
-		candidates = set(all_variants)
-		for attribute, value in combo.items():
-			matched_rows = frappe.get_all(
-				"Item Variant Attribute",
-				filters={
-					"parent": ["in", list(candidates)],
-					"attribute": attribute,
-					"attribute_value": value,
-				},
-				pluck="parent",
-			)
-			candidates &= set(matched_rows)
-			if not candidates:
-				break
-		matched_items |= candidates
-
-	return sorted(matched_items)
+def suggest_rule_group(item_template):
+	"""Gợi ý Nhóm Công Thức từ prefix mã Item Template. None nếu chưa có nhóm nào phù hợp."""
+	for prefixes, rule_group in RULE_GROUP_BY_PREFIX:
+		if item_template.startswith(prefixes):
+			return rule_group if frappe.db.exists("BOM Rule Group", rule_group) else None
+	return None

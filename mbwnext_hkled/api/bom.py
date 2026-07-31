@@ -6,6 +6,46 @@
 import frappe
 from frappe import _
 from frappe.utils import flt
+from frappe.utils.safe_exec import is_safe_exec_enabled, run_script
+
+from mbwnext_hkled.server_scripts.bom_qty import SCRIPT_NAME as QTY_SCRIPT
+
+
+def resolve_qty_by_formula(item_code, component_name, rule_group, template_name):
+	"""Gọi Server Script `hkled_resolve_bom_qty` để lấy số lượng (và NVL nếu là "Theo Rule").
+
+	Công thức nằm ở Server Script chứ không ở đây là quyết định kiến trúc trong tài liệu
+	thiết kế: HKLED phải sửa được công thức ngay, không cần build/deploy lại app.
+	"""
+	if not is_safe_exec_enabled():
+		frappe.throw(
+			_(
+				"Server Script đang tắt nên không tính được công thức số lượng. "
+				"Cần bật bằng: bench set-config -g server_script_enabled 1"
+			)
+		)
+	if not frappe.db.exists("Server Script", QTY_SCRIPT):
+		frappe.throw(
+			_("Chưa cài Server Script {0} — chạy lại bench migrate để cài").format(
+				frappe.bold(QTY_SCRIPT)
+			)
+		)
+
+	flags = run_script(
+		QTY_SCRIPT,
+		item_code=item_code,
+		component_name=component_name,
+		rule_group=rule_group,
+		bom_template=template_name,
+	)
+	result = (flags or {}).get("result")
+	if not result:
+		frappe.throw(
+			_("Server Script {0} không trả về số lượng cho Thành Phần BOM {1}").format(
+				frappe.bold(QTY_SCRIPT), frappe.bold(component_name)
+			)
+		)
+	return result
 
 
 def get_active_template(item_code):
@@ -18,7 +58,13 @@ def get_active_template(item_code):
 
 
 def resolve_components(item_code, template_name):
-	"""Đọc BOM Template + BOM Rule để xác định danh sách NVL/số lượng cho item_code."""
+	"""Đọc BOM Template + BOM Rule để xác định danh sách NVL/số lượng cho item_code.
+
+	3 kiểu thành phần (mục 2.3 tài liệu thiết kế):
+	- "Cố Định": item + qty nhập tay trên BOM Template.
+	- "Số Lượng Theo Công Thức": item nhập tay, qty do Server Script tính.
+	- "Theo Rule": cả item (tra BOM Rule theo giá trị "Nguồn" của biến thể) và qty do Server Script.
+	"""
 	template = frappe.get_cached_doc("BOM Template", template_name)
 	components = []
 
@@ -27,23 +73,17 @@ def resolve_components(item_code, template_name):
 			components.append({"item_code": row.item, "qty": row.qty})
 			continue
 
-		rule = frappe.get_all(
-			"BOM Rule",
-			filters={
-				"parent": template_name,
-				"item_to_manufacture": item_code,
-				"bom_component": row.bom_component,
-			},
-			fields=["item", "qty"],
-			limit=1,
+		resolved = resolve_qty_by_formula(
+			item_code, row.bom_component, template.rule_group, template_name
 		)
-		if not rule:
-			frappe.throw(
-				_(
-					"Không tìm thấy BOM Rule cho Mặt Hàng {0}, Thành Phần BOM {1} (BOM Template {2})"
-				).format(frappe.bold(item_code), frappe.bold(row.bom_component), frappe.bold(template_name))
-			)
-		components.append({"item_code": rule[0].item, "qty": rule[0].qty})
+		qty = flt(resolved.get("qty"))
+		# Công thức ra 0 nghĩa là biến thể này KHÔNG dùng thành phần đó (VD Cầu đấu ở mức <=50W).
+		# Phải bỏ hẳn dòng: BOM Item không nhận qty = 0.
+		if qty <= 0:
+			continue
+
+		# "Theo Rule" -> NVL do Server Script tra từ BOM Rule; còn lại dùng item khai trên Template.
+		components.append({"item_code": resolved.get("item") or row.item, "qty": qty})
 
 	return components
 
