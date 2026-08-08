@@ -44,6 +44,31 @@ def resolve_modulo_priority(power, divisors, fallback):
 def round_qty(value):
 	return frappe.utils.ceil(value)  # TODO: xác nhận quy tắc làm tròn với HKLED
 
+def variant_matches(cond_attrs, variant_attrs):
+	"""AND giữa các thuộc tính, OR trong values (spec §7.1)."""
+	for cond in cond_attrs:
+		if variant_attrs.get(cond.get("name")) not in (cond.get("values") or []):
+			return False
+	return True
+
+def find_rule_item(bom_template, component_name, variant_attrs):
+	"""Tra NVL cho thành phần "Theo Rule" bằng cond_attrs (spec §8).
+
+	Rule nằm ở bảng `bom_rules` của BOM Template, phân biệt theo `bom_component`
+	(phương án B, spec §5 — phương án A không dựng được vì Frappe không hỗ trợ bảng con
+	lồng 2 cấp). Trả None nếu không rule nào khớp — người gọi tự throw.
+	"""
+	rules = frappe.get_all("BOM Rule",
+		filters={"parent": bom_template, "parenttype": "BOM Template",
+			"bom_component": component_name},
+		fields=["item", "cond_attrs"], order_by="idx")
+	for r in rules:
+		# Sandbox Server Script không có frappe.parse_json, chỉ có json.loads (safe_exec.py:187).
+		cond = json.loads(r.cond_attrs) if r.cond_attrs else []
+		if cond and variant_matches(cond, variant_attrs):
+			return r.item
+	return None
+
 def get_variant_attrs(variant_code):
 	rows = frappe.get_all("Item Variant Attribute",
 		filters={"parent": variant_code},
@@ -245,13 +270,59 @@ COMPONENT_MAP = {
 MODULE_GROUPS = ("P01_P03", "D01_D05")
 CHIP_GROUPS = ("PTX", "XHB", "DQL", "D11_D15")
 
+# ------------------------------------------------------------------
+# KHOÁ TRA CÔNG THỨC = MẶT HÀNG CHA (chốt của TungDA 07/08 trên PM-FEAT-00007)
+#
+# Trước đây khoá là field `rule_group` người dùng phải tự chọn trên BOM Template.
+# Field đó đã bỏ; giờ script tự suy bộ công thức từ chính Mặt Hàng Cha (Item có
+# biến thể) của BOM Template.
+#
+# Hai lớp tra, ưu tiên lớp 1:
+#   1. FORMULA_GROUP_BY_TEMPLATE — khai đích danh từng mã. HKLED sửa TRỰC TIẾP ở đây
+#      khi có mặt hàng mới hoặc mặt hàng không theo quy tắc prefix. Sửa Server Script
+#      bấm Save là chạy ngay, không cần deploy app.
+#   2. PREFIX_GROUPS — suy theo tiền tố mã, phủ các dòng sản phẩm đặt mã theo quy ước.
+#
+# Không suy được thì THROW nêu đích danh mã, tuyệt đối không đoán bộ công thức:
+# đoán sai thì BOM ra sai số lượng mà không ai biết.
+# ------------------------------------------------------------------
+
+FORMULA_GROUP_BY_TEMPLATE = {
+	# "DX01S": "XHB",   ← mẫu: bỏ comment và khai khi HKLED chốt công thức cho mã đó
+}
+
+PREFIX_GROUPS = (
+	(("DP01", "DP02", "DP03"), "P01_P03"),
+	(("DD11", "DD12", "DD13", "DD14", "DD15"), "D11_D15"),
+	(("DD01", "DD02", "DD03", "DD04", "DD05"), "D01_D05"),
+	(("DPTC", "DPTR", "DPXH", "DPTV", "DPVL", "DPKD"), "PTX"),
+	(("DXHB",), "XHB"),
+	(("DDQL",), "DQL"),
+)
+
+def resolve_formula_group(item_template):
+	"""Suy bộ công thức từ Mặt Hàng Cha. None nếu chưa khai báo."""
+	if item_template in FORMULA_GROUP_BY_TEMPLATE:
+		return FORMULA_GROUP_BY_TEMPLATE[item_template]
+	for prefixes, group in PREFIX_GROUPS:
+		if item_template.startswith(prefixes):
+			return group
+	return None
+
 item_code = frappe.form_dict.get("item_code")
 component_name = frappe.form_dict.get("component_name")
-rule_group = frappe.form_dict.get("rule_group")
+item_template = frappe.form_dict.get("item_template")
 bom_template_name = frappe.form_dict.get("bom_template")  # cần khi component = Nguồn
 
-if not (item_code and component_name and rule_group):
-	frappe.throw("Thiếu tham số item_code / component_name / rule_group")
+if not (item_code and component_name and item_template):
+	frappe.throw("Thiếu tham số item_code / component_name / item_template")
+
+rule_group = resolve_formula_group(item_template)
+if not rule_group:
+	frappe.throw(
+		f"Mặt hàng cha {item_template} chưa có bộ công thức số lượng."
+		f" Khai thêm vào FORMULA_GROUP_BY_TEMPLATE trong Server Script"
+		f" hkled_resolve_bom_qty, hoặc xác nhận với HKLED công thức áp dụng cho mã này.")
 
 attrs = get_variant_attrs(item_code)
 
@@ -271,27 +342,45 @@ if rule_group == "P01_P03" and power_value > 50 and not attrs.get("Kiểu lắp"
 
 result = {}
 
-if component_name == "Nguồn":
-	nguon = attrs.get("Nguồn")
-	rule_row = frappe.get_all("BOM Rule",
-		filters={"parent": bom_template_name, "bom_component": "Nguồn",
-			"condition_value": nguon},
-		fields=["item"], limit=1)
-	if not rule_row:
-		frappe.throw(f"Chưa thiết lập NVL cho Nguồn: {nguon}")
-	result["item"] = rule_row[0].item
+component_type = frappe.db.get_value("BOM Component Table",
+	{"parent": bom_template_name, "bom_component": component_name}, "component_type")
 
+# "Theo Rule" -> NVL do rule quyết định. Áp dụng cho MỌI thành phần Theo Rule chứ không
+# riêng "Nguồn" như bản cũ (spec §8). Số lượng vẫn do COMPONENT_MAP tính như thường.
+if component_type == "Theo Rule":
+	matched_item = find_rule_item(bom_template_name, component_name, attrs)
+	if not matched_item:
+		frappe.throw(
+			f"Chưa thiết lập NVL cho thành phần {component_name} với biến thể {item_code}."
+			f" Thêm rule phủ biến thể này trong BOM Template {bom_template_name}.")
+	result["item"] = matched_item
+
+if component_name == "Nguồn":
 	if rule_group in MODULE_GROUPS:
 		qty = calc_nguon_qty_module_group(attrs, rule_group)
 	elif rule_group in CHIP_GROUPS:
 		qty = calc_nguon_qty_chip_group(attrs, rule_group)
 	else:
-		frappe.throw(f"rule_group không hợp lệ: {rule_group}")
+		frappe.throw(
+			f"Bộ công thức {rule_group} (suy từ mặt hàng cha {item_template})"
+			f" chưa được xếp vào MODULE_GROUPS hay CHIP_GROUPS")
 else:
 	fn = COMPONENT_MAP.get(component_name)
-	if not fn:
+	if fn:
+		qty = fn(attrs, rule_group)
+	elif component_type == "Theo Rule":
+		# Thành phần Theo Rule chỉ đổi NVL theo biến thể, số lượng không theo công thức
+		# (VD Bộ vỏ đèn). Lấy số lượng khai ngay trên dòng thành phần.
+		qty = frappe.utils.flt(frappe.db.get_value("BOM Component Table",
+			{"parent": bom_template_name, "bom_component": component_name}, "qty"))
+		if qty <= 0:
+			# Chưa khai Số Lượng thì tạm tính 1 để người dùng không bị chặn giữa chừng,
+			# NHƯNG đánh dấu lại để báo lên giao diện. Không im lặng: số lượng đoán mà
+			# không ai biết thì BOM sai âm thầm.
+			qty = 1
+			result["qty_defaulted"] = 1
+	else:
 		frappe.throw(f"Chưa có công thức cho thành phần: {component_name}")
-	qty = fn(attrs, rule_group)
 
 result["qty"] = round_qty(qty)
 

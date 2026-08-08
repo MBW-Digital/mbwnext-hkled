@@ -44,10 +44,17 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
+	"BOM": "controllers/js/bom.js",
 	"BOM Template": "controllers/js/bom_template.js",
 	"Production Plan": "controllers/js/production_plan.js",
 	"Employee": "controllers/js/employee.js",
 	"Work Order": "controllers/js/work_order.js",
+	"Other Task": "controllers/js/other_task.js",
+}
+
+# GAP-2: nút "Tạo Nhanh" nằm trên DANH SÁCH Lịch Làm Việc, không phải trên form.
+doctype_list_js = {
+	"Employee Schedule": "controllers/js/employee_schedule_list.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -154,7 +161,36 @@ fixtures = [
 
 doc_events = {
 	"Work Order": {
-		"on_update": "mbwnext_hkled.controllers.python_hook.work_order.sync_employee_allocation_on_finish",
+		# KHÔNG dùng "on_update": Work Order không có method đó, và status chuyển sang
+		# "Completed" bằng db_set trong WorkOrder.update_status() nên không hook nào chạy.
+		# "update_status" được Stock Entry gọi qua run_method() -> doc_events có compose.
+		# Xem giải thích đầy đủ trong controllers/python_hook/work_order.py.
+		"update_status": [
+			"mbwnext_hkled.controllers.python_hook.work_order.sync_employee_allocation_on_finish",
+			"mbwnext_hkled.controllers.python_hook.work_order.split_employee_production_on_finish",
+		],
+		# GAP-5: thừa hưởng thời gian + đội từ Kế Hoạch Sản Xuất khi WO được tạo.
+		"before_insert": "mbwnext_hkled.controllers.python_hook.work_order.inherit_from_production_plan",
+		# GAP-7 (C12): tổng Sản Lượng Nhân Viên phải khớp Số Lượng Đã Sản Xuất.
+		# Phải khai CẢ HAI: document đã submit thì Frappe không gọi `validate` nữa,
+		# mà C12 lại cho sửa tay sau khi Finish.
+		"validate": "mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production",
+		"before_update_after_submit": (
+			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production"
+		),
+	},
+	"Production Plan": {
+		# GAP-4: Thời Điểm Cần Hoàn Thành phải ghép delivery_date + custom_time nên không fetch_from được.
+		"validate": "mbwnext_hkled.controllers.python_hook.production_plan.set_required_completion_time",
+	},
+	"Stock Entry": {
+		# GAP-7: sinh serial theo mã đơn bán khi Finish, thay cho series mặc định.
+		"before_submit": "mbwnext_hkled.controllers.python_hook.stock_entry.set_serial_no_on_manufacture",
+	},
+	"Employee": {
+		# C1: `mandatory_depends_on` của Frappe CHỈ chạy phía client — lưu bằng script/API
+		# vẫn lọt. Phải chặn thêm ở server. Xem controllers/python_hook/employee.py.
+		"validate": "mbwnext_hkled.controllers.python_hook.employee.validate_employee_level",
 	},
 }
 

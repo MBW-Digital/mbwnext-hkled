@@ -207,6 +207,8 @@
 		appearance: none;
 	}
 	input.val.num { text-align: right; }
+	/* bảng Sản Lượng chỉ có 2 cột — không để ô nhập kéo dài hết cột */
+	#prod-rows input.val { width: 96px; margin-left: auto; }
 	.fld.dim { opacity: 0.42; }
 
 	/* ---------- tick ---------- */
@@ -230,6 +232,26 @@
 		outline: 2px solid var(--new); outline-offset: 2px;
 	}
 	.switch { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+
+	/* ---------- chọn thứ trong tuần ---------- */
+	.wd { display: flex; flex-wrap: wrap; gap: 6px; }
+	.wd label {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		padding: 6px 10px;
+		background: var(--surface);
+		cursor: pointer;
+		user-select: none;
+	}
+	.wd label:has(.tick[aria-checked="true"]) {
+		border-color: var(--decided);
+		background: var(--decided-bg);
+		color: var(--decided);
+	}
 
 	/* ---------- bảng ---------- */
 	.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
@@ -364,8 +386,12 @@
 		</p>
 		<p class="doc-meta">
 			<b>Bấm thử được</b> những chỗ mà hành vi khó thấy trên ảnh tĩnh: tick “Là Tăng Ca”,
-			chọn nhân sự, nút “Bắt Đầu Sản Xuất”, và ô thời gian ở Công Việc Khác.
-			Trạng thái: <b style="color:var(--ask)">chờ duyệt</b> — duyệt xong mới viết logic.
+			chọn nhân sự, <b>khoảng ngày ở màn A</b>, nút “Bắt Đầu Sản Xuất”,
+			<b>ô sản lượng ở màn C</b>, và ô thời gian ở Công Việc Khác.
+			<br>
+			<b>Bản cập nhật 02/08/2026</b> — HKLED đã trả lời xong cả 4 câu, mockup sửa theo đúng
+			các chốt đó (xem mục cuối trang). Trạng thái:
+			<b style="color:var(--ask)">chờ duyệt lần cuối</b> — duyệt xong là viết logic.
 		</p>
 	</header>
 
@@ -393,14 +419,31 @@
 				<div class="val pick">Đội Lắp Ráp 1</div>
 			</div>
 
-			<div class="grid2">
+			<div class="grid3">
 				<div class="fld">
-					<span class="lbl">Ngày <span class="req">*</span> <span class="fn">date</span></span>
-					<div class="val">01-08-2026</div>
+					<span class="lbl">Từ Ngày <span class="req">*</span> <span class="fn">from_date</span></span>
+					<input class="val" id="from-date" type="date" value="2026-08-01" aria-label="Từ ngày">
+				</div>
+				<div class="fld">
+					<span class="lbl">Đến Ngày <span class="req">*</span> <span class="fn">to_date</span></span>
+					<input class="val" id="to-date" type="date" value="2026-08-10" aria-label="Đến ngày">
 				</div>
 				<div class="fld" id="fld-shift">
 					<span class="lbl">Ca Làm Việc <span class="fn">shift_type</span></span>
 					<div class="val pick" id="v-shift">Ca Sáng</div>
+				</div>
+			</div>
+
+			<div class="fld">
+				<span class="lbl">Thứ Trong Tuần <span class="req">*</span> <span class="fn">weekdays</span></span>
+				<div class="wd" id="weekdays">
+					<label><button class="tick" role="checkbox" aria-checked="true" data-dow="1" aria-label="Thứ Hai"></button> T2</label>
+					<label><button class="tick" role="checkbox" aria-checked="true" data-dow="2" aria-label="Thứ Ba"></button> T3</label>
+					<label><button class="tick" role="checkbox" aria-checked="true" data-dow="3" aria-label="Thứ Tư"></button> T4</label>
+					<label><button class="tick" role="checkbox" aria-checked="true" data-dow="4" aria-label="Thứ Năm"></button> T5</label>
+					<label><button class="tick" role="checkbox" aria-checked="true" data-dow="5" aria-label="Thứ Sáu"></button> T6</label>
+					<label><button class="tick" role="checkbox" aria-checked="true" data-dow="6" aria-label="Thứ Bảy"></button> T7</label>
+					<label><button class="tick" role="checkbox" aria-checked="false" data-dow="0" aria-label="Chủ Nhật"></button> CN</label>
 				</div>
 			</div>
 
@@ -443,7 +486,12 @@
 			</div>
 			<p class="hint">
 				Chọn đội → tự nạp nhân sự <i>Công nhân</i> đang <i>Active</i>, tick sẵn toàn bộ;
-				bỏ tick ai nghỉ. <span class="live" id="count-a">Sẽ tạo 3 lịch làm việc.</span>
+				bỏ tick ai nghỉ. Mỗi ngày trong khoảng × mỗi người được tick = một lịch làm việc.
+				<span class="live" id="count-a">Sẽ tạo 24 lịch làm việc (01/08 → 10/08, 8 ngày × 3 nhân sự, bỏ qua 2 ngày không khớp thứ).</span>
+			</p>
+			<p class="hint">
+				Đổi thử <b>Từ Ngày</b> / <b>Đến Ngày</b> hoặc bỏ tick một thứ để thấy con số đổi theo — đây là
+				lý do phải hiện số trước khi bấm: chọn nhầm cả tháng là ra hàng trăm bản ghi.
 			</p>
 
 			<div class="actions" style="justify-content:flex-end">
@@ -453,10 +501,26 @@
 	</div>
 
 	<div class="note">
+		<span class="tag">Đã chốt · C10 + C10b</span>
+		Tạo theo <b>một khoảng “Từ Ngày – Đến Ngày”</b>, kèm <b>tick chọn thứ trong tuần</b> — chỉ những
+		ngày khớp thứ đã tick mới sinh bản ghi.
+		<br><br>
+		Ví dụ đang để đúng tình huống HKLED nêu: <b>01/08 → 10/08</b>, tick <b>T2–T7</b>, bỏ <b>CN</b>.
+		Khoảng đó có 10 ngày nhưng 2 ngày là Chủ nhật nên chỉ tạo cho <b>8 ngày</b> — dòng đếm ghi rõ
+		“bỏ qua 2 ngày không khớp thứ” để người phân ca thấy ngay, không phải tự nhẩm.
+		<br><br>
+		Chặn khi <i>Đến Ngày</i> trước <i>Từ Ngày</i>, khi bỏ tick hết các thứ, và khi khoảng dài quá
+		62 ngày để không lỡ tay tạo nhầm cả năm.
+	</div>
+
+	<div class="note">
 		<span class="tag">Xử lý trùng lịch</span>
 		Dòng nào trùng lịch sẵn có thì <b>bỏ qua đúng dòng đó</b>, các dòng còn lại vẫn tạo —
 		không để một dòng làm hỏng cả lô. Kết thúc báo rõ:
-		“Đã tạo 2 lịch làm việc. Bỏ qua 1 dòng do trùng: Anh B — 01/08/2026 Ca Sáng.”
+		“Đã tạo 17 lịch làm việc. Bỏ qua 1 dòng do trùng: Anh B — 03/08/2026 Ca Sáng.”
+		<br><br>
+		Với khoảng ngày thì việc bỏ qua dòng trùng càng quan trọng: phân ca tuần sau chồng lên vài
+		ngày đã tạo rồi là chuyện thường ngày.
 	</div>
 
 	<!-- ══════════════════════════════════════════════ B -->
@@ -593,21 +657,29 @@
 
 			<div>
 				<p class="lbl" style="margin:0 0 6px">
-					Sản Lượng Nhân Viên — tự chia khi ấn Finish
+					Sản Lượng Nhân Viên — tự chia khi ấn Finish, sửa tay được sau đó
 				</p>
 				<div class="tw">
 					<table>
-						<thead><tr><th>Nhân viên</th><th class="n">Số lượng</th><th>Ghi chú</th></tr></thead>
-						<tbody>
-							<tr><td>Anh A</td><td class="n">4</td><td style="color:var(--ink-faint)">phần nguyên + phần dư</td></tr>
-							<tr><td>Anh B</td><td class="n">3</td><td></td></tr>
-							<tr><td>Anh C</td><td class="n">3</td><td></td></tr>
-							<tr class="sum"><td>Tổng</td><td class="n">10</td><td></td></tr>
+						<thead><tr><th>Nhân viên</th><th class="n">Số lượng</th></tr></thead>
+						<tbody id="prod-rows">
+							<tr><td>Anh A</td>
+								<td class="n"><input class="val num" type="number" value="4" min="0" step="1" aria-label="Sản lượng Anh A"></td></tr>
+							<tr><td>Anh B</td>
+								<td class="n"><input class="val num" type="number" value="3" min="0" step="1" aria-label="Sản lượng Anh B"></td></tr>
+							<tr><td>Anh C</td>
+								<td class="n"><input class="val num" type="number" value="3" min="0" step="1" aria-label="Sản lượng Anh C"></td></tr>
+							<tr class="sum"><td>Tổng</td><td class="n" id="prod-sum">10</td></tr>
 						</tbody>
 					</table>
 				</div>
+
+				<p class="ok-msg" id="prod-ok">Tổng khớp Số Lượng Đã Sản Xuất (10 cái) — lưu được.</p>
+				<p class="alert" id="prod-err" hidden></p>
+
 				<p class="hint" style="margin-top:8px">
 					Ví dụ tài liệu: sản xuất được 10 cái cho 3 nhân sự → 4 / 3 / 3, phần dư cộng dòng đầu.
+					<b>Sửa thử một ô số lượng</b> để thấy ràng buộc tổng.
 				</p>
 			</div>
 		</div>
@@ -624,9 +696,23 @@
 	</div>
 
 	<div class="note">
+		<span class="tag">Đã chốt · C12 + C13</span>
+		<b>Sản lượng cho sửa tay sau khi Finish.</b> Hệ thống chia sẵn khi ấn Finish, sau đó người dùng
+		sửa lại được — chỉ <b>lưu được khi tổng các dòng bằng Số Lượng Đã Sản Xuất</b> của lệnh.
+		Đã chia rồi thì không chia đè nữa, để không xoá mất phần sửa tay.
+		<br><br>
+		<b>Đã bỏ cột “Ghi chú”</b> khỏi bảng Sản Lượng Nhân Viên theo ý kiến duyệt.
+		<br><br>
+		<b>Đã xác nhận (02/08):</b> tổng các dòng bằng <b>tổng sản lượng sản xuất được</b> của lệnh
+		(<span class="mono">produced_qty</span>), không phải <i>Số Lượng</i> đặt làm ban đầu — hai số này
+		lệch nhau khi lệnh đóng thiếu.
+	</div>
+
+	<div class="note">
 		<span class="tag">Đã chốt · C3 + C9</span>
 		Serial chỉ sinh cho mặt hàng có bật <i>Có Serial</i>, đánh số <b>liên tục theo đơn bán hàng</b>
-		nên hai lệnh cùng một đơn không trùng nhau:
+		nên hai lệnh cùng một đơn không trùng nhau. Định dạng theo phương án HKLED vừa chọn:
+		<span class="mono">26-00001-0001</span>.
 		<div class="grid-tools" style="margin:10px 0 8px">
 			<button class="btn sm" id="ser-so">Lệnh có mã đơn bán</button>
 			<button class="btn sm" id="ser-wo">Lệnh không có mã đơn bán</button>
@@ -635,12 +721,46 @@
 			<table>
 				<thead><tr><th>Nguồn số</th><th>Lệnh thứ nhất</th><th>Lệnh thứ hai (cùng đơn)</th></tr></thead>
 				<tbody><tr id="ser-row">
-					<td class="mono">SAL-ORD-2026-00001</td>
-					<td class="mono">…-0001 → …-0010</td>
-					<td class="mono">…-0011 → …-0020</td>
+					<td class="mono">26-00001</td>
+					<td class="mono">26-00001-0001 → -0010</td>
+					<td class="mono">26-00001-0011 → -0020</td>
 				</tr></tbody>
 			</table>
 		</div>
+		<p style="margin:10px 0 0">
+			⚠ <b>Một điểm nảy ra từ việc rút gọn, nhờ anh/chị xác nhận:</b> lệnh sản xuất <b>không có</b>
+			mã đơn bán thì lấy mã lệnh làm gốc. Nếu rút gọn y hệt thì lệnh <span class="mono">MFG-WO-2026-00042</span>
+			ra <span class="mono">26-00042</span>, <b>trùng</b> với đơn bán hàng số 00042 cùng năm.
+			Bản này thêm chữ <b>W</b> để tách ra: <span class="mono">W26-00042-0001</span>.
+			Nếu HKLED muốn ký hiệu khác thì đổi được, chỉ là một chữ.
+		</p>
+	</div>
+
+	<div class="note">
+		<span class="tag">Đã chốt · C11 — định dạng serial</span>
+		HKLED hỏi: <i>“rút gọn serial thì khi nhập serial vào vẫn truy xuất lại được đúng các chứng từ
+		liên quan chứ?”</i> — <b>Có, rút gọn không ảnh hưởng gì tới truy xuất.</b> Hệ thống không đọc
+		chuỗi serial để tìm chứng từ: mỗi serial là một bản ghi riêng, tự lưu liên kết tới lệnh sản xuất,
+		chứng từ mua, khách hàng, kho, lô; báo cáo <i>Sổ Serial</i> liệt kê mọi lần nhập / xuất / chuyển
+		kho kèm link bấm mở thẳng chứng từ.
+		<br><br>
+		<b>HKLED đã chọn phương án ngắn nhất (02/08):</b>
+		<div class="tw" style="background:var(--surface); margin-top:10px">
+			<table>
+				<thead><tr><th>Phương án</th><th>Ví dụ serial</th><th class="n">Ký tự</th></tr></thead>
+				<tbody>
+					<tr class="off"><td>Giữ nguyên</td><td class="mono">SAL-ORD-2026-00001-0001</td><td class="n">23</td></tr>
+					<tr class="off"><td>Bỏ phần cố định</td><td class="mono">2026-00001-0001</td><td class="n">15</td></tr>
+					<tr><td><b>✓ Đã chọn</b></td><td class="mono"><b>26-00001-0001</b></td><td class="n"><b>13</b></td></tr>
+				</tbody>
+			</table>
+		</div>
+		<p style="margin:10px 0 0">
+			An toàn vì đơn bán hàng ở HKLED chỉ dùng <b>một</b> dạng mã
+			<span class="mono">SAL-ORD-.YYYY.-</span>, nên phần bỏ đi là cố định ở mọi đơn, serial vẫn
+			không trùng nhau. Site cũng <b>chưa sinh serial nào</b> nên đổi bây giờ không phải chuyển
+			đổi dữ liệu cũ.
+		</p>
 	</div>
 
 	<!-- ══════════════════════════════════════════════ D -->
@@ -720,44 +840,53 @@
 	</div></div>
 
 	<!-- ══════════════════════════════════════════════ F -->
-	<h2 id="s-f">Bốn điểm nhờ người duyệt cho ý kiến</h2>
-	<ol class="qlist">
-		<li>
-			<span class="qn">01</span>
+	<h2 id="s-f">Bốn câu hỏi — HKLED đã trả lời xong</h2>
+	<ol class="qlist" style="--dot:var(--decided)">
+		<li style="border-left-color:var(--decided)">
+			<span class="qn" style="color:var(--decided)">01</span>
 			<div>
 				<p><b>Tạo nhanh lịch — một ngày hay một khoảng ngày?</b></p>
-				<p>Bản này giữ đúng tài liệu: một ngày mỗi lần tạo. Nếu thực tế phân ca cả tuần thì
-					đổi thành <i>Từ ngày – Đến ngày</i>, tạo cho mọi ngày trong khoảng. Cách nào tiện
-					hơn cho người phân ca?</p>
+				<p><b style="color:var(--decided)">Chốt:</b> một khoảng <b>“Từ Ngày – Đến Ngày”</b>,
+					<b>kèm tick chọn thứ trong tuần</b> (02/08). Ví dụ HKLED nêu: chọn 1/8–10/8 nhưng chỉ tick
+					T2–T7 thì Chủ nhật không sinh bản ghi.
+					→ Màn A đã có đủ: cặp ngày, hàng tick thứ, và dòng đếm ghi rõ bỏ qua mấy ngày.</p>
 			</div>
 		</li>
-		<li>
-			<span class="qn">02</span>
+		<li style="border-left-color:var(--decided)">
+			<span class="qn" style="color:var(--decided)">02</span>
 			<div>
 				<p><b>Độ dài mã serial.</b></p>
-				<p>Mã đơn bán hàng của hệ thống khá dài, serial thành
-					<span class="mono">SAL-ORD-2026-00001-0001</span>. HKLED muốn rút gọn phần mã đơn,
-					hay để nguyên cho dễ truy xuất về đơn?</p>
+				<p><b style="color:var(--decided)">Chốt:</b> HKLED hỏi lại về truy xuất → đã kiểm chứng
+					<b>rút gọn không ảnh hưởng gì</b>, và HKLED chọn <b>phương án ngắn nhất</b> (02/08):
+					<span class="mono">26-00001-0001</span> (13 ký tự).</p>
+				<p><b style="color:var(--ask)">Một chi tiết nhỏ nảy ra:</b> lệnh không có mã đơn bán sẽ lấy
+					mã lệnh làm gốc, rút gọn y hệt thì đụng số với đơn bán cùng năm — bản này thêm chữ
+					<b>W</b> để tách. Xem ô dưới màn C.</p>
 			</div>
 		</li>
-		<li>
-			<span class="qn">03</span>
+		<li style="border-left-color:var(--decided)">
+			<span class="qn" style="color:var(--decided)">03</span>
 			<div>
 				<p><b>Sản lượng nhân viên có cho sửa tay sau khi Finish?</b></p>
-				<p>Ví dụ chia lại cho người làm nhiều hơn, thay vì chốt cứng theo công thức chia đều.</p>
+				<p><b style="color:var(--decided)">Chốt:</b> <b>có cho sửa tay</b>, tổng các dòng phải bằng
+					<b>tổng sản lượng sản xuất được</b> của lệnh (xác nhận 02/08 — là số thực làm được, không
+					phải số đặt làm). → Màn C: ô số lượng gõ được, tổng lệch thì báo đỏ và không lưu được.</p>
 			</div>
 		</li>
-		<li>
-			<span class="qn">04</span>
+		<li style="border-left-color:var(--decided)">
+			<span class="qn" style="color:var(--decided)">04</span>
 			<div>
 				<p><b>Cột “Ghi chú” ở bảng Sản Lượng Nhân Viên — giữ hay bỏ?</b></p>
-				<p>Hiện chỉ dùng để chú thích dòng nào nhận phần dư.</p>
+				<p><b style="color:var(--decided)">Chốt:</b> <b>bỏ</b>. → Đã bỏ khỏi bảng ở màn C.</p>
 			</div>
 		</li>
 	</ol>
 
 	<p class="foot">
-		Duyệt xong sẽ tick <span class="mono">mockup_approved</span> trên app PM, rồi mới viết logic
+		Bản cập nhật 02/08/2026. Ba điểm treo trước đó đều đã chốt: tick thứ trong tuần (có làm),
+		độ dài serial (<span class="mono">26-00001-0001</span>), mốc so sản lượng (số thực làm được).
+		Chỉ còn một chi tiết nhỏ nhờ xác nhận: ký hiệu <b>W</b> cho lệnh không có mã đơn bán.
+		Duyệt xong sẽ tick <span class="mono">mockup_approved</span> trên app PM, rồi viết logic
 		theo thứ tự GAP-1 → GAP-4 → GAP-2 &amp; GAP-6 → GAP-5 → GAP-3 → GAP-7 → GAP-8.
 	</p>
 </div>
@@ -799,19 +928,81 @@
 			: "Chưa tăng ca — giờ lấy theo Ca Làm Việc, hai ô giờ khoá.";
 	});
 
-	/* ---- A: đếm số lịch sẽ tạo ---- */
+	/* ---- A: đếm số lịch sẽ tạo = số ngày trong khoảng × số nhân sự ---- */
 	var rowsA = document.querySelectorAll("#team-a .tick");
 	var countA = document.getElementById("count-a");
+	var fromDate = document.getElementById("from-date");
+	var toDate = document.getElementById("to-date");
+	var MAX_DAYS = 62;
+
+	/* Tổng số ngày trong khoảng, không xét thứ — dùng cho ràng buộc độ dài tối đa. */
+	function spanDays() {
+		if (!fromDate.value || !toDate.value) return 0;
+		var a = new Date(fromDate.value + "T00:00:00");
+		var b = new Date(toDate.value + "T00:00:00");
+		if (isNaN(a.getTime()) || isNaN(b.getTime())) return 0;
+		return Math.round((b - a) / 86400000) + 1;
+	}
+
+	function selectedDows() {
+		var s = {};
+		Array.prototype.forEach.call(document.querySelectorAll("#weekdays .tick"), function (b) {
+			if (b.getAttribute("aria-checked") === "true") s[b.getAttribute("data-dow")] = true;
+		});
+		return s;
+	}
+
+	/* Số ngày THỰC SỰ tạo bản ghi: chỉ những ngày trong khoảng khớp thứ đã tick. */
+	function dayCount() {
+		var span = spanDays();
+		if (span <= 0) return 0;
+		var dows = selectedDows();
+		var a = new Date(fromDate.value + "T00:00:00");
+		var n = 0;
+		for (var i = 0; i < span; i++) {
+			var d = new Date(a.getTime() + i * 86400000);
+			if (dows[String(d.getDay())]) n++;
+		}
+		return n;
+	}
+	/* Ô ngày của trình duyệt hiện theo locale máy người xem (có máy ra mm/dd).
+	   Nhắc lại khoảng theo dd/mm để người duyệt không đọc nhầm ngày. */
+	function viRange() {
+		if (!fromDate.value || !toDate.value) return "";
+		function f(s) { var p = s.split("-"); return p[2] + "/" + p[1]; }
+		return f(fromDate.value) + " → " + f(toDate.value) + ", ";
+	}
 	function recount() {
 		var n = 0;
 		Array.prototype.forEach.call(rowsA, function (t) {
 			if (t.getAttribute("aria-checked") === "true") n++;
 		});
-		countA.textContent = n === 0
-			? "Chưa chọn nhân sự nào — nút Tạo sẽ báo lỗi."
-			: "Sẽ tạo " + n + " lịch làm việc.";
+		var span = spanDays();
+		var d = dayCount();
+		var skipped = span - d;
+
+		if (span <= 0) {
+			countA.textContent = "Đến Ngày phải từ Từ Ngày trở đi — nút Tạo sẽ báo lỗi.";
+		} else if (span > MAX_DAYS) {
+			countA.textContent = "Khoảng " + span + " ngày, quá " + MAX_DAYS +
+				" ngày cho phép — nút Tạo sẽ báo lỗi.";
+		} else if (d === 0) {
+			countA.textContent = "Không ngày nào trong khoảng khớp thứ đã chọn — nút Tạo sẽ báo lỗi.";
+		} else if (n === 0) {
+			countA.textContent = "Chưa chọn nhân sự nào — nút Tạo sẽ báo lỗi.";
+		} else {
+			countA.textContent = "Sẽ tạo " + (n * d) + " lịch làm việc (" + viRange() +
+				d + " ngày × " + n + " nhân sự" +
+				(skipped > 0 ? ", bỏ qua " + skipped + " ngày không khớp thứ" : "") + ").";
+		}
 	}
 	Array.prototype.forEach.call(rowsA, function (t) { bindTick(t, recount); });
+	Array.prototype.forEach.call(document.querySelectorAll("#weekdays .tick"), function (t) {
+		bindTick(t, recount);
+	});
+	fromDate.addEventListener("input", recount);
+	toDate.addEventListener("input", recount);
+	recount();
 
 	/* ---- B: tick chọn thành viên ---- */
 	Array.prototype.forEach.call(document.querySelectorAll("#team-b .tick[role]"), function (t) {
@@ -839,6 +1030,35 @@
 		btnStart.hidden = true;
 	});
 
+	/* ---- C: sản lượng sửa tay, tổng phải khớp số đã sản xuất (C12) ---- */
+	var PRODUCED_QTY = 10;
+	var prodRows = document.getElementById("prod-rows");
+	var prodSum = document.getElementById("prod-sum");
+	var prodOk = document.getElementById("prod-ok");
+	var prodErr = document.getElementById("prod-err");
+
+	function recalcProd() {
+		var sum = 0;
+		Array.prototype.forEach.call(prodRows.querySelectorAll("input"), function (i) {
+			sum += Number(i.value) || 0;
+		});
+		prodSum.textContent = String(sum);
+
+		var diff = sum - PRODUCED_QTY;
+		if (diff === 0) {
+			prodOk.hidden = false;
+			prodErr.hidden = true;
+		} else {
+			prodOk.hidden = true;
+			prodErr.hidden = false;
+			prodErr.textContent = "Tổng sản lượng các dòng (" + sum +
+				" cái) phải bằng Số Lượng Đã Sản Xuất (" + PRODUCED_QTY + " cái). Đang " +
+				(diff > 0 ? "vượt " : "thiếu ") + Math.abs(diff) + " cái.";
+		}
+	}
+	prodRows.addEventListener("input", recalcProd);
+	recalcProd();
+
 	/* ---- C: xem hai kiểu nguồn số serial ---- */
 	var serRow = document.getElementById("ser-row");
 	function setSerial(source, first, second) {
@@ -847,10 +1067,10 @@
 		serRow.children[2].textContent = second;
 	}
 	document.getElementById("ser-so").addEventListener("click", function () {
-		setSerial("SAL-ORD-2026-00001", "…-0001 → …-0010", "…-0011 → …-0020");
+		setSerial("26-00001", "26-00001-0001 → -0010", "26-00001-0011 → -0020");
 	});
 	document.getElementById("ser-wo").addEventListener("click", function () {
-		setSerial("MFG-WO-2026-00042", "…-0001 → …-0010", "không áp dụng — mỗi lệnh một mã riêng");
+		setSerial("W26-00042", "W26-00042-0001 → -0010", "không áp dụng — mỗi lệnh một mã riêng");
 	});
 
 	/* ---- D: kiểm tra tổng thời gian ---- */

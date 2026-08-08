@@ -1,0 +1,38 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-02 09:20:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": ["naming_series", "task_name", "date", "column_break_main", "total_time", "total_labor_wage", "section_break_rows", "employees"],
+ "fields": [
+  {"default": "OTASK-.YYYY.-", "fieldname": "naming_series", "fieldtype": "Select", "label": "Chuỗi Đánh Số", "options": "OTASK-.YYYY.-", "reqd": 1},
+  {"fieldname": "task_name", "fieldtype": "Data", "in_list_view": 1, "label": "Tên Công Việc", "reqd": 1},
+  {"fieldname": "date", "fieldtype": "Date", "in_list_view": 1, "label": "Ngày", "reqd": 1},
+  {"fieldname": "column_break_main", "fieldtype": "Column Break"},
+  {"fieldname": "total_time", "fieldtype": "Float", "in_list_view": 1, "label": "Tổng Thời Gian (Phút)", "non_negative": 1, "reqd": 1},
+  {"fieldname": "total_labor_wage", "fieldtype": "Currency", "in_list_view": 1, "label": "Tổng Lương Nhân Công", "read_only": 1},
+  {"fieldname": "section_break_rows", "fieldtype": "Section Break", "label": "Nhân Công Tham Gia"},
+  {"fieldname": "employees", "fieldtype": "Table", "label": "Nhân Công", "options": "Other Task Table"}
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-02 09:20:00.000000",
+ "modified_by": "Administrator",
+ "module": "MBWNext HKLed",
+ "name": "Other Task",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Manufacturing Manager", "share": 1, "write": 1},
+  {"create": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Manufacturing User", "share": 1, "write": 1}
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "task_name"
+}

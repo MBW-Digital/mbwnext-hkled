@@ -17,8 +17,8 @@ gồm 5 mục. Nội dung cần làm:
 
 | Mục | Yêu cầu |
 |---|---|
-| 2.1 | DocType mới `BOM Rule Group` — danh mục Nhóm Công Thức, 6 bản ghi ban đầu |
-| 2.2 | `BOM Template` thêm field `rule_group` (Link, bắt buộc) |
+| 2.1 | ~~DocType mới `BOM Rule Group`~~ — **ĐÃ BỎ 07/08**, xem 2.1b |
+| 2.2 | ~~`BOM Template` thêm field `rule_group`~~ — **ĐÃ BỎ 07/08**, khoá tra công thức là Mặt Hàng Cha |
 | 2.3 | `BOM Component Table` thêm loại thứ 3 `Số Lượng Theo Công Thức` |
 | 2.4 | `BOM Rule` bỏ enumeration theo từng biến thể → chỉ 1 dòng / giá trị "Nguồn" |
 | 3 | Server Script `hkled_resolve_bom_qty` chứa toàn bộ công thức số lượng |
@@ -82,7 +82,105 @@ công thức và 2 ca end-to-end — **tất cả PASS**, không phải sửa co
 
 ## 2. GIAI ĐOẠN DEV — DocType & Custom Field
 
-### 2.1 DocType mới: `BOM Rule Group` (Nhóm Công Thức)
+### 2.1b THAY ĐỔI 07/08 — bỏ `rule_group`, khoá tra công thức là Mặt Hàng Cha
+
+Chốt của TungDA trên PM-FEAT-00007 (07/08 09:38): *"sửa rule_group thành logic lấy Mặt Hàng Cha
+làm Key, mặt hàng cha là sản phẩm có biến thể"*.
+
+**Đã làm:**
+
+| Trước | Sau |
+|---|---|
+| `BOM Template.rule_group` (Link → BOM Rule Group, bắt buộc) — người dùng tự chọn | **Bỏ hẳn field.** Không còn ô nào phải điền |
+| Server Script nhận tham số `rule_group` | Nhận `item_template`, tự suy bộ công thức |
+| `suggest_rule_group()` gợi ý theo prefix ở client | Bỏ. Bảng suy nhóm chuyển vào Server Script |
+| `resolve_qty_by_formula(..., rule_group, ...)` | `resolve_qty_by_formula(..., item_template, ...)` |
+
+**Cơ chế suy bộ công thức** — trong Server Script `hkled_resolve_bom_qty`, 2 lớp ưu tiên:
+
+1. `FORMULA_GROUP_BY_TEMPLATE` — khai đích danh từng mã mặt hàng cha. HKLED tự thêm khi có mặt
+   hàng mới hoặc mặt hàng không đặt mã theo quy ước. Sửa Server Script bấm Save là chạy ngay.
+2. `PREFIX_GROUPS` — suy theo tiền tố mã (DP01/DP02/DP03 → P01_P03, DD11…DD15 → D11_D15, …).
+
+Không suy được thì **throw nêu đích danh mã**, không đoán bộ công thức — đoán sai thì BOM ra sai
+số lượng mà không ai phát hiện.
+
+**Lưu ý khi triển khai lên site khách:** nếu ở đó có BOM Template nào đang để `rule_group` **khác**
+với nhóm suy từ prefix, hành vi sẽ đổi. Phải rà trước khi migrate. Trên bench dev chỉ có 1 BOM
+Template nên không có rủi ro này.
+
+`BOM Rule Group` **đã xoá** theo chốt của TungDA 10:04 ("Xóa Bom Rule Group vì không dùng nữa") —
+patch `drop_bom_rule_group`. Patch tự dừng nếu còn field nào trỏ tới DocType, hoặc nếu có bản ghi
+ngoài 6 nhóm seed, để không xoá nhầm thứ người dùng đang dùng.
+
+### 2.1c THAY ĐỔI 07/08 (đợt 2) — điều kiện rule theo NHIỀU thuộc tính
+
+Chốt của TungDA 10:04: *"Điểm 3 cond_attrs theo nhiều thuộc tính"*.
+
+| | Trước | Sau |
+|---|---|---|
+| Điều kiện rule | `condition_value` (Data) — 1 giá trị, **chỉ** thuộc tính "Nguồn" | `cond_attrs` (JSON) `[{"name","values":[]}]` — **nhiều thuộc tính**, AND giữa thuộc tính / OR trong values |
+| Phạm vi áp dụng | chỉ thành phần tên "Nguồn" | **mọi** thành phần kiểu Theo Rule (spec §8) |
+| Chống trùng | trùng khoá `(bom_component, condition_value)` | **overlap thật**: 2 rule cùng phủ 1 biến thể → throw kèm mã biến thể (spec §7.1) |
+| Hiển thị | — | `cond_label` (tóm tắt điều kiện) + `matched_count` + `matched_variants` (cache) |
+| Nút Tạo Rule | sinh sẵn 1 dòng cho mỗi giá trị "Nguồn" | hộp thoại **Chọn Điều Kiện** theo mockup: tick nhiều thuộc tính × nhiều giá trị, đếm biến thể khớp trực tiếp |
+| BOM Component | chỉ `component_name` (tiếng Việt có dấu làm khoá) | thêm `component_code` ASCII (spec §3), patch điền cho 15 bản ghi |
+
+**⚠ Không dùng được phương án A của spec §5.** Spec ưu tiên để `BOM Rule` làm con của
+`BOM Component Table`, nhưng **Frappe không hỗ trợ bảng con lồng 2 cấp**: đã dựng thử và đo được
+`load_from_db` không đệ quy, dòng cháu **không được nạp mà cũng không được ghi xuống DB** (test ra
+0 dòng trong `tabBOM Rule`). Vì vậy dùng **phương án B** — spec §5 và §14 có mô tả sẵn và để ngỏ
+cho người implement chọn: rule nằm ở bảng `bom_rules` của chính `BOM Template`, phân biệt nhau
+bằng `bom_component`.
+
+Patch `migrate_bom_rule_cond_attrs` chuyển dữ liệu cũ: `condition_value` →
+`[{"name": "Nguồn", "values": [<giá trị cũ>]}]`, đổi `parentfield` `bom_rule` → `bom_rules`.
+Dòng nào không có giá trị điều kiện thì **không đoán**, để nguyên và in cảnh báo để rà tay.
+
+**Điểm lệch so với spec, có chủ ý:**
+
+- Spec §5 rút `component_type` còn 2 lựa chọn (Cố Định / Theo Rule). **Giữ nguyên 3 lựa chọn** vì
+  kiểu "Số Lượng Theo Công Thức" chính là kiểu dùng `COMPONENT_MAP` để tính số lượng — bỏ đi là
+  hỏng phần tính số lượng mà chính spec §8 dựa vào.
+- Spec §6b seed 12 thành phần với tên khác (VD "Ốc vít module"). **Giữ 15 bản ghi hiện có** khớp
+  chính xác `COMPONENT_MAP`; seed theo tên spec là vỡ mapping. Đã thêm `component_code` như spec
+  khuyến nghị để về sau tra bằng mã ASCII thay vì tên có dấu.
+- Thành phần Theo Rule **không có** công thức số lượng (VD Bộ vỏ đèn) thì lấy `qty` khai trên dòng
+  thành phần. Chưa khai thì tạm tính **1** nhưng **báo lên giao diện bằng banner cam** — không im
+  lặng, vì số lượng đoán mà không ai biết thì BOM sai âm thầm.
+
+### 2.1d THAY ĐỔI 07/08 (đợt 3) — form BOM tự điền Nguyên Vật Liệu
+
+Yêu cầu của TungDA 11:20: *"xử lý Doctype BOM khi chọn Item thì truy vấn vào BOM Template tìm mặt
+hàng cha, nếu có thì lấy nguyên vật liệu từ BOM Template điền vào Raw Materials, số lượng chạy công
+thức từ Server Script"*.
+
+- `api/bom.py` → `get_template_raw_materials(item_code)` (whitelisted): tra BOM Template đang hoạt
+  động của mặt hàng cha, trả danh sách `{item_code, qty}` đã áp rule + công thức.
+- `controllers/js/bom.js` (hook `doctype_js["BOM"]`): bắt sự kiện đổi **Mặt Hàng**, gọi API rồi điền
+  bảng **Raw Materials**, kích hoạt trigger `item_code` của ERPNext để nó tự lấy đơn vị tính, đơn
+  giá, kho, `bom_no` của bán thành phẩm.
+
+Nguyên tắc khi làm:
+
+- Mặt hàng **không có** BOM Template → **không đụng gì** vào form, giữ nguyên hành vi ERPNext.
+- Bảng đã có dòng nhập tay → **hỏi trước** khi thay, không ghi đè im lặng.
+- Công thức lỗi → **không throw**. Người dùng mới chọn mặt hàng, chưa lưu gì; chặn form ở bước này
+  thì họ không sửa được gì. Trả lỗi về client hiện cảnh báo, để họ nhập tay.
+  ⚠ Phải cắt `frappe.local.message_log` trong khối `except`: `frappe.throw` ghi vào log **trước** khi
+  raise, nuốt exception không thôi thì trình duyệt vẫn hiện nguyên cụm lỗi đỏ.
+
+**Hai cạm bẫy giao diện gặp khi làm, đã xử lý:**
+
+1. **`frappe.msgprint` ra hộp thoại rỗng** khi gọi ngay sau khi điền bảng — lúc đó chuỗi trigger
+   `item_code` của ERPNext vẫn đang chạy và nó dọn hộp thoại msgprint dùng chung. Đổi sang
+   `frm.set_intro()` (banner), vừa hết va chạm vừa hợp lý hơn vì cảnh báo nằm lại trên form.
+2. **`frm.set_intro` NỐI THÊM banner chứ không thay thế** — `Layout.show_message()` dùng
+   `appendTo`, chỉ chuỗi rỗng mới `empty()`. Đổi Mặt Hàng vài lần là chồng một cột banner. Phải gọi
+   `frm.set_intro("")` ở đầu handler. An toàn vì intro của ERPNext trên BOM chỉ đặt khi Mặt Hàng là
+   hàng cha có biến thể, mà trường hợp đó không bao giờ tra ra BOM Template.
+
+### 2.1 DocType `BOM Rule Group` (Nhóm Công Thức) — KHÔNG CÒN DÙNG, xem 2.1b
 
 `mbwnext_hkled/mbwnext_hkled/doctype/bom_rule_group/`
 
@@ -97,9 +195,9 @@ Quyền: System Manager (full), Manufacturing Manager (không delete) — giốn
 
 **Vì sao Link chứ không Select**: thêm nhóm mới = tạo 1 document, **không cần migrate**.
 
-### 2.2 `BOM Template` — thêm `rule_group`
+### 2.2 `BOM Template` — ~~thêm `rule_group`~~ ĐÃ BỎ 07/08
 
-Link → `BOM Rule Group`, `reqd = 1`, `in_standard_filter = 1`, đặt sau `item_template`.
+Field đã gỡ khỏi DocType. Xem 2.1b.
 
 ### 2.3 `BOM Component Table` — 3 loại thành phần
 

@@ -232,6 +232,9 @@ def validate_no_duplicate_employee(wo_doc):
 @frappe.whitelist()
 def recalculate_schedule(work_order):
 	wo = frappe.get_doc("Work Order", work_order)
+	# `frappe.get_doc` KHÔNG tự kiểm quyền, mà bên dưới lại ghi bằng ignore_permissions —
+	# thiếu dòng này thì bất kỳ user đăng nhập nào cũng sửa được lịch của mọi Lệnh sản xuất.
+	wo.check_permission("write")
 
 	if not wo.custom_start_time:
 		frappe.throw(_("Vui lòng nhập Thời Gian Bắt Đầu cho Work Order"))

@@ -11,11 +11,10 @@
   "is_active",
   "column_break_item_template",
   "item_template",
-  "rule_group",
   "section_break_components",
   "bom_component_table",
   "tab_formula",
-  "bom_rule"
+  "bom_rules"
  ],
  "fields": [
   {
@@ -53,15 +52,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "rule_group",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Nhóm Công Thức",
-   "options": "BOM Rule Group",
-   "reqd": 1
-  },
-  {
    "fieldname": "section_break_components",
    "fieldtype": "Section Break",
    "label": "Bảng Thành Phần BOM"
@@ -79,10 +69,11 @@
    "label": "Công Thức Thành Phần"
   },
   {
-   "fieldname": "bom_rule",
+   "fieldname": "bom_rules",
    "fieldtype": "Table",
    "label": "Công Thức BOM",
-   "options": "BOM Rule"
+   "options": "BOM Rule",
+   "description": "Mỗi dòng = 1 điều kiện → 1 nguyên vật liệu. Dùng nút Tạo Rule ở tab Thông Tin Chính để thêm."
   }
  ],
  "grid_page_length": 50,
