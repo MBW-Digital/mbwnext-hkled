@@ -47,6 +47,7 @@ doctype_js = {
 	"BOM": "controllers/js/bom.js",
 	"BOM Template": "controllers/js/bom_template.js",
 	"Production Plan": "controllers/js/production_plan.js",
+	"Sales Order": "controllers/js/sales_order.js",
 	"Employee": "controllers/js/employee.js",
 	"Work Order": "controllers/js/work_order.js",
 	"Other Task": "controllers/js/other_task.js",
@@ -190,7 +191,16 @@ doc_events = {
 	},
 	"Production Plan": {
 		# GAP-4: Thời Điểm Cần Hoàn Thành phải ghép delivery_date + custom_time nên không fetch_from được.
-		"validate": "mbwnext_hkled.controllers.python_hook.production_plan.set_required_completion_time",
+		# PM-TASK-00046: Ghi Chú Sản Xuất cho từng dòng bảng Assembly Items.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.production_plan.set_required_completion_time",
+			"mbwnext_hkled.controllers.python_hook.production_plan.set_item_production_note",
+		],
+	},
+	"Sales Order": {
+		# PM-TASK-00046: Ghi Chú Sản Xuất của đơn chảy xuống dòng hàng còn trống. Phải có ở server
+		# vì client script không chạy khi tạo đơn bằng API / Data Import.
+		"validate": "mbwnext_hkled.controllers.python_hook.sales_order.fill_item_production_note",
 	},
 	"Stock Entry": {
 		# GAP-7: sinh serial theo mã đơn bán khi Finish, thay cho series mặc định.

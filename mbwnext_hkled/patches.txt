@@ -17,3 +17,4 @@ mbwnext_hkled.patches.grant_production_read_on_employee
 mbwnext_hkled.patches.migrate_bom_rule_cond_attrs
 mbwnext_hkled.patches.drop_bom_rule_group
 mbwnext_hkled.patches.cleanup_cancelled_work_order_allocations
+mbwnext_hkled.patches.add_production_note_fields
