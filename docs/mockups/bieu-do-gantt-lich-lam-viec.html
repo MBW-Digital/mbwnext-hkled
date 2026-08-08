@@ -1,0 +1,340 @@
+<meta charset="utf-8">
+<title>Mockup — Biểu đồ tình hình làm việc của nhân sự</title>
+<style>
+  :root{
+    /* màu ngữ nghĩa — KHÔNG đổi nghĩa giữa 2 chế độ, chỉ chỉnh độ sáng */
+    --ban:#c62828; --ban-b:#a01d1d;
+    --ranh:#2e7d32; --ranh-b:#1f5c24;
+    --ot:#1565c0;   --ot-b:#0d47a1;
+    --ngoai:#e9e9ec;
+    /* nền & mực */
+    --bg:#f6f6f8; --card:#fff; --shift:#fff; --ink:#1a1a1f;
+    --muted:#6b6b76; --line:#d8d8de; --line-soft:#f0f0f3;
+    --head:#fafafb; --tick:#e2e2e8; --tick-major:#ccccd6;
+    --demo:#fffdf5; --demo-mark:#b58900;
+    --info-bg:#f0f4ff; --info-line:#ccd8f5;
+    --note-bg:#fffbe9; --note-line:#f0e0a8;
+    --q-bg:#fff4f4;   --q-line:#f2caca;
+    --code:#ececf0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ban:#d3494b; --ban-b:#e2696b;
+      --ranh:#3d8f45; --ranh-b:#57a95f;
+      --ot:#3d84cf;   --ot-b:#5b9de0;
+      --ngoai:#191920;
+      --bg:#141418; --card:#1d1d23; --shift:#2b2b34; --ink:#ececf0;
+      --muted:#9a9aa8; --line:#34343f; --line-soft:#26262e;
+      --head:#232329; --tick:#2e2e38; --tick-major:#3d3d4a;
+      --demo:#26241c; --demo-mark:#d2a72a;
+      --info-bg:#1b2233; --info-line:#2e3c5c;
+      --note-bg:#2a2618; --note-line:#4c4426;
+      --q-bg:#2c1d1d;   --q-line:#553232;
+      --code:#2e2e38;
+    }
+  }
+  /* nút đổi chế độ của trình xem phải thắng cả 2 chiều */
+  :root[data-theme="light"]{
+    --ban:#c62828; --ban-b:#a01d1d; --ranh:#2e7d32; --ranh-b:#1f5c24;
+    --ot:#1565c0; --ot-b:#0d47a1; --ngoai:#e9e9ec;
+    --bg:#f6f6f8; --card:#fff; --shift:#fff; --ink:#1a1a1f;
+    --muted:#6b6b76; --line:#d8d8de; --line-soft:#f0f0f3;
+    --head:#fafafb; --tick:#e2e2e8; --tick-major:#ccccd6;
+    --demo:#fffdf5; --demo-mark:#b58900;
+    --info-bg:#f0f4ff; --info-line:#ccd8f5;
+    --note-bg:#fffbe9; --note-line:#f0e0a8;
+    --q-bg:#fff4f4; --q-line:#f2caca; --code:#ececf0;
+  }
+  :root[data-theme="dark"]{
+    --ban:#d3494b; --ban-b:#e2696b; --ranh:#3d8f45; --ranh-b:#57a95f;
+    --ot:#3d84cf; --ot-b:#5b9de0; --ngoai:#191920;
+    --bg:#141418; --card:#1d1d23; --shift:#2b2b34; --ink:#ececf0;
+    --muted:#9a9aa8; --line:#34343f; --line-soft:#26262e;
+    --head:#232329; --tick:#2e2e38; --tick-major:#3d3d4a;
+    --demo:#26241c; --demo-mark:#d2a72a;
+    --info-bg:#1b2233; --info-line:#2e3c5c;
+    --note-bg:#2a2618; --note-line:#4c4426;
+    --q-bg:#2c1d1d; --q-line:#553232; --code:#2e2e38;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--bg);color:var(--ink);
+       font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:14px}
+  .wrap{max-width:1400px;margin:0 auto}
+  h1{font-size:23px;margin:0 0 4px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:18px}
+  .bar-top{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;margin-bottom:6px}
+  .fld{display:flex;flex-direction:column;gap:5px}
+  .fld label{font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  input[type=date]{padding:6px 9px;border:1px solid var(--line);border-radius:6px;font-size:14px;
+                   font-family:inherit;background:var(--card);color:var(--ink);color-scheme:light dark}
+  .teams{display:flex;gap:14px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+  .teams label{display:flex;gap:6px;align-items:center;font-size:14px;color:var(--ink);
+               font-weight:400;text-transform:none;letter-spacing:0;cursor:pointer}
+  .hint{color:var(--muted);font-size:12px;margin-left:2px;text-transform:none;letter-spacing:0;font-weight:400}
+  :focus-visible{outline:2px solid var(--ot);outline-offset:2px}
+
+  .chart{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin-top:14px}
+  .grid{min-width:1080px}
+  .row{display:flex;align-items:stretch;border-bottom:1px solid var(--line-soft)}
+  .row:last-child{border-bottom:0}
+  .row.head{background:var(--head);position:sticky;top:0;z-index:2}
+  .who{width:220px;min-width:220px;padding:10px 12px;border-right:1px solid var(--line);background:var(--card)}
+  .row.head .who{background:var(--head)}
+  .who .nm{font-weight:600}
+  .who .mt{font-size:12px;color:var(--muted);margin-top:2px}
+  .track{position:relative;flex:1;height:52px;background:var(--ngoai)}
+  .row.head .track{height:34px;background:var(--head)}
+  .tick{position:absolute;top:0;bottom:0;border-left:1px solid var(--tick)}
+  .tick.major{border-left-color:var(--tick-major)}
+  .tlabel{position:absolute;top:9px;font-size:11px;color:var(--muted);transform:translateX(-50%);
+          font-variant-numeric:tabular-nums}
+  .seg{position:absolute;top:9px;height:34px;border-radius:5px;display:flex;align-items:center;
+       justify-content:center;color:#fff;font-size:11.5px;font-weight:600;overflow:hidden;
+       white-space:nowrap;padding:0 6px;cursor:default}
+  .seg.ban{background:var(--ban);border:1px solid var(--ban-b);cursor:pointer}
+  .seg.ranh{background:var(--ranh);border:1px solid var(--ranh-b)}
+  .seg.ranh.ot{background:var(--ot);border-color:var(--ot-b)}
+  .seg.tiny{font-size:0}
+  .demo .who{background:var(--demo)}
+  .demo .who .nm::after{content:" ✱";color:var(--demo-mark)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:13px;align-items:center}
+  .lg{display:flex;gap:7px;align-items:center}
+  .sw{width:22px;height:13px;border-radius:3px;display:inline-block}
+  .info{margin-top:12px;padding:9px 12px;background:var(--info-bg);border:1px solid var(--info-line);
+        border-radius:6px;font-size:13px;min-height:20px}
+  .note{background:var(--note-bg);border-color:var(--note-line)}
+  .card h3{margin:0 0 8px;font-size:15px}
+  .card ul{margin:0;padding-left:20px}
+  .card li{margin-bottom:7px;line-height:1.55}
+  .q{background:var(--q-bg);border-color:var(--q-line)}
+  code{background:var(--code);padding:1px 5px;border-radius:3px;font-size:12.5px}
+</style>
+
+<div class="wrap">
+  <h1>Tình hình làm việc của nhân sự</h1>
+  <p class="sub">Mockup chốt giao diện — HKLED · PM-FEAT-00009 · bản 08/08/2026 (lần 2, đã theo C2)</p>
+
+  <div class="card">
+    <div class="bar-top">
+      <div class="fld">
+        <label>Chọn ngày xem</label>
+        <input type="date" id="ngay" value="2026-07-29">
+      </div>
+      <div class="fld">
+        <label>Lọc theo Đội Sản Xuất <span class="hint">(chọn nhiều · không chọn = hiện tất cả)</span></label>
+        <div class="teams" id="teams"></div>
+      </div>
+    </div>
+
+    <div class="chart">
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="legend">
+      <span class="lg"><i class="sw" style="background:var(--ban)"></i> Đang làm Lệnh sản xuất</span>
+      <span class="lg"><i class="sw" style="background:var(--ranh)"></i> Rảnh (trong ca, chưa có việc)</span>
+      <span class="lg"><i class="sw" style="background:var(--ot)"></i> Rảnh trong ca tăng ca</span>
+      <span class="lg"><i class="sw" style="background:var(--ngoai);border:1px solid var(--line)"></i> Ngoài ca làm việc / nghỉ trưa</span>
+      <span class="lg">✱ = dòng dữ liệu minh hoạ, không có thật trên hệ thống</span>
+    </div>
+
+    <div class="info" id="info">Đưa chuột lên một thanh để xem chi tiết. Bấm thanh đỏ sẽ mở Lệnh sản xuất tương ứng.</div>
+  </div>
+
+  <div class="card note">
+    <h3>Đọc giúp em trước khi duyệt</h3>
+    <ul>
+      <li><b>Ba dòng đầu là dữ liệu THẬT</b> trên hệ thống ngày 29/07/2026, không phải vẽ tay. Hai dòng
+        có dấu ✱ là minh hoạ thêm cho những trạng thái mà ngày 29/07 chưa có (rảnh, tăng ca, người
+        không có lịch).</li>
+      <li><b>Anh A</b> làm lệnh <code>MFG-WO-2026-00004</code> cả ngày, nhưng thanh đỏ <b>bị ngắt ở
+        11:45–13:15</b>. Trong dữ liệu gốc đây là <u>một</u> bản ghi phân công liền mạch 08:00→17:00;
+        biểu đồ tự cắt phần nghỉ trưa ra vì lúc đó không có ca làm việc. Anh xác nhận giúp cách hiểu
+        này đúng ạ.</li>
+      <li><b>Anh B</b> ngày 29/07 chỉ có ca chiều, nên cả buổi sáng để xám — <u>không</u> phải rảnh.
+        Phân công của anh B ở lệnh 00004 thực tế chạy tới tận 08:28 sáng hôm sau; xem ngày 29/07 thì
+        chỉ hiện phần thuộc ngày 29/07.</li>
+      <li><b>Trục giờ cố định 08:00–24:00</b> theo anh chốt ở C3. Ảnh anh gửi ban đầu là 08:00–22:00,
+        em làm theo câu trả lời mới nhất.</li>
+      <li><b>Lệnh sản xuất đã huỷ không còn xuất hiện</b> (C6). Riêng ngày 29/07 nếu tính cả lệnh đã
+        huỷ thì anh A và anh C sẽ bị vẽ thêm 2 thanh đỏ không có thật.</li>
+    </ul>
+  </div>
+
+  <div class="card q">
+    <h3>Đã chốt sau khi anh xem bản trước (C2)</h3>
+    <ul>
+      <li><b>Chỉ hiện nhân sự có Loại Nhân Sự = "Công nhân"</b> (anh chốt 08/08 11:21). Bản mockup
+        trước có thêm dòng <i>Lê Thị F — Kế toán</i> để anh thấy hệ quả; <b>dòng đó đã bỏ khỏi bản
+        này</b>. Bán hàng và Kế toán sẽ không xuất hiện trên biểu đồ.</li>
+      <li><b>Người không có lịch hôm đó vẫn hiện</b> (anh chốt 08/08 11:23) — xem dòng
+        <b>Trần Văn E</b>, hiện đủ tên và bậc thợ, phần thời gian để xám toàn bộ kèm chú thích
+        <i>"Không có lịch làm việc trong ngày này"</i>.</li>
+      <li>Nếu anh thấy đúng như hình thì em vào code. Còn chỗ nào chưa ưng thì anh nói, sửa mockup
+        vẫn rẻ hơn sửa sau khi đã làm xong.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const T0 = 8*60, T1 = 24*60;            // trục cố định 08:00 -> 24:00 (chốt C3)
+const SPAN = T1 - T0;
+const m = s => { const [h,mi] = s.split(":").map(Number); return h*60+mi; };
+const short = wo => wo.replace(/^MFG-WO-\d{4}-/, "WO-");   // MFG-WO-2026-00004 -> WO-00004
+
+// ── Dữ liệu ────────────────────────────────────────────────────────────────
+// 3 dòng đầu: LẤY THẬT từ site hkled.com, ngày 2026-07-29 (Employee Schedule ∩ Employee Allocation)
+// 3 dòng ✱  : minh hoạ các trạng thái ngày 29/07 chưa có
+const ROWS = [
+  { ten:"Anh A", bac:"Bậc 7", doi:"Đội 1", loai:"Công nhân", that:true,
+    ca:[["08:00","11:45"],["13:15","17:00"]],
+    segs:[
+      {l:"ban", tu:"08:00", den:"11:45", wo:"MFG-WO-2026-00004", item:"Thành phẩm 1", qty:100, tt:"Nháp"},
+      {l:"ban", tu:"13:15", den:"17:00", wo:"MFG-WO-2026-00004", item:"Thành phẩm 1", qty:100, tt:"Nháp"},
+    ]},
+  { ten:"Anh B", bac:"Bậc 7", doi:"Đội 1", loai:"Công nhân", that:true,
+    ca:[["13:15","17:00"]],
+    segs:[
+      {l:"ban", tu:"13:15", den:"17:00", wo:"MFG-WO-2026-00004", item:"Thành phẩm 1", qty:100, tt:"Nháp",
+       ghi:"Phân công thật kéo tới 08:28 ngày 30/07 — phần còn lại hiện ở ngày hôm sau"},
+    ]},
+  { ten:"Anh C", bac:"Bậc 6", doi:"Đội 1", loai:"Công nhân", that:true,
+    ca:[["08:00","11:45"],["13:15","17:00"]],
+    segs:[
+      {l:"ban", tu:"08:00", den:"10:00", wo:"MFG-WO-2026-00001", item:"Thành phẩm 1", qty:10.8, tt:"Chưa bắt đầu"},
+      {l:"ban", tu:"10:00", den:"11:45", wo:"MFG-WO-2026-00004", item:"Thành phẩm 1", qty:100, tt:"Nháp"},
+      {l:"ban", tu:"13:15", den:"17:00", wo:"MFG-WO-2026-00004", item:"Thành phẩm 1", qty:100, tt:"Nháp"},
+    ]},
+
+  { ten:"Nguyễn Văn D", bac:"Bậc 5", doi:"Đội 2", loai:"Công nhân", that:false,
+    ca:[["08:00","11:45"],["13:15","17:00"],["18:00","21:00"]],
+    segs:[
+      {l:"ranh", tu:"08:00", den:"11:45"},
+      {l:"ban",  tu:"13:15", den:"15:30", wo:"MFG-WO-2026-00009", item:"Thành phẩm 2", qty:40, tt:"Đang sản xuất"},
+      {l:"ranh", tu:"15:30", den:"17:00"},
+      {l:"ranh", tu:"18:00", den:"21:00", ot:true},
+    ]},
+  { ten:"Trần Văn E", bac:"Bậc 3", doi:"—", loai:"Công nhân", that:false, ca:[], segs:[] },
+  // Dòng "Lê Thị F — Kế toán" đã BỎ: chốt C2 ngày 08/08 11:21, biểu đồ chỉ hiện Loại Nhân Sự
+  // = "Công nhân". Chính dòng đó trong bản mockup trước là thứ làm lộ ra quyết định này.
+];
+const DOI = ["Đội 1", "Đội 2"];
+
+// ── Vẽ ─────────────────────────────────────────────────────────────────────
+const pct = mins => ((mins - T0) / SPAN * 100);
+const info = document.getElementById("info");
+const say  = t => info.textContent = t;
+
+function ticks(track, withLabel){
+  for (let h = 8; h <= 24; h++){
+    const left = pct(h*60);
+    const d = document.createElement("div");
+    d.className = "tick" + (h % 2 === 0 ? " major" : "");
+    d.style.left = left + "%";
+    track.appendChild(d);
+    if (withLabel){
+      const l = document.createElement("div");
+      l.className = "tlabel";
+      l.style.left = left + "%";
+      l.textContent = (h === 24 ? "24" : String(h).padStart(2,"0")) + ":00";
+      track.appendChild(l);
+    }
+  }
+}
+
+function render(){
+  const chon = [...document.querySelectorAll("#teams input:checked")].map(i => i.value);
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  const head = document.createElement("div");
+  head.className = "row head";
+  head.innerHTML = '<div class="who"><div class="nm">Nhân sự</div></div>';
+  const ht = document.createElement("div");
+  ht.className = "track";
+  ticks(ht, true);
+  head.appendChild(ht);
+  grid.appendChild(head);
+
+  const hien = ROWS.filter(r => chon.length === 0 || chon.includes(r.doi));
+  if (!hien.length){
+    const e = document.createElement("div");
+    e.className = "row";
+    e.innerHTML = '<div style="padding:16px;color:var(--muted)">Không có nhân sự nào thuộc đội đã chọn.</div>';
+    grid.appendChild(e);
+    return;
+  }
+
+  hien.forEach(r => {
+    const row = document.createElement("div");
+    row.className = "row" + (r.that ? "" : " demo");
+
+    const who = document.createElement("div");
+    who.className = "who";
+    who.innerHTML = `<div class="nm">${r.ten}</div>
+      <div class="mt">${r.bac} · ${r.doi}${r.loai !== "Công nhân" ? " · <b>"+r.loai+"</b>" : ""}</div>`;
+    row.appendChild(who);
+
+    const track = document.createElement("div");
+    track.className = "track";
+
+    // nền ca làm việc: phần nào có ca thì bỏ màu xám ngoài-ca đi
+    r.ca.forEach(([a,b]) => {
+      const bg = document.createElement("div");
+      bg.style.cssText = `position:absolute;top:0;bottom:0;background:var(--shift);
+        left:${pct(m(a))}%;width:${(m(b)-m(a))/SPAN*100}%`;
+      track.appendChild(bg);
+    });
+
+    ticks(track, false);   // vẽ vạch giờ SAU nền ca, không thì bị nền che mất
+
+    r.segs.forEach(s => {
+      const w = (m(s.den) - m(s.tu)) / SPAN * 100;
+      const el = document.createElement("div");
+      el.className = "seg " + s.l + (s.ot ? " ot" : "") + (w < 4 ? " tiny" : "");
+      el.style.left = pct(m(s.tu)) + "%";
+      el.style.width = w + "%";
+      // Nhãn rút gọn dần theo bề rộng thanh — thanh hẹp mà nhồi nhãn dài thì bị
+      // cắt cụt giữa chừng, đọc còn khó hơn là không ghi. Chi tiết đầy đủ luôn
+      // có ở dòng thông tin bên dưới khi đưa chuột lên.
+      el.textContent = s.l === "ban"
+        ? (w >= 20 ? `${short(s.wo)} (${s.tu} – ${s.den})`
+          : w >= 11 ? `${short(s.wo)} · ${s.tu}`
+          : short(s.wo))
+        : (s.ot
+          ? (w >= 16 ? `Tăng ca: Rảnh (${s.tu} – ${s.den})` : "Tăng ca: Rảnh")
+          : (w >= 14 ? `Rảnh (${s.tu} – ${s.den})` : "Rảnh"));
+
+      el.onmouseenter = () => say(s.l === "ban"
+        ? `${r.ten} · ${s.wo} · ${s.item} × ${s.qty} · ${s.tt} · ${s.tu}–${s.den}` + (s.ghi ? ` — ${s.ghi}` : "")
+        : `${r.ten} · rảnh ${s.tu}–${s.den}${s.ot ? " (ca tăng ca)" : ""}`);
+      if (s.l === "ban")
+        el.onclick = () => say(`→ Sẽ mở Lệnh sản xuất ${s.wo}. (Mockup nên chưa mở thật)`);
+      track.appendChild(el);
+    });
+
+    if (!r.ca.length){
+      const n = document.createElement("div");
+      n.style.cssText = "position:absolute;left:10px;top:17px;font-size:12px;color:var(--muted)";
+      n.textContent = "Không có lịch làm việc trong ngày này";
+      track.appendChild(n);
+    }
+
+    row.appendChild(track);
+    grid.appendChild(row);
+  });
+}
+
+const tw = document.getElementById("teams");
+DOI.forEach(d => {
+  const l = document.createElement("label");
+  l.innerHTML = `<input type="checkbox" value="${d}"> ${d}`;
+  tw.appendChild(l);
+});
+tw.onchange = render;
+document.getElementById("ngay").onchange = e =>
+  say(`Mockup chỉ dựng sẵn dữ liệu ngày 29/07/2026 — đổi sang ${e.target.value} sẽ có dữ liệu thật khi làm xong.`);
+render();
+</script>

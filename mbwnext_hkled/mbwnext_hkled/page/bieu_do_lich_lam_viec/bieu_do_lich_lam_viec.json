@@ -1,0 +1,29 @@
+{
+ "content": null,
+ "creation": "2026-08-08 12:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-08-08 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "MBWNext HKLed",
+ "name": "bieu-do-lich-lam-viec",
+ "owner": "Administrator",
+ "page_name": "Tình hình làm việc của nhân sự",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Manufacturing Manager"
+  },
+  {
+   "role": "Manufacturing User"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Tình hình làm việc của nhân sự"
+}
