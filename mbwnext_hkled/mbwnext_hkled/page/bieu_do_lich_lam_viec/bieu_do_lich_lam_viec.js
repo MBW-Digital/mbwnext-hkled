@@ -212,9 +212,19 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 				d.so_luong == null
 					? null
 					: format_number(d.so_luong, null, Number.isInteger(d.so_luong) ? 0 : 2);
+			// PM-TASK-00051: thêm Khách Hàng và Nhân Viên Bán Hàng.
+			// Lệnh tạo tay (không gắn Đơn Bán Hàng) thì hai trường này trống — bỏ hẳn dòng thay vì
+			// hiện nhãn với giá trị rỗng, để tooltip không dài ra vì mấy dòng không có nội dung.
+			//
+			// ⚠ Nhãn viết ĐÚNG như nhãn trường trên Lệnh sản xuất: "Khách Hàng", "Nhân Viên Bán Hàng".
+			// Chuỗi "Khách hàng" (chữ h thường) có bản dịch sang tiếng Anh do một app MBWNext khác
+			// ship, mà site này chạy `lang = en`, nên `__()` trả về "Customer" và tooltip thành nửa
+			// Anh nửa Việt. Viết tiếng Việt trong mã nguồn thì phải nhớ `__()` vẫn tra bảng dịch.
 			const chi_tiet = [
 				`${ns.ten} · ${d.work_order}`,
 				d.mat_hang ? `${d.mat_hang} × ${sl}` : null,
+				d.khach_hang ? `${__("Khách Hàng")}: ${d.khach_hang}` : null,
+				d.nhan_vien_ban ? `${__("Nhân Viên Bán Hàng")}: ${d.nhan_vien_ban}` : null,
 				d.trang_thai ? __(d.trang_thai) : null,
 				`${d.tu} – ${d.den}${d.ca ? " · " + d.ca : ""}`,
 			]

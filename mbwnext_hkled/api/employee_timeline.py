@@ -124,13 +124,23 @@ def get_timeline(date=None, work_teams=None):
 
 	# Thông tin Lệnh sản xuất để hiện khi rê chuột. get_list để tôn trọng quyền: người không được
 	# xem Lệnh sản xuất thì chỉ thấy mã, không thấy mặt hàng/số lượng.
+	#
+	# PM-TASK-00051: thêm Khách Hàng và Nhân Viên Bán Hàng. Hai trường này đã có sẵn trên Work Order
+	# từ PM-TASK-00050 nên chỉ cần đọc thêm, KHÔNG truy ngược sang Đơn Bán Hàng.
 	ma_lenh = list({p.work_order for p in phan_cong if p.work_order})
 	thong_tin_lenh = {}
 	if ma_lenh:
 		for wo in frappe.get_list(
 			"Work Order",
 			filters={"name": ["in", ma_lenh]},
-			fields=["name", "production_item", "qty", "status"],
+			fields=[
+				"name",
+				"production_item",
+				"qty",
+				"status",
+				"custom_customer",
+				"custom_sales_person",
+			],
 			limit_page_length=0,
 		):
 			thong_tin_lenh[wo.name] = wo
@@ -184,6 +194,8 @@ def get_timeline(date=None, work_teams=None):
 					mat_hang=wo.get("production_item"),
 					so_luong=wo.get("qty"),
 					trang_thai=wo.get("status"),
+					khach_hang=wo.get("custom_customer"),
+					nhan_vien_ban=wo.get("custom_sales_person"),
 					ca=ca.shift_type,
 				)
 				if d:
