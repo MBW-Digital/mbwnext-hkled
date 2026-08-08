@@ -34,6 +34,10 @@ Ca Sáng 08:00–11:45, Ca Chiều 13:15–17:00.
 | TC-HAPPY-07 | Bấm thanh đỏ mở Lệnh sản xuất | Bấm thanh của Anh A | Chuyển sang form `MFG-WO-2026-00004` | Pass (**giao diện**) | Pass |
 | TC-HAPPY-08 | Lọc theo đội | Tích **Đội 1** | Vẫn đủ 3 người (cả 3 thuộc Đội 1) | Pass (**giao diện**) | Pass |
 | TC-HAPPY-09 | Bỏ hết tích = hiện tất cả | Bỏ tích Đội 1 | Quay lại hiện đủ 3 người | Pass (**giao diện**) | Pass |
+| TC-HAPPY-11 | **PM-TASK-00051** — tooltip có Khách hàng và NV bán hàng | Rê lên thanh đỏ của lệnh **có gắn Đơn Bán Hàng** | Thêm 2 dòng *Khách hàng: …* và *NV bán hàng: …*, nằm giữa dòng mặt hàng và dòng trạng thái | Pass | Pass |
+| TC-HAPPY-12 | **PM-TASK-00053** — chọn khoảng nhiều ngày | Đặt **Từ ngày** 29/07, **Đến ngày** 31/07 | Trục chia thành 3 dải ngày có nhãn `29/07 · 30/07 · 31/07`, mỗi dải vẫn là khung 08:00–24:00 | Pass — trục 0–2880 phút, đoạn của 30/07 nằm đúng dải thứ hai (**giao diện**) | Pass |
+| TC-HAPPY-13 | **PM-TASK-00053** — cột rảnh/tổng (%) | Xem cột **Rảnh** bên trái mỗi dòng | Hiện `%` kèm `rảnh / tổng phút` theo đúng khoảng đang lọc | Pass — 3 ngày: Anh A `41% · 371/900`, Anh B `55% · 371/675` (**giao diện**) | Pass |
+| TC-HAPPY-14 | **PM-TASK-00053** — biểu đồ co vừa màn hình | Chọn khoảng 8 ngày rồi 31 ngày | **Không** có thanh cuộn ngang | Pass — `scrollWidth = clientWidth` ở cả 8 và 31 ngày (**giao diện**) | Pass |
 
 ## TC-VALID — kiểm tra dữ liệu
 
@@ -41,6 +45,7 @@ Ca Sáng 08:00–11:45, Ca Chiều 13:15–17:00.
 |---|---|---|---|---|---|
 | TC-VALID-01 | Không có tham số ngày | Gọi `get_timeline()` không truyền `date` | Lấy **hôm nay**, không báo lỗi | Pass (API) | Pass |
 | TC-VALID-02 | Trục giờ cố định | Đọc `truc_tu` / `truc_den` | **480 / 1440** phút = 08:00–24:00, không đổi theo dữ liệu | Pass (API) | Pass |
+| TC-VALID-03 | **PM-TASK-00053** — khoảng quá dài | Gọi API với khoảng 365 ngày | Chặn kèm câu nêu rõ giới hạn | Pass — *"Khoảng ngày tối đa là 31 ngày. Đang chọn 365 ngày."* (API server) | Pass |
 
 ## TC-EDGE — biên & ngoại lệ
 
@@ -52,6 +57,9 @@ Ca Sáng 08:00–11:45, Ca Chiều 13:15–17:00.
 | TC-EDGE-04 | Phân công trải nhiều ngày | Xem 29/07 dòng Anh B (phân công thật chạy tới 08:28 hôm sau) | Chỉ vẽ phần thuộc ngày đang xem, **không** tràn sang cột đêm | Pass (**giao diện**) | Pass |
 | TC-EDGE-05 | Nhãn trên thanh hẹp | Xem thanh `10:00–11:45` của Anh C | Nhãn rút gọn còn `WO-00004` thay vì bị cắt cụt giữa chừng; chi tiết đầy đủ vẫn có khi rê chuột | Pass (**giao diện**) | Pass |
 | TC-EDGE-06 | Số lượng trong tooltip | Rê lên thanh của lệnh có qty = 100 | Hiện **`× 100`** | ⚠ Vòng đầu **Fail**: hiện `× 100,000` do site để 3 chữ số thập phân, dễ đọc nhầm thành một trăm nghìn. Đã bỏ phần thập phân khi là số nguyên; chạy lại ra `× 100` (**giao diện**) | Pass |
+| TC-EDGE-07 | **PM-TASK-00051** — lệnh không gắn Đơn Bán Hàng | Rê lên thanh đỏ của lệnh tạo tay | **Bỏ hẳn** 2 dòng đó, không hiện nhãn với giá trị rỗng | Pass — API trả `null`, tooltip chỉ còn 4 dòng như cũ | Pass |
+| TC-EDGE-08 | **PM-TASK-00053** — khoảng càng dài, nhãn giờ càng thưa | Lần lượt 1 · 3 · 7 · 8 ngày | 1 ngày: nhãn mỗi giờ · 2–3 ngày: mỗi 2 giờ · 4–7 ngày: mỗi 4 giờ · trên 7 ngày: **chỉ còn nhãn ngày** | Pass (**giao diện**) | Pass |
+| TC-EDGE-09 | **PM-TASK-00053** — chọn Từ ngày muộn hơn Đến ngày | Đặt Từ ngày = 31/07 khi Đến ngày = 29/07 | Kéo đầu kia theo cho bằng, **không** báo lỗi | Pass — người dùng gần như luôn muốn dời cả khoảng chứ không phải nhập sai (**giao diện**) | Pass |
 
 ## TC-PERM — phân quyền
 
@@ -116,7 +124,7 @@ Chưa chốt thì để nguyên phương án 1 (mặc định hiện tại).
 
 ## Kết luận
 
-- Tổng: **23** — Pass: **22** — Fail: **0** — Cần quyết định: **1** (TC-PERM-03)
+- Tổng: **31** — Pass: **30** — Fail: **0** — Cần quyết định: **1** (TC-PERM-03)
 - **Cập nhật 08/08 (vòng 2):** đã dựng 2 tài khoản bị giới hạn quyền và chạy nốt 2 ca còn treo.
   `TC-PERM-02` **Pass** — không rò rỉ nhân sự ngoài quyền, cả ở biểu đồ lẫn hộp thoại Thêm Đội Sản
   Xuất. `TC-PERM-03` ra hành vi khác dự đoán ban đầu, không phải lỗi code nhưng cần HKLED chọn

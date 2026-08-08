@@ -1,4 +1,4 @@
-// Biểu đồ tình hình làm việc của nhân sự — PM-FEAT-00009.
+// Biểu đồ tình hình làm việc của nhân sự — PM-FEAT-00009, PM-TASK-00051, PM-TASK-00053.
 //
 // Trang CHỈ ĐỌC: không sửa dữ liệu, không kéo thả. Mọi thay đổi lịch phải đi qua nút
 // "Tính Lại Lịch" trên Lệnh sản xuất — kéo thả trực tiếp sẽ làm Lệnh sản xuất lệch khỏi
@@ -20,7 +20,8 @@ frappe.provide("mbwnext_hkled");
 mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 	constructor(page) {
 		this.page = page;
-		this.ngay = frappe.datetime.get_today();
+		this.tu_ngay = frappe.datetime.get_today();
+		this.den_ngay = this.tu_ngay;
 		this.doi_chon = [];
 		this.dung_bo_loc();
 		this.tai_doi().then(() => this.tai());
@@ -31,8 +32,12 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 			<div class="hkled-tl">
 				<div class="hkled-tl-thanh">
 					<div class="hkled-tl-o">
-						<label>${__("Chọn ngày xem")}</label>
-						<div class="hkled-tl-ngay"></div>
+						<label>${__("Từ ngày")}</label>
+						<div class="hkled-tl-tu"></div>
+					</div>
+					<div class="hkled-tl-o">
+						<label>${__("Đến ngày")}</label>
+						<div class="hkled-tl-den"></div>
 					</div>
 					<div class="hkled-tl-o">
 						<label>${__("Lọc theo Đội Sản Xuất")}
@@ -55,25 +60,40 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 			</div>
 		`).appendTo(this.page.main);
 
-		this.o_ngay = frappe.ui.form.make_control({
-			parent: this.$noi_dung.find(".hkled-tl-ngay"),
+		this.o_tu = this.tao_o_ngay(".hkled-tl-tu", "tu_ngay");
+		this.o_den = this.tao_o_ngay(".hkled-tl-den", "den_ngay");
+		this.page.set_secondary_action(__("Tải lại"), () => this.tai(), "refresh");
+	}
+
+	tao_o_ngay(selector, thuoc_tinh) {
+		const ctrl = frappe.ui.form.make_control({
+			parent: this.$noi_dung.find(selector),
 			df: {
 				fieldtype: "Date",
-				fieldname: "ngay",
-				default: this.ngay,
+				fieldname: thuoc_tinh,
+				default: this[thuoc_tinh],
 				change: () => {
-					const v = this.o_ngay.get_value();
-					if (v && v !== this.ngay) {
-						this.ngay = v;
-						this.tai();
+					const v = ctrl.get_value();
+					if (!v || v === this[thuoc_tinh]) return;
+					this[thuoc_tinh] = v;
+					// Chọn "Từ ngày" muộn hơn "Đến ngày" thì kéo đầu kia theo, thay vì báo lỗi —
+					// người dùng gần như luôn muốn dời cả khoảng chứ không phải nhập sai.
+					if (this.tu_ngay > this.den_ngay) {
+						if (thuoc_tinh === "tu_ngay") {
+							this.den_ngay = this.tu_ngay;
+							this.o_den.set_value(this.den_ngay);
+						} else {
+							this.tu_ngay = this.den_ngay;
+							this.o_tu.set_value(this.tu_ngay);
+						}
 					}
+					this.tai();
 				},
 			},
 			render_input: true,
 		});
-		this.o_ngay.set_value(this.ngay);
-
-		this.page.set_secondary_action(__("Tải lại"), () => this.tai(), "refresh");
+		ctrl.set_value(this[thuoc_tinh]);
+		return ctrl;
 	}
 
 	tai_doi() {
@@ -106,40 +126,77 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 		frappe.dom.freeze();
 		frappe
 			.xcall("mbwnext_hkled.api.employee_timeline.get_timeline", {
-				date: this.ngay,
+				from_date: this.tu_ngay,
+				to_date: this.den_ngay,
 				work_teams: JSON.stringify(this.doi_chon),
 			})
 			.then((r) => this.ve(r))
 			.finally(() => frappe.dom.unfreeze());
 	}
 
-	// Vị trí theo phần trăm của trục: dùng % chứ không dùng px để biểu đồ tự co theo bề rộng
-	// màn hình mà không phải tính lại khi đổi kích thước cửa sổ.
+	// Vị trí theo phần trăm: biểu đồ tự co theo bề rộng màn hình mà không phải tính lại khi
+	// đổi kích thước cửa sổ.
 	pct(phut) {
 		return ((phut - this.truc_tu) / (this.truc_den - this.truc_tu)) * 100;
 	}
 
+	/** Vạch giờ trong từng ngày. Khoảng càng dài thì càng thưa, không thì vạch dính vào nhau. */
 	vach_gio($dai, co_nhan) {
-		for (let h = Math.ceil(this.truc_tu / 60); h <= this.truc_den / 60; h++) {
-			const trai = this.pct(h * 60);
-			$(`<div class="hkled-tl-vach" style="left:${trai}%"></div>`).appendTo($dai);
-			if (co_nhan) {
-				const nhan = `${String(h === 24 ? 24 : h).padStart(2, "0")}:00`;
-				$(`<div class="hkled-tl-gio" style="left:${trai}%">${nhan}</div>`).appendTo($dai);
+		const buoc = this.so_ngay <= 1 ? 1 : this.so_ngay <= 3 ? 2 : this.so_ngay <= 7 ? 4 : 0;
+		if (!buoc) return;
+		this.cac_ngay.forEach((ng) => {
+			for (let h = this.gio_tu / 60; h <= this.gio_den / 60; h += buoc) {
+				const phut = ng.tu_phut + h * 60 - this.gio_tu;
+				if (phut > ng.den_phut) break;
+				const trai = this.pct(phut);
+				$(`<div class="hkled-tl-vach" style="left:${trai}%"></div>`).appendTo($dai);
+				// Nhiều ngày: bỏ nhãn 24:00 vì nó nằm chồng đúng lên nhãn 08:00 của ngày kế tiếp.
+				// Vạch ngăn ngày đã đủ cho biết ranh giới.
+				if (co_nhan && !(this.so_ngay > 1 && h === this.gio_den / 60)) {
+					const nhan = String(h === 24 ? 24 : h).padStart(2, "0") + ":00";
+					const can = trai < 1 ? " can-trai" : trai > 99 ? " can-phai" : "";
+					$(`<div class="hkled-tl-gio${can}" style="left:${trai}%">${nhan}</div>`).appendTo($dai);
+				}
 			}
-		}
+		});
+	}
+
+	/** Vạch ngăn giữa hai ngày + nhãn ngày. Chỉ vẽ khi xem nhiều hơn một ngày. */
+	vach_ngay($dai, co_nhan) {
+		if (this.so_ngay <= 1) return;
+		this.cac_ngay.forEach((ng, i) => {
+			if (i > 0) {
+				$(`<div class="hkled-tl-vach-ngay" style="left:${this.pct(ng.tu_phut)}%"></div>`).appendTo(
+					$dai
+				);
+			}
+			if (co_nhan) {
+				const giua = this.pct((ng.tu_phut + ng.den_phut) / 2);
+				$(`<div class="hkled-tl-nhan-ngay" style="left:${giua}%">${ng.nhan}</div>`).appendTo($dai);
+			}
+		});
 	}
 
 	ve(dl) {
 		this.truc_tu = dl.truc_tu;
 		this.truc_den = dl.truc_den;
+		this.so_ngay = dl.so_ngay;
+		this.cac_ngay = dl.cac_ngay;
+		this.gio_tu = dl.gio_tu;
+		this.gio_den = dl.gio_den;
+
+		this.$noi_dung.find(".hkled-tl-khung").toggleClass("nhieu-ngay", this.so_ngay > 1);
 
 		const $luoi = this.$noi_dung.find(".hkled-tl-luoi").empty();
 
-		const $dau = $(`<div class="hkled-tl-dong dau">
+		// Nhiều ngày thì hàng đầu ưu tiên nhãn NGÀY; nhãn giờ chỉ còn ý nghĩa khi khoảng đủ ngắn.
+		const $dau = $(`<div class="hkled-tl-dong dau${this.so_ngay > 1 ? " co-ngay" : ""}">
 			<div class="hkled-tl-ten"><div class="nm">${__("Nhân sự")}</div></div>
+			<div class="hkled-tl-ranh"><div class="pct">${__("Rảnh")}</div></div>
 			<div class="hkled-tl-dai"></div></div>`).appendTo($luoi);
-		this.vach_gio($dau.find(".hkled-tl-dai"), true);
+		const $dai_dau = $dau.find(".hkled-tl-dai");
+		this.vach_gio($dai_dau, this.so_ngay <= 3);
+		this.vach_ngay($dai_dau, true);
 
 		if (!dl.nhan_su.length) {
 			$(`<div class="hkled-tl-dong"><div style="padding:16px" class="text-muted">${__(
@@ -148,34 +205,60 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 			return;
 		}
 
-		dl.nhan_su.forEach((ns) => {
-			const $dong = $('<div class="hkled-tl-dong"></div>').appendTo($luoi);
-			const phu = [ns.bac_tho, ns.doi].filter(Boolean).join(" · ") || __("Chưa gán bậc thợ / đội");
-			$(`<div class="hkled-tl-ten">
-				<div class="nm">${frappe.utils.escape_html(ns.ten)}</div>
-				<div class="mt">${frappe.utils.escape_html(phu)}</div>
-			</div>`).appendTo($dong);
+		dl.nhan_su.forEach((ns) => this.ve_dong($luoi, ns));
+	}
 
-			const $dai = $('<div class="hkled-tl-dai"></div>').appendTo($dong);
+	ve_dong($luoi, ns) {
+		const $dong = $('<div class="hkled-tl-dong"></div>').appendTo($luoi);
+		const phu = [ns.bac_tho, ns.doi].filter(Boolean).join(" · ") || __("Chưa gán bậc thợ / đội");
+		$(`<div class="hkled-tl-ten">
+			<div class="nm">${frappe.utils.escape_html(ns.ten)}</div>
+			<div class="mt">${frappe.utils.escape_html(phu)}</div>
+		</div>`).appendTo($dong);
 
-			// Nền ca trước, vạch giờ sau — không thì vạch bị nền phủ mất.
-			ns.nen_ca.forEach((ca) => {
-				$(
-					`<div class="hkled-tl-nenca" style="left:${this.pct(ca.tu_phut)}%;width:${
-						this.pct(ca.den_phut) - this.pct(ca.tu_phut)
-					}%"></div>`
-				).appendTo($dai);
-			});
-			this.vach_gio($dai, false);
+		// PM-TASK-00053: rảnh / tổng (%) theo đúng khoảng đang lọc.
+		const mau = ns.ranh_phan_tram >= 50 ? "cao" : ns.ranh_phan_tram >= 20 ? "vua" : "thap";
+		const $ranh = $(`<div class="hkled-tl-ranh"></div>`).appendTo($dong);
+		if (ns.tong_phut) {
+			$ranh.html(
+				`<div class="pct ${mau}">${ns.ranh_phan_tram}%</div>
+				 <div class="chi_tiet">${format_number(ns.ranh_phut, null, 0)} / ${format_number(
+					ns.tong_phut,
+					null,
+					0
+				)} ${__("phút")}</div>`
+			);
+			$ranh.attr(
+				"title",
+				`${ns.ten} · ${__("Rảnh")} ${format_number(ns.ranh_phut, null, 0)} ${__(
+					"phút"
+				)} / ${__("tổng")} ${format_number(ns.tong_phut, null, 0)} ${__("phút theo lịch làm việc")}`
+			);
+		} else {
+			// Không có lịch thì tổng = 0; hiện dấu gạch thay vì "0%" để khỏi hiểu nhầm là bận kín.
+			$ranh.html(`<div class="chi_tiet">—</div>`);
+		}
 
-			if (!ns.co_lich) {
-				$(`<div class="hkled-tl-trong">${__("Không có lịch làm việc trong ngày này")}</div>`).appendTo(
-					$dai
-				);
-			}
+		const $dai = $('<div class="hkled-tl-dai"></div>').appendTo($dong);
 
-			ns.doan.forEach((d) => this.ve_doan($dai, ns, d));
+		// Nền ca trước, vạch sau — không thì vạch bị nền phủ mất.
+		ns.nen_ca.forEach((ca) => {
+			$(
+				`<div class="hkled-tl-nenca" style="left:${this.pct(ca.tu_phut)}%;width:${
+					this.pct(ca.den_phut) - this.pct(ca.tu_phut)
+				}%"></div>`
+			).appendTo($dai);
 		});
+		this.vach_gio($dai, false);
+		this.vach_ngay($dai, false);
+
+		if (!ns.co_lich) {
+			$(`<div class="hkled-tl-trong">${__("Không có lịch làm việc trong ngày này")}</div>`).appendTo(
+				$dai
+			);
+		}
+
+		ns.doan.forEach((d) => this.ve_doan($dai, ns, d));
 	}
 
 	ve_doan($dai, ns, d) {
@@ -204,6 +287,9 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 			.text(nhan)
 			.appendTo($dai);
 
+		// Xem nhiều ngày thì tooltip phải nói rõ NGÀY nào, không thì "08:00 – 11:45" là vô nghĩa.
+		const ngay = this.so_ngay > 1 ? frappe.datetime.str_to_user(d.ngay) + " · " : "";
+
 		if (la_ban) {
 			// Số lượng: bỏ phần thập phân khi là số nguyên. Để `format_number` tự quyết thì qty = 100
 			// hiện thành "100,000" (site đang để 3 chữ số thập phân, dấu phẩy là dấu thập phân) —
@@ -212,10 +298,7 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 				d.so_luong == null
 					? null
 					: format_number(d.so_luong, null, Number.isInteger(d.so_luong) ? 0 : 2);
-			// PM-TASK-00051: thêm Khách Hàng và Nhân Viên Bán Hàng.
-			// Lệnh tạo tay (không gắn Đơn Bán Hàng) thì hai trường này trống — bỏ hẳn dòng thay vì
-			// hiện nhãn với giá trị rỗng, để tooltip không dài ra vì mấy dòng không có nội dung.
-			//
+
 			// ⚠ Nhãn viết ĐÚNG như nhãn trường trên Lệnh sản xuất: "Khách Hàng", "Nhân Viên Bán Hàng".
 			// Chuỗi "Khách hàng" (chữ h thường) có bản dịch sang tiếng Anh do một app MBWNext khác
 			// ship, mà site này chạy `lang = en`, nên `__()` trả về "Customer" và tooltip thành nửa
@@ -226,14 +309,17 @@ mbwnext_hkled.BieuDoLichLamViec = class BieuDoLichLamViec {
 				d.khach_hang ? `${__("Khách Hàng")}: ${d.khach_hang}` : null,
 				d.nhan_vien_ban ? `${__("Nhân Viên Bán Hàng")}: ${d.nhan_vien_ban}` : null,
 				d.trang_thai ? __(d.trang_thai) : null,
-				`${d.tu} – ${d.den}${d.ca ? " · " + d.ca : ""}`,
+				`${ngay}${d.tu} – ${d.den}${d.ca ? " · " + d.ca : ""}`,
 			]
 				.filter(Boolean)
 				.join("\n");
 			$d.attr("title", chi_tiet);
 			$d.on("click", () => frappe.set_route("Form", "Work Order", d.work_order));
 		} else {
-			$d.attr("title", `${ns.ten} · ${__("Rảnh")} ${d.tu} – ${d.den}${d.ca ? " · " + d.ca : ""}`);
+			$d.attr(
+				"title",
+				`${ns.ten} · ${__("Rảnh")} ${ngay}${d.tu} – ${d.den}${d.ca ? " · " + d.ca : ""}`
+			);
 		}
 	}
 };
