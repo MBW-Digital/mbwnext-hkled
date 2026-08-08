@@ -170,7 +170,12 @@ doc_events = {
 			"mbwnext_hkled.controllers.python_hook.work_order.split_employee_production_on_finish",
 		],
 		# GAP-5: thừa hưởng thời gian + đội từ Kế Hoạch Sản Xuất khi WO được tạo.
-		"before_insert": "mbwnext_hkled.controllers.python_hook.work_order.inherit_from_production_plan",
+		# PM-TASK-00045: lệnh tạo bằng Sửa đổi/Nhân bản không được mang link Phân Công của lệnh cũ
+		# (no_copy KHÔNG chặn được đường Sửa đổi — xem clear_copied_allocation_record).
+		"before_insert": [
+			"mbwnext_hkled.controllers.python_hook.work_order.clear_copied_allocation_record",
+			"mbwnext_hkled.controllers.python_hook.work_order.inherit_from_production_plan",
+		],
 		# GAP-7 (C12): tổng Sản Lượng Nhân Viên phải khớp Số Lượng Đã Sản Xuất.
 		# Phải khai CẢ HAI: document đã submit thì Frappe không gọi `validate` nữa,
 		# mà C12 lại cho sửa tay sau khi Finish.
@@ -178,6 +183,10 @@ doc_events = {
 		"before_update_after_submit": (
 			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production"
 		),
+		# PM-TASK-00045 (C6): huỷ/xoá lệnh thì dọn Phân Công, nếu không nhân sự bị giữ chỗ
+		# vĩnh viễn và engine tính lịch trả về thời điểm bắt đầu muộn hơn thực tế.
+		"on_cancel": "mbwnext_hkled.controllers.python_hook.work_order.cleanup_employee_allocation",
+		"on_trash": "mbwnext_hkled.controllers.python_hook.work_order.cleanup_employee_allocation",
 	},
 	"Production Plan": {
 		# GAP-4: Thời Điểm Cần Hoàn Thành phải ghép delivery_date + custom_time nên không fetch_from được.
