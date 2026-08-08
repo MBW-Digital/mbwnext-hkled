@@ -173,14 +173,22 @@ doc_events = {
 		# GAP-5: thừa hưởng thời gian + đội từ Kế Hoạch Sản Xuất khi WO được tạo.
 		# PM-TASK-00045: lệnh tạo bằng Sửa đổi/Nhân bản không được mang link Phân Công của lệnh cũ
 		# (no_copy KHÔNG chặn được đường Sửa đổi — xem clear_copied_allocation_record).
+		# ensure_start_time phải chạy SAU inherit_from_production_plan: hàm kia lấy giờ từ Kế Hoạch,
+		# hàm này chỉ lấp chỗ trống còn lại. Đảo thứ tự là luôn lấy giá trị dự phòng.
 		"before_insert": [
 			"mbwnext_hkled.controllers.python_hook.work_order.clear_copied_allocation_record",
 			"mbwnext_hkled.controllers.python_hook.work_order.inherit_from_production_plan",
+			"mbwnext_hkled.controllers.python_hook.work_order.set_sales_info",
+			"mbwnext_hkled.controllers.python_hook.work_order.ensure_start_time",
 		],
 		# GAP-7 (C12): tổng Sản Lượng Nhân Viên phải khớp Số Lượng Đã Sản Xuất.
 		# Phải khai CẢ HAI: document đã submit thì Frappe không gọi `validate` nữa,
 		# mà C12 lại cho sửa tay sau khi Finish.
-		"validate": "mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production",
+		# PM-TASK-00050: Khách Hàng + Nhân Viên Bán Hàng lấy từ Đơn Bán Hàng của lệnh.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production",
+			"mbwnext_hkled.controllers.python_hook.work_order.set_sales_info",
+		],
 		"before_update_after_submit": (
 			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production"
 		),

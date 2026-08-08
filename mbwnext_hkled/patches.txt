@@ -18,3 +18,5 @@ mbwnext_hkled.patches.migrate_bom_rule_cond_attrs
 mbwnext_hkled.patches.drop_bom_rule_group
 mbwnext_hkled.patches.cleanup_cancelled_work_order_allocations
 mbwnext_hkled.patches.add_production_note_fields
+mbwnext_hkled.patches.add_work_order_sales_info
+mbwnext_hkled.patches.backfill_work_order_start_time
