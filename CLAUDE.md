@@ -250,6 +250,27 @@ fixtures; patch chỉ để tạo lần đầu. Sửa xong nhớ `bench --site h
 Server Script **cố ý KHÔNG khai trong `fixtures`**: fixtures ghi đè mỗi lần migrate, sẽ xoá công thức
 khách vừa sửa. Cài một lần qua patch, sau đó script trên site là nguồn chạy thật.
 
+## Mã chứng từ riêng của HKLED (`PM-TASK-00054`, 08/08/2026)
+
+9 loại phiếu dùng mã `<viết tắt>-<2 số năm>-<5 số>`: `SO-` Đơn hàng bán, `KSX-` Kế hoạch sản xuất,
+`LSX-` Lệnh sản xuất, `KNB-` Chứng từ kho nội bộ, `PXK-` Phiếu xuất kho hàng bán, `PNK-` Phiếu nhập
+kho hàng mua, `YCM-` Yêu cầu mặt hàng, `PO-` Đơn mua hàng, `BG-` Báo giá.
+
+Cấu hình nằm ở **Property Setter** (`module = MBWNext HKLed`), tạo bởi `patches/set_document_naming_series.py`
+và **có trong `fixtures`** — nên sửa danh sách series phải sửa trong patch rồi `export-fixtures` lại,
+thêm bằng giao diện sẽ bị ghi đè ở lần `bench migrate` kế tiếp.
+
+⚠ **`naming_series` không được Frappe kiểm tra giá trị.** `_validate_selects()`
+(`frappe/model/base_document.py`) bỏ qua đúng trường này, nên một series không nằm trong danh sách
+chọn vẫn được dùng bình thường, không có thông báo lỗi — chỉ âm thầm sinh mã sai định dạng. Đã vấp:
+`Production Plan` là doctype duy nhất trong 9 loại mà ERPNext lõi **không** đặt `no_copy` cho
+`naming_series`, nên bấm **Duplicate** một kế hoạch cũ đẻ ra `MFG-PP-2026-…` theo mã cũ. Đã bù bằng
+Property Setter `no_copy = 1`.
+
+Chứng từ cũ **giữ nguyên mã**; số thứ tự của mã mới **bắt đầu lại từ 00001** (bộ đếm `tabSeries` gắn
+theo tiền tố). Hai series hàng trả lại `MAT-DN-RET-` / `MAT-PR-RET-` cố ý giữ nguyên vì bảng khách
+gửi không nhắc tới. Test case: `docs/testcases/ma-chung-tu-hkled.md`.
+
 ## ⚠️ Bài học quan trọng — LUÔN kiểm tra dữ liệu thật trước khi tạo mới
 
 **Cả 3 phần đều gặp cùng một tình huống**: nhân viên `thangdo@mbw.vn` đã tự xây phần lớn doctype/custom field trực tiếp trên UI Desk của site `hkled.com` **trước khi** công việc này bắt đầu — hoàn toàn không có trong git. Việc không kiểm tra trước đã khiến 2 lần xảy ra sự cố:

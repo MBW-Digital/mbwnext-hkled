@@ -73,7 +73,15 @@ fixtures = [
 	{
 		"doctype": "Custom Field",
 		"filters": [["module", "=", "MBWNext HKLed"]],
-	}
+	},
+	# PM-TASK-00054: mã chứng từ riêng của HKLED (SO-26-…, LSX-26-… ) nằm ở Property Setter.
+	# Đưa vào fixtures để cài lại site mới là có ngay, không phải nhớ chạy patch bằng tay.
+	# ⚠ Hệ quả: thêm series mới bằng giao diện sẽ bị ghi đè ở lần `bench migrate` kế tiếp —
+	# muốn thêm thì sửa `patches/set_document_naming_series.py` rồi export-fixtures lại.
+	{
+		"doctype": "Property Setter",
+		"filters": [["module", "=", "MBWNext HKLed"]],
+	},
 ]
 
 # Home Pages
