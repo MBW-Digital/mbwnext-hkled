@@ -1,0 +1,233 @@
+{
+ "charts": [],
+ "content": "[{\"id\": \"hkled_h1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>HKLed</b></span>\", \"col\": 12}}, {\"id\": \"hkled_p1\", \"type\": \"paragraph\", \"data\": {\"text\": \"Sản xuất đèn LED — định mức BOM theo biến thể, bậc thợ và lịch sản xuất.\", \"col\": 12}}, {\"id\": \"hkled_sc0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tình Hình Làm Việc\", \"col\": 3}}, {\"id\": \"hkled_sc1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lệnh Sản Xuất\", \"col\": 3}}, {\"id\": \"hkled_sc2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lịch Làm Việc\", \"col\": 3}}, {\"id\": \"hkled_sc3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Kế Hoạch Sản Xuất\", \"col\": 3}}, {\"id\": \"hkled_sc4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Mẫu BOM\", \"col\": 3}}, {\"id\": \"hkled_sp1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hkled_card0\", \"type\": \"card\", \"data\": {\"card_name\": \"Lịch Sản Xuất\", \"col\": 4}}, {\"id\": \"hkled_card1\", \"type\": \"card\", \"data\": {\"card_name\": \"Định Mức & BOM\", \"col\": 4}}, {\"id\": \"hkled_card2\", \"type\": \"card\", \"data\": {\"card_name\": \"Sản Xuất\", \"col\": 4}}, {\"id\": \"hkled_card3\", \"type\": \"card\", \"data\": {\"card_name\": \"Nhân Công\", \"col\": 4}}]",
+ "creation": "2026-08-08 15:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "tool",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "HKLed",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lịch Sản Xuất",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lịch Làm Việc",
+   "link_count": 0,
+   "link_to": "Employee Schedule",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Phân Công Nhân Sự",
+   "link_count": 0,
+   "link_to": "Employee Allocation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Đội Sản Xuất",
+   "link_count": 0,
+   "link_to": "Work Team",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Bậc Thợ",
+   "link_count": 0,
+   "link_to": "Employee Level",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Định Mức & BOM",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Mẫu BOM",
+   "link_count": 0,
+   "link_to": "BOM Template",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Thành Phần BOM",
+   "link_count": 0,
+   "link_to": "BOM Component",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "BOM",
+   "link_count": 0,
+   "link_to": "BOM",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Mặt Hàng",
+   "link_count": 0,
+   "link_to": "Item",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sản Xuất",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Kế Hoạch Sản Xuất",
+   "link_count": 0,
+   "link_to": "Production Plan",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Lệnh Sản Xuất",
+   "link_count": 0,
+   "link_to": "Work Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Đơn Bán Hàng",
+   "link_count": 0,
+   "link_to": "Sales Order",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Nhân Công",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Công Việc Khác",
+   "link_count": 0,
+   "link_to": "Other Task",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Nhân Sự",
+   "link_count": 0,
+   "link_to": "Employee",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-08-08 15:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "MBWNext HKLed",
+ "name": "HKLed",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 5.5,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Tình Hình Làm Việc",
+   "link_to": "bieu-do-lich-lam-viec",
+   "stats_filter": "[]",
+   "type": "Page"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Lệnh Sản Xuất",
+   "link_to": "Work Order",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Lịch Làm Việc",
+   "link_to": "Employee Schedule",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Kế Hoạch Sản Xuất",
+   "link_to": "Production Plan",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Mẫu BOM",
+   "link_to": "BOM Template",
+   "stats_filter": "[]",
+   "type": "DocType"
+  }
+ ],
+ "title": "HKLed"
+}

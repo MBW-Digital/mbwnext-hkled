@@ -6,25 +6,39 @@
  "engine": "InnoDB",
  "field_order": [
   "bom_component",
-  "condition_value",
+  "cond_label",
+  "matched_count",
   "column_break_item_qty",
-  "item"
+  "item",
+  "section_break_cond",
+  "cond_attrs",
+  "rule_id",
+  "matched_variants"
  ],
  "fields": [
   {
    "fieldname": "bom_component",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Thành Phần BOM",
    "options": "BOM Component",
+   "read_only": 1,
    "reqd": 1
   },
   {
-   "fieldname": "condition_value",
-   "fieldtype": "Data",
+   "description": "Tóm tắt điều kiện để đọc nhanh trên lưới — hệ thống tự sinh từ Thuộc Tính Điều Kiện.",
+   "fieldname": "cond_label",
+   "fieldtype": "Small Text",
    "in_list_view": 1,
-   "label": "Giá Trị Điều Kiện (Nguồn)",
-   "reqd": 1
+   "label": "Điều Kiện",
+   "read_only": 1
+  },
+  {
+   "description": "Số biến thể của Mặt Hàng Cha khớp điều kiện này.",
+   "fieldname": "matched_count",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Biến Thể Khớp",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_item_qty",
@@ -38,13 +52,38 @@
    "link_filters": "[[\"Item\",\"has_variants\",\"=\",0]]",
    "options": "Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "section_break_cond",
+   "fieldtype": "Section Break",
+   "label": "Chi Tiết Điều Kiện"
+  },
+  {
+   "description": "Dạng [{\"name\": \"Công suất\", \"values\": [\"50\", \"100\"]}]. AND giữa các thuộc tính, OR trong values. Dùng nút Tạo Rule để chọn thay vì gõ tay.",
+   "fieldname": "cond_attrs",
+   "fieldtype": "JSON",
+   "label": "Thuộc Tính Điều Kiện",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rule_id",
+   "fieldtype": "Data",
+   "label": "Mã Rule",
+   "read_only": 1
+  },
+  {
+   "description": "Cache danh sách mã biến thể khớp — hệ thống tự tính khi lưu, không sửa tay.",
+   "fieldname": "matched_variants",
+   "fieldtype": "JSON",
+   "label": "Biến Thể Khớp (cache)",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-07-31 09:00:00.000000",
+ "modified": "2026-08-07 10:30:00.000000",
  "modified_by": "Administrator",
  "module": "MBWNext HKLed",
  "name": "BOM Rule",

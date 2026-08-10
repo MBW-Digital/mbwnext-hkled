@@ -7,14 +7,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MBWNext HKLed VERSION\n"
 "Report-Msgid-Bugs-To: tuanbui@mbw.vn\n"
-"POT-Creation-Date: 2026-07-31 13:39+0707\n"
-"PO-Revision-Date: 2026-07-31 13:39+0707\n"
+"POT-Creation-Date: 2026-08-02 23:44+0707\n"
+"PO-Revision-Date: 2026-08-02 23:44+0707\n"
 "Last-Translator: tuanbui@mbw.vn\n"
 "Language-Team: tuanbui@mbw.vn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.13.1\n"
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:279
+msgid "... và {0} dòng nữa"
+msgstr ""
 
 #. Description of the 'Thời Gian Kết Thúc' (Datetime) field in DocType
 #. 'Employee Schedule'
@@ -77,17 +81,39 @@ msgid "Bảng Thành Phần BOM"
 msgstr ""
 
 #. Label of a Data field in DocType 'Employee Level'
+#. Label of a Link field in DocType 'Employee Production'
+#. Label of a Link field in DocType 'Other Task Table'
 #. Label of a Link field in DocType 'Work Order Employee'
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_level/employee_level.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/employee_production/employee_production.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/work_order_employee/work_order_employee.json
 msgid "Bậc Thợ"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:181
+#: mbwnext_hkled/controllers/js/work_order.js:178
+msgid "Bậc thợ"
+msgstr ""
+
 #. Label of a Time field in DocType 'Employee Schedule'
 #. Label of a Datetime field in DocType 'Work Order Employee'
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:76
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/work_order_employee/work_order_employee.json
 msgid "Bắt Đầu"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:13
+msgid "Bắt Đầu Sản Xuất"
+msgstr ""
+
+#: mbwnext_hkled/api/work_order_actions.py:47
+msgid "Bắt Đầu Sản Xuất: giờ dự kiến {0} → giờ thực tế {1}"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:281
+msgid "Bỏ qua {0} dòng do trùng lịch:"
 msgstr ""
 
 #. Label of a Link field in DocType 'Employee Schedule'
@@ -95,16 +121,46 @@ msgstr ""
 msgid "Ca"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:69
+msgid "Ca Làm Việc"
+msgstr ""
+
+#. Label of a Select field in DocType 'Other Task'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Chuỗi Đánh Số"
+msgstr ""
+
 #: mbwnext_hkled/controllers/js/bom_template.js:113
 msgid "Chưa chọn Nguyên Vật Liệu nào"
+msgstr ""
+
+#: mbwnext_hkled/api/work_team.py:103
+#: mbwnext_hkled/controllers/js/work_order.js:107
+msgid "Chưa chọn nhân sự nào"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:233
+msgid "Chưa chọn nhân sự nào."
+msgstr ""
+
+#: mbwnext_hkled/api/work_team.py:105
+msgid "Chưa chọn thứ nào trong tuần"
 msgstr ""
 
 #: mbwnext_hkled/api/bom.py:29
 msgid "Chưa cài Server Script {0} — chạy lại bench migrate để cài"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:239
+#: mbwnext_hkled/api/work_order_schedule.py:242
 msgid "Chưa có nhân sự nào trong Bảng Nhân Công Tham Gia"
+msgstr ""
+
+#: mbwnext_hkled/api/work_order_actions.py:28
+msgid "Chỉ bắt đầu sản xuất được khi Lệnh sản xuất đã được duyệt"
+msgstr ""
+
+#: mbwnext_hkled/api/work_order_actions.py:31
+msgid "Chỉ ấn được khi Lệnh sản xuất đang ở trạng thái In Process (hiện tại: {0})"
 msgstr ""
 
 #. Label of a Table field in DocType 'BOM Template'
@@ -139,6 +195,11 @@ msgid "Employee Name"
 msgstr ""
 
 #. Name of a DocType
+#: mbwnext_hkled/mbwnext_hkled/doctype/employee_production/employee_production.json
+msgid "Employee Production"
+msgstr ""
+
+#. Name of a DocType
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
 msgid "Employee Schedule"
 msgstr ""
@@ -146,6 +207,10 @@ msgstr ""
 #. Label of a Datetime field in DocType 'Employee Allocation'
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_allocation/employee_allocation.json
 msgid "End Time"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:53
+msgid "Ghi Thời Gian Bắt Đầu = giờ hiện tại và tính lại lịch?<br><br>Chỉ ấn được <b>một lần</b>, không hoàn tác được."
 msgstr ""
 
 #. Label of a Data field in DocType 'BOM Rule'
@@ -190,6 +255,14 @@ msgstr ""
 msgid "Khi Tăng Ca, Kết Thúc chỉ được tính đến 23h59"
 msgstr ""
 
+#: mbwnext_hkled/api/work_team.py:112
+msgid "Khoảng {0} ngày, vượt quá {1} ngày cho phép"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:227
+msgid "Khoảng {0} ngày, vượt quá {1} ngày cho phép."
+msgstr ""
+
 #. Label of a Check field in DocType 'Work Order Employee'
 #: mbwnext_hkled/mbwnext_hkled/doctype/work_order_employee/work_order_employee.json
 msgid "Khóa Bắt Đầu"
@@ -200,8 +273,20 @@ msgstr ""
 msgid "Khóa Kết Thúc"
 msgstr ""
 
+#: mbwnext_hkled/api/work_team.py:123
+msgid "Không ngày nào trong khoảng khớp thứ đã chọn"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:230
+msgid "Không ngày nào trong khoảng khớp thứ đã chọn."
+msgstr ""
+
 #: mbwnext_hkled/api/work_order_schedule.py:87
 msgid "Không thể xác định Thời Gian Bắt Đầu cho nhân sự {0}"
+msgstr ""
+
+#: mbwnext_hkled/api/work_team.py:131
+msgid "Không tìm thấy Ca Làm Việc {0}"
 msgstr ""
 
 #: mbwnext_hkled/api/work_order_schedule.py:73
@@ -225,23 +310,51 @@ msgstr ""
 msgid "Kiểu Thành Phần"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:288
+msgid "Kết Quả Tạo Nhanh"
+msgstr ""
+
 #. Label of a Time field in DocType 'Employee Schedule'
 #. Label of a Datetime field in DocType 'Work Order Employee'
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:83
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/work_order_employee/work_order_employee.json
 msgid "Kết Thúc"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:63
+msgid "Là Tăng Ca"
+msgstr ""
+
 #. Label of a Float field in DocType 'Employee Level'
+#. Label of a Currency field in DocType 'Other Task Table'
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_level/employee_level.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
 msgid "Lương Mỗi Phút"
+msgstr ""
+
+#. Label of a Currency field in DocType 'Other Task Table'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
+msgid "Lương Nhân Công"
+msgstr ""
+
+#: mbwnext_hkled/api/work_order_actions.py:36
+msgid "Lệnh sản xuất này đã được bắt đầu rồi, không ấn lại được"
 msgstr ""
 
 #. Name of a role
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_component/bom_component.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_rule_group/bom_rule_group.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_template/bom_template.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
 msgid "Manufacturing Manager"
+msgstr ""
+
+#. Name of a role
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
+msgid "Manufacturing User"
 msgstr ""
 
 #. Label of a Data field in DocType 'BOM Template'
@@ -255,7 +368,9 @@ msgid "Mã Nhóm Công Thức"
 msgstr ""
 
 #. Label of a Data field in DocType 'BOM Rule Group'
+#. Label of a Data field in DocType 'Work Team'
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_rule_group/bom_rule_group.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
 msgid "Mô Tả"
 msgstr ""
 
@@ -265,7 +380,7 @@ msgid "Mặt Hàng"
 msgstr ""
 
 #. Label of a Link field in DocType 'BOM Template'
-#: mbwnext_hkled/controllers/js/bom_template.js:62
+#: mbwnext_hkled/controllers/js/bom_template.js:60
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_template/bom_template.json
 msgid "Mặt Hàng Cha"
 msgstr ""
@@ -278,7 +393,7 @@ msgstr ""
 msgid "Mặt hàng cha {0} đã có BOM Template {1} đang hoạt động"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:246
+#: mbwnext_hkled/api/work_order_schedule.py:249
 msgid "Mặt hàng {0} chưa thiết lập Thời Gian Sản Xuất (Phút)"
 msgstr ""
 
@@ -294,18 +409,44 @@ msgstr ""
 msgid "Nguồn Lực (%)"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:181
+#: mbwnext_hkled/controllers/js/work_order.js:178
+msgid "Nguồn lực (%)"
+msgstr ""
+
 #. Label of a Date field in DocType 'Employee Schedule'
+#. Label of a Date field in DocType 'Other Task'
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
 msgid "Ngày"
 msgstr ""
 
+#. Label of a Table field in DocType 'Other Task'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Nhân Công"
+msgstr ""
+
+#. Label of a Section Break field in DocType 'Other Task'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Nhân Công Tham Gia"
+msgstr ""
+
+#. Label of a Link field in DocType 'Employee Production'
+#. Label of a Link field in DocType 'Other Task Table'
 #. Label of a Link field in DocType 'Work Order Employee'
+#: mbwnext_hkled/mbwnext_hkled/doctype/employee_production/employee_production.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/work_order_employee/work_order_employee.json
 msgid "Nhân Sự"
 msgstr ""
 
-#: mbwnext_hkled/controllers/js/employee.js:10
-msgid "Nhân sự Công nhân nên được gán Bậc Thợ để tính giờ công chuẩn."
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:181
+#: mbwnext_hkled/controllers/js/work_order.js:178
+msgid "Nhân sự"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee.js:14
+msgid "Nhân sự Công nhân bắt buộc phải có Bậc Thợ — chưa chọn thì không lưu được."
 msgstr ""
 
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.py:43
@@ -325,6 +466,16 @@ msgstr ""
 msgid "Nhóm Công Thức"
 msgstr ""
 
+#. Name of a DocType
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Other Task"
+msgstr ""
+
+#. Name of a DocType
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
+msgid "Other Task Table"
+msgstr ""
+
 #: mbwnext_hkled/api/bom.py:100
 msgid "Phát hiện vòng lặp trong cây BOM tại {0}"
 msgstr ""
@@ -333,7 +484,7 @@ msgstr ""
 msgid "Row #{0}: Công Thức BOM bị trùng cho Thành Phần BOM {1} và Giá Trị Điều Kiện {2}"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:287
+#: mbwnext_hkled/api/work_order_schedule.py:290
 msgid "Row #{0}: Không tìm thấy khoảng thời gian làm việc hợp lệ nào cho nhân sự {1}"
 msgstr ""
 
@@ -357,11 +508,11 @@ msgstr ""
 msgid "Row #{0}: Nhân sự {1} bị trùng trong Bảng Nhân Công Tham Gia"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:281
+#: mbwnext_hkled/api/work_order_schedule.py:284
 msgid "Row #{0}: Nhân sự {1} chưa có Nguồn Lực (%) hợp lệ"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:262
+#: mbwnext_hkled/api/work_order_schedule.py:265
 msgid "Row #{0}: Nhân sự {1} đã có lịch ở Work Order {2} vào thời điểm này"
 msgstr ""
 
@@ -373,11 +524,11 @@ msgstr ""
 msgid "Row #{0}: Thành Phần BOM {1} bị trùng trong Bảng Thành Phần BOM"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:257
+#: mbwnext_hkled/api/work_order_schedule.py:260
 msgid "Row #{0}: đã Khóa Bắt Đầu nhưng chưa nhập Bắt Đầu"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:271
+#: mbwnext_hkled/api/work_order_schedule.py:274
 msgid "Row #{0}: đã Khóa Kết Thúc nhưng chưa nhập Kết Thúc"
 msgstr ""
 
@@ -401,11 +552,19 @@ msgstr ""
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_allocation/employee_allocation.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_level/employee_level.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
 msgid "System Manager"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:241
+msgid "Sẽ tạo {0} lịch làm việc ({1} ngày × {2} nhân sự{3})."
+msgstr ""
+
 #. Label of a Int field in DocType 'BOM Component Table'
+#. Label of a Int field in DocType 'Employee Production'
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_component_table/bom_component_table.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/employee_production/employee_production.json
 msgid "Số Lượng"
 msgstr ""
 
@@ -415,7 +574,7 @@ msgstr ""
 msgid "Số Lượng Theo Công Thức"
 msgstr ""
 
-#: mbwnext_hkled/controllers/js/bom_template.js:66
+#: mbwnext_hkled/controllers/js/bom_template.js:64
 msgid "Số lượng do công thức tự tính khi Tạo BOM, không nhập ở đây."
 msgstr ""
 
@@ -427,10 +586,15 @@ msgstr ""
 
 #. Label of a Link field in DocType 'BOM Component Table'
 #. Label of a Link field in DocType 'BOM Rule'
-#: mbwnext_hkled/controllers/js/bom_template.js:61
+#: mbwnext_hkled/controllers/js/bom_template.js:60
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_component_table/bom_component_table.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_rule/bom_rule.json
 msgid "Thành Phần BOM"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:20
+#: mbwnext_hkled/controllers/js/work_order.js:86
+msgid "Thêm Đội Sản Xuất"
 msgstr ""
 
 #. Label of a Tab Break field in DocType 'BOM Template'
@@ -438,9 +602,18 @@ msgstr ""
 msgid "Thông Tin Chính"
 msgstr ""
 
+#. Label of a Float field in DocType 'Other Task Table'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
+msgid "Thời Gian (Phút)"
+msgstr ""
+
 #. Label of a Datetime field in DocType 'Employee Schedule'
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
 msgid "Thời Gian Bắt Đầu"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:70
+msgid "Thời Gian Bắt Đầu: {0}<br>Kết thúc dự kiến: {1} ({2} phút)"
 msgstr ""
 
 #. Label of a Datetime field in DocType 'Employee Schedule'
@@ -448,18 +621,41 @@ msgstr ""
 msgid "Thời Gian Kết Thúc"
 msgstr ""
 
-#: mbwnext_hkled/controllers/js/work_order.js:22
+#: mbwnext_hkled/controllers/js/work_order.js:38
 msgid "Thời gian kết thúc dự kiến: {0} ({1} phút)"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:58
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:114
+msgid "Thứ Trong Tuần"
+msgstr ""
+
+#: mbwnext_hkled/controllers/python_hook/stock_entry.py:127
+msgid "Trùng gốc mã serial giữa đơn bán và lệnh sản xuất: {0}"
+msgstr ""
+
+#. Label of a Data field in DocType 'Other Task'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Tên Công Việc"
+msgstr ""
+
+#. Label of a Data field in DocType 'Employee Production'
 #. Label of a Link field in DocType 'Employee Schedule'
+#. Label of a Data field in DocType 'Other Task Table'
+#: mbwnext_hkled/mbwnext_hkled/doctype/employee_production/employee_production.json
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task_table/other_task_table.json
 msgid "Tên Nhân Sự"
 msgstr ""
 
 #. Label of a Data field in DocType 'BOM Component'
 #: mbwnext_hkled/mbwnext_hkled/doctype/bom_component/bom_component.json
 msgid "Tên Thành Phần"
+msgstr ""
+
+#. Label of a Data field in DocType 'Work Team'
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
+msgid "Tên Đội Sản Xuất"
 msgstr ""
 
 #: mbwnext_hkled/controllers/js/work_order.js:4
@@ -469,6 +665,22 @@ msgstr ""
 #. Label of a Check field in DocType 'Employee Schedule'
 #: mbwnext_hkled/mbwnext_hkled/doctype/employee_schedule/employee_schedule.json
 msgid "Tăng Ca"
+msgstr ""
+
+#: mbwnext_hkled/api/work_team.py:117
+msgid "Tăng ca phải nhập Bắt Đầu và Kết Thúc"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:91
+msgid "Tạo Lịch Làm Việc"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:20
+msgid "Tạo Nhanh"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:26
+msgid "Tạo Nhanh Lịch Làm Việc"
 msgstr ""
 
 #. Label of a Button field in DocType 'BOM Component Table'
@@ -485,6 +697,37 @@ msgstr ""
 msgid "Tỉ Lệ Đóng Quỹ Đội (%)"
 msgstr ""
 
+#. Label of a Currency field in DocType 'Other Task'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Tổng Lương Nhân Công"
+msgstr ""
+
+#: mbwnext_hkled/controllers/python_hook/work_order.py:229
+msgid "Tổng Sản Lượng Nhân Viên ({0} cái) phải bằng Số Lượng Đã Sản Xuất ({1} cái). Đang {2} {3} cái."
+msgstr ""
+
+#. Label of a Float field in DocType 'Other Task'
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.json
+msgid "Tổng Thời Gian (Phút)"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/other_task.js:27
+msgid "Tổng khớp — lưu được. ({0} phút)"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/other_task.js:36
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.py:71
+msgid "Tổng thời gian các dòng ({0} phút) phải bằng Tổng Thời Gian ({1} phút). Đang {2} {3} phút."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:44
+msgid "Từ Ngày"
+msgstr ""
+
+#: mbwnext_hkled/api/work_team.py:119
+msgid "Vui lòng chọn Ca Làm Việc"
+msgstr ""
+
 #: mbwnext_hkled/controllers/js/bom_template.js:20
 msgid "Vui lòng chọn Mặt Hàng Cha trước"
 msgstr ""
@@ -497,7 +740,7 @@ msgstr ""
 msgid "Vui lòng chọn Thành Phần BOM trước"
 msgstr ""
 
-#: mbwnext_hkled/api/work_order_schedule.py:237
+#: mbwnext_hkled/api/work_order_schedule.py:240
 msgid "Vui lòng nhập Thời Gian Bắt Đầu cho Work Order"
 msgstr ""
 
@@ -515,16 +758,49 @@ msgstr ""
 msgid "Work Order Employee"
 msgstr ""
 
+#. Name of a DocType
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
+msgid "Work Team"
+msgstr ""
+
 #: mbwnext_hkled/controllers/js/bom_template.js:86
+#: mbwnext_hkled/controllers/js/work_order.js:101
 msgid "Xác Nhận"
 msgstr ""
 
-#: mbwnext_hkled/controllers/js/work_order.js:14
+#: mbwnext_hkled/controllers/python_hook/work_order.py:231
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.py:76
+msgid "thiếu"
+msgstr ""
+
+#: mbwnext_hkled/controllers/python_hook/work_order.py:231
+#: mbwnext_hkled/mbwnext_hkled/doctype/other_task/other_task.py:76
+msgid "vượt"
+msgstr ""
+
+#. Label of a Check field in DocType 'Work Team'
+#: mbwnext_hkled/mbwnext_hkled/doctype/work_team/work_team.json
+msgid "Đang Hoạt Động"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:61
+msgid "Đang bắt đầu sản xuất..."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:30
 msgid "Đang tính toán lịch sản xuất..."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:265
+msgid "Đang tạo lịch làm việc..."
 msgstr ""
 
 #: mbwnext_hkled/controllers/js/production_plan.js:16
 msgid "Đang xử lý BOM tự động..."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:67
+msgid "Đã Bắt Đầu Sản Xuất"
 msgstr ""
 
 #: mbwnext_hkled/controllers/js/production_plan.js:24
@@ -535,7 +811,41 @@ msgstr ""
 msgid "Đã thêm {0} dòng, cập nhật {1} dòng trong Công Thức BOM"
 msgstr ""
 
+#: mbwnext_hkled/controllers/js/work_order.js:119
+msgid "Đã thêm {0} nhân sự"
+msgstr ""
+
 #: mbwnext_hkled/api/bom.py:216
 msgid "Đã tạo mới {0} BOM, BOM Default: {1}"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:271
+msgid "Đã tạo {0} lịch làm việc."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:52
+msgid "Đến Ngày"
+msgstr ""
+
+#: mbwnext_hkled/api/work_team.py:107
+msgid "Đến Ngày phải từ Từ Ngày trở đi"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:224
+msgid "Đến Ngày phải từ Từ Ngày trở đi."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:32
+#: mbwnext_hkled/controllers/js/work_order.js:91
+msgid "Đội Sản Xuất"
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/employee_schedule_list.js:162
+#: mbwnext_hkled/controllers/js/work_order.js:155
+msgid "Đội này chưa có nhân sự Công nhân nào đang làm việc."
+msgstr ""
+
+#: mbwnext_hkled/controllers/js/work_order.js:164
+msgid "đã có trong bảng"
 msgstr ""
 

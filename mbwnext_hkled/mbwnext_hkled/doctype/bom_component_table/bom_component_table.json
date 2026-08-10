@@ -34,7 +34,8 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.component_type==\"Cố Định\"",
+   "depends_on": "eval:doc.component_type!=\"Số Lượng Theo Công Thức\"",
+   "description": "Với kiểu Theo Rule: chỉ điền khi thành phần không có công thức số lượng (VD Bộ vỏ đèn).",
    "fieldname": "qty",
    "fieldtype": "Int",
    "in_list_view": 1,

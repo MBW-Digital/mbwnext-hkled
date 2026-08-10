@@ -11,11 +11,14 @@ from frappe.utils.safe_exec import is_safe_exec_enabled, run_script
 from mbwnext_hkled.server_scripts.bom_qty import SCRIPT_NAME as QTY_SCRIPT
 
 
-def resolve_qty_by_formula(item_code, component_name, rule_group, template_name):
+def resolve_qty_by_formula(item_code, component_name, item_template, template_name):
 	"""Gọi Server Script `hkled_resolve_bom_qty` để lấy số lượng (và NVL nếu là "Theo Rule").
 
 	Công thức nằm ở Server Script chứ không ở đây là quyết định kiến trúc trong tài liệu
 	thiết kế: HKLED phải sửa được công thức ngay, không cần build/deploy lại app.
+
+	Khoá tra công thức là `item_template` (Mặt Hàng Cha) — chốt của TungDA 07/08. Trước đây
+	là field `rule_group` người dùng tự chọn; field đó đã bỏ, Server Script tự suy.
 	"""
 	if not is_safe_exec_enabled():
 		frappe.throw(
@@ -35,7 +38,7 @@ def resolve_qty_by_formula(item_code, component_name, rule_group, template_name)
 		QTY_SCRIPT,
 		item_code=item_code,
 		component_name=component_name,
-		rule_group=rule_group,
+		item_template=item_template,
 		bom_template=template_name,
 	)
 	result = (flags or {}).get("result")
@@ -57,7 +60,7 @@ def get_active_template(item_code):
 	return frappe.db.get_value("BOM Template", {"item_template": variant_of, "is_active": 1})
 
 
-def resolve_components(item_code, template_name):
+def resolve_components(item_code, template_name, warnings=None):
 	"""Đọc BOM Template + BOM Rule để xác định danh sách NVL/số lượng cho item_code.
 
 	3 kiểu thành phần (mục 2.3 tài liệu thiết kế):
@@ -67,6 +70,8 @@ def resolve_components(item_code, template_name):
 	"""
 	template = frappe.get_cached_doc("BOM Template", template_name)
 	components = []
+	if warnings is None:
+		warnings = []
 
 	for row in template.bom_component_table:
 		if row.component_type == "Cố Định":
@@ -74,8 +79,10 @@ def resolve_components(item_code, template_name):
 			continue
 
 		resolved = resolve_qty_by_formula(
-			item_code, row.bom_component, template.rule_group, template_name
+			item_code, row.bom_component, template.item_template, template_name
 		)
+		if resolved.get("qty_defaulted"):
+			warnings.append(row.bom_component)
 		qty = flt(resolved.get("qty"))
 		# Công thức ra 0 nghĩa là biến thể này KHÔNG dùng thành phần đó (VD Cầu đấu ở mức <=50W).
 		# Phải bỏ hẳn dòng: BOM Item không nhận qty = 0.
@@ -86,6 +93,47 @@ def resolve_components(item_code, template_name):
 		components.append({"item_code": resolved.get("item") or row.item, "qty": qty})
 
 	return components
+
+
+@frappe.whitelist()
+def get_template_raw_materials(item_code):
+	"""NVL + số lượng suy từ BOM Template cho một biến thể — dùng để điền sẵn bảng Nguyên Vật Liệu
+	khi người dùng chọn Mặt Hàng trên form BOM (yêu cầu của TungDA 07/08 trên PM-FEAT-00007).
+
+	Trả `{}` khi mặt hàng không có BOM Template đang hoạt động — lúc đó form BOM giữ nguyên hành vi
+	mặc định của ERPNext, không đụng vào.
+
+	Lỗi công thức KHÔNG throw: người dùng mới chỉ chọn mặt hàng, chưa lưu gì. Trả lỗi về cho client
+	hiện cảnh báo rồi để họ tự nhập tay, chứ chặn form ở bước này thì không sửa được gì.
+	"""
+	if not frappe.has_permission("BOM Template", "read"):
+		frappe.throw(_("Bạn không có quyền đọc BOM Template"), frappe.PermissionError)
+
+	template_name = get_active_template(item_code)
+	if not template_name:
+		return {}
+
+	warnings = []
+	log_depth = len(frappe.local.message_log or [])
+	try:
+		components = resolve_components(item_code, template_name, warnings)
+	except Exception as exc:
+		# frappe.throw ghi vào message_log TRƯỚC khi raise — nuốt exception không đủ,
+		# phải cắt log đi nếu không trình duyệt vẫn hiện nguyên cụm lỗi đỏ.
+		messages = [m.get("message") for m in (frappe.local.message_log or [])[log_depth:]]
+		frappe.local.message_log = (frappe.local.message_log or [])[:log_depth]
+		return {
+			"template": template_name,
+			"items": [],
+			"error": (messages[-1] if messages else str(exc)),
+		}
+
+	return {
+		"template": template_name,
+		"item_template": frappe.db.get_value("Item", item_code, "variant_of"),
+		"items": components,
+		"qty_defaulted": warnings,
+	}
 
 
 def build_bom_tree(item_code, order, resolved_cache, visiting):

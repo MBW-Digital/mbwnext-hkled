@@ -116,11 +116,21 @@ làm việc + lệnh sản xuất, hành vi Start WO, sản lượng nhân viên
 
 **GAP-2 — Tạo nhanh Employee Schedule** (`listview_settings` / nút trên List View + dialog)
 - Popup: chọn Đội SX → server trả nhân sự đội (Công nhân, Active) → bảng tick chọn
-  + chọn Ngày (một hoặc nhiều ngày), Ca **hoặc** Tăng Ca (điền sẵn 18h00–21h00, cho sửa
-  trong khung 17h01–23h59).
+  + **`Từ Ngày` / `Đến Ngày`** *(chốt theo C10)*, Ca **hoặc** Tăng Ca (điền sẵn 18h00–21h00,
+  cho sửa trong khung 17h01–23h59).
+- Sinh tích Descartes `(mỗi ngày trong khoảng) × (mỗi nhân sự được tick)`. Hiện số bản ghi sẽ tạo
+  ngay trên dialog trước khi bấm Xác Nhận — khoảng 1 tuần × 10 người đã là 70 bản ghi, người dùng
+  cần thấy con số trước khi lỡ tay chọn cả tháng.
+- **Bộ chọn thứ trong tuần** *(chốt theo C10b)*: 7 ô tick T2…CN, **mặc định tick T2–T7**, bỏ CN.
+  Chỉ ngày trong khoảng **khớp thứ đã tick** mới sinh bản ghi. Số tạo ra =
+  `(số ngày khớp thứ) × (số nhân sự được tick)`; dialog ghi rõ *"bỏ qua N ngày không khớp thứ"*.
+- Chặn khi: `Đến Ngày` < `Từ Ngày`; **bỏ tick hết các thứ**; khoảng quá dài (> 62 ngày, tính theo
+  tổng số ngày của khoảng chứ không phải số ngày khớp thứ — tránh cho người dùng quét cả năm rồi
+  lách giới hạn bằng cách chỉ tick 1 thứ).
 - Xác nhận → API whitelisted tạo hàng loạt qua `frappe.get_doc(...).insert()` **từng bản ghi**
   (để validate chống trùng của Employee Schedule chạy đủ); bản ghi trùng thì bỏ qua + báo lại
-  danh sách bỏ qua, không fail cả lô.
+  danh sách bỏ qua, không fail cả lô. Với khoảng ngày thì việc "bỏ qua dòng trùng" càng quan
+  trọng: phân ca tuần sau chồng lên vài ngày đã tạo rồi là chuyện thường.
 
 **GAP-3 — Nút "Bắt Đầu Sản Xuất" riêng** *(viết lại theo C2)*
 - ❌ **Không** hook vào status "In Process": `WorkOrder.get_status()` của erpnext (tầng 1) hard-code
@@ -165,11 +175,22 @@ làm việc + lệnh sản xuất, hành vi Start WO, sản lượng nhân viên
   `validate_no_duplicate_employee`).
 
 **GAP-7 — Employee Production + Serial khi Finish**
-- Child table `Employee Production`: `employee` (Link), `qty` (Int); field
-  `Work Order.custom_employee_production` (Table, allow_on_submit).
-- Nhánh Finish trong hook `on_update` (status → Completed, cùng chỗ sync allocation):
+- Child table `Employee Production`: `employee` (Link), `qty` (Int) — **không có cột Ghi chú**
+  *(chốt theo C13: khách đồng ý bỏ)*; field `Work Order.custom_employee_production`
+  (Table, allow_on_submit).
+- ⚠ **allow_on_submit phải đặt trên CẢ field con `employee` và `qty`**, không chỉ trên field bảng
+  ở Work Order. Frappe kiểm `allow_on_submit` của **từng field trong child DocType**
+  (`validate_update_after_submit` → `d._validate_update_after_submit()` cho mọi dòng đã có trong DB).
+  Đặt thiếu thì C12 (sửa tay sau Finish) báo *"Not allowed to change … after submission"*.
+  Đây đúng là lỗi đã mắc ở bảng `Work Order Employee` — xem mục "Lỗi đã sửa" cuối tài liệu.
+- Nhánh Finish trong hook (status → Completed, cùng chỗ sync allocation):
   chia `produced_qty` phần nguyên cho mọi dòng Work Order Employee, phần dư cộng dòng đầu
-  (10/3 → 4,3,3), ghi vào bảng.
+  (10/3 → 4,3,3), ghi vào bảng. Chỉ chia khi bảng **đang trống** — đã chia rồi mà chia đè thì
+  xoá mất phần người dùng sửa tay ở C12.
+- **Cho sửa tay sau khi Finish** *(chốt theo C12)*: `validate` chặn lưu nếu
+  `sum(rows.qty) != wo.produced_qty`, thông báo rõ đang lệch bao nhiêu cái.
+  ✅ **Đã xác nhận 02/08**: khách nói *"tổng các dòng bằng tổng sản lượng sản xuất được của lệnh
+  sản xuất đó"* → mốc so đúng là **`produced_qty`** (số thực làm được), không phải `qty` (số đặt làm).
 - Serial *(viết lại theo C3)*: **chỉ item bật `has_serial_no`** mới sinh. Công thức:
   `<mã SO> + STT`, nếu WO không có mã SO thì `<mã WO> + STT`.
 - ✅ **Không cần thêm field lưu mã SO**: `Work Order.sales_order` là field **sẵn có của erpnext**
@@ -181,8 +202,15 @@ làm việc + lệnh sản xuất, hành vi Start WO, sản lượng nhân viên
 - **STT đánh liên tục theo SO** *(chốt theo C9)*: prefix = `wo.sales_order or wo.name`; tìm STT
   lớn nhất trong các `Serial No` đã có prefix đó rồi **tiếp nối**, không đánh lại từ 001. Nhờ vậy
   nhiều WO cùng 1 SO không sinh serial trùng.
-- Định dạng đề xuất: `<prefix>-<STT 4 chữ số>` (VD `SAL-ORD-2026-00001-0001`) — đủ chỗ cho lô lớn
-  và sắp xếp đúng thứ tự. Nếu HKLED muốn ít/nhiều chữ số hơn thì đổi 1 hằng số, không đụng logic.
+- **Định dạng chốt theo C11 (02/08): `<2 số cuối năm>-<số thứ tự SO>-<STT 4 chữ số>`**
+  → `SAL-ORD-2026-00001` sinh ra `26-00001-0001`, `26-00001-0002`, … (13 ký tự).
+  An toàn vì SO trên site chỉ có **một** naming series `SAL-ORD-.YYYY.-`, nên phần bỏ đi là cố định.
+- ⚠ **Trường hợp WO không có mã SO cần ký hiệu riêng** — phát sinh từ chính việc rút gọn:
+  nếu rút gọn `MFG-WO-2026-00042` y hệt thì ra `26-00042`, **trùng** với SO số 00042 cùng năm, mà
+  serial là khoá chính toàn hệ thống. Dùng tiền tố **`W`**: `W26-00042-0001`.
+  Đã nêu trong mockup để HKLED xác nhận ký hiệu; đổi chữ khác thì sửa 1 hằng số.
+- Viết test khẳng định: 2 SO khác nhau không bao giờ ra cùng prefix, và prefix từ SO không bao giờ
+  đụng prefix từ WO.
 - Chống trùng khi 2 người Finish cùng lúc: sinh xong kiểm tra `frappe.db.exists("Serial No", ...)`,
   nếu đã tồn tại thì nhảy tiếp — không dựa hoàn toàn vào lần đếm ban đầu.
 
@@ -246,6 +274,61 @@ làm việc + lệnh sản xuất, hành vi Start WO, sản lượng nhân viên
 | C7 | **Đổi label sang tiếng Việt** | Đổi 3 label: `custom_employee_level` → **Bậc Thợ**, `custom_performance_factor_` → **Nguồn Lực (%)**, `custom_work_order_employee` → **Nhân Công Tham Gia**. Chỉ sửa nhãn, không đổi fieldname → không đụng dữ liệu. Nhớ cập nhật `locale/vi.po` cho khớp |
 | C8 | Tên nút **"Bắt Đầu Sản Xuất"**, **chỉ cho ấn 1 lần**, khi WO ở trạng thái **In Process** | Xem GAP-3 viết lại. ⚠ Để chặn ấn lần 2 phải có **cờ đánh dấu** — `custom_start_time` là field Mandatory nên luôn có giá trị sẵn từ lúc tạo, không dùng được làm mốc "đã ấn chưa" |
 | C9 | **Đánh STT liên tục theo SO** | Serial của WO thứ 2 cùng SO tiếp nối WO thứ 1 (không đánh lại từ 001). Xem GAP-7 viết lại |
+
+### C10–C13 — khách duyệt mockup, trả lời 01/08/2026
+
+4 câu hỏi cuối mockup (mục F, `docs/mockups/bac-tho-lich-san-xuat.html`). Thắng chuyển ý kiến
+vào `PM-DOC-00074` sáng 01/08, khách trả lời cùng ngày.
+
+| # | Câu hỏi mockup | Khách trả lời | Ảnh hưởng tới spec |
+|---|---|---|---|
+| C10 | Tạo nhanh lịch — một ngày hay một khoảng ngày? | **Một khoảng "từ ngày – đến ngày"**, **kèm tick chọn thứ trong tuần** (chốt nốt 02/08) | GAP-2 viết lại: cặp `Từ Ngày` / `Đến Ngày` + bộ chọn thứ; chỉ ngày khớp thứ mới sinh bản ghi |
+| C11 | Độ dài mã serial — rút gọn phần mã đơn hay để nguyên? | Hỏi ngược về truy xuất → đã trả lời; khách **chọn phương án ngắn nhất `26-00001-0001`** (02/08) | ✅ Truy xuất KHÔNG phụ thuộc độ dài mã (xem mục dưới). GAP-7: prefix = 2 số cuối của năm + số thứ tự SO |
+| C12 | Sản lượng nhân viên có cho sửa tay sau Finish? | **Có cho sửa tay**; tổng các dòng = **tổng sản lượng sản xuất được** (xác nhận 02/08) | GAP-7 viết lại: cho sửa sau khi WO đã submit + `validate` chặn khi `sum(qty) != produced_qty` |
+| C13 | Cột "Ghi chú" ở bảng Sản Lượng Nhân Viên — giữ hay bỏ? | **Bỏ được** | GAP-7: bỏ cột Ghi chú khỏi `Employee Production`; bỏ luôn khỏi mockup màn C |
+
+#### C10b — tick chọn thứ trong tuần (chốt 02/08)
+
+Thắng chuyển lời khách: *"khách muốn tích chọn được thứ trong tuần, ví dụ anh chọn từ ngày 1/8-10/8,
+nhưng chỉ chọn thứ 2 đến thứ 7, thì ngày chủ nhật nó sẽ không tạo bản ghi lịch làm việc"*.
+
+➜ GAP-2 phải có **bộ chọn thứ** (T2…CN), mặc định tick T2–T7. Số bản ghi tạo ra =
+`(số ngày trong khoảng KHỚP thứ đã tick) × (số nhân sự được tick)`. Dialog hiện rõ đã bỏ qua bao
+nhiêu ngày vì không khớp thứ — người phân ca không phải tự nhẩm.
+
+⚠ Đây là **hạng mục phát sinh ngoài 8 GAP ban đầu**, không có trong tài liệu nghiệp vụ gốc.
+
+#### Truy xuất serial khi rút gọn mã — trả lời C11 (đã kiểm chứng trên code + site)
+
+**Rút gọn không làm mất khả năng truy xuất.** ERPNext không hề phân tích chuỗi serial để tìm chứng từ:
+
+- `Serial No` có `autoname: field:serial_no` → **chuỗi serial chính là khoá chính** của bản ghi.
+  Gõ serial vào ô tìm kiếm là ra thẳng bản ghi đó, bất kể chuỗi dài hay ngắn.
+- Bản ghi `Serial No` lưu sẵn `work_order`, `purchase_document_no`, `customer`, `warehouse`,
+  `batch_no`, `status` — liên kết bằng **field**, không phải bằng cách đọc mã.
+- Báo cáo **Serial No Ledger** (`erpnext/stock/report/serial_no_ledger`) truy ngược qua
+  `Serial and Batch Entry.serial_no` → Stock Ledger Entry → trả về **Voucher Type + Voucher No**
+  (Dynamic Link, bấm mở thẳng chứng từ) cho **mọi** lần nhập/xuất/chuyển kho của serial đó.
+
+Ràng buộc DUY NHẤT phải giữ: **serial vẫn phải duy nhất toàn hệ thống** (vì nó là khoá chính).
+Nếu rút gọn tới mức 2 đơn khác nhau sinh ra cùng một mã thì hỏng 2 chỗ: lỗi trùng khoá lúc tạo, và
+logic C9 (tìm STT lớn nhất theo prefix rồi nối tiếp) sẽ nối nhầm STT của đơn này sang đơn kia.
+
+Kiểm tra trên site `hkled.com` ngày 01/08: Sales Order chỉ có **đúng một** naming series
+`SAL-ORD-.YYYY.-`, không có Property Setter nào đổi khác. Nghĩa là `SAL-ORD-` là tiền tố **cố định
+của mọi đơn**, bỏ đi không mất một chút thông tin phân biệt nào:
+
+| Phương án | Ví dụ | Độ dài | Duy nhất? |
+|---|---|---|---|
+| Giữ nguyên (C9 đề xuất ban đầu) | `SAL-ORD-2026-00001-0001` | 23 | ✅ |
+| Bỏ tiền tố cố định `SAL-ORD-` | `2026-00001-0001` | 15 | ✅ |
+| **Bỏ tiền tố + rút năm 2 số — ✅ HKLED ĐÃ CHỌN 02/08** | **`26-00001-0001`** | **13** | ✅ |
+
+Thêm một thuận lợi: site hiện có **0 bản ghi Serial No** (chưa từng sinh serial nào), nên đổi định
+dạng bây giờ **không phải chuyển đổi dữ liệu cũ**. Đổi sau khi đã chạy thật thì tốn kém hơn nhiều.
+
+⚠ Điều kiện kèm theo: nếu sau này HKLED thêm naming series thứ hai cho Sales Order (theo chi nhánh,
+theo loại đơn…) thì phần bị bỏ có thể lại mang thông tin phân biệt — lúc đó phải rà lại.
 
 ### Vấn đề dữ liệu serial — ĐÃ XỬ LÝ (không phải việc của mình)
 
@@ -318,3 +401,43 @@ sẽ khai ngay khi tạo, để 2 tab đó luôn phản ánh đúng hiện trạ
   + **`custom_production_started`** (cờ chặn ấn nút 2 lần, C8)
 - Sửa 3 label sẵn có sang tiếng Việt (C7) — không phải field mới, nhưng phải cập nhật lại mô tả
   trong tab *Trường tùy chỉnh* trên PM sau khi đổi
+
+---
+
+## Lỗi đã sửa trong code Phần III sẵn có (01/08/2026)
+
+Hai lỗi nằm ở phần lõi Phần III **đã có từ trước** (không thuộc GAP-1…GAP-8), phát hiện khi rà lại
+code app trước lúc vào DEV. Cả hai đều chặn đúng những thứ sắp code, nên phải sửa trước.
+
+**1. `Tính Lại Lịch` không chạy được trên Work Order đã Submit**
+
+`recalculate_schedule` kết thúc bằng `wo.save()`. Với `docstatus = 1`, Frappe chạy
+`validate_update_after_submit`, duyệt **từng dòng con** và kiểm `allow_on_submit` của **field trong
+child DocType** — không phải của field bảng ở cha. Cả 9 field của `Work Order Employee` đều đang
+`allow_on_submit = 0`, trong khi patch `adjust_work_order_schedule_fields` chỉ set cho field bảng
+`Work Order-custom_work_order_employee` ở cha. Kết quả: mọi lần tính lại trên WO đã submit đều báo
+*"Not allowed to change … after submission"*.
+
+→ Đã set `allow_on_submit = 1` cho cả 9 field của `Work Order Employee`.
+
+⚠ **Liên quan trực tiếp tới GAP-3 và GAP-7**: nút "Bắt Đầu Sản Xuất" (C8) ấn khi WO ở *In Process*
+— tức đã submit — rồi gọi `recalculate_schedule`; và bảng Sản Lượng Nhân Viên (C12) cũng sửa tay
+sau khi Finish. Cả hai đều đâm vào đúng lỗi này nếu không sửa trước. Xem lại cảnh báo ở GAP-7.
+
+**2. Hook đồng bộ Employee Allocation khi Finish là code chết**
+
+Đăng ký ở `doc_events["Work Order"]["on_update"]`, nhưng: Work Order **không có** method
+`on_update`, và status sang `Completed` được set bằng `db_set` trong `WorkOrder.update_status()`
+— `db_set` không chạy hook nào. Ngoài ra WO lúc đó đã submit nên Frappe chỉ gọi
+`on_update_after_submit`. Tức hook chưa từng chạy lần nào, Employee Allocation không bao giờ được
+co về giờ kết thúc thật → nhân sự bị giữ chỗ theo lịch dự kiến, đẩy lùi lịch của các WO sau.
+
+→ Đổi sang hook `update_status`, là chỗ `Stock Entry.update_work_order()` gọi bằng
+`pro_doc.run_method("update_status")` — `run_method` có compose `doc_events`, và hook chạy **sau**
+method gốc nên `doc.status` đã là `Completed`.
+
+⚠ Bẫy kèm theo: trong cùng luồng đó `set_actual_dates()` chạy **sau** `update_status()`, nên
+`doc.actual_end_date` lúc hook chạy vẫn là giá trị cũ. Phải tự tính thời điểm hoàn thành từ
+operations / Stock Entry thay vì đọc thẳng field đó.
+
+Cả hai lỗi **chưa được ghi nhận trên app PM** (dự án đang 0 PM Task) — cần bổ sung.

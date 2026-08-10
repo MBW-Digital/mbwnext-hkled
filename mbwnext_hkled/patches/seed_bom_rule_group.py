@@ -44,12 +44,11 @@ FIXED_COMPONENTS = ["Bộ vỏ đèn", "Hộp carton", "Xốp góc"]
 
 
 def execute():
-	for code, mo_ta in RULE_GROUPS:
-		if frappe.db.exists("BOM Rule Group", code):
-			continue
-		frappe.get_doc(
-			{"doctype": "BOM Rule Group", "rule_group_code": code, "mo_ta": mo_ta}
-		).insert(ignore_permissions=True)
+	# Từ 07/08 KHÔNG seed `BOM Rule Group` nữa: field `rule_group` trên BOM Template đã bỏ
+	# (chốt của TungDA trên PM-FEAT-00007), khoá tra công thức là Mặt Hàng Cha và bảng suy
+	# nhóm nằm trong Server Script `hkled_resolve_bom_qty`.
+	# RULE_GROUPS giữ lại chỉ để tra cứu tên 6 bộ công thức khi đọc Server Script.
+	# Site đã chạy patch này trước đó vẫn còn 6 bản ghi cũ — vô hại vì không còn ai tham chiếu.
 
 	for name in FORMULA_COMPONENTS + RULE_COMPONENTS + FIXED_COMPONENTS:
 		if frappe.db.exists("BOM Component", name):

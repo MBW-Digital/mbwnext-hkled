@@ -44,10 +44,18 @@ app_license = "mit"
 
 # include js in doctype views
 doctype_js = {
+	"BOM": "controllers/js/bom.js",
 	"BOM Template": "controllers/js/bom_template.js",
 	"Production Plan": "controllers/js/production_plan.js",
+	"Sales Order": "controllers/js/sales_order.js",
 	"Employee": "controllers/js/employee.js",
 	"Work Order": "controllers/js/work_order.js",
+	"Other Task": "controllers/js/other_task.js",
+}
+
+# GAP-2: nút "Tạo Nhanh" nằm trên DANH SÁCH Lịch Làm Việc, không phải trên form.
+doctype_list_js = {
+	"Employee Schedule": "controllers/js/employee_schedule_list.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -65,7 +73,15 @@ fixtures = [
 	{
 		"doctype": "Custom Field",
 		"filters": [["module", "=", "MBWNext HKLed"]],
-	}
+	},
+	# PM-TASK-00054: mã chứng từ riêng của HKLED (SO-26-…, LSX-26-… ) nằm ở Property Setter.
+	# Đưa vào fixtures để cài lại site mới là có ngay, không phải nhớ chạy patch bằng tay.
+	# ⚠ Hệ quả: thêm series mới bằng giao diện sẽ bị ghi đè ở lần `bench migrate` kế tiếp —
+	# muốn thêm thì sửa `patches/set_document_naming_series.py` rồi export-fixtures lại.
+	{
+		"doctype": "Property Setter",
+		"filters": [["module", "=", "MBWNext HKLed"]],
+	},
 ]
 
 # Home Pages
@@ -154,7 +170,62 @@ fixtures = [
 
 doc_events = {
 	"Work Order": {
-		"on_update": "mbwnext_hkled.controllers.python_hook.work_order.sync_employee_allocation_on_finish",
+		# KHÔNG dùng "on_update": Work Order không có method đó, và status chuyển sang
+		# "Completed" bằng db_set trong WorkOrder.update_status() nên không hook nào chạy.
+		# "update_status" được Stock Entry gọi qua run_method() -> doc_events có compose.
+		# Xem giải thích đầy đủ trong controllers/python_hook/work_order.py.
+		"update_status": [
+			"mbwnext_hkled.controllers.python_hook.work_order.sync_employee_allocation_on_finish",
+			"mbwnext_hkled.controllers.python_hook.work_order.split_employee_production_on_finish",
+		],
+		# GAP-5: thừa hưởng thời gian + đội từ Kế Hoạch Sản Xuất khi WO được tạo.
+		# PM-TASK-00045: lệnh tạo bằng Sửa đổi/Nhân bản không được mang link Phân Công của lệnh cũ
+		# (no_copy KHÔNG chặn được đường Sửa đổi — xem clear_copied_allocation_record).
+		# ensure_start_time phải chạy SAU inherit_from_production_plan: hàm kia lấy giờ từ Kế Hoạch,
+		# hàm này chỉ lấp chỗ trống còn lại. Đảo thứ tự là luôn lấy giá trị dự phòng.
+		"before_insert": [
+			"mbwnext_hkled.controllers.python_hook.work_order.clear_copied_allocation_record",
+			"mbwnext_hkled.controllers.python_hook.work_order.inherit_from_production_plan",
+			"mbwnext_hkled.controllers.python_hook.work_order.set_sales_info",
+			"mbwnext_hkled.controllers.python_hook.work_order.ensure_start_time",
+		],
+		# GAP-7 (C12): tổng Sản Lượng Nhân Viên phải khớp Số Lượng Đã Sản Xuất.
+		# Phải khai CẢ HAI: document đã submit thì Frappe không gọi `validate` nữa,
+		# mà C12 lại cho sửa tay sau khi Finish.
+		# PM-TASK-00050: Khách Hàng + Nhân Viên Bán Hàng lấy từ Đơn Bán Hàng của lệnh.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production",
+			"mbwnext_hkled.controllers.python_hook.work_order.set_sales_info",
+		],
+		"before_update_after_submit": (
+			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production"
+		),
+		# PM-TASK-00045 (C6): huỷ/xoá lệnh thì dọn Phân Công, nếu không nhân sự bị giữ chỗ
+		# vĩnh viễn và engine tính lịch trả về thời điểm bắt đầu muộn hơn thực tế.
+		"on_cancel": "mbwnext_hkled.controllers.python_hook.work_order.cleanup_employee_allocation",
+		"on_trash": "mbwnext_hkled.controllers.python_hook.work_order.cleanup_employee_allocation",
+	},
+	"Production Plan": {
+		# GAP-4: Thời Điểm Cần Hoàn Thành phải ghép delivery_date + custom_time nên không fetch_from được.
+		# PM-TASK-00046: Ghi Chú Sản Xuất cho từng dòng bảng Assembly Items.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.production_plan.set_required_completion_time",
+			"mbwnext_hkled.controllers.python_hook.production_plan.set_item_production_note",
+		],
+	},
+	"Sales Order": {
+		# PM-TASK-00046: Ghi Chú Sản Xuất của đơn chảy xuống dòng hàng còn trống. Phải có ở server
+		# vì client script không chạy khi tạo đơn bằng API / Data Import.
+		"validate": "mbwnext_hkled.controllers.python_hook.sales_order.fill_item_production_note",
+	},
+	"Stock Entry": {
+		# GAP-7: sinh serial theo mã đơn bán khi Finish, thay cho series mặc định.
+		"before_submit": "mbwnext_hkled.controllers.python_hook.stock_entry.set_serial_no_on_manufacture",
+	},
+	"Employee": {
+		# C1: `mandatory_depends_on` của Frappe CHỈ chạy phía client — lưu bằng script/API
+		# vẫn lọt. Phải chặn thêm ở server. Xem controllers/python_hook/employee.py.
+		"validate": "mbwnext_hkled.controllers.python_hook.employee.validate_employee_level",
 	},
 }
 

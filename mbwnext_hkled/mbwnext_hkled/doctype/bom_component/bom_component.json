@@ -6,7 +6,9 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "component_name"
+  "component_name",
+  "component_code",
+  "description"
  ],
  "fields": [
   {
@@ -17,6 +19,20 @@
    "label": "Tên Thành Phần",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "description": "Mã ASCII không dấu (VD MODULE, NGUON, OC_VIT_MODULE). Đây là khoá Server Script dùng để tra công thức số lượng — bền hơn tên tiếng Việt vì lệch một dấu là vỡ mapping.",
+   "fieldname": "component_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Mã Định Danh",
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Mô Tả"
   }
  ],
  "grid_page_length": 50,
