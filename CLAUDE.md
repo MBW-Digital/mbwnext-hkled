@@ -33,7 +33,10 @@ mbwnext_hkled/
 │       ├── employee_schedule_list.js     # Dialog "Tạo Nhanh" lịch theo đội (GAP-2) — LIST VIEW
 │       ├── other_task.js                 # Kiểm tổng thời gian Công Việc Khác (GAP-8)
 │       └── work_order.js                # Nút Tính Lại Lịch / Bắt Đầu Sản Xuất / Thêm Đội Sản Xuất
-├── patches/                             # 17 patch, chạy post_model_sync
+├── data/
+│   ├── nhap_item.py                     # bộ nạp danh mục vật tư từ CSV (PM-TASK-00061)
+│   └── danh_muc/*.csv                   # 11 sheet nguồn, chép nguyên xi từ bảng khách gửi
+├── patches/                             # 18 patch, chạy post_model_sync
 │   ├── add_production_plan_bom_button.py       # Custom Field "Tạo BOM Tự Động" trên Production Plan Item
 │   ├── adjust_work_order_schedule_fields.py    # reqd/allow_on_submit cho field lịch trên Work Order
 │   ├── rename_time_to_manufacture_field.py     # sửa lỗi chính tả custom_time_to_manufature -> ...manufacture
@@ -50,7 +53,8 @@ mbwnext_hkled/
 │   ├── add_production_note_fields.py           # PM-TASK-00046: Ghi Chú Sản Xuất các cấp
 │   ├── add_work_order_sales_info.py            # PM-TASK-00050: Khách Hàng + NV Bán Hàng trên Lệnh sản xuất
 │   ├── backfill_work_order_start_time.py       # lấp custom_start_time trống của lệnh cũ
-│   └── set_document_naming_series.py           # PM-TASK-00054: mã chứng từ riêng HKLED
+│   ├── set_document_naming_series.py           # PM-TASK-00054: mã chứng từ riêng HKLED
+│   └── import_danh_muc_vat_tu.py               # PM-TASK-00061: nạp 11 sheet danh mục vật tư
 ├── fixtures/
 │   ├── custom_field.json                # 30 Custom Field (Item/Employee/Sales Order/Production Plan/Work Order)
 │   └── property_setter.json             # 19 Property Setter — mã chứng từ 9 loại phiếu (PM-TASK-00054)
@@ -402,7 +406,7 @@ Mỗi tính năng dùng **một tên gốc chung cho cả 4 thư mục** để t
 | Tên gốc | PM Feature | features | mockups | testcases | huong-dan |
 |---|---|---|---|---|---|
 | `bom-template-theo-bien-the` | PM-FEAT-00007 | ✔ | ✔ (.md) | ✔ A–H | — |
-| `bac-tho-lich-san-xuat` | PM-FEAT-00008 | ✔ | ✔ (.html) | ✔ 61 ca | — |
+| `bac-tho-lich-san-xuat` | PM-FEAT-00008 | ✔ | ✔ (.html) | ✔ 61 ca | ✔ cấu hình + vận hành + `anh/` |
 | `bieu-do-gantt-lich-lam-viec` | PM-FEAT-00009 | ✔ | ✔ (.html) | ✔ 31 ca | ✔ vận hành + `anh/` |
 
 Test case của các PM Task rời (không thuộc feature nào) đặt theo nhóm việc:
@@ -434,6 +438,60 @@ là sai. Áp dụng cho cả `api/employee_timeline.py` lẫn `api/work_team.py:
 ⚠ KHÔNG dùng chế độ xem Gantt sẵn có của Frappe: `gantt_view.js` kéo/thả ghi bằng
 `frappe.db.set_value` với định dạng `"YYYY-MM-DD"` → **cắt cụt phần giờ của Datetime**, và bỏ qua
 `recalculate_schedule`.
+
+## Nạp master data bằng patch — và cái giá của nó
+
+Hai patch đang nạp master data: `seed_bom_rule_group` (nhóm công thức + BOM Component) và
+`import_danh_muc_vat_tu` (11 sheet danh mục vật tư — 215 mặt hàng cha + 1.506 biến thể, nguồn ở
+`data/danh_muc/*.csv`, phần xử lý ở `data/nhap_item.py`).
+
+Lý do: HKLED cần đúng bộ đó trên máy chủ thật, mà Data Import bằng tay không để lại dấu vết trong git.
+
+⚠ **Cái giá**: patch idempotent theo kiểu *"có rồi thì bỏ qua"*, nên khách **xoá một bản ghi trên
+giao diện thì lần `bench migrate` sau nó sống lại**. Muốn bỏ hẳn phải xoá khỏi file nguồn trong app.
+Nói rõ điều này với khách khi bàn giao, đừng để họ tự phát hiện.
+
+⚠ **`standard_rate` là trường BẮT BUỘC của Item trên bench này**, nằm thẳng trong
+`erpnext/stock/doctype/item/item.json` — không phải Property Setter nên grep Property Setter sẽ không
+ra. Ràng buộc chỉ chặn khi trường **để trống**; `0` vẫn qua vì `_get_missing_mandatory_fields()` so
+bằng `cstr(value).strip()`. Tạo Item bằng code thì **đặt `standard_rate = 0`**, đừng dùng
+`ignore_mandatory` — cùng họ với bẫy `custom_start_time`, sẽ đẻ ra bản ghi mở lên không lưu lại được.
+
+⚠ **Cây Nhóm Sản Phẩm của site này phẳng hoàn toàn**: 60 nhóm đều `parent_item_group = NULL` và
+**không có gốc `All Item Groups`**. Tạo nhóm mới cứ để phẳng cho khớp, đừng "sửa cho đúng chuẩn".
+
+⚠ **Tên mặt hàng cha không được trùng tên biến thể của chính nó.** Bảng nguồn để cột *Tên sản phẩm*
+của cha chép nguyên tên biến thể đầu tiên kèm cả công suất — 25 mặt hàng cha ở sheet Vỏ đèn dính,
+trên danh sách Item hiện hai dòng chữ y hệt. `ten_mat_hang_cha()` bỏ đuôi *"Công suất …W"* **chỉ khi
+thật sự trùng**. Kèm `sua_ten_neu_lech()` vì bộ nạp vốn chỉ-thêm-mới: không có nó thì item đã nằm sẵn
+trên site giữ tên cũ vĩnh viễn — đã bắt được 2 mặt hàng cha còn mang tên từ trước lúc khách sửa bảng.
+
+⚠ **Bảng nguồn của khách có lỗi thật, và bộ nạp CỐ Ý không sửa hộ** — không tự chế mã, không tự điền
+ô trống, không chọn hộ giữa hai dòng mâu thuẫn; dòng nào không xử lý được thì bỏ qua và ghi vào báo
+cáo để hỏi khách. Vòng đầu bỏ 158/1.516 dòng; sau hai lượt HKLED sửa bảng thì **nạp hết 1.516/1.516**.
+Nguyên tắc: **thà bỏ qua còn hơn đoán**.
+
+⚠ **Khách đổi mã hàng loạt thì phải dọn item mã cũ.** Bộ nạp chỉ biết thêm mới, không biết mã nào vừa
+bị đổi tên — hai lượt sửa bảng của HKLED để lại 491 + 3 item mồ côi. Cách rà: lấy tập mã trong CSV, so
+với item trên site thuộc các nhóm đó, phần thừa thì kiểm **không dính chứng từ nào** (Stock Ledger
+Entry, BOM Item, Sales/Purchase Order Item, Item Price, Bin) rồi mới xoá. Bỏ bước này thì site có cả
+hai bộ mã mà đối soát vẫn báo "khớp".
+
+⚠ **Biến thể KHÔNG bắt buộc có đủ đặc tính của mặt hàng cha.** Bản đầu của bộ nạp bỏ thêm 5 mặt hàng
+cha vì tôi tin ngược lại — Thắng phản biện, chạy thử thì thấy: cha 3 đặc tính, biến thể khai 2 vẫn
+tạo được; khai đủ dòng nhưng để trống giá trị thì ERPNext tự bỏ dòng đó. Thứ nó thật sự chặn là hai
+biến thể **đụng cùng một tổ hợp giá trị** (`ItemVariantExistsError`). Bài học: đừng suy ràng buộc của
+ERPNext từ trực giác, dựng 3 bản ghi nháp chạy thử là xong.
+
+⚠ **`abbr` của Item Attribute Value phải duy nhất trong một đặc tính**
+(`item_attribute.py::validate_duplication`). Đã vấp: `Công suất` trên site lưu **số trần** (`1`, `2`,
+`30`) còn `abbr` mới là `1W`, `30W` — thêm giá trị `1W` là đụng abbr của `1`. Bài học rộng hơn:
+trước khi thêm giá trị đặc tính, xem site đang viết kiểu gì, đừng thêm bản sao viết khác kiểu.
+
+⚠ **Mã biến thể do ERPNext tự sinh KHÔNG theo quy ước của HKLED.** Chức năng *Create Variant* sinh
+ra `OBL-M5-M5-20mm-RT-S-H-T`, trong khi khách dùng `OBL-M5x20-RT-S-H-T`. Nạp bằng patch thì ép thẳng
+`item_code` từ file nguồn nên không dính; nhưng người dùng thêm biến thể trên giao diện phải tự sửa
+mã trước khi lưu. Đang chờ HKLED quyết có làm quy tắc sinh mã tự động không.
 
 ## Tài khoản test phân quyền trên site `hkled.com`
 
