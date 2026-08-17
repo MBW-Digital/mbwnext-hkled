@@ -12,7 +12,7 @@ import json
 
 import frappe
 from frappe import _
-from frappe.utils import add_days, cint, get_datetime, getdate
+from frappe.utils import add_days, cint, format_datetime, get_datetime, getdate
 
 # Chặn quét quá dài: tính theo TỔNG số ngày của khoảng, không phải số ngày khớp thứ —
 # nếu tính theo số ngày khớp thì người dùng quét cả năm rồi tick 1 thứ là lách được.
@@ -102,7 +102,17 @@ def tinh_thoi_gian_ranh(members, start, end, exclude_work_order=None):
 	tu = get_datetime(start)
 	den = get_datetime(end)
 	if den <= tu:
-		return {"free_time": None}
+		# Lệnh ĐÃ điền đủ 2 mốc nhưng mốc kết thúc lại không sau mốc bắt đầu -> không có
+		# khoảng nào để tính. Phải nói đúng lý do: trước đây chỗ này trả None trơn nên hộp
+		# thoại hiện nhầm câu "điền 2 trường vào", người dùng nhìn thấy 2 trường đã có sẵn
+		# thì tưởng chức năng hỏng (khách báo 11/08).
+		return {
+			"free_time": None,
+			"free_time_note": _(
+				"Thời Điểm Cần Hoàn Thành ({0}) không sau Thời Gian Bắt Đầu ({1})"
+				" nên không có khoảng thời gian nào để tính. Sửa lại hai mốc này trên lệnh."
+			).format(frappe.bold(format_datetime(den)), frappe.bold(format_datetime(tu))),
+		}
 
 	ma_nhan_su = []
 	for m in members:
