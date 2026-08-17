@@ -179,33 +179,66 @@ class BOMTemplate(Document):
 
 @frappe.whitelist()
 def get_condition_attributes(item_template):
-	"""Danh sách thuộc tính + giá trị THẬT SỰ có trên biến thể của item_template.
+	"""Thuộc tính + giá trị dùng cho hộp thoại "Chọn Điều Kiện".
 
-	Dùng cho hộp thoại "Chọn Điều Kiện" (mockup): người dùng tick nhiều thuộc tính, mỗi thuộc
-	tính tick nhiều giá trị. Chỉ trả giá trị đang thật sự tồn tại trên biến thể, không trả toàn
-	bộ Item Attribute Value — chọn một giá trị không biến thể nào dùng thì rule đó vô nghĩa.
+	**Thuộc tính** lấy từ chính bảng đặc tính khai trên Mặt Hàng Cha, giữ nguyên thứ tự người
+	dùng khai — mỗi mặt hàng cha một bộ khác nhau (DP01S có 7, DD11S/DPVDS/DXHBC có 5).
+
+	**Giá trị** trả về TOÀN BỘ giá trị trong danh mục Item Attribute, kèm `used_values` là
+	những giá trị đang thật sự có biến thể dùng tới.
+
+	⚠ Trước đây chỉ trả giá trị đã có biến thể, với lập luận "chọn giá trị chưa biến thể nào
+	dùng thì rule vô nghĩa". Khách báo sai (PM-TASK-00105): họ cần đặt rule TRƯỚC cho những
+	giá trị sắp có hàng. Với DP01S thì cách cũ giấu mất 11/24 mức Công suất, 6/10 Chip LED,
+	8/18 Nguồn. Giờ hiện hết, nhưng đánh dấu cái nào chưa có biến thể để người dùng không
+	tick nhầm mà tưởng đang phủ hàng thật.
+
+	Không xử lý đặc tính kiểu số (`numeric_values`) vì site không dùng — có thì phải sinh giá
+	trị từ from_range/to_range/increment thay vì đọc danh mục.
 	"""
-	variants = frappe.get_all("Item", filters={"variant_of": item_template}, pluck="name")
-	if not variants:
+	if not frappe.db.exists("Item", item_template):
 		return {"total_variants": 0, "attributes": []}
 
-	rows = frappe.get_all(
+	khai_bao = frappe.get_all(
 		"Item Variant Attribute",
-		filters={"parent": ["in", variants]},
-		fields=["attribute", "attribute_value"],
-		distinct=True,
+		filters={"parent": item_template, "parenttype": "Item"},
+		pluck="attribute",
+		order_by="idx",
 	)
+	if not khai_bao:
+		return {"total_variants": 0, "attributes": []}
 
-	grouped = {}
-	for row in rows:
-		grouped.setdefault(row.attribute, set()).add(row.attribute_value)
+	variants = frappe.get_all("Item", filters={"variant_of": item_template}, pluck="name")
 
-	return {
-		"total_variants": len(variants),
-		"attributes": [
-			{"name": attr, "values": sorted(values)} for attr, values in sorted(grouped.items())
-		],
-	}
+	dang_dung = {}
+	if variants:
+		for row in frappe.get_all(
+			"Item Variant Attribute",
+			filters={"parent": ["in", variants], "parenttype": "Item"},
+			fields=["attribute", "attribute_value"],
+			distinct=True,
+			limit_page_length=0,
+		):
+			dang_dung.setdefault(row.attribute, set()).add(row.attribute_value)
+
+	attributes = []
+	for attr in khai_bao:
+		values = frappe.get_all(
+			"Item Attribute Value",
+			filters={"parent": attr},
+			pluck="attribute_value",
+			order_by="idx",
+			limit_page_length=0,
+		)
+		co_bien_the = dang_dung.get(attr, set())
+		# Giá trị chỉ có trên biến thể mà không còn trong danh mục (bị xoá khỏi danh mục sau
+		# khi đã sinh biến thể) vẫn phải hiện, nếu không rule cũ trỏ vào nó sẽ không sửa được.
+		values += sorted(v for v in co_bien_the if v not in values)
+		attributes.append(
+			{"name": attr, "values": values, "used_values": sorted(co_bien_the)}
+		)
+
+	return {"total_variants": len(variants), "attributes": attributes}
 
 
 @frappe.whitelist()

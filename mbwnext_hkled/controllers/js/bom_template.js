@@ -148,21 +148,38 @@ function render_attributes(dialog, data, sel, frm) {
 				</div>
 				<div>
 					${a.values
-						.map(
-							(v, vi) => `
-						<label style="display:inline-block;margin:0 10px 4px 0;font-weight:400">
+						.map((v, vi) => {
+							// PM-TASK-00105: giá trị chưa có biến thể nào dùng vẫn cho chọn (để
+							// đặt rule trước cho hàng sắp có), nhưng làm mờ + chú thích để người
+							// dùng không tick nhầm mà tưởng đang phủ hàng thật.
+							const co_hang = (a.used_values || []).indexOf(v) > -1;
+							return `
+						<label style="display:inline-block;margin:0 10px 4px 0;font-weight:400"
+								class="${co_hang ? "" : "text-muted"}"
+								${co_hang ? "" : `title="${__("Chưa có biến thể nào dùng giá trị này")}"`}>
 							<input type="checkbox" data-attr="${ai}" data-val="${vi}">
-							${frappe.utils.escape_html(v)}
-						</label>`
-						)
+							${frappe.utils.escape_html(v)}${co_hang ? "" : " °"}
+						</label>`;
+						})
 						.join("")}
 				</div>
 			</div>`
 		)
 		.join("");
 
+	const co_gia_tri_chua_dung = data.attributes.some(
+		(a) => a.values.length > (a.used_values || []).length
+	);
+
 	wrapper.html(`
 		${blocks}
+		${
+			co_gia_tri_chua_dung
+				? `<div class="text-muted small" style="margin-bottom:4px">${__(
+						"Giá trị có dấu ° là chưa có biến thể nào dùng tới — vẫn đặt rule trước được."
+				  )}</div>`
+				: ""
+		}
 		<div class="text-muted small" data-matched style="margin-top:4px">
 			${__("Chưa chọn thuộc tính nào — rule phải phủ ít nhất một thuộc tính.")}
 		</div>`);
