@@ -160,6 +160,7 @@ function load_team_members(dialog, frm, work_team) {
 			const rows = msg.members || [];
 			dialog.selected_members = rows.map((m) => ({ ...m, checked: !m.already_added }));
 			dialog.free_time = msg.free_time || null;
+			dialog.free_time_note = msg.free_time_note || null;
 			render_members(wrapper, dialog, frm);
 		},
 	});
@@ -196,9 +197,21 @@ function render_members(wrapper, dialog, frm) {
 			</div>`;
 	} else {
 		// Không có khoảng thời gian thì nói thẳng vì sao, đừng để ô trống cho người dùng đoán.
-		khoi_pct = `<div class="mb-3 text-muted small">${__(
-			"Điền Thời Gian Bắt Đầu và Thời Điểm Cần Hoàn Thành của lệnh để xem % thời gian rảnh của đội."
-		)}</div>`;
+		// Phải nêu ĐÍCH DANH trường còn thiếu: câu chung chung "điền 2 trường vào" làm người
+		// dùng nhìn thấy cả 2 trường đã có sẵn rồi tưởng chức năng hỏng (khách báo 11/08).
+		let ly_do = dialog.free_time_note;
+		if (!ly_do) {
+			const thieu = [];
+			if (!frm.doc.custom_start_time) thieu.push(__("Thời Gian Bắt Đầu"));
+			if (!frm.doc.custom_required_completion_date__time) {
+				thieu.push(__("Thời Điểm Cần Hoàn Thành"));
+			}
+			const ten_truong = thieu.map((t) => `<b>${t}</b>`).join(` ${__("và")} `);
+			ly_do = thieu.length
+				? __("Lệnh chưa có {0} nên chưa tính được % thời gian rảnh của đội.", [ten_truong])
+				: __("Chưa tính được % thời gian rảnh của đội.");
+		}
+		khoi_pct = `<div class="mb-3 text-muted small">${ly_do}</div>`;
 	}
 
 	const co_so_lieu = !!ft;
