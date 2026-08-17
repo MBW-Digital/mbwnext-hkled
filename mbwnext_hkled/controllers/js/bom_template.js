@@ -141,6 +141,10 @@ function render_attributes(dialog, data, sel, frm) {
 				<div style="font-weight:600;margin-bottom:6px">
 					${frappe.utils.escape_html(a.name)}
 					<span class="text-muted small" data-count="${ai}"></span>
+					<label style="font-weight:400;margin-left:10px;font-size:var(--text-sm)"
+							class="text-muted">
+						<input type="checkbox" data-all="${ai}"> ${__("Chọn tất cả")}
+					</label>
 				</div>
 				<div>
 					${a.values
@@ -163,7 +167,7 @@ function render_attributes(dialog, data, sel, frm) {
 			${__("Chưa chọn thuộc tính nào — rule phải phủ ít nhất một thuộc tính.")}
 		</div>`);
 
-	wrapper.find("input[type=checkbox]").on("change", function () {
+	wrapper.find("input[data-attr]").on("change", function () {
 		const a = data.attributes[Number($(this).attr("data-attr"))];
 		const value = a.values[Number($(this).attr("data-val"))];
 		const list = sel[a.name];
@@ -175,6 +179,17 @@ function render_attributes(dialog, data, sel, frm) {
 		}
 		update_counts(wrapper, data, sel, frm);
 	});
+
+	// PM-TASK-00102 — chọn tất cả giá trị của một đặc tính chỉ bằng một ô tick.
+	// Đặc tính Công suất có 13 giá trị, tick tay từng cái vừa lâu vừa dễ sót.
+	wrapper.find("input[data-all]").on("change", function () {
+		const ai = Number($(this).attr("data-all"));
+		const a = data.attributes[ai];
+		// Gán mảng mới thay vì sửa tại chỗ cho gọn; sel[a.name] không được tham chiếu ở đâu khác.
+		sel[a.name] = this.checked ? a.values.slice() : [];
+		wrapper.find(`input[data-attr="${ai}"]`).prop("checked", this.checked);
+		update_counts(wrapper, data, sel, frm);
+	});
 }
 
 /* Gọi server đếm biến thể khớp thay vì đếm ở client: client không có bảng thuộc tính của
@@ -183,6 +198,12 @@ function update_counts(wrapper, data, sel, frm) {
 	data.attributes.forEach((a, ai) => {
 		const n = sel[a.name].length;
 		wrapper.find(`[data-count="${ai}"]`).text(n ? `(${n})` : "");
+
+		// Đồng bộ ngược ô "Chọn tất cả": tick tay đủ hết thì nó phải tự bật, bỏ một cái thì
+		// tự tắt. Trạng thái lỡ cỡ để dạng gạch ngang cho người dùng biết đang chọn một phần.
+		const o_tat_ca = wrapper.find(`input[data-all="${ai}"]`);
+		o_tat_ca.prop("checked", n > 0 && n === a.values.length);
+		o_tat_ca.prop("indeterminate", n > 0 && n < a.values.length);
 	});
 
 	const cond_attrs = data.attributes
@@ -195,6 +216,13 @@ function update_counts(wrapper, data, sel, frm) {
 		return;
 	}
 
+	// Mỗi lần tick là một lượt gọi server mất khoảng 1 giây (phải quét toàn bộ biến thể của
+	// mặt hàng cha — 5.120 biến thể với DP01S). Tick nhanh vài ô là các lượt gọi chồng nhau và
+	// lượt về SAU CÙNG chưa chắc là lượt MỚI NHẤT -> hiện số sai. Đánh số lượt và chỉ nhận
+	// kết quả của lượt mới nhất.
+	const luot = (update_counts._luot = (update_counts._luot || 0) + 1);
+	box.text(__("Đang đếm..."));
+
 	frappe.call({
 		method: "mbwnext_hkled.mbwnext_hkled.doctype.bom_template.bom_template.count_matched_variants",
 		args: {
@@ -202,6 +230,9 @@ function update_counts(wrapper, data, sel, frm) {
 			cond_attrs: JSON.stringify(cond_attrs),
 		},
 		callback(r) {
+			if (luot !== update_counts._luot) {
+				return; // đã có lượt mới hơn, bỏ kết quả cũ
+			}
 			const res = r.message || {};
 			const sample = (res.sample || []).join(", ");
 			box.html(
