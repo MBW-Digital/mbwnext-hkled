@@ -92,9 +92,20 @@ NHAN_TRONG = ("Ren", "Đầu", "Khe")
 
 DON_VI = "Cái"
 
+# PM-TASK-00067: cột khách thêm vào cả 11 sheet, đổ vào Custom Field cùng nghĩa trên Item.
+COT_PHUONG_PHAP = "Phương pháp bổ sung"
+TRUONG_PHUONG_PHAP = "custom_replenishment_method"
 
-def thu_muc_du_lieu():
-	return os.path.join(os.path.dirname(__file__), "danh_muc")
+# Nguồn của *Phương pháp bổ sung* nằm ở HAI chỗ:
+#   data/danh_muc/     — vật tư, linh kiện (bảng của PM-TASK-00061, khách thêm cột vào đó)
+#   data/thanh_pham/   — đèn thành phẩm (4 file "Nhóm I…IV" trong thư mục Drive của PM-TASK-00067)
+# File thành phẩm chỉ giữ 3 cột cần dùng, không chép cả bảng: bản gốc là 4 Google Sheet nặng
+# ~10 MB, mà 30+ cột còn lại thuộc việc nhập danh mục đèn — không phải việc của task này.
+THU_MUC_NGUON = ("danh_muc", "thanh_pham")
+
+
+def thu_muc_du_lieu(ten="danh_muc"):
+	return os.path.join(os.path.dirname(__file__), ten)
 
 
 def don_ten(ten):
@@ -397,6 +408,61 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 			if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha, dac_tinh=cap):
 				bc["bien_the_moi"] += 1
 
+	return bc
+
+
+def cap_nhat_phuong_phap():
+	"""Điền *Phương pháp bổ sung* cho mặt hàng theo file nguồn (PM-TASK-00067).
+
+	⚠ **Chỉ đặt cho mặt hàng thường và biến thể, KHÔNG đặt cho mặt hàng cha.** Chốt của Thắng
+	12/08: *"Các mặt hàng cha thì không cần phương pháp bổ sung, vì cùng 1 mặt hàng cha có biến thể
+	là sản xuất, có biến thể là mua hàng"*. Bản đầu của hàm này có điền cho cha khi mọi biến thể
+	khai giống nhau — sai, và hàm cũng **xoá lại** giá trị đã lỡ đặt trên cha.
+
+	Dùng `db_set` chứ không `doc.save()`: chỉ gắn một nhãn phân loại, không cần chạy lại toàn bộ
+	validate của Item — mặt hàng cũ trên site có thể vướng ràng buộc khác và hỏng giữa chừng.
+	"""
+	bc = {"da_dat": 0, "khong_doi": 0, "khong_co_tren_site": 0, "da_xoa_o_cha": 0, "theo_file": {}}
+	for ten_thu_muc in THU_MUC_NGUON:
+		thu_muc = thu_muc_du_lieu(ten_thu_muc)
+		if not os.path.isdir(thu_muc):
+			continue
+		for f in sorted(os.listdir(thu_muc)):
+			if not f.endswith(".csv"):
+				continue
+			dong = _doc_csv(os.path.join(thu_muc, f))
+			if not dong or COT_PHUONG_PHAP not in dong[0]:
+				continue
+			kbt = _khoa_bien_the(dong)
+			dem = 0
+			for r in dong:
+				gia_tri = (r.get(COT_PHUONG_PHAP) or "").strip()
+				ma = (r.get(kbt) or "").strip()
+				if not ma or not gia_tri:
+					continue
+				hien = frappe.db.get_value("Item", ma, ["has_variants", TRUONG_PHUONG_PHAP])
+				if hien is None:
+					bc["khong_co_tren_site"] += 1
+					continue
+				co_bien_the, dang_co = hien
+				if co_bien_the:  # mặt hàng cha — bỏ qua, xử lý ở vòng dưới
+					continue
+				if dang_co == gia_tri:
+					bc["khong_doi"] += 1
+					continue
+				frappe.db.set_value("Item", ma, TRUONG_PHUONG_PHAP, gia_tri, update_modified=False)
+				bc["da_dat"] += 1
+				dem += 1
+			bc["theo_file"][f] = dem
+
+	# Dọn giá trị đã lỡ đặt trên mặt hàng cha.
+	for ma in frappe.db.sql_list(
+		f"select name from tabItem where has_variants = 1 and ifnull({TRUONG_PHUONG_PHAP}, '') != ''"
+	):
+		frappe.db.set_value("Item", ma, TRUONG_PHUONG_PHAP, None, update_modified=False)
+		bc["da_xoa_o_cha"] += 1
+
+	frappe.db.commit()
 	return bc
 
 
