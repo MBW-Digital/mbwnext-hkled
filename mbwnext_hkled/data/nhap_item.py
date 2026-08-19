@@ -65,6 +65,12 @@ COT_CO_DINH = {
 	"Biến thể",
 	"Tên biến thể",
 	"Mô tả",
+	# Đây là TRƯỜNG của Item, không phải đặc tính biến thể — đổ vào Custom Field
+	# `custom_replenishment_method` ở `cap_nhat_phuong_phap()`, không tạo Item Attribute.
+	# ⚠ Thiếu dòng này là bộ nạp coi nó như một đặc tính rồi dừng ở
+	# "Chưa có Item Attribute 'Phương pháp bổ sung' trên site" — vỡ luôn `bench migrate`
+	# trên site cài mới. Đã vấp khi nạp sheet Lens (PM-TASK-00108).
+	"Phương pháp bổ sung",
 }
 
 # Cột trong bảng -> Item Attribute đã có trên site.
