@@ -1,0 +1,7470 @@
+{
+ "sheets": {
+  "DP01S": {
+   "item_cha": "DP01S",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Module",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Ốc vít cố định module",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Dây điện cấp nguồn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Xốp góc",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-050-D-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-100-D-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-100-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-150-D-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-200-D-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-200-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-250-D-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-300-D-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-300-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-400-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-500-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-600-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-800-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-1K0-N-GY-v3.0"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Ốc vít cố định module",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OVT-M4x8-RT-T-PH-SS201"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Nhỏ"
+     },
+     "nvl": "NHK-50W1A35"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Nhỏ"
+     },
+     "nvl": "NDP-50W1A35"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-050E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-100E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-050E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-150E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-200E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-100E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-240E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-300E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-150E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-200E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-240E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-300E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-200E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-240E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-050A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-100A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-050A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-150A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-200A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-100A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-240A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-300A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-150A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-200A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-240A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-300A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-200A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-240A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-50W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-100W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-50W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-200W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-100W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-240W56P"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-200W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-240W56P"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-200W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-240W56P"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG50A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG100H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG50A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG200H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG100H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG240H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG200H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG240H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG200H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG240H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM-050S150DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM-100S280DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM-050S150DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM200S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM-100S280DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM240S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM200S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM240S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM200S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM240S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Năng lượng mặt trời"
+     },
+     "nvl": "WPC-SLM-M15-4P"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-6B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-6B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-DD"
+    },
+    {
+     "thanh_phan": "Dây điện cấp nguồn",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "W-3x0.75-BK"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x240x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x240x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x460x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x460x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x580x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x370x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x460x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x580x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x740x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x900x185mm-NO"
+    },
+    {
+     "thanh_phan": "Xốp góc",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "XOP-GOC-110x110x120mm"
+    }
+   ]
+  },
+  "DP03S": {
+   "item_cha": "DP03S",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Module",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Ốc vít cố định module",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Dây điện cấp nguồn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    },
+    {
+     "thanh_phan": "Xốp góc",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": ""
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-050-D-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-100-D-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-100-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-150-D-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-200-D-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-200-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-250-D-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "VDP0X-300-D-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-300-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-400-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-500-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-600-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-800-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Bộ vỏ đèn",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "VDP0X-1K0-N-BK-v3.0"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-DD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đúc xám"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-CD-B"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3B3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-6P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-5P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-4P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 3030",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M30S050-3P3-5C-64LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Lumileds 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3B5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-6P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-5P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-4P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "Còn lại",
+      "Kiểu lắp": "Còn lại",
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Chip LED": "Bridgelux 5050",
+      "Loại tản nhiệt": "Nhôm đùn trắng"
+     },
+     "nvl": "M50S050-3P5-5C-16LED-CD-A"
+    },
+    {
+     "thanh_phan": "Ốc vít cố định module",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OVT-M4x8-RT-T-PH-SS201"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Nhỏ"
+     },
+     "nvl": "NHK-50W1A35"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Nhỏ"
+     },
+     "nvl": "NDP-50W1A35"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-050E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-100E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-050E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-150E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-200E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-100E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-240E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKP-300E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-150E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-200E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-240E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-300E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-200E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKP-240E"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-050A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-100A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-050A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-150A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-200A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-100A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-240A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NHKD-300A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-150A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-200A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-240A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-300A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-200A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "HKLED Dim 5 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NHKD-240A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-50W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-100W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-50W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-200W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-100W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-240W56P"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-200W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-240W56P"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-150W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-200W38A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Done Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NDP-240W56P"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLA-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-065W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-100W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-150W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-200W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Philips Dim 10 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NPLD-250W"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG50A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG100H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG50A"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG200H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG100H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG240H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG200H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG240H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG150H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG200H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Meanwell Dim 1 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NMW-XLG240H"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM-050S150DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM-100S280DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM-050S150DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM200S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM-100S280DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM240S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM200S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM240S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM150S420DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM200S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Inventronics Dim 5 Cấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "NIV-EUM240S560DG"
+    },
+    {
+     "thanh_phan": "Nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Năng lượng mặt trời"
+     },
+     "nvl": "WPC-SLM-M15-4P"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-6B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-6B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": [
+       "HKLED Dim 1 Cấp",
+       "HKLED Dim 5 Cấp"
+      ],
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp thấp",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn to điện áp cao",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-NT-CD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "Không sử dụng"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-2B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-3B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-4B-SS-DD"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Nguồn": "Còn lại",
+      "Kiểu nguồn": "Nguồn nhỏ",
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "WPC-MDF-M15-2P-5B-SS-DD"
+    },
+    {
+     "thanh_phan": "Dây điện cấp nguồn",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "W-3x0.75-BK"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x240x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x240x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "150",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x460x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "250",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x460x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Dọc"
+     },
+     "nvl": "HCT-360x580x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x300x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "400",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x370x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "500",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x460x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "600",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x580x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "800",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x740x185mm-NO"
+    },
+    {
+     "thanh_phan": "Hộp carton",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "1000",
+      "Kiểu lắp": "Ngang"
+     },
+     "nvl": "HCT-660x900x185mm-NO"
+    },
+    {
+     "thanh_phan": "Xốp góc",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "XOP-GOC-110x110x120mm"
+    }
+   ]
+  },
+  "M30S050-A": {
+   "item_cha": "M30S050-A",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Chip LED",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Tản nhiệt",
+     "kieu": "Cố Định",
+     "nvl": "PTN-M30S050-A-HK-PG",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Lens",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt chip",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x3-RT-R-PH-SS201",
+     "sl_tho": "8.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt lens",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x6-RT-R-PH-SS201",
+     "sl_tho": "16.0"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "kieu": "Cố Định",
+     "nvl": "OPG-M12-RM",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-6B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-5B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-4B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-3B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-6P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-5P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-4P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-3P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "64"
+     },
+     "nvl": "PLS-M30S050-L64-G70/140"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "56"
+     },
+     "nvl": "PLS-M30S050-L56-G70/140"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "50"
+     },
+     "nvl": "PLS-M30S050-L50-G70/140"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "49"
+     },
+     "nvl": "PLS-M30S050-L49-G70/140"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Cầu đấu"
+     },
+     "nvl": "WPC-MDM-M15-2P-PGM"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Dây điện"
+     },
+     "nvl": "W-2x0.75-BK"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "64"
+     },
+     "nvl": "PZK-M30S050-64L"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "56"
+     },
+     "nvl": "PZK-M30S050-56L"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "50"
+     },
+     "nvl": "PZK-M30S050-64L"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "49"
+     },
+     "nvl": "PZK-M30S050-64L"
+    }
+   ]
+  },
+  "M30S050-B": {
+   "item_cha": "M30S050-B",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Chip LED",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Tản nhiệt",
+     "kieu": "Cố Định",
+     "nvl": "PTN-M30S050-B-HK-PG",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Lens",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt chip",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x3-RT-R-PH-SS201",
+     "sl_tho": "8.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt lens",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x6-RT-R-PH-SS201",
+     "sl_tho": "16.0"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "kieu": "Cố Định",
+     "nvl": "OPG-M12-RM",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-6B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-5B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-4B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Bridgelux 3030"
+     },
+     "nvl": "CM30S050-3B3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-6P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-5P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-4P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Lumileds 3030"
+     },
+     "nvl": "CM30S050-3P3-5C-64LED"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "64"
+     },
+     "nvl": "PLS-M30S050-L64-G70/140"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "56"
+     },
+     "nvl": "PLS-M30S050-L56-G70/140"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "50"
+     },
+     "nvl": "PLS-M30S050-L50-G70/140"
+    },
+    {
+     "thanh_phan": "Lens",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "49"
+     },
+     "nvl": "PLS-M30S050-L49-G70/140"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Cầu đấu"
+     },
+     "nvl": "WPC-MDM-M15-2P-PGM"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Dây điện"
+     },
+     "nvl": "W-2x0.75-BK"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "64"
+     },
+     "nvl": "PZK-M30S050-64L"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "56"
+     },
+     "nvl": "PZK-M30S050-56L"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "50"
+     },
+     "nvl": "PZK-M30S050-64L"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "moi_bien_the": false,
+     "cond": {
+      "Số lượng LED": "49"
+     },
+     "nvl": "PZK-M30S050-64L"
+    }
+   ]
+  },
+  "M50S050-A": {
+   "item_cha": "M50S050-A",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Chip LED",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Tản nhiệt",
+     "kieu": "Cố Định",
+     "nvl": "PTN-M30S050-A-HK-PG",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Lens",
+     "kieu": "Cố Định",
+     "nvl": "PLS-M50S050-L16-G70/140",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "kieu": "Cố Định",
+     "nvl": "PZK-M50S050-16L",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt chip",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x3-RT-R-PH-SS201",
+     "sl_tho": "8.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt lens",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x6-RT-R-PH-SS201",
+     "sl_tho": "16.0"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "kieu": "Cố Định",
+     "nvl": "OPG-M12-RM",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-6B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-5B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-4B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-3B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-6P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-5P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-4P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-3P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Cầu đấu"
+     },
+     "nvl": "WPC-MDM-M15-2P-PGM"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Dây điện"
+     },
+     "nvl": "W-2x0.75-BK"
+    }
+   ]
+  },
+  "M50S050-B": {
+   "item_cha": "M50S050-B",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Chip LED",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Tản nhiệt",
+     "kieu": "Cố Định",
+     "nvl": "PTN-M30S050-B-HK-PG",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Lens",
+     "kieu": "Cố Định",
+     "nvl": "PLS-M50S050-L16-G70/140",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+    },
+    {
+     "thanh_phan": "Gioăng chip",
+     "kieu": "Cố Định",
+     "nvl": "PZK-M50S050-16L",
+     "sl_tho": "1.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt chip",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x3-RT-R-PH-SS201",
+     "sl_tho": "8.0"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt lens",
+     "kieu": "Cố Định",
+     "nvl": "OVT-M3x6-RT-R-PH-SS201",
+     "sl_tho": "16.0"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "kieu": "Cố Định",
+     "nvl": "OPG-M12-RM",
+     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-6B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-5B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-4B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Bridgelux 5050"
+     },
+     "nvl": "CM50S050-3B5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (6.000K - 6.500K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-6P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trắng (5.000K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-5P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Trung tính (4.000K - 4.200K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-4P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Chip LED",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu ánh sáng": "Vàng (3.000K - 3.200K)",
+      "Loại LED": "Lumileds 5050"
+     },
+     "nvl": "CM50S050-3P5-5C-16LED"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Cầu đấu"
+     },
+     "nvl": "WPC-MDM-M15-2P-PGM"
+    },
+    {
+     "thanh_phan": "Cầu đấu",
+     "moi_bien_the": false,
+     "cond": {
+      "Kiểu đấu": "Dây điện"
+     },
+     "nvl": "W-2x0.75-BK"
+    }
+   ]
+  },
+  "VDP0X": {
+   "item_cha": "VDP0X",
+   "thanh_phan": [
+    {
+     "thanh_phan": "Khung module",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Tai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Quai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Đế bắt nguồn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt đế, hộp",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Ốc ghép ngang",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Ecu bắt tai, ghép ngang",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Ốc bắt tai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Ốc bắt quai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Ecu bắt quai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Long đen vênh bắt quai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Long đen phẳng bắt quai",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    },
+    {
+     "thanh_phan": "Hộp nguồn",
+     "kieu": "Theo Rule",
+     "nvl": "",
+     "sl_tho": "Ghi chú"
+    }
+   ],
+   "rules": [
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-050-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-100-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-050-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "150",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-150-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-200-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-100-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "250",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-250-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-300-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-150-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "400",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-200-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "500",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-250-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "600",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-300-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "800",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-400-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "1000",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PKG-VDP0X-500-GY-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "50",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-050-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-100-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "100",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-050-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "150",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-150-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-200-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "200",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-100-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "250",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-250-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-300-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "300",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-150-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "400",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-200-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "500",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-250-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "600",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-300-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "800",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-400-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Khung module",
+     "moi_bien_the": false,
+     "cond": {
+      "Công suất": "1000",
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PKG-VDP0X-500-BK-T-1.0mm-v3.0"
+    },
+    {
+     "thanh_phan": "Tai",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PTA-VDP0X-GY-T-2.0mm-v2.0"
+    },
+    {
+     "thanh_phan": "Tai",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PTA-VDP0X-BK-T-2.0mm-v2.0"
+    },
+    {
+     "thanh_phan": "Quai",
+     "moi_bien_the": false,
+     "cond": {
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PQU-VDP0X-N-GY-T-3.0mm-v2.0"
+    },
+    {
+     "thanh_phan": "Quai",
+     "moi_bien_the": false,
+     "cond": {
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PQU-VDP0X-D-GY-T-3.0mm-v2.0"
+    },
+    {
+     "thanh_phan": "Quai",
+     "moi_bien_the": false,
+     "cond": {
+      "Phân loại vỏ": "Dọc",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PQU-VDP0X-N-BK-T-3.0mm-v2.0"
+    },
+    {
+     "thanh_phan": "Quai",
+     "moi_bien_the": false,
+     "cond": {
+      "Phân loại vỏ": "Ngang",
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PQU-VDP0X-D-BK-T-3.0mm-v2.0"
+    },
+    {
+     "thanh_phan": "Đế bắt nguồn",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "PDE-VDP02-WH-T-0.7mm-v2.1"
+    },
+    {
+     "thanh_phan": "Ốc vít bắt đế, hộp",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OVT-M4x8-RT-T-PH-SS201"
+    },
+    {
+     "thanh_phan": "Ốc ghép ngang",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OBL-M5x10-RM-S-H-SS201"
+    },
+    {
+     "thanh_phan": "Ecu bắt tai, ghép ngang",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OEC-M5-RM-SS201"
+    },
+    {
+     "thanh_phan": "Ốc bắt tai",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OBL-M5x12-RM-T-PH-SS201"
+    },
+    {
+     "thanh_phan": "Ốc bắt quai",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OBL-M8x20-RM-S-H-SS201"
+    },
+    {
+     "thanh_phan": "Ecu bắt quai",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OEC-M8-RM-SS201"
+    },
+    {
+     "thanh_phan": "Long đen vênh bắt quai",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OLV-M8-SS201"
+    },
+    {
+     "thanh_phan": "Long đen phẳng bắt quai",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OLP-M8-SS201"
+    },
+    {
+     "thanh_phan": "Hộp nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu sơn": "Xám"
+     },
+     "nvl": "PHN-VDP0X-GY-T-0.7mm-v1.1"
+    },
+    {
+     "thanh_phan": "Hộp nguồn",
+     "moi_bien_the": false,
+     "cond": {
+      "Màu sơn": "Đen"
+     },
+     "nvl": "PHN-VDP0X-BK-T-0.7mm-v1.1"
+    }
+   ]
+  }
+ },
+ "loi": {}
+}

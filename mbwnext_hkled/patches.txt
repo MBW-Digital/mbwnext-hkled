@@ -23,3 +23,4 @@ mbwnext_hkled.patches.backfill_work_order_start_time
 mbwnext_hkled.patches.set_document_naming_series
 mbwnext_hkled.patches.import_danh_muc_vat_tu
 mbwnext_hkled.patches.add_item_replenishment_method
+mbwnext_hkled.patches.import_bom_template
