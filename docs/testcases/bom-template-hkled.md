@@ -101,6 +101,13 @@ Chốt của Thắng 18/08 trên PM-TASK-00110.
 | TC-CT-11 | *Năng lượng mặt trời* → Cầu đấu và Dây điện | vẫn xử lý như **nguồn to** | Pass — 1000W Ngang: Cầu đấu 4, Dây điện 0 | Pass |
 | TC-CT-12 | Khoảng 500 < CS ≤ 1000 ở Ngang (dây điện) | **200** | Pass — khách lấp khoảng trống 22/08, đã bỏ nhánh TODO | Pass |
 | TC-CT-13 | Đối chiếu lại sau bản khách sửa 22/08 chiều | 0 tổ hợp lệch, 0 ô bỏ trống | Pass — 160/160 khớp, không còn ô nào không kết luận được | Pass |
+| TC-MV-01 | Template module M30S050-A/B tạo được BOM | 40/40 mỗi template | Pass — trước 0/40 (báo *"chưa có bộ công thức"*) | Pass |
+| TC-MV-02 | Template module M50S050-A/B | 16/16 mỗi template | Pass | Pass |
+| TC-MV-03 | *Cầu đấu* / *Ốc dây điện* theo **Kiểu đấu** | `Cầu đấu` → 1 / 0 · `Dây điện` → 30 / 1 | Pass — biến thể `-CD-` ra `WPC-MDM…` ×1, không có ốc dây điện; biến thể `-DD-` ra `W-2x0.75-BK` ×30 + `OPG-M12-RM` ×1 | Pass |
+| TC-MV-04 | Dòng khai *Cố Định* mà SL có điều kiện | bộ nạp nâng lên *Số Lượng Theo Công Thức*, có in `↻` | Pass — nếu để nguyên thì dòng bị bỏ khỏi BOM âm thầm | Pass |
+| TC-MV-05 | 🔴 Vỏ VDP0X — 3 thành phần thiếu dữ liệu nguồn | **chặn**, nêu đích danh thành phần + biến thể + lối ra | Pass — 28/28 biến thể chặn với cùng lý do, không đoán bừa | Pass |
+| TC-MV-06 | Giao diện — tạo BOM module `M30S050-3B3-8C-64LED-CD-A` | 7 dòng, ốc 8 và 16 | Pass (**giao diện**) | Pass |
+| TC-MV-07 | Giao diện — tạo BOM vỏ `VDP0X-300-D-GY-v3.0` | hộp thoại nêu rõ lý do, **không khoá form** | Pass (**giao diện**) | Pass |
 | TC-UI-01 | 🔴 Giao diện — cột *Không Sử Dụng* hiện trên lưới rule | có cột, dòng tích ô để trống NVL | Pass (**giao diện**) — DP01S dòng 245/247/259/261 tích ô, ô NVL trống. ⚠ Ban đầu **KHÔNG hiện**: tổng `columns` vượt 11 *và* `__UserSettings` giữ bố cục cũ. Xem patch `reset_bom_rule_grid_view` | Pass |
 | TC-UI-02 | Giao diện — tạo BOM `DP01S300-3B3HT-AD` | 7 dòng, Xốp góc **4**, **không** có dây điện | Pass (**giao diện**) — trước là 8 dòng có `W-3x0.75-BK` 100m và Xốp góc 1 | Pass |
 | TC-UI-03 | Giao diện — tạo BOM `DP01S1K0-3B3HT-AN` (1000W Ngang HKLED) | Nguồn **4**, Cầu đấu **4** | Pass (**giao diện**) — trước cả hai ra 2; Module 20, ốc 40, Xốp góc 4 | Pass |

@@ -6717,7 +6717,7 @@
      "thanh_phan": "Cầu đấu",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 1 | Nếu Kiểu đấu: Dây diện thì SL 30"
     },
     {
      "thanh_phan": "Gioăng chip",
@@ -6741,7 +6741,7 @@
      "thanh_phan": "Ốc dây điện",
      "kieu": "Cố Định",
      "nvl": "OPG-M12-RM",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
    ],
    "rules": [
@@ -6860,7 +6860,7 @@
      "thanh_phan": "Cầu đấu",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 1 | Nếu Kiểu đấu: Dây diện thì SL 30"
     },
     {
      "thanh_phan": "Gioăng chip",
@@ -6884,7 +6884,7 @@
      "thanh_phan": "Ốc dây điện",
      "kieu": "Cố Định",
      "nvl": "OPG-M12-RM",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
    ],
    "rules": [
@@ -6985,79 +6985,79 @@
      "thanh_phan": "Khung module",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc: 2\nNgang: 4"
     },
     {
      "thanh_phan": "Tai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 1\nCông suất > 600: SL 2"
     },
     {
      "thanh_phan": "Đế bắt nguồn",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Nguồn nhỏ, Dọc:\n- Công suất <= 200: SL 1\n- Công suất > 200: SL 2\nNguồn nhỏ, Ngang:\n- Công suất <= 400: SL 2\n- Công suất 500-800: SL 4\n- Công suất 1000-1200: SL 6\n- Công suất 1500: SL 8\nNguồn to, Dọc, HKLED Dim 1 Cấp và HKLED Dim 5 Cấp: SL 1\nNguồn to, Dọc, còn lại: \n- Công suất <= 250 SL 1\n- Công suất >250 SL 2\nNguồn to, Ngang, HKLED Dim 1 Cấp và HKLED Dim 5 Cấp:\n- Công suất <= 600 SL 2\n- Công suất 800-1200: SL 4\n- Công suất 1500: SL 6\nNguồn to, Ngang, còn lại:\n- Công suất <= 500 SL 2\n- Công suất 600-1000: SL 4\n- Công suất 1200-1500: SL 6"
     },
     {
      "thanh_phan": "Ốc vít bắt đế, hộp",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Nguồn nhỏ, Dọc:\n- Công suất 50: SL 2\n- Công suất <= 200: SL 6\n- Công suất > 200: SL 12\nNguồn nhỏ, Ngang:\n- Công suất 100: SL 4\n- Công suất <= 400: SL 12\n- Công suất 500-800: SL 24\n- Công suất 1000-1200: SL 36\n- Công suất 1500: SL 48\nNguồn to, Dọc, HKLED Dim 1 Cấp và HKLED Dim 5 Cấp: SL 6\nNguồn to, Dọc, còn lại: \n- Công suất <= 250 SL 6\n- Công suất >250 SL 12\nNguồn to, Ngang, HKLED Dim 1 Cấp và HKLED Dim 5 Cấp:\n- Công suất <= 600 SL 12\n- Công suất 800-1200: SL 24\n- Công suất 1500: SL 36\nNguồn to, Ngang, còn lại:\n- Công suất <= 500 SL 12\n- Công suất 600-1000: SL 24\n- Công suất 1200-1500: SL 36"
     },
     {
      "thanh_phan": "Ốc ghép ngang",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc: SL 0\nNgang: Công suất / 50"
     },
     {
      "thanh_phan": "Ecu bắt tai, ghép ngang",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc: SL 0\nNgang: Công suất / 50"
     },
     {
      "thanh_phan": "Ốc bắt tai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 6\nCông suất > 600: SL 12"
     },
     {
      "thanh_phan": "Ốc bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Ecu bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Long đen vênh bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Long đen phẳng bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Hộp nguồn",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Nguồn nhỏ, Dọc:\n- Công suất 50: SL 0\n- Công suất <= 200: SL 1\n- Công suất > 200: SL 2\nNguồn nhỏ, Ngang:\n- Công suất 100: SL 0\n- Công suất <= 400: SL 2\n- Công suất 500-800: SL 4\n- Công suất 1000-1200: SL 6\n- Công suất 1500: SL 8\nNguồn to, Dọc, HKLED Dim 1 Cấp và HKLED Dim 5 Cấp: SL 1\nNguồn to, Dọc, còn lại: \n- Công suất <= 250 SL 1\n- Công suất >250 SL 2\nNguồn to, Ngang, HKLED Dim 1 Cấp và HKLED Dim 5 Cấp:\n- Công suất <= 600 SL 2\n- Công suất 800-1200: SL 4\n- Công suất 1500: SL 6\nNguồn to, Ngang, còn lại:\n- Công suất <= 500 SL 2\n- Công suất 600-1000: SL 4\n- Công suất 1200-1500: SL 6"
     }
    ],
    "rules": [

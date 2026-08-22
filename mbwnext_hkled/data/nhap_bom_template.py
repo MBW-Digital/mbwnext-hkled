@@ -296,13 +296,26 @@ def nhap_mot_sheet(ten_sheet, spec_sheet, chi_kiem=False):
 
 	for t in spec_sheet["thanh_phan"]:
 		sl, ly_do = _so_luong(t["sl_tho"])
+		kieu = t["kieu"]
 		if sl is None:
 			bao["sl_thieu"].append({
 				"tp": t["thanh_phan"], "ly_do": ly_do, "ghi_trong_sheet": t["sl_tho"],
 			})
+			# Khách khai "Cố Định" nhưng số lượng lại ĐỔI theo đặc tính (vd Ốc dây điện:
+			# "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1") — hai thứ mâu thuẫn.
+			# "Cố Định" lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đúng cho cả
+			# hai trường hợp; để nguyên là dòng bị bỏ khỏi BOM một cách âm thầm.
+			# Nâng lên "Số Lượng Theo Công Thức" để Server Script tính, NVL vẫn lấy từ ô
+			# khách khai. Ghi lại để người đọc báo cáo biết bộ nạp đã đổi kiểu.
+			if kieu == "Cố Định":
+				kieu = "Số Lượng Theo Công Thức"
+				bao.setdefault("doi_kieu", []).append({
+					"tp": t["thanh_phan"], "tu": "Cố Định", "sang": kieu,
+					"vi": ly_do,
+				})
 		doc.append("bom_component_table", {
 			"bom_component": t["thanh_phan"],
-			"component_type": t["kieu"],
+			"component_type": kieu,
 			# Khách để trống ô SL thì ghi 0, KHÔNG ghi 1. Ghi 1 thì engine coi như số lượng
 			# hợp lệ, dùng thẳng vào BOM và cảnh báo "chưa khai số lượng" không bao giờ bắn
 			# (nó chỉ bắn khi qty <= 0). Xốp góc đã lọt lưới đúng kiểu đó: dự phòng 1 trong
