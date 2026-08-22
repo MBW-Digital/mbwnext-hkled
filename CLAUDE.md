@@ -260,10 +260,30 @@ số sai. Hỏi engine theo **tên thành phần** (`resolve_qty_by_formula(ma, 
 `classify_nguon` cho cả phía code lẫn phía bảng khách, nên **không thể** phát hiện lỗi số 5 —
 báo "khớp hết" trong khi đang sai. Gieo thử một lỗi vào phía code để chắc bộ đối chiếu biết kêu.
 
-**Sheet vẫn chưa trả lời 4 chỗ** (đã hỏi Thắng 22/08): công thức cho module/vỏ · khoảng
-500 < CS ≤ 600 ở Ngang · ô ghi *"Công suất 100"* không rõ `=` hay `≤` · Cầu đấu không có nhánh
-cho nguồn nhỏ (site có biến thể nguồn nhỏ ở 600W/1200W) · và *"Năng lượng mặt trời"* không nằm
-trong danh sách hãng nào của sheet nên đang xếp vào nhánh "hãng khác".
+**Thắng trả lời chiều 22/08** — bảng đổi cấu trúc, *Sheet 1* tách thành **Nhóm I (Module)**,
+**Nhóm II (COB)**, **Nhóm III (Chip Module)**:
+
+| Hỏi | Trả lời | Đã làm |
+|---|---|---|
+| 500 < CS ≤ 600 ở Ngang | mốc là **500 < CS ≤ 1000 → 200** | đã sửa, bỏ nhánh TODO |
+| *"Công suất 100"* | đúng là **≤ 100** | code vốn đã đúng |
+| Cầu đấu, nguồn nhỏ | đi **chung nhánh hãng khác** (khách liệt kê tường minh *HKLED Nhỏ*, *Done Nhỏ*, *Năng lượng mặt trời* vào cùng ô) | code vốn đã đúng |
+| *Năng lượng mặt trời* | với **Nguồn** là dòng riêng, **1 phẳng** — không theo Kiểu lắp, không theo Công suất | đã sửa |
+| **Công thức module/vỏ** | ❌ **VẪN CHƯA CÓ** | 5/7 template vẫn treo |
+
+⚠ *"Năng lượng mặt trời"* nằm **dưới nhánh Nguồn to**, nên chỉ riêng thành phần **Nguồn** là đặc
+biệt: Cầu đấu vẫn đi chung nhóm hãng khác, Dây điện cấp nguồn vẫn ra 0. Đừng nâng nó thành một
+nhóm phân loại riêng trong `classify_nguon` — sẽ sai hai thành phần kia.
+
+⚠ **Thắng bổ sung 4 nhóm đèn thành phẩm mới, KHÔNG phải module/vỏ.** Nhóm II phủ đèn pha
+PTC/PTR/PXH/PTV/PVL/PKD, nhà xưởng XHB, **phòng nổ UFO NU1**; Nhóm III phủ đèn đường D11–D15.
+Ba nhóm đầu đã có trong `PREFIX_GROUPS`; **NU1 thì chưa** — đây là một trong *10 mã đèn chưa có
+nhóm công thức* nêu ở mục tài liệu giai đoạn 1. Bốn nhóm này **chưa được đối chiếu** với code
+theo cách đã làm cho Nhóm I.
+
+Kiểm tra cho chắc: thành phần của module/vỏ (*Khung module, Tai, Quai, Đế bắt nguồn, Hộp nguồn,
+Tản nhiệt*) chỉ xuất hiện ở các sheet **rule** `M30S050-*` / `VDP0X` — tức nói dùng NVL nào, chứ
+không nói số lượng bao nhiêu. Ba sheet công thức **chỉ chứa thành phần của đèn thành phẩm**.
 
 ### ⚠ Thêm field vào lưới bảng con: hai chỗ chặn, chỉ giao diện mới lộ
 

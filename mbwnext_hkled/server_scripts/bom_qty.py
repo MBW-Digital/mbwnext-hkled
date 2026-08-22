@@ -151,6 +151,13 @@ def calc_nguon_qty_module_group(attrs, rule_group):
 	mount = attrs.get("Kiểu lắp")
 	cat = classify_nguon(attrs)
 
+	# Bảng khách 22/08 (bổ sung chiều 22/08, dòng 23 nhóm I): "Năng lượng mặt trời" là một
+	# dòng RIÊNG trong khối Nguồn, số lượng 1 phẳng — không theo Kiểu lắp, không theo Công suất.
+	# Nó nằm dưới nhánh "Nguồn to" nên các thành phần KHÁC vẫn xử lý nó như nguồn to:
+	# Cầu đấu đi chung nhóm hãng khác, Dây điện cấp nguồn ra 0. Chỉ riêng Nguồn là đặc biệt.
+	if attrs.get("Nguồn") == "Năng lượng mặt trời":
+		return 1
+
 	if cat == "nho":
 		return 1 if power <= 50 else power / 50
 
@@ -223,8 +230,7 @@ def calc_day_dien_cap_nguon_qty(attrs, rule_group):
 				return 0
 			if power <= 500:
 				return 100
-			if power <= 600:
-				return 100  # KHOẢNG TRỐNG DỮ LIỆU 500-600, chờ HKLED xác nhận
+			# Khách đã lấp khoảng trống 500-600 ngày 22/08: mốc giờ là 500 < CS <= 1000.
 			if power <= 1000:
 				return 200
 			return 300
