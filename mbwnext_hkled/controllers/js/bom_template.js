@@ -46,11 +46,21 @@ function show_rule_dialog(frm, row, data) {
 		size: "large",
 		fields: [
 			{
+				fieldtype: "Check",
+				fieldname: "khong_su_dung",
+				label: __("Không sử dụng thành phần này"),
+				description: __(
+					"Tích khi biến thể khớp điều kiện bên dưới KHÔNG dùng thành phần này —" +
+						" lúc tạo BOM dòng đó bị bỏ hẳn, không cần chọn Nguyên Vật Liệu."
+				),
+			},
+			{
 				fieldtype: "Link",
 				options: "Item",
 				fieldname: "item",
 				label: __("Nguyên Vật Liệu áp dụng cho rule này"),
-				reqd: 1,
+				depends_on: "eval:!doc.khong_su_dung",
+				mandatory_depends_on: "eval:!doc.khong_su_dung",
 				get_query: () => ({ filters: { has_variants: 0 } }),
 			},
 			{ fieldtype: "Section Break", label: __("Thuộc Tính Điều Kiện") },
@@ -80,9 +90,13 @@ function show_rule_dialog(frm, row, data) {
 				return;
 			}
 
+			// Tích ô thì PHẢI bỏ trống NVL — server chặn trường hợp vừa tích vừa có NVL
+			// (BOMTemplate.validate_rule_items). Người dùng chọn NVL rồi mới tích ô thì giá
+			// trị cũ vẫn nằm trong dialog, không dọn ở đây là lưu xong mới báo lỗi.
 			const new_rule = frm.add_child("bom_rules", {
 				bom_component: row.bom_component,
-				item: values.item,
+				item: values.khong_su_dung ? null : values.item,
+				khong_su_dung: values.khong_su_dung ? 1 : 0,
 				cond_attrs: JSON.stringify(cond_attrs),
 				cond_label: describe_cond(cond_attrs),
 			});

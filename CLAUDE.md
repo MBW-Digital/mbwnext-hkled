@@ -34,9 +34,13 @@ mbwnext_hkled/
 │       ├── other_task.js                 # Kiểm tổng thời gian Công Việc Khác (GAP-8)
 │       └── work_order.js                # Nút Tính Lại Lịch / Bắt Đầu Sản Xuất / Thêm Đội Sản Xuất
 ├── data/
-│   ├── nhap_item.py                     # bộ nạp danh mục vật tư từ CSV (PM-TASK-00061)
-│   └── danh_muc/*.csv                   # 11 sheet nguồn, chép nguyên xi từ bảng khách gửi
-├── patches/                             # 18 patch, chạy post_model_sync
+│   ├── nhap_item.py                     # bộ nạp danh mục vật tư + Phương pháp bổ sung (PM-TASK-00061/67)
+│   ├── danh_muc/*.csv                   # 12 sheet nguồn, chép nguyên xi từ bảng khách gửi
+│   ├── thanh_pham/*.csv                 # 4 file Nhóm I–IV, chỉ 3 cột cần dùng (PM-TASK-00067)
+│   ├── doc_bom_sheet.py                 # ĐỌC file Excel BOM Template của khách -> spec.json (PM-TASK-00110)
+│   ├── nhap_bom_template.py             # spec.json -> BOM Template + BOM Rule, có mô phỏng khớp trước khi ghi
+│   └── bom_template/spec.json           # đặc tả 7 sheet đã đọc — bản trong git, diff được khi khách sửa file
+├── patches/                             # 20 patch, chạy post_model_sync
 │   ├── add_production_plan_bom_button.py       # Custom Field "Tạo BOM Tự Động" trên Production Plan Item
 │   ├── adjust_work_order_schedule_fields.py    # reqd/allow_on_submit cho field lịch trên Work Order
 │   ├── rename_time_to_manufacture_field.py     # sửa lỗi chính tả custom_time_to_manufature -> ...manufacture
@@ -54,7 +58,9 @@ mbwnext_hkled/
 │   ├── add_work_order_sales_info.py            # PM-TASK-00050: Khách Hàng + NV Bán Hàng trên Lệnh sản xuất
 │   ├── backfill_work_order_start_time.py       # lấp custom_start_time trống của lệnh cũ
 │   ├── set_document_naming_series.py           # PM-TASK-00054: mã chứng từ riêng HKLED
-│   └── import_danh_muc_vat_tu.py               # PM-TASK-00061: nạp 11 sheet danh mục vật tư
+│   ├── import_danh_muc_vat_tu.py               # PM-TASK-00061: nạp 12 sheet danh mục vật tư
+│   ├── add_item_replenishment_method.py        # PM-TASK-00067: trường Phương pháp bổ sung trên Item
+│   └── import_bom_template.py                  # PM-TASK-00110: nạp BOM Template từ file khách
 ├── fixtures/
 │   ├── custom_field.json                # 30 Custom Field (Item/Employee/Sales Order/Production Plan/Work Order)
 │   └── property_setter.json             # 19 Property Setter — mã chứng từ 9 loại phiếu (PM-TASK-00054)
@@ -117,6 +123,171 @@ Trong Server Script phải dùng **f-string**. Ngoài ra: không `import`, tên 
 trả kết quả qua **`frappe.flags`** (dùng được cho cả HTTP lẫn `run_script` từ Python) — **không** dùng
 `frappe.response` vì biến này không luôn tồn tại trong sandbox (background job / console).
 
+### Nạp BOM Template từ file khách (PM-TASK-00110)
+
+Khách gửi 1 Google Sheet, mỗi sheet = 1 mặt hàng cha. Đường đi:
+
+```
+file .xlsx  --doc_bom_sheet.py-->  data/bom_template/spec.json  --nhap_bom_template.py-->  BOM Template
+```
+
+Tách hai bước có lý do: `spec.json` nằm trong git nên **diff được** khi khách sửa file — đợt
+18/08 khách sửa 4 lần trong một ngày, không có bản diff thì không biết cái gì vừa đổi.
+
+Chạy lại khi khách sửa file:
+
+```bash
+python -m mbwnext_hkled.data.doc_bom_sheet <file.xlsx> > mbwnext_hkled/data/bom_template/spec.json
+bench --site hkled.com execute mbwnext_hkled.patches.import_bom_template.execute
+```
+
+#### Bảy cách viết trong file khách — đọc sai là ra BOM sai mà không có gì báo
+
+| Trong sheet | Nghĩa | Dựng thành |
+|---|---|---|
+| `Mọi biến thể đều chọn` | mọi biến thể dùng chung 1 NVL | 1 rule *Theo Rule*, điều kiện = một đặc tính chung, **tích đủ mọi giá trị** |
+| `<Đặc tính>: <Giá trị>` (rule 1 dòng) | như trên nhưng có điều kiện | 1 rule; dòng kế tiếp cùng thành phần **bỏ trống cột đầu** |
+| `tất cả` / `Tất cả` | không ràng buộc đặc tính đó | bỏ đặc tính khỏi điều kiện |
+| `Còn lại` / `Các loại còn lại` | tổ hợp chưa bị rule phía trên chiếm | **liệt kê thẳng** các tổ hợp còn lại |
+| `A và B` | nhiều giá trị trong một ô | OR các giá trị |
+| `Không sử dụng` ở cột Mã NVL | biến thể đó không dùng thành phần này | 1 rule **tích ô `Không Sử Dụng`**, ô NVL để trống |
+
+⚠ So khớp mấy chuỗi trên phải **KHÔNG phân biệt hoa thường** — khách viết cả `tất cả` lẫn
+`Tất cả` trong cùng một sheet. Khớp cứng theo chữ thì rule thành điều kiện `Công suất = "Tất cả"`,
+không biến thể nào có giá trị đó nên rule **chết lặng, không báo lỗi**.
+
+⚠ `Còn lại` phải xét theo **tổ hợp nhiều đặc tính cùng lúc**, không xét từng đặc tính riêng.
+DP01S/Module: rule trên chiếm (50W, Dọc) và (100W, Ngang); xét riêng thì *Kiểu lắp* còn lại là
+**tập rỗng** — sai. Xét theo cặp thì còn 14 cặp, gom thành 2 rule.
+
+⚠ Gặp cột điều kiện **điền dở** (một số dòng có giá trị, số khác trống) thì `doc_bom_sheet.py`
+**`raise` và bỏ qua cả sheet**, không đoán. Cột trống hoàn toàn = đặc tính không dùng, bỏ qua.
+
+#### Mô phỏng trước khi ghi — không ghi sheet nào còn cặp hỏng
+
+`nhap_bom_template.kiem_khop()` thử khớp **từng cặp (biến thể × thành phần Theo Rule)** rồi mới
+ghi, vì `find_rule_item` **throw** khi không rule nào khớp — một cặp hỏng = một BOM không tạo được.
+Cặp không khớp chia ba nhóm, chỉ nhóm cuối chặn ghi:
+
+- `co_y` — trùng tổ hợp khách ghi `Không sử dụng`
+- `chua_co_du_lieu` — khai tường minh ở hằng số **`CHUA_CO_DU_LIEU`** (hiện: DP01S/DP03S ở 1200W
+  và 1500W, khách chưa đặt sản xuất). Khách bổ sung thì **xoá mục đó đi**, bộ nạp tự đòi lại
+- `hong` — thiếu ngoài dự kiến → **chặn ghi**
+
+⚠ Đừng hạ ngưỡng kiểm để "cho chạy". Khai vào `CHUA_CO_DU_LIEU` thì chỗ thiếu ngoài dự kiến vẫn
+bị chặn; nới `kiem_khop` thì mất luôn lưới an toàn.
+
+#### `resolve_rules` cấm rule phủ trùng — chặt hơn engine lúc chạy
+
+`BOMTemplate.resolve_rules` throw khi 2 rule cùng thành phần cùng phủ 1 biến thể, trong khi
+`find_rule_item` chỉ lấy rule khớp **đầu tiên** theo `idx`. Nên **không dựng được** kiểu "rule cụ
+thể ở trên, rule vét ở dưới" — đó là lý do `Còn lại` phải liệt kê tường minh.
+
+Và `find_rule_item` lọc `if cond and variant_matches(...)`: rule **để trống điều kiện không bao
+giờ khớp**. Không có khái niệm rule mặc định.
+
+### ⚠ Một lỗ hổng engine còn lại (chờ TungDA — chốt của Thắng 18/08)
+
+**1. Không có bộ công thức số lượng cho mặt hàng cha là module / vỏ.**
+`resolve_formula_group` chỉ suy được theo tiền tố đèn thành phẩm (`DP01`, `DD01`…). `M30S050-A/B`,
+`M50S050-A/B`, `VDP0X` không khớp tiền tố nào → throw *"chưa có bộ công thức số lượng"*, **0 biến
+thể nào của 5 template đó tạo được BOM**. Script còn throw khi biến thể thiếu đặc tính `Công suất`,
+mà biến thể module không có đặc tính này.
+Đừng vá bằng cách thêm bừa vào `FORMULA_GROUP_BY_TEMPLATE`: `COMPONENT_MAP` đang có sẵn công thức
+cho `Chip LED`, `Lens`, `Gioăng chip`… viết cho **đèn thành phẩm**, áp nhầm sang module thì ra số
+sai mà không có gì báo.
+
+**2. ✅ ĐÃ SỬA 21/08 — ô tích "Không Sử Dụng" trên BOM Rule.** *(chốt của Thắng 21/08)*
+
+Trước: nhánh `component_type == "Theo Rule"` gọi `find_rule_item` và throw **trước** khối tính qty,
+nên tổ hợp `Không sử dụng` **báo lỗi** thay vì bị bỏ dòng. Ảnh hưởng 640 biến thể mỗi sheet
+DP01S/DP03S.
+
+Đã cân nhắc hai hướng. **Không** chọn hướng "đảo thứ tự, tính qty trước rồi bỏ dòng khi qty ≤ 0":
+hướng đó chỉ cứu được thành phần nào *tình cờ* có công thức trả 0, mà "không dùng" là do **khách
+khai**, không có gì bảo đảm nó luôn trùng kết quả công thức.
+
+Cách đang dùng — khai tường minh vào dữ liệu:
+
+- `BOM Rule.khong_su_dung` (Check). Tích thì **bỏ trống** `item`.
+- `item` **đã bỏ `reqd`** trên DocType. Ràng buộc KHÔNG mất, chuyển xuống
+  `BOMTemplate.validate_rule_items`: chưa tích ô mà trống NVL → chặn; vừa tích ô vừa có NVL → chặn.
+  ⚠ Sửa chỗ này phải giữ cả hai vế, bỏ `reqd` mà không bù là để lọt rule rỗng.
+- `find_rule_item` trả **cả dòng rule**, không chỉ mã NVL — trả None thì không phân biệt được
+  "khách khai không dùng" với "quên chưa đặt rule", hai thứ xử lý ngược nhau.
+- Thân Server Script chạy ở **cấp module**, `return` là SyntaxError → thoát sớm bằng cờ `khong_dung`.
+- `api/bom.py` **không phải sửa**: nhánh `qty <= 0: continue` có sẵn, dòng tự rụng.
+
+Kết quả đo 21/08: 719 → **733 rule**, 16 dòng tích ô (đều ở *Cầu đấu* của DP01S/DP03S), nhóm `co_y`
+trong `kiem_khop` từ 640 mỗi sheet về **0**. `DP01S050-3B3HT-AD` — ca Thắng nêu — giờ tạo được BOM
+6 NVL, không có Cầu đấu. Mẫu 60 biến thể 200W vẫn đủ 8 NVL, không hồi quy.
+
+### Công thức số lượng — bảng khách gửi 22/08 và 5 lỗi đã sửa
+
+Nguồn chuẩn: Google Sheet *"công thức hoàn chỉnh"* Thắng gửi trên PM-TASK-00110 (22/08).
+Sheet phủ **2 nhóm**: đèn pha P01–P03 (tức `DP01S`/`DP03S`) và đèn đường D01–D0x.
+**Không** phủ module/vỏ — mục đó vẫn treo.
+
+Đối chiếu 160 tổ hợp thật (Công suất × Kiểu lắp × Nguồn × Kiểu nguồn) của DP01S, đã sửa:
+
+1. **Dây điện cấp nguồn bỏ sót điều kiện loại nguồn** — 98/160 tổ hợp. Trong sheet, cả cây
+   Dọc/Ngang nằm dưới ô gộp `C37:C43 = "Nguồn nhỏ"`; *Nguồn to điện áp thấp/cao* đều **0**
+   (dây đi kèm nguồn, không tính vào BOM đèn). Bản cũ không xét loại nguồn → cấp thừa dây.
+2. **Thiếu nhánh chia hết cho nguồn to HKLED ở Kiểu lắp Ngang** (Nguồn + Cầu đấu).
+   Sheet: ≤100 → 1/0 · ≤600 → 2 · rồi %300 → %250 → %200.
+3. **Sai thứ tự ưu tiên chia hết cho nguồn to hãng khác ở Ngang**: đúng là **250 → 150 → 200**,
+   bản cũ là 250 → 200 → 150. ⚠ Hai nhánh Ngang có thứ tự ƯU TIÊN KHÁC NHAU — đừng gộp cho
+   gọn: 1200W ra 8 với 250/150/200 nhưng ra 6 với 250/200/150.
+4. **Xốp góc = 4** (bản cũ 1). Đèn đường dùng thành phần tên khác: *Xốp chèn* = 2.
+5. **Phân loại nguồn suy sai từ tên hãng.** Site có sẵn đặc tính **`Kiểu nguồn`** với đúng ba
+   giá trị sheet dùng (*Nguồn nhỏ* / *Nguồn to điện áp thấp* / *Nguồn to điện áp cao*), có ở
+   55 mặt hàng cha. Bản cũ suy trục nhỏ/to từ danh sách tên hãng hard-code nên
+   **"Năng lượng mặt trời"** (Kiểu nguồn = *to điện áp thấp*) rơi nhầm vào *nhỏ* — 512 biến
+   thể mỗi template tính sai cả Nguồn, Cầu đấu lẫn Dây điện. Nay trục nhỏ/to lấy từ
+   `Kiểu nguồn`; chỉ trục HKLED-hay-hãng-khác mới đọc tên hãng, vì sheet tách theo hãng.
+
+⚠ **Số cố định cũng để trong `COMPONENT_MAP`, đừng để ở ô Số Lượng của dòng thành phần.**
+File khách để trống ô SL, bộ nạp buộc phải điền giá trị dự phòng, và giá trị đó đi thẳng vào
+BOM. Xốp góc sai đúng kiểu đó — dự phòng 1 trong khi bảng ghi 4, và **không có gì báo**: cảnh
+báo `qty_defaulted` chỉ bắn khi qty ≤ 0, mà bộ nạp lại ghi 1. Đã đổi bộ nạp ghi **0** cho ô SL
+trống để cảnh báo bắn được.
+
+⚠ **Bẫy khi tự kiểm: đừng nhận diện thành phần bằng tiền tố mã NVL.** `WPC-` vừa là Cầu đấu
+(`WPC-MDF-…`) vừa là Nguồn của biến thể năng lượng mặt trời (`WPC-SLM-…`). Đếm bằng tiền tố ra
+số sai. Hỏi engine theo **tên thành phần** (`resolve_qty_by_formula(ma, "Cầu đấu", …)`).
+
+⚠ **Bộ đối chiếu phải để hai phía phân loại độc lập.** Bản đầu của hàm so sánh gọi chung
+`classify_nguon` cho cả phía code lẫn phía bảng khách, nên **không thể** phát hiện lỗi số 5 —
+báo "khớp hết" trong khi đang sai. Gieo thử một lỗi vào phía code để chắc bộ đối chiếu biết kêu.
+
+**Sheet vẫn chưa trả lời 4 chỗ** (đã hỏi Thắng 22/08): công thức cho module/vỏ · khoảng
+500 < CS ≤ 600 ở Ngang · ô ghi *"Công suất 100"* không rõ `=` hay `≤` · Cầu đấu không có nhánh
+cho nguồn nhỏ (site có biến thể nguồn nhỏ ở 600W/1200W) · và *"Năng lượng mặt trời"* không nằm
+trong danh sách hãng nào của sheet nên đang xếp vào nhánh "hãng khác".
+
+### ⚠ Thêm field vào lưới bảng con: hai chỗ chặn, chỉ giao diện mới lộ
+
+Thêm `in_list_view` cho một field của child table **chưa chắc nó hiện trên lưới**. Đã vấp cả
+hai chỗ khi thêm ô tích *Không Sử Dụng* vào `BOM Rule` (21–22/08):
+
+1. **Lưới cấp tối đa 11 đơn vị cột, và Frappe LUÔN chèn field bắt buộc** dù không khai
+   `in_list_view` (`bom_component`). Không khai `columns` thì Frappe tự chia, tổng vượt 11 và
+   field **cuối** rụng khỏi lưới. ➜ Khai `columns` tường minh cho mọi field muốn thấy, tổng ≤ 11.
+2. **`__UserSettings` lưu bố cục lưới THEO TỪNG NGƯỜI DÙNG** (`GridView` → tên doctype con →
+   danh sách field). Bố cục đã lưu **đè lên** khai báo DocType, nên người từng chỉnh lưới sẽ
+   không thấy field mới còn người chưa chỉnh thì thấy — khác nhau theo tài khoản, rất khó đoán.
+   ➜ Patch `reset_bom_rule_grid_view` gỡ đúng khoá đó, giữ nguyên phần cài đặt khác của họ.
+
+Cả hai đều **không** lộ ra khi kiểm bằng query hay API — dữ liệu vẫn đúng, chỉ là người dùng
+không nhìn thấy cột. Phải mở giao diện thật mới thấy.
+
+### Chi phí bảo trì của cách khai "Mọi biến thể đều chọn"
+
+Rule kiểu này phải bám vào **một đặc tính** và liệt kê sẵn mọi giá trị của nó, nên bộ nạp chọn đặc
+tính ít giá trị nhất. VDP0X ra điều kiện `Version: v3.0`. Khách ra vỏ `v4.0` là 9 rule đó **ngừng
+khớp**, phải mở BOM Template tích thêm bằng tay. Dùng *Cố Định* thì không vướng, nhưng Thắng chốt
+*Theo Rule* vì còn cần chạy công thức số lượng ở Server Script.
+
 ### UI: Dialog "Tạo Rule" (`bom_template.js`)
 Trên dòng `Theo Rule` của Bảng Thành Phần BOM có nút **Tạo Rule** → dialog "Chọn NVL theo đặc tính":
 mỗi **tổ hợp giá trị đặc tính đang thực sự được biến thể của item cha dùng** là 1 ô chọn Item.
@@ -148,6 +319,29 @@ dữ liệu còn chờ HKLED xác nhận: `docs/features/bom-template-theo-bien-
 UFO NU1, `DX01S*` — đèn nhà xưởng UFO X01). Từ khi bỏ `rule_group`, việc suy nhóm nằm trong Server
 Script — 10 mã này rơi vào nhánh `frappe.throw("Chưa cấu hình công thức …")`, tức **báo lỗi rõ ràng
 thay vì tính sai**. Vẫn là câu hỏi còn treo với HKLED, không phải chuyện đã xong.
+
+### Hộp thoại "Chọn Điều Kiện" — nút Tạo Rule
+
+`controllers/js/bom_template.js` + `bom_template.py::get_condition_attributes`.
+
+**Giá trị đặc tính trả về TOÀN BỘ danh mục**, kèm `used_values` đánh dấu giá trị nào đang thật sự có
+biến thể dùng; client làm mờ và gắn dấu `°` cho giá trị chưa có biến thể (PM-TASK-00105).
+⚠ Bản đầu chỉ trả giá trị đã có biến thể, với lập luận "chọn giá trị chưa ai dùng thì rule vô nghĩa"
+— **khách báo sai**: họ cần đặt rule TRƯỚC cho hàng sắp có. Cách cũ giấu mất 11/24 mức Công suất,
+6/10 Chip LED, 8/18 Nguồn của `DP01S`.
+
+Thuộc tính lấy từ **bảng đặc tính khai trên chính Mặt Hàng Cha**, giữ nguyên thứ tự khai — không suy
+từ biến thể rồi sắp theo bảng chữ cái. Mỗi mặt hàng cha một bộ khác nhau (DP01S 7, DD11S/DPVDS/DXHBC 5).
+Giá trị đã bị xoá khỏi danh mục mà biến thể còn dùng thì **vẫn giữ**, nếu không rule cũ trỏ vào nó
+sẽ không sửa được.
+
+Mỗi dòng đặc tính có ô **Chọn tất cả**, đồng bộ hai chiều: tick tay đủ hết thì tự bật, bỏ bớt một giá
+trị thì tự tắt và chuyển `indeterminate` (PM-TASK-00102).
+
+⚠ **Mỗi lần tick là một lượt gọi `count_matched_variants` mất ~1 giây** (quét toàn bộ biến thể của
+mặt hàng cha — DP01S có 5.120). Tick nhanh vài ô là các lượt chồng nhau và **lượt về sau cùng chưa
+chắc là lượt mới nhất** → hiện số biến thể sai. Đã đánh số lượt (`update_counts._luot`) và chỉ nhận
+kết quả của lượt mới nhất. Sửa hàm này phải giữ cơ chế đó.
 
 ## PHẦN II — Bậc Thợ & Giờ Công Chuẩn
 
@@ -210,8 +404,32 @@ Phần III (`PIII-TEST Nhan Su A/B/C`, `PIII-TEST-ITEM-A`, `MFG-WO-2026-00129` =
 được dựng trên bench cũ `/home/pc/test_core`, **KHÔNG có** trên bench `mbwnext_project` hiện tại.
 
 Site `hkled.com` của bench này là **bản backup dữ liệu khách ngày 30/07/2026**: 310 Item Template,
-35.713 Item, 0 BOM Template, 3 BOM + 3 Work Order (đều trên item test cũ `Thành phẩm 1`), 5 Bậc Thợ,
+35.713 Item, 3 BOM + 3 Work Order (đều trên item test cũ `Thành phẩm 1`), 5 Bậc Thợ,
 11 Employee Schedule, 6 Employee Allocation. Kiểm tra lại bằng query trước khi tin số liệu ở đây.
+
+Sau các đợt nhập dữ liệu khách: **60.784 Item** (PM-TASK-00061/67) và **7 BOM Template** —
+`DP01S`, `DP03S`, `M30S050-A/B`, `M50S050-A/B`, `VDP0X` (PM-TASK-00110) — **733 rule** sau đợt
+bổ sung ô tích *Không Sử Dụng* ngày 21/08.
+
+### Nút "Thêm Đội Sản Xuất" — lý do không tính được % thời gian rảnh
+
+`api/work_team.py::tinh_thoi_gian_ranh` trả thêm `free_time_note` khi mốc kết thúc **không sau** mốc
+bắt đầu, kèm giá trị cụ thể của cả hai mốc. `controllers/js/work_order.js` khi thiếu trường thì nêu
+**đích danh trường nào** còn trống.
+
+⚠ Trước đây cả hai trường hợp — thiếu mốc, và có đủ mốc nhưng ngược thứ tự — đều hiện chung câu
+"Điền Thời Gian Bắt Đầu và Thời Điểm Cần Hoàn Thành". Khách nhìn thấy cả hai trường **đã có sẵn trên
+màn hình**, đọc câu bảo đi điền, kết luận chức năng hỏng. Trên site có 19/35 lệnh thiếu mốc và 3/35
+lệnh có mốc kết thúc trước mốc bắt đầu.
+
+### Hai bẫy giao diện Frappe đã dính
+
+**`frm.set_intro` NỐI THÊM banner, không thay thế.** `Layout.show_message()` dùng `appendTo`; chỉ
+chuỗi rỗng mới gọi `empty()`. Đổi giá trị vài lần là chồng một cột banner. Phải gọi `frm.set_intro("")`
+ở đầu handler.
+
+**`frappe.msgprint` ra hộp thoại RỖNG** nếu gọi ngay sau khi điền bảng con — chuỗi trigger `item_code`
+của ERPNext còn đang chạy và nó dọn hộp thoại msgprint dùng chung. Dùng banner `frm.set_intro()` thay thế.
 
 ## Hooks đăng ký (hooks.py)
 
@@ -410,8 +628,12 @@ Mỗi tính năng dùng **một tên gốc chung cho cả 4 thư mục** để t
 | `bieu-do-gantt-lich-lam-viec` | PM-FEAT-00009 | ✔ | ✔ (.html) | ✔ 31 ca | ✔ vận hành + `anh/` |
 
 Test case của các PM Task rời (không thuộc feature nào) đặt theo nhóm việc:
-`docs/testcases/ghi-chu-san-xuat-va-ke-hoach-tu-don-ban.md` (PM-TASK-00046/47/49/50),
-`docs/testcases/ma-chung-tu-hkled.md` (PM-TASK-00054).
+`ghi-chu-san-xuat-va-ke-hoach-tu-don-ban.md` (PM-TASK-00046/47/49/50),
+`ma-chung-tu-hkled.md` (PM-TASK-00054),
+`danh-muc-vat-tu-hkled.md` + `danh-muc-vat-tu-van-de-theo-sheet.md` +
+`danh-muc-vat-tu-ten-can-sua.md` + `danh-muc-lens.md` (PM-TASK-00061/108),
+`phuong-phap-bo-sung.md` (PM-TASK-00067),
+`bom-template-hkled.md` (PM-TASK-00110) — tất cả trong `docs/testcases/`.
 
 ## PHẦN V — Biểu đồ tình hình làm việc của nhân sự (`PM-FEAT-00009`, xong 08/08/2026)
 

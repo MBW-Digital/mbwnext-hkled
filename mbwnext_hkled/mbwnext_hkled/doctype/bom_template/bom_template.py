@@ -144,7 +144,23 @@ class BOMTemplate(Document):
 					)
 
 		for rule in self.bom_rules:
-			if frappe.db.get_value("Item", rule.item, "has_variants"):
+			# `item` đã bỏ `reqd` trên DocType để dòng "Không Sử Dụng" lưu được với ô NVL trống.
+			# Ràng buộc không mất đi, chỉ chuyển xuống đây — nếu không thì rule rỗng lọt qua
+			# và lúc tạo BOM mới lòi ra "chưa thiết lập NVL", sai chỗ khác hẳn nơi nhập liệu.
+			if not rule.khong_su_dung and not rule.item:
+				frappe.throw(
+					_("Rule #{0} ({1}): chưa chọn Nguyên Vật Liệu. Nếu biến thể này không dùng"
+						" thành phần đó thì tích ô “Không Sử Dụng”.").format(
+						rule.idx, frappe.bold(rule.bom_component)
+					)
+				)
+			if rule.khong_su_dung and rule.item:
+				frappe.throw(
+					_("Rule #{0} ({1}): đã tích “Không Sử Dụng” thì phải bỏ trống Nguyên Vật Liệu.").format(
+						rule.idx, frappe.bold(rule.bom_component)
+					)
+				)
+			if rule.item and frappe.db.get_value("Item", rule.item, "has_variants"):
 				frappe.throw(
 					_("Rule #{0} ({1}): Nguyên Vật Liệu {2} không được là mặt hàng Template").format(
 						rule.idx, frappe.bold(rule.bom_component), frappe.bold(rule.item)

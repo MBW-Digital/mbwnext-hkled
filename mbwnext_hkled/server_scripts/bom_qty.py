@@ -22,11 +22,38 @@ SCRIPT = '''
 # HELPER FUNCTIONS
 # ==================================================================
 
-def classify_nguon(nguon):
-	"""Phân loại giá trị đặc tính "Nguồn" thành 3 nhóm dùng chung nhiều công thức."""
+def classify_nguon(attrs):
+	"""Phân loại nguồn thành 3 nhóm: "nho" / "to_hkled" / "to_khac".
+
+	HAI TRỤC, lấy từ hai đặc tính khác nhau — đừng gộp:
+
+	1. nhỏ hay to  -> đặc tính **"Kiểu nguồn"** trên chính biến thể. Site có sẵn đúng ba
+	   giá trị bảng khách dùng: "Nguồn nhỏ" / "Nguồn to điện áp thấp" / "Nguồn to điện áp
+	   cao", và có ở 55 mặt hàng cha.
+	2. trong nhóm to: HKLED hay hãng khác -> đặc tính **"Nguồn"** (tên hãng), vì bảng khách
+	   tách hai nhánh này theo đúng tên hãng.
+
+	⚠ Bản cũ suy trục 1 từ danh sách tên hãng, và sai thật: "Năng lượng mặt trời" có
+	Kiểu nguồn = "Nguồn to điện áp thấp" nhưng không nằm trong danh sách nào nên rơi vào
+	"nho" — 512 biến thể mỗi template DP01S/DP03S tính sai Nguồn, Cầu đấu và Dây điện.
+	Danh sách tên hãng cũng hỏng lặng mỗi lần khách thêm hãng mới.
+	"""
 	nhom_to_hkled = ("HKLED Dim 1 Cấp", "HKLED Dim 5 Cấp")
 	nhom_to_khac = ("Done Dim 1 Cấp", "Philips Dim 1 Cấp", "Philips Dim 10 Cấp",
 		"Meanwell Dim 1 Cấp", "Inventronics Dim 5 Cấp")
+	nguon = attrs.get("Nguồn")
+	kieu = (attrs.get("Kiểu nguồn") or "").strip()
+
+	if kieu:
+		if kieu == "Nguồn nhỏ":
+			return "nho"
+		# Còn lại là "Nguồn to điện áp thấp" / "Nguồn to điện áp cao" — bảng khách gộp
+		# chung, chỉ tách tiếp theo tên hãng.
+		# ⚠ Hãng không nằm trong danh sách nào (vd "Năng lượng mặt trời") rơi vào to_khac.
+		# Bảng khách KHÔNG nói hãng đó thuộc nhánh nào — đã hỏi Thắng 22/08.
+		return "to_hkled" if nguon in nhom_to_hkled else "to_khac"
+
+	# Biến thể chưa khai "Kiểu nguồn": giữ nguyên cách suy cũ để không chặn giữa chừng.
 	if nguon in nhom_to_hkled:
 		return "to_hkled"
 	if nguon in nhom_to_khac:
@@ -52,21 +79,26 @@ def variant_matches(cond_attrs, variant_attrs):
 	return True
 
 def find_rule_item(bom_template, component_name, variant_attrs):
-	"""Tra NVL cho thành phần "Theo Rule" bằng cond_attrs (spec §8).
+	"""Tra rule cho thành phần "Theo Rule" bằng cond_attrs (spec §8).
 
 	Rule nằm ở bảng `bom_rules` của BOM Template, phân biệt theo `bom_component`
 	(phương án B, spec §5 — phương án A không dựng được vì Frappe không hỗ trợ bảng con
-	lồng 2 cấp). Trả None nếu không rule nào khớp — người gọi tự throw.
+	lồng 2 cấp).
+
+	Trả về CẢ DÒNG rule chứ không chỉ mã NVL, vì rule tích "Không Sử Dụng" có ô NVL trống
+	mà vẫn là một kết quả khớp hợp lệ — trả None thì người gọi không phân biệt được
+	"khách khai không dùng" với "quên chưa đặt rule", hai thứ phải xử lý ngược nhau.
+	Trả None chỉ khi thật sự không rule nào khớp.
 	"""
 	rules = frappe.get_all("BOM Rule",
 		filters={"parent": bom_template, "parenttype": "BOM Template",
 			"bom_component": component_name},
-		fields=["item", "cond_attrs"], order_by="idx")
+		fields=["item", "cond_attrs", "khong_su_dung"], order_by="idx")
 	for r in rules:
 		# Sandbox Server Script không có frappe.parse_json, chỉ có json.loads (safe_exec.py:187).
 		cond = json.loads(r.cond_attrs) if r.cond_attrs else []
 		if cond and variant_matches(cond, variant_attrs):
-			return r.item
+			return r
 	return None
 
 def get_variant_attrs(variant_code):
@@ -90,23 +122,34 @@ def calc_oc_vit_module_qty(attrs, rule_group):
 	return calc_module_qty(attrs, rule_group) * 2
 
 def nguon_to_p01_p03(power, mount, cat):
+	"""Bảng khách gửi 22/08 (Google Sheet "công thức hoàn chỉnh", nhóm đèn pha P01-P03).
+
+	Hai nhánh Ngang đều có bước ƯU TIÊN CHIA HẾT sau ngưỡng, và thứ tự ưu tiên của
+	hai nhánh KHÁC NHAU — nguồn HKLED là 300/250/200, nguồn khác là 250/150/200.
+	Đừng gộp lại cho gọn: đổi thứ tự là ra số khác (1200W: 250/150/200 -> 8, còn
+	250/200/150 -> 6).
+	"""
 	if mount == "Dọc":
 		if cat == "to_hkled":
 			return 1
 		return 1 if power <= 250 else 2
 	else:  # Ngang
 		if cat == "to_hkled":
-			return 1 if power <= 100 else 2
+			if power <= 100:
+				return 1
+			if power <= 600:
+				return 2
+			return resolve_modulo_priority(power, [300, 250, 200], 2)
 		if power <= 100:
 			return 1
 		if power <= 500:
 			return 2
-		return resolve_modulo_priority(power, [250, 200, 150], 2)
+		return resolve_modulo_priority(power, [250, 150, 200], 2)
 
 def calc_nguon_qty_module_group(attrs, rule_group):
 	power = frappe.utils.flt(attrs.get("Công suất"))
 	mount = attrs.get("Kiểu lắp")
-	cat = classify_nguon(attrs.get("Nguồn"))
+	cat = classify_nguon(attrs)
 
 	if cat == "nho":
 		return 1 if power <= 50 else power / 50
@@ -114,7 +157,10 @@ def calc_nguon_qty_module_group(attrs, rule_group):
 	if rule_group == "P01_P03":
 		return nguon_to_p01_p03(power, mount, cat)
 	if rule_group == "D01_D05":
-		# Không phân biệt Kiểu lắp, không có Ngang/Dọc
+		# Không phân biệt Kiểu lắp, không có Ngang/Dọc.
+		# Nguồn HKLED luôn 1 bất kể công suất (bảng khách 22/08) — bản cũ bỏ sót vế này.
+		if cat == "to_hkled":
+			return 1
 		return 1 if power <= 250 else 2
 
 	frappe.throw(f"Chưa cấu hình công thức Nguồn cho nhóm {rule_group}")
@@ -122,7 +168,7 @@ def calc_nguon_qty_module_group(attrs, rule_group):
 def calc_cau_dau_qty(attrs, rule_group):
 	power = frappe.utils.flt(attrs.get("Công suất"))
 	mount = attrs.get("Kiểu lắp")
-	cat = classify_nguon(attrs.get("Nguồn"))
+	cat = classify_nguon(attrs)
 
 	if rule_group == "P01_P03":
 		if power <= 50:
@@ -130,13 +176,21 @@ def calc_cau_dau_qty(attrs, rule_group):
 		if mount == "Dọc":
 			return 1 if (cat == "to_hkled" or power <= 250) else 2
 		else:  # Ngang
+			# Cùng cấu trúc với Nguồn ở trên, chỉ khác ngưỡng đầu trả 0 thay vì 1.
 			if cat == "to_hkled":
-				return 0 if power <= 100 else 2
+				if power <= 100:
+					return 0
+				if power <= 600:
+					return 2
+				return resolve_modulo_priority(power, [300, 250, 200], 2)
 			if power <= 100:
 				return 0
 			if power <= 500:
 				return 2
-			return resolve_modulo_priority(power, [250, 200, 150], 2)
+			# ⚠ Bảng khách KHÔNG có nhánh cho nguồn nhỏ ở Cầu đấu, chỉ liệt kê 2 nhóm
+			# nguồn to. Nguồn nhỏ đang đi chung đường này (giữ nguyên hành vi cũ) —
+			# trên site có biến thể nguồn nhỏ ở 600W/1200W. Đã hỏi Thắng 22/08.
+			return resolve_modulo_priority(power, [250, 150, 200], 2)
 
 	if rule_group == "D01_D05":
 		if power <= 50:
@@ -154,6 +208,12 @@ def calc_day_dien_cap_nguon_qty(attrs, rule_group):
 		return flat_table[rule_group]
 
 	if rule_group == "P01_P03":
+		# Bảng khách 22/08: cả cây Dọc/Ngang bên dưới chỉ áp cho NGUỒN NHỎ (ô gộp
+		# C37:C43); "Nguồn to điện áp thấp" và "Nguồn to điện áp cao" đều = 0 — đèn
+		# dùng nguồn to thì dây đi kèm nguồn, không tính vào BOM đèn.
+		# Bản cũ bỏ qua điều kiện này nên cấp thừa dây cho 98/160 tổ hợp.
+		if classify_nguon(attrs) != "nho":
+			return 0
 		if mount == "Dọc":
 			if power <= 50:
 				return 0
@@ -196,7 +256,7 @@ def nguon_to_ptx_xhb_dql(power, cat):
 
 def calc_nguon_qty_chip_group(attrs, rule_group):
 	power = frappe.utils.flt(attrs.get("Công suất"))
-	cat = classify_nguon(attrs.get("Nguồn"))
+	cat = classify_nguon(attrs)
 
 	if rule_group == "D11_D15":
 		if cat == "nho":
@@ -213,7 +273,7 @@ def calc_nguon_qty_chip_group(attrs, rule_group):
 def calc_day_dien_dau_chip_qty(attrs, rule_group):
 	"""Dùng chung cho cả Đỏ và Đen — 2 màu công thức giống hệt nhau"""
 	power = frappe.utils.flt(attrs.get("Công suất"))
-	cat = classify_nguon(attrs.get("Nguồn"))
+	cat = classify_nguon(attrs)
 
 	if rule_group == "PTX":
 		if cat == "nho":
@@ -253,7 +313,37 @@ def calc_oc_vit_bat_lens_qty(attrs, rule_group):
 # DISPATCH TABLE + ENTRY POINT
 # ==================================================================
 
+# Ba thành phần dưới đây là SỐ CỐ ĐỊNH theo nhóm, không phải công thức — nhưng vẫn để
+# ở đây chứ không để ô Số Lượng trên dòng thành phần. Lý do: file khách để TRỐNG ô SL,
+# bộ nạp phải điền một giá trị dự phòng, và giá trị đó đi thẳng vào BOM mà không ai báo.
+# Xốp góc đã sai như vậy suốt (dự phòng 1, đúng ra là 4). Khai ở đây thì sai lệch so với
+# bảng khách lộ ra ngay, và mỗi nhóm khai một số riêng.
+def calc_bo_vo_den_qty(attrs, rule_group):
+	if rule_group in ("P01_P03", "D01_D05"):
+		return 1
+	frappe.throw(f"Chưa có số lượng Bộ vỏ đèn cho nhóm {rule_group}")
+
+def calc_hop_carton_qty(attrs, rule_group):
+	if rule_group in ("P01_P03", "D01_D05"):
+		return 1
+	frappe.throw(f"Chưa có số lượng Hộp carton cho nhóm {rule_group}")
+
+def calc_xop_goc_qty(attrs, rule_group):
+	# Đèn pha dùng "Xốp góc" 4 miếng; đèn đường dùng thành phần tên khác ("Xốp chèn", 2).
+	if rule_group == "P01_P03":
+		return 4
+	frappe.throw(f"Chưa có số lượng Xốp góc cho nhóm {rule_group}")
+
+def calc_xop_chen_qty(attrs, rule_group):
+	if rule_group == "D01_D05":
+		return 2
+	frappe.throw(f"Chưa có số lượng Xốp chèn cho nhóm {rule_group}")
+
 COMPONENT_MAP = {
+	"Bộ vỏ đèn": calc_bo_vo_den_qty,
+	"Hộp carton": calc_hop_carton_qty,
+	"Xốp góc": calc_xop_goc_qty,
+	"Xốp chèn": calc_xop_chen_qty,
 	"Module": calc_module_qty,
 	"Ốc vít cố định module": calc_oc_vit_module_qty,
 	"Cầu đấu": calc_cau_dau_qty,
@@ -348,14 +438,28 @@ component_type = frappe.db.get_value("BOM Component Table",
 # "Theo Rule" -> NVL do rule quyết định. Áp dụng cho MỌI thành phần Theo Rule chứ không
 # riêng "Nguồn" như bản cũ (spec §8). Số lượng vẫn do COMPONENT_MAP tính như thường.
 if component_type == "Theo Rule":
-	matched_item = find_rule_item(bom_template_name, component_name, attrs)
-	if not matched_item:
+	matched = find_rule_item(bom_template_name, component_name, attrs)
+	if not matched:
 		frappe.throw(
 			f"Chưa thiết lập NVL cho thành phần {component_name} với biến thể {item_code}."
 			f" Thêm rule phủ biến thể này trong BOM Template {bom_template_name}.")
-	result["item"] = matched_item
 
-if component_name == "Nguồn":
+	# Khách khai "Không sử dụng" cho tổ hợp này -> số lượng 0, và BỎ QUA khối tính bên dưới.
+	# `resolve_components` đã có sẵn nhánh bỏ dòng khi qty <= 0 nên dòng tự rụng khỏi BOM.
+	# Phải chặn TRƯỚC khối tính số lượng: chạy tiếp thì công thức của thành phần đó vẫn ra
+	# số dương và dòng lại chui vào BOM.
+	# Thân Server Script chạy ở CẤP MODULE, không phải trong hàm — không dùng `return` được
+	# (SyntaxError), nên thoát sớm bằng cờ.
+	khong_dung = 1 if matched.khong_su_dung else 0
+	if not khong_dung:
+		result["item"] = matched.item
+else:
+	khong_dung = 0
+
+if khong_dung:
+	qty = 0
+	result["khong_su_dung"] = 1
+elif component_name == "Nguồn":
 	if rule_group in MODULE_GROUPS:
 		qty = calc_nguon_qty_module_group(attrs, rule_group)
 	elif rule_group in CHIP_GROUPS:

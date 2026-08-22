@@ -1,0 +1,884 @@
+<meta charset="utf-8">
+<title>Mockup — Kiểm tra tồn kho &amp; nguồn lực trên Đơn Bán (HKLED)</title>
+
+<style>
+	:root {
+		--ground: #f2f4f6;
+		--surface: #ffffff;
+		--sunken: #f7f9fa;
+		--ink: #1c2b36;
+		--ink-soft: #5c6a75;
+		--ink-faint: #8b97a1;
+		--line: #dfe4e8;
+		--line-soft: #eaeef1;
+		--decided: #0f766e;
+		--decided-bg: #ecfdf9;
+		--ask: #b45309;
+		--ask-bg: #fdf6e7;
+		--danger: #b42318;
+		--danger-bg: #fdf2f1;
+		--new: #1d4ed8;
+		--new-bg: #eef3fe;
+		--btn: #202a33;
+		--btn-ink: #ffffff;
+
+		--serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--ground: #14181c;
+			--surface: #1c2126;
+			--sunken: #22282e;
+			--ink: #e4e8ec;
+			--ink-soft: #a4aeb7;
+			--ink-faint: #7b868f;
+			--line: #2f363d;
+			--line-soft: #262c32;
+			--decided: #2dd4bf;
+			--decided-bg: #14262a;
+			--ask: #f0b458;
+			--ask-bg: #2a2317;
+			--danger: #f4a5a0;
+			--danger-bg: #2a1a19;
+			--new: #93c5fd;
+			--new-bg: #172538;
+			--btn: #e4e8ec;
+			--btn-ink: #14181c;
+		}
+	}
+	:root[data-theme="dark"] {
+		--ground: #14181c; --surface: #1c2126; --sunken: #22282e;
+		--ink: #e4e8ec; --ink-soft: #a4aeb7; --ink-faint: #7b868f;
+		--line: #2f363d; --line-soft: #262c32;
+		--decided: #2dd4bf; --decided-bg: #14262a;
+		--ask: #f0b458; --ask-bg: #2a2317;
+		--danger: #f4a5a0; --danger-bg: #2a1a19;
+		--new: #93c5fd; --new-bg: #172538;
+		--btn: #e4e8ec; --btn-ink: #14181c;
+	}
+	:root[data-theme="light"] {
+		--ground: #f2f4f6; --surface: #ffffff; --sunken: #f7f9fa;
+		--ink: #1c2b36; --ink-soft: #5c6a75; --ink-faint: #8b97a1;
+		--line: #dfe4e8; --line-soft: #eaeef1;
+		--decided: #0f766e; --decided-bg: #ecfdf9;
+		--ask: #b45309; --ask-bg: #fdf6e7;
+		--danger: #b42318; --danger-bg: #fdf2f1;
+		--new: #1d4ed8; --new-bg: #eef3fe;
+		--btn: #202a33; --btn-ink: #ffffff;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		background: var(--ground);
+		color: var(--ink);
+		font: 15px/1.6 var(--sans);
+		-webkit-font-smoothing: antialiased;
+	}
+	.page {
+		max-width: 940px;
+		margin: 0 auto;
+		padding: 40px 20px 80px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	/* ---------- giọng tài liệu: serif ---------- */
+	.doc-title {
+		font: 400 30px/1.2 var(--serif);
+		text-wrap: balance;
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+	.doc-meta {
+		color: var(--ink-soft);
+		font-size: 13.5px;
+		margin: 6px 0 0;
+		max-width: 66ch;
+	}
+	.doc-meta code, .mono { font-family: var(--mono); font-size: 0.88em; }
+	h2 {
+		font: 400 21px/1.3 var(--serif);
+		margin: 44px 0 4px;
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+	h2 .gap {
+		font: 600 10.5px/1.7 var(--mono);
+		letter-spacing: 0.04em;
+		color: var(--new);
+		background: var(--new-bg);
+		border-radius: 3px;
+		padding: 1px 7px;
+	}
+	.lede {
+		color: var(--ink-soft);
+		font-size: 14px;
+		margin: 0 0 14px;
+		max-width: 66ch;
+	}
+
+	/* ---------- nav dính ---------- */
+	.nav {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background: color-mix(in srgb, var(--ground) 88%, transparent);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--line);
+		margin: 28px -20px 0;
+		padding: 9px 20px;
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		font-size: 13px;
+	}
+	.nav a {
+		color: var(--ink-soft);
+		text-decoration: none;
+		padding: 4px 10px;
+		border-radius: 5px;
+	}
+	.nav a:hover, .nav a:focus-visible { background: var(--surface); color: var(--ink); }
+
+	/* ---------- khung giả lập ERPNext Desk ---------- */
+	.screen {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.screen-bar {
+		background: var(--sunken);
+		border-bottom: 1px solid var(--line);
+		padding: 7px 14px;
+		font: 500 11.5px/1.6 var(--mono);
+		color: var(--ink-faint);
+		letter-spacing: 0.03em;
+		display: flex;
+		justify-content: space-between;
+		gap: 10px;
+	}
+	.screen-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+	.dialog { max-width: 580px; }
+
+	.wo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+	.wo-head h3 { font: 600 17px/1.3 var(--sans); margin: 2px 0 0; }
+	.crumb { font-size: 12px; color: var(--ink-faint); }
+	.actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- field ---------- */
+	.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+	.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+	.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+	.fld > .lbl {
+		font-size: 11.5px;
+		color: var(--ink-soft);
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.lbl .req { color: var(--danger); }
+	.lbl .fn { font: 10.5px/1.6 var(--mono); color: var(--ink-faint); }
+	.val {
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		background: var(--surface);
+		padding: 7px 10px;
+		font-size: 13.5px;
+		min-height: 34px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.val.ro { background: var(--sunken); color: var(--ink-soft); }
+	.val.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+	.val.pick::after { content: "⌄"; margin-left: auto; color: var(--ink-faint); }
+	.val.locked { opacity: 0.45; }
+	select.val, input.val {
+		font: 13.5px var(--sans); color: inherit; width: 100%;
+		appearance: none;
+	}
+	input.val.num { text-align: right; }
+	/* bảng Sản Lượng chỉ có 2 cột — không để ô nhập kéo dài hết cột */
+	#prod-rows input.val { width: 96px; margin-left: auto; }
+	.fld.dim { opacity: 0.42; }
+
+	/* ---------- tick ---------- */
+	.tick {
+		width: 15px; height: 15px; flex: none;
+		border: 1px solid var(--ink-faint);
+		border-radius: 3px;
+		display: inline-grid;
+		place-items: center;
+		background: var(--surface);
+		cursor: pointer;
+		padding: 0;
+	}
+	.tick[aria-checked="true"] { background: var(--decided); border-color: var(--decided); }
+	.tick[aria-checked="true"]::after {
+		content: "✓"; color: var(--surface); font: 700 10px/1 var(--sans);
+	}
+	:root[data-theme="dark"] .tick[aria-checked="true"]::after,
+	.tick[aria-checked="true"]::after { color: var(--surface); }
+	.tick:focus-visible, .btn:focus-visible, .nav a:focus-visible, select:focus-visible, input:focus-visible {
+		outline: 2px solid var(--new); outline-offset: 2px;
+	}
+	.switch { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+
+	/* ---------- chọn thứ trong tuần ---------- */
+	.wd { display: flex; flex-wrap: wrap; gap: 6px; }
+	.wd label {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		padding: 6px 10px;
+		background: var(--surface);
+		cursor: pointer;
+		user-select: none;
+	}
+	.wd label:has(.tick[aria-checked="true"]) {
+		border-color: var(--decided);
+		background: var(--decided-bg);
+		color: var(--decided);
+	}
+
+	/* ---------- bảng ---------- */
+	.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+	table { width: 100%; border-collapse: collapse; font-size: 13px; }
+	th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+	tbody tr:last-child td { border-bottom: 0; }
+	th {
+		background: var(--sunken);
+		font: 600 10.5px/1.6 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-faint);
+		white-space: nowrap;
+	}
+	td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+	tr.sum td { font-weight: 600; background: var(--sunken); }
+	tr.off td { color: var(--ink-faint); }
+	.grid-tools { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- nút ---------- */
+	.btn {
+		font: 500 13px/1.3 var(--sans);
+		padding: 7px 13px;
+		border-radius: 6px;
+		border: 1px solid var(--line);
+		background: var(--surface);
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.btn.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+	.btn.sm { padding: 5px 10px; font-size: 12px; }
+	.btn[hidden] { display: none; }
+
+	.state {
+		font: 600 10.5px/1.7 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 2px 9px;
+		border-radius: 20px;
+		background: var(--new-bg);
+		color: var(--new);
+	}
+
+	/* ---------- ghi chú: giọng serif, 2 màu ngữ nghĩa ---------- */
+	.note {
+		font: 14px/1.6 var(--serif);
+		border-left: 2px solid var(--decided);
+		background: var(--decided-bg);
+		padding: 11px 15px;
+		border-radius: 0 7px 7px 0;
+		margin: 12px 0 0;
+	}
+	.note.ask { border-left-color: var(--ask); background: var(--ask-bg); }
+	.note .tag {
+		font: 600 10.5px/1.6 var(--mono);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		display: block;
+		margin-bottom: 3px;
+		color: var(--decided);
+	}
+	.note.ask .tag { color: var(--ask); }
+	.alert {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--danger-bg);
+		border-left: 2px solid var(--danger);
+		color: var(--danger);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.alert[hidden], .ok-msg[hidden] { display: none; }
+	.ok-msg {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--decided-bg);
+		border-left: 2px solid var(--decided);
+		color: var(--decided);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.hint { font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+	.live {
+		font: 500 12.5px/1.6 var(--mono);
+		color: var(--decided);
+	}
+
+	/* ---------- danh sách câu hỏi ---------- */
+	.qlist { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+	.qlist li {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-left: 2px solid var(--ask);
+		border-radius: 0 8px 8px 0;
+		padding: 13px 16px;
+		display: flex;
+		gap: 12px;
+	}
+	.qlist .qn {
+		font: 600 12px/1.5 var(--mono);
+		color: var(--ask);
+		flex: none;
+		padding-top: 2px;
+	}
+	.qlist p { margin: 0; font-size: 14px; }
+	.qlist p + p { margin-top: 5px; color: var(--ink-soft); font-size: 13px; }
+
+	.plainlist { margin: 0; padding-left: 22px; font-size: 14px; }
+	.plainlist li { margin: 6px 0; }
+
+	.foot {
+		margin-top: 46px;
+		padding-top: 16px;
+		border-top: 1px solid var(--line);
+		font: 13px/1.6 var(--serif);
+		color: var(--ink-soft);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		* { transition: none !important; animation: none !important; }
+	}
+</style>
+<style>
+	/* ---- bổ sung riêng cho màn này ---- */
+	.pop-wrap { position: relative; }
+	.pop {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		box-shadow: 0 10px 34px rgba(16, 24, 32, 0.13);
+		overflow: hidden;
+	}
+	:root:not([data-theme="light"]) .pop { box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45); }
+	@media (prefers-color-scheme: light) {
+		:root:not([data-theme="dark"]) .pop { box-shadow: 0 10px 34px rgba(16, 24, 32, 0.13); }
+	}
+	.pop-bar {
+		display: flex; align-items: center; justify-content: space-between; gap: 12px;
+		padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--sunken);
+	}
+	.pop-bar h3 { margin: 0; font: 600 15px/1.3 var(--sans); }
+	.pop-body { padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+
+	/* ---------- kết luận gộp: đơn này vướng ở KHÂU nào ---------- */
+	/* Khách chốt 20/08: cần thấy thiếu ở khâu nào (vỏ / nguồn / người), không chỉ đủ–thiếu.
+	   Tên khâu lấy từ cột "Nguồn nhu cầu" của Bảng 2 — chính là tên Thành Phần BOM. */
+	.sum {
+		background: var(--sunken);
+		border: 1px solid var(--line);
+		border-radius: 9px;
+		padding: 13px 15px;
+	}
+	.sum-verdict { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 0 0 11px; }
+	.sum-verdict .txt { font-size: 14px; }
+	.khau { display: flex; gap: 8px; flex-wrap: wrap; margin: 0; }
+	.kh {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 7px;
+		border: 1px solid var(--line);
+		border-radius: 7px;
+		padding: 6px 11px;
+		background: var(--surface);
+		font-size: 13px;
+	}
+	.kh b { font-weight: 600; }
+	.kh i { font-style: normal; font-variant-numeric: tabular-nums; }
+	.kh.short { border-color: var(--danger); background: var(--danger-bg); }
+	.kh.short i { color: var(--danger); font-weight: 600; }
+	.kh.ok i { color: var(--decided); }
+	.sum .hint { margin-top: 10px; }
+
+	.tbl-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 7px; }
+	.tbl-head h4 { margin: 0; font: 600 13px/1.4 var(--sans); }
+	.tbl-head .sub { font-size: 12.5px; color: var(--ink-faint); }
+
+	.pill {
+		font: 600 10.5px/1.7 var(--sans);
+		letter-spacing: 0.04em; text-transform: uppercase;
+		padding: 1px 8px; border-radius: 20px; white-space: nowrap;
+	}
+	.pill.ok { background: var(--decided-bg); color: var(--decided); }
+	.pill.short { background: var(--danger-bg); color: var(--danger); }
+	.pill.buy { background: var(--new-bg); color: var(--new); }
+	.pill.warn { background: var(--ask-bg); color: var(--ask); }
+
+	/* thanh so sánh nhu cầu / nguồn lực còn lại */
+	.bars { display: flex; flex-direction: column; gap: 9px; }
+	.bar-row { display: grid; grid-template-columns: 132px 1fr 92px; align-items: center; gap: 11px; font-size: 13px; }
+	.bar-row .cap { color: var(--ink-soft); }
+	/* span mặc định là inline nên height không ăn — phải block, nếu không thanh rỗng trơn */
+	.bar-track {
+		display: block; height: 9px; border-radius: 5px;
+		background: var(--sunken); border: 1px solid var(--line-soft); overflow: hidden;
+	}
+	.bar-fill { display: block; height: 100%; border-radius: 5px; }
+	.bar-fill.avail { background: var(--decided); }
+	.bar-fill.need { background: var(--ask); }
+	.bar-row .amt { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 12.5px; }
+
+	.verdict { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+	.verdict .big { font: 600 19px/1.2 var(--sans); font-variant-numeric: tabular-nums; }
+
+	.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
+	.legend span { display: inline-flex; align-items: center; gap: 6px; }
+	.dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+
+	.q-badge {
+		font: 600 10px/1.6 var(--mono); letter-spacing: 0.04em;
+		color: var(--ask); background: var(--ask-bg);
+		border-radius: 3px; padding: 1px 6px; margin-left: 6px; white-space: nowrap;
+	}
+	.src { font: 11px/1.5 var(--mono); color: var(--ink-faint); }
+</style>
+
+<div class="page">
+
+	<header>
+		<h1 class="doc-title">Kiểm tra tồn kho &amp; nguồn lực trên Đơn Bán — mockup</h1>
+		<p class="doc-meta">
+			HKLED · app <code>mbwnext_hkled</code> · dự án <code>PM-PRJ-00003</code> ·
+			tính năng <code>PM-FEAT-00023</code> (Phần IV)<br>
+			Số liệu lấy <b>đúng từ site thật</b>: đèn pha <b>DP01S300-3B3HT-AD</b> (300W Dọc) và bộ
+			nguyên vật liệu do BOM Template sinh ra — vỏ <b>VDP0X-300-D-GY-v3.0</b>,
+			<b>6 module</b> M30S050, <b>12 ốc</b>, nguồn <b>NHKP-300E</b>.
+		</p>
+		<p class="doc-meta">
+			<b>Bấm thử được:</b> nút <b>Kiểm Tra Tồn Kho</b>, ô tick <b>Ghim Tồn Khả Dụng</b>
+			(đổi ngay số tồn khả dụng ở Bảng 1), và nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3.
+			<br>
+			Trạng thái: <b style="color:var(--ask)">bản 2 — khách đã xem bản đầu và đã chê</b>.
+			Bản này thêm <b>khối kết luận theo khâu</b> (yêu cầu khách chốt 20/08) và ghi lại đáp án
+			4 câu hỏi. Năm yêu cầu khách nêu thêm chưa dựng — xem cuối trang.
+		</p>
+	</header>
+
+	<nav class="nav" aria-label="Các phần">
+		<a href="#s-a">A · Trên Đơn Bán</a>
+		<a href="#s-b">B · Kết quả — 3 bảng</a>
+		<a href="#s-c">C · Vì sao có “Đơn này cần”</a>
+		<a href="#s-d">D · Ba lối ra</a>
+		<a href="#s-e">Chỗ chưa chốt</a>
+		<a href="#s-f">Đáp án 4 câu hỏi</a>
+	</nav>
+
+	<h2 id="s-a">A. Trên Đơn Bán <span class="gap">2 thứ mới</span></h2>
+	<p class="lede">
+		Chỉ thêm đúng một ô tick và một nút. Mọi thứ khác của Đơn Bán giữ nguyên.
+	</p>
+
+	<div class="screen">
+		<div class="screen-bar">
+			<span>Đơn Bán · SO-26-00147</span>
+			<span>Đã Gửi</span>
+		</div>
+		<div class="screen-body">
+			<div class="wo-head">
+				<div>
+					<div class="crumb">Bán Hàng › Đơn Bán</div>
+					<h3>SO-26-00147 — Công ty TNHH Chiếu Sáng Minh Phát</h3>
+				</div>
+				<div class="actions">
+					<button class="btn" type="button">Tạo ▾</button>
+					<button class="btn primary" type="button" id="btn-check">Kiểm Tra Tồn Kho</button>
+				</div>
+			</div>
+
+			<div class="grid3">
+				<div class="fld">
+					<span class="lbl">Ngày Giao Hàng</span>
+					<div class="val ro">28/08/2026</div>
+				</div>
+				<div class="fld">
+					<span class="lbl">Thời Gian Bắt Đầu <span class="fn">custom_start_time</span></span>
+					<div class="val ro">20/08/2026 08:00</div>
+				</div>
+				<div class="fld">
+					<span class="lbl">Giờ Cần Hoàn Thành <span class="fn">custom_time</span></span>
+					<div class="val ro">17:00</div>
+				</div>
+			</div>
+
+			<div class="switch">
+				<button class="tick" id="tick-ghim" role="checkbox" aria-checked="true" type="button" aria-labelledby="lb-ghim"></button>
+				<span id="lb-ghim">Ghim Tồn Khả Dụng <span class="fn mono">custom_ghim_ton_kha_dung</span></span>
+			</div>
+			<p class="hint">
+				Tích ô này thì số lượng chưa giao của đơn được <b>giữ chỗ</b>, các đơn khác không
+				dùng vào phần tồn đó nữa. Không tích thì hàng vẫn coi là rảnh để cấp cho đơn gấp hơn.
+			</p>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr><th>Mặt hàng</th><th>Tên</th><th class="n">Số lượng</th><th>Phương pháp bổ sung</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="mono">DP01S300-3B3HT-AD</td>
+							<td>Đèn pha LED 300W Dọc — Bridgelux 3030, 6500K</td>
+							<td class="n">40</td>
+							<td><span class="pill ok">Sản xuất</span></td>
+						</tr>
+						<tr>
+							<td class="mono">NHKP-250E</td>
+							<td>Nguồn HKLED 250W</td>
+							<td class="n">20</td>
+							<td><span class="pill buy">Mua hàng</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="note">
+		<span class="tag">Đã chốt · 19/08</span>
+		Kết quả <b>chỉ để tham khảo</b>: không ghim vào đơn, không sinh Yêu cầu mặt hàng hay
+		Lệnh sản xuất, không đụng Stock Ledger. Muốn số mới thì bấm lại nút.
+	</div>
+
+	<h2 id="s-b">B. Kết quả sau khi bấm nút — 3 bảng</h2>
+	<p class="lede">
+		Popup này để <b>mở sẵn</b> cho anh xem thẳng. Muốn thử đóng–mở thì bấm <b>Đóng</b> ở đây
+		hoặc <b>Kiểm Tra Tồn Kho</b> ở màn A.
+	</p>
+
+	<div class="pop-wrap">
+		<div class="pop" id="pop">
+			<div class="pop-bar">
+				<h3>Kiểm tra tồn kho &amp; nguồn lực — SO-26-00147</h3>
+				<button class="btn sm" type="button" id="btn-close">Đóng</button>
+			</div>
+			<div class="pop-body">
+
+				<div class="sum">
+					<p class="sum-verdict">
+						<span class="pill short">Thiếu</span>
+						<span class="txt">Đơn này vướng ở <b>3 khâu vật tư</b>. Nhân lực đủ.</span>
+					</p>
+					<p class="khau">
+						<span class="kh short"><b>Bộ vỏ đèn</b><i>thiếu 21</i></span>
+						<span class="kh short"><b>Nguồn</b><i>thiếu 19</i></span>
+						<span class="kh short"><b>Cầu đấu</b><i>thiếu 25</i></span>
+						<span class="kh ok"><b>Nhân lực</b><i>đủ, thừa 6.500 phút</i></span>
+					</p>
+					<p class="hint">
+						4 khâu còn lại đủ tồn: Module · Ốc vít cố định module · Hộp carton · Dây điện cấp nguồn.
+						Tên khâu lấy từ cột <b>Nguồn nhu cầu</b> ở Bảng 2 — chi tiết từng mã vật tư xem bảng bên dưới.
+					</p>
+				</div>
+
+				<div>
+					<div class="tbl-head">
+						<h4>Bảng 1 · Mặt hàng trên đơn</h4>
+						<span class="sub">tồn khả dụng đã trừ kho lỗi và kho trung chuyển</span>
+					</div>
+					<div class="tw">
+						<table>
+							<thead>
+								<tr>
+									<th>Mặt hàng</th><th>ĐVT</th>
+									<th class="n">Cần</th><th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
+									<th>Bổ sung bằng</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="mono">DP01S300-3B3HT-AD</td><td>Cái</td>
+									<td class="n">40</td><td class="n" id="ton-1">15</td><td class="n" id="thieu-1">25</td>
+									<td><span class="pill ok">Sản xuất</span></td>
+								</tr>
+								<tr>
+									<td class="mono">NHKP-250E</td><td>Cái</td>
+									<td class="n">20</td><td class="n" id="ton-2">32</td><td class="n" id="thieu-2">0</td>
+									<td><span class="pill buy">Mua hàng</span></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<p class="hint" id="ghim-hint">
+						Đang tính với <b>Ghim Tồn Khả Dụng = có</b>. Đơn khác đã ghim đang giữ 18 cái
+						DP01S300 nên tồn khả dụng còn 15.
+					</p>
+				</div>
+
+				<div>
+					<div class="tbl-head">
+						<h4>Bảng 2 · Cần mua sau khi bóc BOM</h4>
+						<span class="sub">chỉ bóc phần <b>25 cái còn thiếu</b>, không bóc cả 40</span>
+					</div>
+					<div class="tw">
+						<table>
+							<thead>
+								<tr>
+									<th>Mặt hàng</th><th>ĐVT</th>
+									<th class="n">Cần</th><th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
+									<th>Nguồn nhu cầu</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="mono">VDP0X-300-D-GY-v3.0</td><td>Cái</td>
+									<td class="n">25</td><td class="n">4</td><td class="n">21</td>
+									<td class="src">Bộ vỏ đèn · 25 × 1</td>
+								</tr>
+								<tr>
+									<td class="mono">M30S050-3B3-5C-64LED-CD-A</td><td>Cái</td>
+									<td class="n">150</td><td class="n">150</td><td class="n">0</td>
+									<td class="src">Module · 25 × 6</td>
+								</tr>
+								<tr>
+									<td class="mono">OVT-M4x8-RT-T-PH-SS201</td><td>Cái</td>
+									<td class="n">300</td><td class="n">1.200</td><td class="n">0</td>
+									<td class="src">Ốc vít cố định module · 25 × 12</td>
+								</tr>
+								<tr>
+									<td class="mono">NHKP-300E</td><td>Cái</td>
+									<td class="n">25</td><td class="n">6</td><td class="n">19</td>
+									<td class="src">Nguồn · 25 × 1</td>
+								</tr>
+								<tr>
+									<td class="mono">WPC-MDF-M15-2P-6B-SS-CD</td><td>Cái</td>
+									<td class="n">25</td><td class="n">0</td><td class="n">25</td>
+									<td class="src">Cầu đấu · 25 × 1</td>
+								</tr>
+								<tr>
+									<td class="mono">HCT-360x580x185mm-NO</td><td>Cái</td>
+									<td class="n">25</td><td class="n">40</td><td class="n">0</td>
+									<td class="src">Hộp carton · 25 × 1</td>
+								</tr>
+								<tr class="off">
+									<td class="mono">W-3x0.75-BK</td><td>Mét</td>
+									<td class="n">2.500</td><td class="n">4.000</td><td class="n">0</td>
+									<td class="src">Dây điện cấp nguồn · 25 × 100</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="legend">
+						<span><i class="dot" style="background:var(--danger)"></i> còn thiếu — cần mua</span>
+						<span><i class="dot" style="background:var(--decided)"></i> đủ tồn</span>
+						<span>Nhu cầu của cùng một mặt hàng từ nhiều dòng đã được <b>cộng dồn trước</b>, rồi mới trừ tồn một lần.</span>
+					</div>
+				</div>
+
+				<div>
+					<div class="tbl-head">
+						<h4>Bảng 3 · Nguồn lực nhân sự</h4>
+						<span class="sub">từ 20/08 08:00 đến 28/08 17:00 · nhân sự loại <b>Công nhân</b></span>
+					</div>
+					<div class="bars">
+						<div class="bar-row">
+							<span class="cap">Tổng theo lịch</span>
+							<span class="bar-track"><span class="bar-fill avail" style="width:100%"></span></span>
+							<span class="amt">48.000</span>
+						</div>
+						<div class="bar-row">
+							<span class="cap">Đã phân bổ</span>
+							<span class="bar-track"><span class="bar-fill avail" style="width:62.5%; opacity:.45"></span></span>
+							<span class="amt">30.000</span>
+						</div>
+						<div class="bar-row">
+							<span class="cap"><b>Còn lại</b></span>
+							<span class="bar-track"><span class="bar-fill avail" style="width:37.5%"></span></span>
+							<span class="amt">18.000</span>
+						</div>
+						<div class="bar-row">
+							<span class="cap"><b>Đơn này cần</b></span>
+							<span class="bar-track"><span class="bar-fill need" style="width:23.9%"></span></span>
+							<span class="amt">11.500</span>
+						</div>
+					</div>
+					<p class="verdict" style="margin-top:14px">
+						<span class="pill ok">Đủ</span>
+						<span>Thừa <span class="big" style="color:var(--decided)">6.500</span> phút
+						(≈ 108 giờ công) sau khi làm xong đơn này.</span>
+					</p>
+					<p class="hint">
+						Đơn này cần = <b>Thời Gian Sản Xuất (Phút)</b> của mặt hàng × số lượng, chỉ tính
+						mặt hàng Sản xuất / Gia công. Ở đây: 25 cái × 460 phút.
+					</p>
+					<p style="margin:10px 0 0">
+						<button class="btn sm" type="button" id="btn-warn">Hiện cảnh báo thiếu định mức</button>
+					</p>
+					<div class="alert" id="warn-time" hidden style="margin-top:10px">
+						<b>Chỉ 1/2 mặt hàng trên đơn có định mức thời gian.</b>
+						NHKP-250E chưa khai <b>Thời Gian Sản Xuất (Phút)</b> nên không được tính vào
+						nhu cầu — con số 11.500 phút đang <b>thấp hơn thực tế</b>. Kết luận “Đủ” chưa
+						chắc đúng.
+					</div>
+				</div>
+
+			</div>
+		</div>
+		<p class="hint" id="pop-hint" hidden>Popup đang đóng — bấm <b>Kiểm Tra Tồn Kho</b> ở màn A để mở lại.</p>
+	</div>
+
+	<div class="note">
+		<span class="tag">Chốt của anh Thắng · 19/08</span>
+		Bảng 2 <b>chỉ bóc phần còn thiếu</b>, không bóc toàn bộ số lượng trên đơn. Cần 40 mà tồn
+		15 thì chỉ bóc BOM cho 25 — nếu bóc cả 40 thì mua thừa đúng bằng phần đang có sẵn trong kho.
+	</div>
+
+	<h2 id="s-c">C. Vì sao Bảng 3 phải có dòng “Đơn này cần”</h2>
+	<p class="lede">
+		Bản phân tích ban đầu chỉ có Tổng / Đã phân bổ / Còn lại. Nhìn “còn 18.000 phút” thì nhân
+		viên bán hàng vẫn không biết đơn của mình có kịp không — thiếu đúng con số để so sánh.
+		Anh Thắng đã đồng ý bổ sung.
+	</p>
+
+	<h2 id="s-d">D. Ba lối ra sau khi xem kết quả</h2>
+	<p class="lede">
+		Khách nói mục đích là để nhân viên bán hàng <b>tư vấn lại</b>. Nên popup kết thúc bằng
+		đúng ba lựa chọn đó, không có nút nào sinh chứng từ.
+	</p>
+	<div class="screen">
+		<div class="screen-bar"><span>Chân popup</span><span>chỉ đóng lại, không ghi gì</span></div>
+		<div class="screen-body">
+			<div class="actions">
+				<button class="btn" type="button">Nhận đơn — giao đúng hẹn</button>
+				<button class="btn" type="button">Tư vấn khách đổi mẫu khác</button>
+				<button class="btn" type="button">Hẹn lại ngày giao</button>
+			</div>
+			<p class="hint">
+				Ba nút này <b>chỉ đóng popup</b>. Đặt ở đây để nhắc người dùng việc tiếp theo, chứ
+				hệ thống không tự làm gì. <span class="q-badge">hỏi khách: có cần ghi lại đã chọn gì không?</span>
+			</p>
+		</div>
+	</div>
+
+	<h2 id="s-e">Chỗ chưa chốt — ảnh hưởng thẳng tới màn này</h2>
+	<ul class="qlist">
+		<li>
+			<span class="qn">R1</span>
+			<div>
+				<p><b>Gần như không có BOM để bóc tách.</b> Site có 61.142 mặt hàng nhưng chỉ 5 BOM.</p>
+				<p>Bảng 2 ở trên chỉ dựng được vì em lấy BOM do BOM Template sinh ra. Nếu chọn hướng
+				“không có BOM thì báo lỗi” thì Bảng 2 sẽ <b>trống</b> với hầu hết đơn hàng thật.</p>
+			</div>
+		</li>
+		<li>
+			<span class="qn">R2</span>
+			<div>
+				<p><b>Chỉ 3/60.822 mặt hàng có Thời Gian Sản Xuất (Phút).</b></p>
+				<p>Bảng 3 sẽ ra gần 0 phút và luôn kết luận “Đủ”. Bấm nút <i>Hiện cảnh báo thiếu định
+				mức</i> ở Bảng 3 để xem cách em định xử lý: nói thẳng còn bao nhiêu mặt hàng chưa khai,
+				thay vì im lặng tính là 0.</p>
+			</div>
+		</li>
+		<li>
+			<span class="qn">R3</span>
+			<div>
+				<p><b>Đơn đang kiểm có tự trừ chính nó không?</b></p>
+				<p>Đơn SO-26-00147 đang tích Ghim. Nếu công thức trừ cả nó thì 40 cái của chính nó bị
+				trừ vào tồn khả dụng — báo thiếu nhiều hơn thực tế. Mockup này đang <b>loại đơn hiện
+				tại ra</b>. Cần anh Thắng xác nhận.</p>
+			</div>
+		</li>
+	</ul>
+
+	<h2 id="s-f">Bốn câu hỏi khách — đã có đáp án</h2>
+	<p class="lede">
+		Bản đầu để trống bốn câu này. Khách đã trả lời <b>20/08</b>; ghi lại đây để không ai
+		hỏi lại lần nữa.
+	</p>
+	<ol class="plainlist">
+		<li><b>Một đơn thật bao nhiêu dòng, chờ bao lâu thì chấp nhận được?</b><br>
+		→ Thường <b>1–2 mặt hàng</b> mỗi đơn, hiếm khi hơn; mỗi thành phẩm BOM <b>dưới 10 NVL</b>.
+		Càng nhanh càng tốt. <i>Khớp dữ liệu thật trên site: 20 đơn, 16 đơn 1 dòng, 4 đơn 2 dòng —
+		nên lo ngại về tốc độ coi như gỡ.</i></li>
+		<li><b>Bảng 2 có cần cột ngày dự kiến có hàng không?</b><br>
+		→ <b>Có.</b> <i>Nhưng chưa làm được: cả 61.143 mặt hàng đều chưa khai thời gian mua hàng về,
+		và không mặt hàng nào có nhà cung cấp mặc định. Cột sẽ rỗng.</i></li>
+		<li><b>Khi thiếu, muốn thấy thiếu ở khâu nào hay chỉ cần kết luận đủ–thiếu?</b><br>
+		→ <b>Muốn thấy rõ từng khâu</b> — thiếu vỏ / thiếu nguồn / thiếu người.
+		<i>Đã dựng: khối kết luận ở đầu popup Phần B.</i></li>
+		<li><b>Có trường hợp nào không cần kiểm không?</b><br>
+		→ <b>Không có ngoại lệ</b>, mọi đơn đều kiểm — kể cả đơn mẫu, đơn nội bộ, đơn có tồn sẵn.</li>
+	</ol>
+
+	<div class="note" style="border-left-color: var(--ask); background: var(--ask-bg)">
+		<span class="tag">Ràng buộc của khối kết luận</span>
+		Tên khâu (“Vỏ đèn”, “Nguồn”, “Cầu đấu”) lấy từ <b>tên Thành Phần BOM</b> trong BOM Template.
+		Mặt hàng nào không bóc ra từ BOM Template thì <b>không có tên khâu để gọi</b> — lúc đó khối
+		này chỉ nêu được mã vật tư. Site hiện có <b>1</b> mặt hàng “Sản xuất” có BOM hoạt động trên
+		<b>59.692</b>, nên đây chưa phải lo xa. Xem mục <i>Chỗ chưa chốt · R1</i>.
+	</div>
+
+	<p class="foot">
+		Bản 2 · 20/08/2026 — thêm khối kết luận theo khâu, ghi đáp án 4 câu hỏi.
+		Bản đầu 19/08. Dựng theo yêu cầu ở PM-FEAT-00023 mục Notes.
+		Năm yêu cầu khách nêu thêm sau khi xem bản đầu (cột tồn thực tế, danh sách đơn đang ghim,
+		chặn xuất quá tồn, hẹn lại ngày giao) <b>chưa dựng ở bản này</b> — phân tích khả thi ghi ở
+		Notes mục 7. Spec kỹ thuật viết sau khi chốt R1.
+	</p>
+
+</div>
+
+<script>
+	(function () {
+		var pop = document.getElementById("pop");
+		var hint = document.getElementById("pop-hint");
+		document.getElementById("btn-check").addEventListener("click", function () {
+			pop.hidden = false;
+			hint.hidden = true;
+			pop.scrollIntoView({ behavior: "smooth", block: "start" });
+		});
+		document.getElementById("btn-close").addEventListener("click", function () {
+			pop.hidden = true;
+			hint.hidden = false;
+		});
+
+		var tick = document.getElementById("tick-ghim");
+		tick.addEventListener("click", function () {
+			var on = tick.getAttribute("aria-checked") !== "true";
+			tick.setAttribute("aria-checked", on ? "true" : "false");
+			document.getElementById("ton-1").textContent = on ? "15" : "33";
+			document.getElementById("thieu-1").textContent = on ? "25" : "7";
+			document.getElementById("ghim-hint").innerHTML = on
+				? "Đang tính với <b>Ghim Tồn Khả Dụng = có</b>. Đơn khác đã ghim đang giữ 18 cái DP01S300 nên tồn khả dụng còn 15."
+				: "Đang tính với <b>Ghim Tồn Khả Dụng = không</b>. Không trừ phần đơn khác giữ chỗ, nên tồn khả dụng là 33 — nhưng hàng đó có thể bị đơn khác lấy trước.";
+		});
+
+		var warn = document.getElementById("warn-time");
+		var btnWarn = document.getElementById("btn-warn");
+		btnWarn.addEventListener("click", function () {
+			warn.hidden = !warn.hidden;
+			btnWarn.textContent = warn.hidden ? "Hiện cảnh báo thiếu định mức" : "Ẩn cảnh báo";
+		});
+	})();
+</script>
