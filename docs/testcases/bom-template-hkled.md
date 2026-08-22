@@ -28,7 +28,7 @@ Cặp không khớp được xếp ba nhóm, chỉ nhóm cuối mới chặn ghi
 
 | Nhóm | Nghĩa | DP01S | 5 sheet còn lại |
 |---|---|---|---|
-| `co_y` | khách ghi "Không sử dụng" | 640 mỗi sheet | 0 |
+| `co_y` | khách ghi "Không sử dụng" | ~~640 mỗi sheet~~ → **0** từ 21/08 (đã có rule tích ô) | 0 |
 | `chua_co_du_lieu` | khách xác nhận chưa khai (`CHUA_CO_DU_LIEU`) | 2.368 mỗi sheet | 0 |
 | `hong` | thiếu ngoài dự kiến → **chặn ghi** | **0** | **0** |
 
@@ -77,6 +77,30 @@ Chốt của Thắng 18/08 trên PM-TASK-00110.
 | TC-EDGE-08 | 🔴 Kiểm trên giao diện — tạo BOM thật | Chọn Mặt Hàng trên form BOM thì tự điền NVL | Pass (**giao diện**) — `DP03S300-3B3HT-AD`: *"Đã điền 8 nguyên vật liệu từ BOM Template BOM Template DP03S"*, dòng đầu `VDP0X-300-D-BK-v3.0` (**vỏ đen**), Module x6, ốc x12 | Pass |
 | TC-EDGE-09 | So chéo DP01S / DP03S | cùng cấu hình chỉ khác phần vỏ | Pass (**giao diện**) — `DP01S300-…` ra `VDP0X-300-D-GY-v3.0`, `DP03S300-…` ra `-BK-`, 7 dòng còn lại giống hệt | Pass |
 | TC-EDGE-10 | Ca lỗi không chặn form | biến thể 50W/Dọc | Pass (**giao diện**) — hiện hộp thoại *"Chưa điền được Nguyên Vật Liệu"* kèm nguyên văn lý do, form **vẫn nhập tay được**, không bị khoá | Pass |
+| TC-KSD-01 | Biến thể khách ghi *Không sử dụng* tạo được BOM | `DP01S050-3B3HT-AD` ra BOM, **không có Cầu đấu** | Pass — 6 NVL, không dòng `WPC-`; trước đây throw *"Chưa thiết lập NVL cho thành phần Cầu đấu"* | Pass |
+| TC-KSD-02 | Không hồi quy biến thể bình thường | `DP01S300-3B3HT-AD` vẫn đủ 8 NVL, **có** Cầu đấu | Pass — mẫu 60 biến thể 200W: 60/60 tạo được, 60/60 có `WPC-` | Pass |
+| TC-KSD-03 | Biến thể 50W không có Cầu đấu | 0/60 có Cầu đấu | Pass — mẫu 60 biến thể 50W: **0** có Cầu đấu.
+  ⚠ Số cũ ghi "16 vẫn có Cầu đấu" là **SAI**: đếm bằng tiền tố mã `WPC-`, mà `WPC-SLM-…` là *Nguồn*
+  của biến thể năng lượng mặt trời chứ không phải Cầu đấu. Đếm lại bằng tên thành phần ra 0. |
+| TC-KSD-04 | Nhóm `co_y` trong `kiem_khop` về 0 | 0 | Pass — trước 640 mỗi sheet DP01S/DP03S, nay 0; `hong` vẫn 0 | Pass |
+| TC-KSD-05 | 🔴 Chặn rule rỗng | không NVL + không tích ô → **chặn** | Pass — *"Rule #11 (Chip LED): chưa chọn Nguyên Vật Liệu. Nếu biến thể này không dùng thành phần đó thì tích ô Không Sử Dụng."* | Pass |
+| TC-KSD-06 | 🔴 Chặn tích ô mà vẫn chọn NVL | **chặn** | Pass — *"đã tích Không Sử Dụng thì phải bỏ trống Nguyên Vật Liệu"* | Pass |
+| TC-KSD-07 | Tích ô + bỏ trống NVL là hợp lệ | lưu được | Pass | Pass |
+| TC-KSD-08 | Số rule sau khi nạp lại | tăng đúng bằng số tổ hợp *Không sử dụng* | Pass — 719 → **733**, 16 dòng tích ô, đều ở *Cầu đấu* của DP01S/DP03S; 0 rule mồ côi | Pass |
+| TC-CT-01 | Đối chiếu 5 công thức với bảng khách 22/08 | 0 tổ hợp lệch | Pass — 160/160 tổ hợp thật của DP01S khớp, sau khi sửa 5 lỗi | Pass |
+| TC-CT-02 | Dây điện cấp nguồn khi dùng nguồn to | **0** (dây đi kèm nguồn) | Pass — `DP01S300-3B3HT-AD` không còn dòng `W-3x0.75-BK`; trước cấp thừa 98/160 tổ hợp | Pass |
+| TC-CT-03 | Nguồn/Cầu đấu, Ngang, nguồn to HKLED, CS>600 | ưu tiên %300 → %250 → %200 | Pass — 1000W ra 4, trước ra 2 | Pass |
+| TC-CT-04 | Nguồn/Cầu đấu, Ngang, nguồn to hãng khác | ưu tiên %250 → **%150** → %200 | Pass — 1200W ra 8, trước ra 6 | Pass |
+| TC-CT-05 | Xốp góc | **4** | Pass — mọi biến thể DP01S/DP03S ra 4; trước ra 1 | Pass |
+| TC-CT-06 | 🔴 Phân loại nguồn theo `Kiểu nguồn`, không theo tên hãng | *Năng lượng mặt trời* = nguồn **to** | Pass — trước bị xếp nhầm *nhỏ*, sai 512 biến thể mỗi template | Pass |
+| TC-CT-07 | Đèn đường: nguồn to HKLED | luôn **1** bất kể công suất | Pass — chưa template nào dùng nhóm này, mới kiểm bằng hàm | Pass |
+| TC-CT-08 | 🔴 Bộ đối chiếu tự bắt được lỗi | gieo lỗi phân loại → phải báo lệch | Pass — gieo lỗi ra **112 tổ hợp lệch**; bản đầu của bộ đối chiếu dùng chung hàm phân loại cho cả 2 phía nên **mù** với lỗi TC-CT-06 |
+| TC-CT-09 | Ô Số Lượng trống → cảnh báo bắn được | bộ nạp ghi **0**, không ghi 1 | Pass — ghi 1 thì `qty_defaulted` không bao giờ bắn, đúng cách Xốp góc lọt lưới |
+| TC-KSD-09 | Giao diện — ô tích trong hộp thoại *Tạo Rule* | tích ô thì ô NVL ẩn và hết bắt buộc | Pass (**giao diện**) — tích xong trường *Nguyên Vật Liệu* biến mất hẳn | Pass |
+| TC-UI-01 | 🔴 Giao diện — cột *Không Sử Dụng* hiện trên lưới rule | có cột, dòng tích ô để trống NVL | Pass (**giao diện**) — DP01S dòng 245/247/259/261 tích ô, ô NVL trống. ⚠ Ban đầu **KHÔNG hiện**: tổng `columns` vượt 11 *và* `__UserSettings` giữ bố cục cũ. Xem patch `reset_bom_rule_grid_view` | Pass |
+| TC-UI-02 | Giao diện — tạo BOM `DP01S300-3B3HT-AD` | 7 dòng, Xốp góc **4**, **không** có dây điện | Pass (**giao diện**) — trước là 8 dòng có `W-3x0.75-BK` 100m và Xốp góc 1 | Pass |
+| TC-UI-03 | Giao diện — tạo BOM `DP01S1K0-3B3HT-AN` (1000W Ngang HKLED) | Nguồn **4**, Cầu đấu **4** | Pass (**giao diện**) — trước cả hai ra 2; Module 20, ốc 40, Xốp góc 4 | Pass |
+| TC-UI-04 | Giao diện — biến thể 1200W (khách chưa khai NVL) | báo lỗi rõ, **không khoá form** | Pass (**giao diện**) — hộp thoại *"Chưa điền được Nguyên Vật Liệu"* nêu đích danh thành phần và biến thể | Pass |
 
 ## TC-REGR — không đụng thứ khác
 

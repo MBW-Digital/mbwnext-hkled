@@ -162,10 +162,13 @@ def dung_rules(spec_sheet, bien_the):
 
 	for r in spec_sheet["rules"]:
 		tp = r["thanh_phan"]
-		if r["nvl"] == KHONG_DUNG:
-			ghi_chu.append({"loai": "không tạo rule (Không sử dụng)", "tp": tp, "cond": r["cond"]})
+		# `Không sử dụng` giờ thành RULE TƯỜNG MINH có tích ô, không còn bỏ trắng.
+		# Bỏ trắng chính là chỗ sinh ra lỗ hổng phủ: engine không phân biệt được "khách khai
+		# không dùng" với "quên chưa đặt rule" nên throw ở cả hai. Vẫn ghi vào `bo_qua` để
+		# `kiem_khop` phân loại được cặp nào là cố ý.
+		khong_dung = r["nvl"] == KHONG_DUNG
+		if khong_dung:
 			bo_qua.append({"tp": tp, "cond": r["cond"]})
-			continue
 
 		if r["moi_bien_the"]:
 			if not chung:
@@ -187,7 +190,12 @@ def dung_rules(spec_sheet, bien_the):
 			conds = [cond]
 
 		for cond in conds:
-			rules.append({"bom_component": tp, "item": r["nvl"], "cond_attrs": cond})
+			rules.append({
+				"bom_component": tp,
+				"item": None if khong_dung else r["nvl"],
+				"khong_su_dung": 1 if khong_dung else 0,
+				"cond_attrs": cond,
+			})
 			da_co.setdefault(tp, []).append(cond)
 	return rules, ghi_chu, bo_qua
 
@@ -200,8 +208,9 @@ def kiem_khop(ten_sheet, spec_sheet, rules, bien_the, bo_qua):
 
 	Xếp cặp không khớp vào ba nhóm, chỉ nhóm cuối mới chặn việc ghi:
 
-	- `co_y` — trùng một tổ hợp khách ghi "Không sử dụng". Đúng ý: biến thể đó không dùng
-	  thành phần này. ⚠ Hiện engine vẫn throw ở các cặp này (xem docs/testcases).
+	- `co_y` — trùng một tổ hợp khách ghi "Không sử dụng". ⚠ Từ 21/08 nhóm này PHẢI BẰNG 0:
+	  các tổ hợp đó giờ có rule tường minh tích "Không Sử Dụng" nên vẫn khớp, chỉ là khớp ra
+	  một rule bảo bỏ dòng. Còn cặp nào rơi vào đây nghĩa là rule chưa sinh đủ.
 	- `chua_co_du_lieu` — nằm trong `CHUA_CO_DU_LIEU`, khách chưa khai và đã xác nhận.
 	- `hong` — còn lại. Thiếu ngoài dự kiến, chặn ghi.
 	"""
@@ -294,13 +303,18 @@ def nhap_mot_sheet(ten_sheet, spec_sheet, chi_kiem=False):
 		doc.append("bom_component_table", {
 			"bom_component": t["thanh_phan"],
 			"component_type": t["kieu"],
-			"qty": sl if sl is not None else 1,
+			# Khách để trống ô SL thì ghi 0, KHÔNG ghi 1. Ghi 1 thì engine coi như số lượng
+			# hợp lệ, dùng thẳng vào BOM và cảnh báo "chưa khai số lượng" không bao giờ bắn
+			# (nó chỉ bắn khi qty <= 0). Xốp góc đã lọt lưới đúng kiểu đó: dự phòng 1 trong
+			# khi bảng khách ghi 4, suốt từ lúc nạp không có gì báo.
+			"qty": sl if sl is not None else 0,
 			"item": t["nvl"] if t["kieu"] != "Theo Rule" else None,
 		})
 	for r in rules:
 		doc.append("bom_rules", {
 			"bom_component": r["bom_component"],
 			"item": r["item"],
+			"khong_su_dung": r.get("khong_su_dung", 0),
 			"cond_attrs": json.dumps(r["cond_attrs"], ensure_ascii=False),
 		})
 

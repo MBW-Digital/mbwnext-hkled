@@ -35,7 +35,7 @@
   },
   {
    "depends_on": "eval:doc.component_type!=\"Số Lượng Theo Công Thức\"",
-   "description": "Với kiểu Theo Rule: chỉ điền khi thành phần không có công thức số lượng (VD Bộ vỏ đèn).",
+   "description": "Với kiểu Theo Rule: để 0 — số lượng lấy từ công thức. Chỉ điền khi thành phần chưa có công thức, và khi đó hệ thống sẽ báo lên màn hình là đang dùng số nhập tay.",
    "fieldname": "qty",
    "fieldtype": "Int",
    "in_list_view": 1,

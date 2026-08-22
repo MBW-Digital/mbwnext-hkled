@@ -50,6 +50,10 @@ def execute():
 			)
 		for g in s.get("sl_thieu") or []:
 			chi_tiet = f" ({g['ghi_trong_sheet']!r})" if g["ly_do"] != "chưa khai số lượng" else ""
-			print(f"    ⚠ {g['tp']}: {g['ly_do']}{chi_tiet} — đang tạm để 1, xem PM-TASK-00110")
+			# Ghi 0 chứ không phải 1: thành phần nào có công thức thì số lượng do công thức
+			# quyết định, ô này không dùng tới; thành phần nào KHÔNG có công thức thì engine
+			# thấy 0 sẽ tạm tính 1 và ĐÁNH DẤU lên giao diện. Ghi 1 ở đây là nuốt mất dấu đó.
+			print(f"    ⚠ {g['tp']}: {g['ly_do']}{chi_tiet}"
+				f" — ô Số Lượng để 0, số lượng lấy từ công thức. Xem PM-TASK-00110")
 
 	frappe.db.commit()
