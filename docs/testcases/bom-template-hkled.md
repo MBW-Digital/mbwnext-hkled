@@ -107,9 +107,10 @@ Chốt của Thắng 18/08 trên PM-TASK-00110.
 | TC-MV-04 | Dòng khai *Cố Định* mà SL có điều kiện | bộ nạp nâng lên *Số Lượng Theo Công Thức*, có in `↻` | Pass — nếu để nguyên thì dòng bị bỏ khỏi BOM âm thầm | Pass |
 | TC-MV-05 | Vỏ VDP0X — 3 thành phần từng bị chặn | ~~chặn~~ → **tính được** sau khi khách bỏ phụ thuộc vào nguồn (23/08) | Pass — **28/28** biến thể tạo được BOM.
   ⚠ Số dòng NVL là **10–13 tuỳ biến thể**, KHÔNG phải 13 cho mọi biến thể — bản đầu của ca này ghi "đủ 13 dòng" là **SAI**, suy từ đúng một mẫu.
-  Phân bố thật: 13 dòng ×14 · 12 dòng ×2 · 11 dòng ×10 · 10 dòng ×2. | Pass |
-| TC-MV-10 | Vỏ **Dọc** bỏ 2 dòng ghép ngang | *Ốc ghép ngang* và *Ecu bắt tai, ghép ngang* = 0 → rụng khỏi BOM | Pass — 12 biến thể Dọc đều ≤ 11 dòng |
-| TC-MV-11 | *Hộp nguồn* = 0 ở hai ca đầu bậc | Dọc CS 50 → 0 · Ngang CS 100 → 0 | Pass — `VDP0X-050-D-GY-v3.0` ra **10** dòng, `VDP0X-100-N-GY-v3.0` ra **12** dòng |
+  Phân bố thật: 13 dòng ×14 · 12 dòng ×2 · 11 dòng ×10 · 10 dòng ×2.
+  ⚠ Lọc theo đặc tính **`Phân loại vỏ`** (giá trị Dọc/Ngang) — vỏ KHÔNG có đặc tính `Kiểu lắp` như đèn thành phẩm; query nhầm tên thì cột lọc ra rỗng hết. | Pass |
+| TC-MV-10 | Vỏ có **`Phân loại vỏ` = Dọc** bỏ 2 dòng ghép ngang | *Ốc ghép ngang* và *Ecu bắt tai, ghép ngang* = 0 → rụng khỏi BOM | Pass — 12 biến thể `Phân loại vỏ = Dọc` đều ≤ 11 dòng |
+| TC-MV-11 | *Hộp nguồn* = 0 ở hai ca đầu bậc | `Phân loại vỏ`=Dọc + `Công suất`=50 → 0 · `Phân loại vỏ`=Ngang + `Công suất`=100 → 0 | Pass — `VDP0X-050-D-GY-v3.0` ra **10** dòng, `VDP0X-100-N-GY-v3.0` ra **12** dòng |
 | TC-MV-08 | Bảng bậc của vỏ khớp nhánh ĐẦU TIÊN thoả | ca đặc biệt (CS 50, CS 100) trước ngưỡng bao trùm | Pass — `VDP0X-1K0-N` (1000W Ngang): Đế 4 · Ốc vít bắt đế 24 · Hộp nguồn 4 · ghép ngang 20 | Pass |
 | TC-MV-09 | Công suất ngoài mọi bậc | **chặn**, nêu đích danh công suất | Pass — 28/28 tổ hợp thật đều có nhánh phủ nên chưa ai chạm |
 | TC-MV-06 | Giao diện — tạo BOM module `M30S050-3B3-8C-64LED-CD-A` | 7 dòng, ốc 8 và 16 | Pass (**giao diện**) | Pass |
