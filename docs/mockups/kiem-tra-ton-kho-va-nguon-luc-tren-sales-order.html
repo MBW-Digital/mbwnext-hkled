@@ -480,18 +480,18 @@
 			<b>Bấm thử được:</b> nút <b>Kiểm Tra Tồn Kho</b>, ô tick <b>Ghim Tồn Khả Dụng</b>
 			(đổi ngay số tồn khả dụng ở Bảng 1), và nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3.
 			<br>
-			Trạng thái: <b style="color:var(--ask)">bản 2 — khách đã xem bản đầu và đã chê</b>.
-			Bản này thêm <b>khối kết luận theo khâu</b> (yêu cầu khách chốt 20/08) và ghi lại đáp án
-			4 câu hỏi. Năm yêu cầu khách nêu thêm chưa dựng — xem cuối trang.
+			Trạng thái: <b style="color:var(--ask)">bản 3 — anh Thắng đã chốt R1/R2/R3 và 5 mục phản hồi (24/08)</b>.
+			Bản này thêm <b>cột Tồn thực tế</b>, <b>bảng đơn đã xuất kho</b> và <b>danh sách mặt hàng
+			chưa khai thời gian sản xuất</b>. Spec kỹ thuật đã viết xong.
 		</p>
 	</header>
 
 	<nav class="nav" aria-label="Các phần">
 		<a href="#s-a">A · Trên Đơn Bán</a>
-		<a href="#s-b">B · Kết quả — 3 bảng</a>
+		<a href="#s-b">B · Kết quả — 4 bảng</a>
 		<a href="#s-c">C · Vì sao có “Đơn này cần”</a>
 		<a href="#s-d">D · Ba lối ra</a>
-		<a href="#s-e">Chỗ chưa chốt</a>
+		<a href="#s-e">Ba rủi ro — đã chốt</a>
 		<a href="#s-f">Đáp án 4 câu hỏi</a>
 	</nav>
 
@@ -571,7 +571,7 @@
 		Lệnh sản xuất, không đụng Stock Ledger. Muốn số mới thì bấm lại nút.
 	</div>
 
-	<h2 id="s-b">B. Kết quả sau khi bấm nút — 3 bảng</h2>
+	<h2 id="s-b">B. Kết quả sau khi bấm nút — 4 bảng</h2>
 	<p class="lede">
 		Popup này để <b>mở sẵn</b> cho anh xem thẳng. Muốn thử đóng–mở thì bấm <b>Đóng</b> ở đây
 		hoặc <b>Kiểm Tra Tồn Kho</b> ở màn A.
@@ -605,26 +605,29 @@
 				<div>
 					<div class="tbl-head">
 						<h4>Bảng 1 · Mặt hàng trên đơn</h4>
-						<span class="sub">tồn khả dụng đã trừ kho lỗi và kho trung chuyển</span>
+						<span class="sub">cả hai cột tồn đều <b>đã loại</b> kho lỗi và kho trung chuyển</span>
 					</div>
 					<div class="tw">
 						<table>
 							<thead>
 								<tr>
 									<th>Mặt hàng</th><th>ĐVT</th>
-									<th class="n">Cần</th><th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
+									<th class="n">Cần</th><th class="n">Tồn thực tế</th>
+									<th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
 									<th>Bổ sung bằng</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td class="mono">DP01S300-3B3HT-AD</td><td>Cái</td>
-									<td class="n">40</td><td class="n" id="ton-1">15</td><td class="n" id="thieu-1">25</td>
+									<td class="n">40</td><td class="n"><b>33</b></td>
+									<td class="n" id="ton-1">15</td><td class="n" id="thieu-1">25</td>
 									<td><span class="pill ok">Sản xuất</span></td>
 								</tr>
 								<tr>
 									<td class="mono">NHKP-250E</td><td>Cái</td>
-									<td class="n">20</td><td class="n" id="ton-2">32</td><td class="n" id="thieu-2">0</td>
+									<td class="n">20</td><td class="n"><b>32</b></td>
+									<td class="n" id="ton-2">32</td><td class="n" id="thieu-2">0</td>
 									<td><span class="pill buy">Mua hàng</span></td>
 								</tr>
 							</tbody>
@@ -638,6 +641,35 @@
 
 				<div>
 					<div class="tbl-head">
+						<h4>Bảng 1b · Đơn đã xuất kho DP01S300</h4>
+						<span class="sub">5 đơn có <b>ngày lấy hàng xa nhất</b> · không hiện tên khách hàng</span>
+					</div>
+					<div class="tw">
+						<table>
+							<thead>
+								<tr>
+									<th>Mã đơn</th><th>Người phụ trách</th>
+									<th class="n">Đã xuất</th><th>Ngày lấy hàng dự kiến</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr><td class="mono">SO-26-00131</td><td>Nguyễn Thu Hằng</td><td class="n">8</td><td>12/10/2026</td></tr>
+								<tr><td class="mono">SO-26-00118</td><td>Trà Nguyễn</td><td class="n">5</td><td>28/09/2026</td></tr>
+								<tr><td class="mono">SO-26-00109</td><td>Nguyễn Thu Hằng</td><td class="n">3</td><td>15/09/2026</td></tr>
+								<tr><td class="mono">SO-26-00097</td><td>Mai Phương</td><td class="n">2</td><td>05/09/2026</td></tr>
+								<tr class="off"><td class="mono">SO-26-00090</td><td>Trà Nguyễn</td><td class="n">2</td><td>30/08/2026</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p class="hint">
+						Bảng này để anh chị biết <b>đi hỏi ai</b>: đơn nào ngày lấy hàng còn xa thì
+						thương lượng nhường hàng dễ hơn. Cố ý <b>không hiện tên khách hàng</b> —
+						chỉ mã đơn và người phụ trách.
+					</p>
+				</div>
+
+				<div>
+					<div class="tbl-head">
 						<h4>Bảng 2 · Cần mua sau khi bóc BOM</h4>
 						<span class="sub">chỉ bóc phần <b>25 cái còn thiếu</b>, không bóc cả 40</span>
 					</div>
@@ -646,44 +678,45 @@
 							<thead>
 								<tr>
 									<th>Mặt hàng</th><th>ĐVT</th>
-									<th class="n">Cần</th><th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
+									<th class="n">Cần</th><th class="n">Tồn thực tế</th>
+									<th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
 									<th>Nguồn nhu cầu</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td class="mono">VDP0X-300-D-GY-v3.0</td><td>Cái</td>
-									<td class="n">25</td><td class="n">4</td><td class="n">21</td>
+									<td class="n">25</td><td class="n"><b>12</b></td><td class="n">4</td><td class="n">21</td>
 									<td class="src">Bộ vỏ đèn · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">M30S050-3B3-5C-64LED-CD-A</td><td>Cái</td>
-									<td class="n">150</td><td class="n">150</td><td class="n">0</td>
+									<td class="n">150</td><td class="n"><b>150</b></td><td class="n">150</td><td class="n">0</td>
 									<td class="src">Module · 25 × 6</td>
 								</tr>
 								<tr>
 									<td class="mono">OVT-M4x8-RT-T-PH-SS201</td><td>Cái</td>
-									<td class="n">300</td><td class="n">1.200</td><td class="n">0</td>
+									<td class="n">300</td><td class="n"><b>1.200</b></td><td class="n">1.200</td><td class="n">0</td>
 									<td class="src">Ốc vít cố định module · 25 × 12</td>
 								</tr>
 								<tr>
 									<td class="mono">NHKP-300E</td><td>Cái</td>
-									<td class="n">25</td><td class="n">6</td><td class="n">19</td>
+									<td class="n">25</td><td class="n"><b>30</b></td><td class="n">6</td><td class="n">19</td>
 									<td class="src">Nguồn · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">WPC-MDF-M15-2P-6B-SS-CD</td><td>Cái</td>
-									<td class="n">25</td><td class="n">0</td><td class="n">25</td>
+									<td class="n">25</td><td class="n"><b>25</b></td><td class="n">0</td><td class="n">25</td>
 									<td class="src">Cầu đấu · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">HCT-360x580x185mm-NO</td><td>Cái</td>
-									<td class="n">25</td><td class="n">40</td><td class="n">0</td>
+									<td class="n">25</td><td class="n"><b>40</b></td><td class="n">40</td><td class="n">0</td>
 									<td class="src">Hộp carton · 25 × 1</td>
 								</tr>
 								<tr class="off">
 									<td class="mono">W-3x0.75-BK</td><td>Mét</td>
-									<td class="n">2.500</td><td class="n">4.000</td><td class="n">0</td>
+									<td class="n">2.500</td><td class="n"><b>4.000</b></td><td class="n">4.000</td><td class="n">0</td>
 									<td class="src">Dây điện cấp nguồn · 25 × 100</td>
 								</tr>
 							</tbody>
@@ -737,9 +770,26 @@
 					</p>
 					<div class="alert" id="warn-time" hidden style="margin-top:10px">
 						<b>Chỉ 1/2 mặt hàng trên đơn có định mức thời gian.</b>
-						NHKP-250E chưa khai <b>Thời Gian Sản Xuất (Phút)</b> nên không được tính vào
-						nhu cầu — con số 11.500 phút đang <b>thấp hơn thực tế</b>. Kết luận “Đủ” chưa
-						chắc đúng.
+						Con số 11.500 phút đang <b>thấp hơn thực tế</b>, nên kết luận “Đủ” chưa chắc đúng.
+						<div class="tw" style="margin-top:9px">
+							<table>
+								<thead>
+									<tr><th>Mặt hàng</th><th>Phương pháp bổ sung</th><th class="n">Thời Gian Sản Xuất</th></tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="mono">NHKP-250E</td>
+										<td><span class="pill ok">Sản xuất</span></td>
+										<td class="n"><b style="color:var(--danger)">chưa khai</b></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<p class="hint" style="margin-top:8px">
+							Danh sách này liệt kê <b>mọi mặt hàng Sản xuất/Gia công chưa khai hoặc khai 0 phút</b>
+							để anh chị khai bổ sung. Hệ thống <u>không tự đoán</u> — thiếu định mức thì nói thẳng
+							là thiếu, chứ không âm thầm tính ra “Đủ”.
+						</p>
 					</div>
 				</div>
 
@@ -781,35 +831,48 @@
 		</div>
 	</div>
 
-	<h2 id="s-e">Chỗ chưa chốt — ảnh hưởng thẳng tới màn này</h2>
+	<h2 id="s-e">Ba rủi ro — anh Thắng đã chốt 24/08</h2>
+	<p class="lede">
+		Ba mục này chặn việc viết spec suốt từ 19/08. Giờ đã có đáp án, ghi lại để không ai
+		mở lại tranh luận cũ.
+	</p>
 	<ul class="qlist">
 		<li>
 			<span class="qn">R1</span>
 			<div>
-				<p><b>Gần như không có BOM để bóc tách.</b> Site có 61.142 mặt hàng nhưng chỉ 5 BOM.</p>
-				<p>Bảng 2 ở trên chỉ dựng được vì em lấy BOM do BOM Template sinh ra. Nếu chọn hướng
-				“không có BOM thì báo lỗi” thì Bảng 2 sẽ <b>trống</b> với hầu hết đơn hàng thật.</p>
+				<p><b>Mặt hàng Sản xuất mà không có BOM thì làm gì?</b> Site có 61.142 mặt hàng
+				nhưng chỉ 5 BOM.</p>
+				<p>→ <b>Chốt: tự sinh BOM từ BOM Template rồi mới bóc.</b> Nhờ vậy Bảng 2 dựng được
+				cho cả những mặt hàng chưa ai lập BOM tay. Không có cả BOM Template thì ghi cảnh báo
+				và coi như phải mua.</p>
 			</div>
 		</li>
 		<li>
 			<span class="qn">R2</span>
 			<div>
-				<p><b>Chỉ 3/60.822 mặt hàng có Thời Gian Sản Xuất (Phút).</b></p>
-				<p>Bảng 3 sẽ ra gần 0 phút và luôn kết luận “Đủ”. Bấm nút <i>Hiện cảnh báo thiếu định
-				mức</i> ở Bảng 3 để xem cách em định xử lý: nói thẳng còn bao nhiêu mặt hàng chưa khai,
-				thay vì im lặng tính là 0.</p>
+				<p><b>Chỉ 3/60.822 mặt hàng có Thời Gian Sản Xuất (Phút).</b> Bảng 3 sẽ ra gần 0 phút
+				và luôn kết luận “Đủ”.</p>
+				<p>→ <b>Chốt: liệt kê thẳng ra những mặt hàng chưa khai</b> để người dùng bổ sung.
+				Bấm <i>Hiện cảnh báo thiếu định mức</i> ở Bảng 3 để xem. Số liệu vẫn thiếu, nhưng
+				người dùng <u>nhìn thấy</u> chỗ thiếu — không bị báo “Đủ” một cách im lặng.</p>
 			</div>
 		</li>
 		<li>
 			<span class="qn">R3</span>
 			<div>
 				<p><b>Đơn đang kiểm có tự trừ chính nó không?</b></p>
-				<p>Đơn SO-26-00147 đang tích Ghim. Nếu công thức trừ cả nó thì 40 cái của chính nó bị
-				trừ vào tồn khả dụng — báo thiếu nhiều hơn thực tế. Mockup này đang <b>loại đơn hiện
-				tại ra</b>. Cần anh Thắng xác nhận.</p>
+				<p>→ <b>Chốt: không tự trừ chính nó.</b> Mockup này vốn đã làm đúng như vậy.</p>
 			</div>
 		</li>
 	</ul>
+
+	<div class="note" style="border-left-color: var(--ask); background: var(--ask-bg)">
+		<span class="tag">Còn treo — không ảnh hưởng màn này</span>
+		Hai chỗ vẫn chờ khách: <b>thời gian đặt hàng về</b> lấy ở đâu (1.115 mặt hàng Mua hàng,
+		chưa mặt hàng nào khai) — nên cột <i>ngày dự kiến có hàng</i> ở Bảng 2 chưa dựng được;
+		và <b>lệnh sản xuất không gắn đơn bán</b> thì cho xuất hay chặn (26/39 lệnh trên site
+		không gắn đơn nào).
+	</div>
 
 	<h2 id="s-f">Bốn câu hỏi khách — đã có đáp án</h2>
 	<p class="lede">
