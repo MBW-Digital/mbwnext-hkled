@@ -105,7 +105,9 @@ Chốt của Thắng 18/08 trên PM-TASK-00110.
 | TC-MV-02 | Template module M50S050-A/B | 16/16 mỗi template | Pass | Pass |
 | TC-MV-03 | *Cầu đấu* / *Ốc dây điện* theo **Kiểu đấu** | `Cầu đấu` → 1 / 0 · `Dây điện` → 30 / 1 | Pass — biến thể `-CD-` ra `WPC-MDM…` ×1, không có ốc dây điện; biến thể `-DD-` ra `W-2x0.75-BK` ×30 + `OPG-M12-RM` ×1 | Pass |
 | TC-MV-04 | Dòng khai *Cố Định* mà SL có điều kiện | bộ nạp nâng lên *Số Lượng Theo Công Thức*, có in `↻` | Pass — nếu để nguyên thì dòng bị bỏ khỏi BOM âm thầm | Pass |
-| TC-MV-05 | 🔴 Vỏ VDP0X — 3 thành phần thiếu dữ liệu nguồn | **chặn**, nêu đích danh thành phần + biến thể + lối ra | Pass — 28/28 biến thể chặn với cùng lý do, không đoán bừa | Pass |
+| TC-MV-05 | Vỏ VDP0X — 3 thành phần từng bị chặn | ~~chặn~~ → **tính được** sau khi khách bỏ phụ thuộc vào nguồn (23/08) | Pass — 28/28 biến thể tạo được BOM đủ 13 dòng | Pass |
+| TC-MV-08 | Bảng bậc của vỏ khớp nhánh ĐẦU TIÊN thoả | ca đặc biệt (CS 50, CS 100) trước ngưỡng bao trùm | Pass — `VDP0X-1K0-N` (1000W Ngang): Đế 4 · Ốc vít bắt đế 24 · Hộp nguồn 4 · ghép ngang 20 | Pass |
+| TC-MV-09 | Công suất ngoài mọi bậc | **chặn**, nêu đích danh công suất | Pass — 28/28 tổ hợp thật đều có nhánh phủ nên chưa ai chạm |
 | TC-MV-06 | Giao diện — tạo BOM module `M30S050-3B3-8C-64LED-CD-A` | 7 dòng, ốc 8 và 16 | Pass (**giao diện**) | Pass |
 | TC-MV-07 | Giao diện — tạo BOM vỏ `VDP0X-300-D-GY-v3.0` | hộp thoại nêu rõ lý do, **không khoá form** | Pass (**giao diện**) | Pass |
 | TC-UI-01 | 🔴 Giao diện — cột *Không Sử Dụng* hiện trên lưới rule | có cột, dòng tích ô để trống NVL | Pass (**giao diện**) — DP01S dòng 245/247/259/261 tích ô, ô NVL trống. ⚠ Ban đầu **KHÔNG hiện**: tổng `columns` vượt 11 *và* `__UserSettings` giữ bố cục cũ. Xem patch `reset_bom_rule_grid_view` | Pass |

@@ -214,12 +214,19 @@ lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đ
 `Số Lượng Theo Công Thức`** và in dòng `↻` trong báo cáo. Không nâng thì dòng bị bỏ khỏi BOM
 một cách âm thầm.
 
-**Vỏ VDP0X — 10/13 thành phần tính được, 3 thành phần CHẶN.** *Đế bắt nguồn*, *Ốc vít bắt đế,
-hộp* và *Hộp nguồn* trong bảng khách tính theo **loại nguồn (nhỏ/to) và hãng nguồn**, nhưng biến
-thể vỏ trên site chỉ có 4 đặc tính: *Công suất · Màu sơn · Phân loại vỏ · Version*. Cái vỏ tự nó
-không biết đèn lắp vào dùng nguồn gì. Đang `frappe.throw` nêu đích danh thành phần + biến thể +
-hai lối ra để HKLED chọn (thêm đặc tính cho vỏ, hay chuyển 3 thành phần này sang BOM đèn thành
-phẩm). Đã hỏi Thắng 22/08.
+**Vỏ VDP0X — 13/13 thành phần, 28/28 biến thể tạo được BOM (23/08).** Ba thành phần *Đế bắt
+nguồn*, *Ốc vít bắt đế, hộp*, *Hộp nguồn* trước đây bị chặn vì bảng tính theo **loại nguồn và
+hãng nguồn**, mà biến thể vỏ chỉ có 4 đặc tính (*Công suất · Màu sơn · Phân loại vỏ · Version*)
+— cái vỏ không biết đèn lắp vào dùng nguồn gì. Đã báo Thắng, và **khách viết lại bảng bỏ hẳn
+phụ thuộc vào nguồn**, giờ chỉ còn *Phân loại vỏ + Công suất*.
+
+`vo_tra_bac()` khớp **nhánh đầu tiên thoả**, đúng thứ tự bảng khách — ca đặc biệt (Công suất 50,
+Công suất 100) đặt TRƯỚC ngưỡng bao trùm, đảo thứ tự là ra số khác. Không nhánh nào thoả thì
+throw nêu đích danh công suất: bảng liệt kê theo bậc rời rạc nên công suất mới sẽ rơi ra ngoài,
+im lặng ở đây là BOM thiếu dòng. Đã kiểm 28/28 tổ hợp thật đều có nhánh phủ.
+
+✅ `lambda` **chạy được** trong sandbox Server Script (đã thử thật) — khác với `.format()` và
+`return` ở cấp module.
 
 ⚠ Dọc/Ngang của **vỏ** nằm ở đặc tính **`Phân loại vỏ`**, KHÔNG phải `Kiểu lắp` như đèn thành
 phẩm. `vo_phan_loai()` đọc khoá đó và **chặn thẳng** nếu thiếu — đọc nhầm khoá thì mọi công thức

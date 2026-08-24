@@ -404,29 +404,49 @@ def calc_ghep_ngang_qty(attrs, rule_group):
 		return frappe.utils.flt(attrs.get("Công suất")) / 50
 	frappe.throw(f"Chưa cấu hình công thức nhóm ghép ngang cho nhóm {rule_group}")
 
-def vo_can_thong_tin_nguon(ten_thanh_phan, ma_bien_the):
-	"""Ba thành phần của vỏ mà bảng khách tính theo LOẠI NGUỒN của đèn thành phẩm.
+def vo_tra_bac(attrs, ten_thanh_phan, bac_doc, bac_ngang):
+	"""Bảng tra theo (Phân loại vỏ, Công suất) — khớp NHÁNH ĐẦU TIÊN thoả, như bảng khách.
 
-	Biến thể vỏ trên site chỉ có 4 đặc tính — Công suất, Màu sơn, Phân loại vỏ,
-	Version — KHÔNG có Nguồn cũng không có Kiểu nguồn. Cái vỏ tự nó không biết đèn
-	lắp vào sẽ dùng nguồn gì, nên không có cách nào suy ra từ biến thể.
+	`bac_*` là danh sách (điều_kiện, số_lượng) xét từ trên xuống. Thứ tự quan trọng:
+	bảng khách đặt ca đặc biệt (Công suất 50, Công suất 100) TRƯỚC ngưỡng bao trùm.
 
-	Chặn thẳng, nêu đích danh: đoán bừa một nhánh thì BOM ra số sai mà không ai biết.
+	Không nhánh nào thoả thì THROW nêu đích danh — bảng khách liệt kê theo bậc rời rạc
+	nên công suất mới phát sinh sẽ rơi ra ngoài, và im lặng ở đây là BOM thiếu dòng.
 	"""
+	power = frappe.utils.flt(attrs.get("Công suất"))
+	bang = bac_doc if vo_phan_loai(attrs) == "Dọc" else bac_ngang
+	for hop_le, so_luong in bang:
+		if hop_le(power):
+			return so_luong
 	frappe.throw(
-		f"Thành phần {ten_thanh_phan} của vỏ tính theo loại nguồn (nhỏ/to) và hãng nguồn,"
-		f" nhưng biến thể {ma_bien_the} không có đặc tính Nguồn hay Kiểu nguồn."
-		f" Cần HKLED chốt: bổ sung đặc tính cho vỏ, hay chuyển thành phần này sang BOM"
-		f" của đèn thành phẩm.")
+		f"Thành phần {ten_thanh_phan} của vỏ chưa có số lượng cho công suất {power}W"
+		f" ({vo_phan_loai(attrs)}). Bổ sung bậc công suất này vào bảng khách rồi khai lại.")
 
+# Bảng khách sửa 23/08: BỎ HẲN phụ thuộc vào loại nguồn, chỉ còn Phân loại vỏ + Công suất
+# — hai thứ biến thể vỏ đều có sẵn. Nhờ vậy 3 thành phần này tính được, VDP0X hết chặn.
 def calc_de_bat_nguon_qty(attrs, rule_group):
-	vo_can_thong_tin_nguon("Đế bắt nguồn", item_code)
+	if rule_group == "VO_VDP0X":
+		return vo_tra_bac(attrs, "Đế bắt nguồn",
+			[(lambda p: p <= 250, 1), (lambda p: p == 300, 2)],
+			[(lambda p: p <= 500, 2), (lambda p: p <= 1000, 4),
+				(lambda p: 1200 <= p <= 1500, 6)])
+	frappe.throw(f"Chưa cấu hình công thức Đế bắt nguồn cho nhóm {rule_group}")
 
 def calc_oc_vit_bat_de_hop_qty(attrs, rule_group):
-	vo_can_thong_tin_nguon("Ốc vít bắt đế, hộp", item_code)
+	if rule_group == "VO_VDP0X":
+		return vo_tra_bac(attrs, "Ốc vít bắt đế, hộp",
+			[(lambda p: p == 50, 2), (lambda p: p <= 250, 6), (lambda p: p == 300, 12)],
+			[(lambda p: p == 100, 4), (lambda p: p <= 500, 12), (lambda p: p <= 1000, 24),
+				(lambda p: 1200 <= p <= 1500, 36)])
+	frappe.throw(f"Chưa cấu hình công thức Ốc vít bắt đế, hộp cho nhóm {rule_group}")
 
 def calc_hop_nguon_qty(attrs, rule_group):
-	vo_can_thong_tin_nguon("Hộp nguồn", item_code)
+	if rule_group == "VO_VDP0X":
+		return vo_tra_bac(attrs, "Hộp nguồn",
+			[(lambda p: p == 50, 0), (lambda p: p <= 250, 1), (lambda p: p == 300, 2)],
+			[(lambda p: p == 100, 0), (lambda p: p <= 500, 2), (lambda p: p <= 1000, 4),
+				(lambda p: 1200 <= p <= 1500, 6)])
+	frappe.throw(f"Chưa cấu hình công thức Hộp nguồn cho nhóm {rule_group}")
 
 # ==================================================================
 # DISPATCH TABLE + ENTRY POINT
