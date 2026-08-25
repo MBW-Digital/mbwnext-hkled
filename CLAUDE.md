@@ -186,6 +186,52 @@ thể ở trên, rule vét ở dưới" — đó là lý do `Còn lại` phải 
 Và `find_rule_item` lọc `if cond and variant_matches(...)`: rule **để trống điều kiện không bao
 giờ khớp**. Không có khái niệm rule mặc định.
 
+### Công thức cho module và vỏ (làm 22/08)
+
+`PREFIX_GROUPS` thêm hai nhóm: **`MODULE_50`** (`M30S050*`, `M50S050*`) và **`VO_VDP0X`**
+(`VDP0X`). Nguồn số liệu là **cột SL của chính sheet rule**, không phải 3 sheet *Nhóm I/II/III*.
+
+**Module — 4/4 template chạy được** (112 biến thể, 0 hỏng). Hầu hết là số cố định (Chip LED 1,
+Tản nhiệt 1, Lens 1, Gioăng chip 1, Ốc vít bắt chip 8, Ốc vít bắt lens 16); chỉ *Cầu đấu* và
+*Ốc dây điện* đổi theo đặc tính **Kiểu đấu**:
+
+| Kiểu đấu | Cầu đấu | Ốc dây điện |
+|---|---|---|
+| `Cầu đấu` | 1 | 0 |
+| `Dây điện` | 30 | 1 |
+
+⚠ File khách viết **"Dây diện"** (thiếu dấu). So theo giá trị THẬT trên biến thể, đừng chép
+nguyên chuỗi trong file vào code.
+
+⚠ Các hàm `calc_chip_led_qty`, `calc_lens_qty`, `calc_gioang_chip_qty`, `calc_oc_vit_bat_*`
+viết cho **đèn thành phẩm** (chia theo công suất). Nhóm module phải rẽ nhánh riêng trả số cố
+định — đây đúng là cái bẫy đã cảnh báo từ trước: áp nhầm công thức đèn sang module thì ra số
+sai mà không có gì báo.
+
+⚠ **Dòng khai "Cố Định" nhưng số lượng lại có điều kiện.** *Ốc dây điện* được khách khai
+`Cố Định` mà SL là *"Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1"* — mâu thuẫn: `Cố Định`
+lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đúng cho cả hai. Bộ nạp **tự nâng lên
+`Số Lượng Theo Công Thức`** và in dòng `↻` trong báo cáo. Không nâng thì dòng bị bỏ khỏi BOM
+một cách âm thầm.
+
+**Vỏ VDP0X — 13/13 thành phần, 28/28 biến thể tạo được BOM (23/08).** Ba thành phần *Đế bắt
+nguồn*, *Ốc vít bắt đế, hộp*, *Hộp nguồn* trước đây bị chặn vì bảng tính theo **loại nguồn và
+hãng nguồn**, mà biến thể vỏ chỉ có 4 đặc tính (*Công suất · Màu sơn · Phân loại vỏ · Version*)
+— cái vỏ không biết đèn lắp vào dùng nguồn gì. Đã báo Thắng, và **khách viết lại bảng bỏ hẳn
+phụ thuộc vào nguồn**, giờ chỉ còn *Phân loại vỏ + Công suất*.
+
+`vo_tra_bac()` khớp **nhánh đầu tiên thoả**, đúng thứ tự bảng khách — ca đặc biệt (Công suất 50,
+Công suất 100) đặt TRƯỚC ngưỡng bao trùm, đảo thứ tự là ra số khác. Không nhánh nào thoả thì
+throw nêu đích danh công suất: bảng liệt kê theo bậc rời rạc nên công suất mới sẽ rơi ra ngoài,
+im lặng ở đây là BOM thiếu dòng. Đã kiểm 28/28 tổ hợp thật đều có nhánh phủ.
+
+✅ `lambda` **chạy được** trong sandbox Server Script (đã thử thật) — khác với `.format()` và
+`return` ở cấp module.
+
+⚠ Dọc/Ngang của **vỏ** nằm ở đặc tính **`Phân loại vỏ`**, KHÔNG phải `Kiểu lắp` như đèn thành
+phẩm. `vo_phan_loai()` đọc khoá đó và **chặn thẳng** nếu thiếu — đọc nhầm khoá thì mọi công thức
+âm thầm rơi vào nhánh Ngang.
+
 ### ⚠ Một lỗ hổng engine còn lại (chờ TungDA — chốt của Thắng 18/08)
 
 **1. Không có bộ công thức số lượng cho mặt hàng cha là module / vỏ.**
@@ -260,10 +306,57 @@ số sai. Hỏi engine theo **tên thành phần** (`resolve_qty_by_formula(ma, 
 `classify_nguon` cho cả phía code lẫn phía bảng khách, nên **không thể** phát hiện lỗi số 5 —
 báo "khớp hết" trong khi đang sai. Gieo thử một lỗi vào phía code để chắc bộ đối chiếu biết kêu.
 
-**Sheet vẫn chưa trả lời 4 chỗ** (đã hỏi Thắng 22/08): công thức cho module/vỏ · khoảng
-500 < CS ≤ 600 ở Ngang · ô ghi *"Công suất 100"* không rõ `=` hay `≤` · Cầu đấu không có nhánh
-cho nguồn nhỏ (site có biến thể nguồn nhỏ ở 600W/1200W) · và *"Năng lượng mặt trời"* không nằm
-trong danh sách hãng nào của sheet nên đang xếp vào nhánh "hãng khác".
+**Thắng trả lời chiều 22/08** — bảng đổi cấu trúc, *Sheet 1* tách thành **Nhóm I (Module)**,
+**Nhóm II (COB)**, **Nhóm III (Chip Module)**:
+
+| Hỏi | Trả lời | Đã làm |
+|---|---|---|
+| 500 < CS ≤ 600 ở Ngang | mốc là **500 < CS ≤ 1000 → 200** | đã sửa, bỏ nhánh TODO |
+| *"Công suất 100"* | đúng là **≤ 100** | code vốn đã đúng |
+| Cầu đấu, nguồn nhỏ | đi **chung nhánh hãng khác** (khách liệt kê tường minh *HKLED Nhỏ*, *Done Nhỏ*, *Năng lượng mặt trời* vào cùng ô) | code vốn đã đúng |
+| *Năng lượng mặt trời* | với **Nguồn** là dòng riêng, **1 phẳng** — không theo Kiểu lắp, không theo Công suất | đã sửa |
+| **Công thức module/vỏ** | ❌ **VẪN CHƯA CÓ** | 5/7 template vẫn treo |
+
+⚠ *"Năng lượng mặt trời"* nằm **dưới nhánh Nguồn to**, nên chỉ riêng thành phần **Nguồn** là đặc
+biệt: Cầu đấu vẫn đi chung nhóm hãng khác, Dây điện cấp nguồn vẫn ra 0. Đừng nâng nó thành một
+nhóm phân loại riêng trong `classify_nguon` — sẽ sai hai thành phần kia.
+
+⚠ **Thắng bổ sung 4 nhóm đèn thành phẩm mới, KHÔNG phải module/vỏ.** Nhóm II phủ đèn pha
+PTC/PTR/PXH/PTV/PVL/PKD, nhà xưởng XHB, **phòng nổ UFO NU1**; Nhóm III phủ đèn đường D11–D15.
+Ba nhóm đầu đã có trong `PREFIX_GROUPS`; **NU1 thì chưa** — đây là một trong *10 mã đèn chưa có
+nhóm công thức* nêu ở mục tài liệu giai đoạn 1. Bốn nhóm này **chưa được đối chiếu** với code
+theo cách đã làm cho Nhóm I.
+
+### ❌ ĐÍNH CHÍNH 22/08 — công thức module/vỏ VẪN CÓ trong file, lỗi ở phía mình
+
+Suốt mấy vòng trao đổi tôi khẳng định *"khách chưa có công thức số lượng cho module/vỏ"* và ghi
+cả vào đây. **Sai.** Thắng chỉ đúng chỗ: các sheet **rule** `M30S050-*` và `VDP0X` có **cột SL**
+chứa đầy đủ công thức, dạng văn bản có điều kiện:
+
+```
+Khung module          Dọc: 2 · Ngang: 4
+Tai                   Công suất <= 600: SL 2 · Công suất > 600: SL 4
+Ốc ghép ngang         Dọc: SL 0 · Ngang: Công suất / 50
+Đế bắt nguồn          Nguồn nhỏ, Dọc: <=200 SL 1 · >200 SL 2 · Nguồn nhỏ, Ngang: … (7 nhánh)
+```
+
+So bản 21/08 với 22/08: **giống hệt** — dữ liệu này có từ đầu, không phải Thắng mới thêm.
+
+**Vì sao tôi tưởng là không có.** Ba sheet *Nhóm I/II/III* chỉ chứa thành phần đèn thành phẩm,
+nên tôi tra thành phần module/vỏ ở đó, không thấy, rồi kết luận là thiếu — mà quên rằng số lượng
+của module/vỏ nằm ở **cột SL của sheet rule**, khác chỗ với đèn thành phẩm. Phép tra của tôi
+đúng nhưng tra nhầm chỗ, và tôi không kiểm lại giả định trước khi báo đi.
+
+**Chặn thật sự nằm ở hai chỗ trong code, không phải ở dữ liệu khách:**
+
+1. `resolve_formula_group` không suy được nhóm cho mặt hàng cha là module/vỏ → throw **trước cả**
+   khi chạm tới số lượng.
+2. `_so_luong()` trong `doc_bom_sheet.py` chỉ nhận **số thuần**; gặp văn bản có điều kiện thì xếp
+   vào *"số lượng đổi theo đặc tính"* rồi bỏ qua. Mô hình hiện tại chưa biểu diễn được dạng này.
+
+⚠ Và `data/bom_template/spec.json` trong git đang **cũ** — còn giữ bản đọc từ file 18/08, cột SL
+của VDP0X ghi `"Ghi chú"`. Chạy lại `doc_bom_sheet.py` trên file hiện tại thì lấy đúng công thức.
+Nhớ sinh lại spec mỗi lần khách sửa file, đừng đọc spec cũ rồi kết luận về file mới.
 
 ### ⚠ Thêm field vào lưới bảng con: hai chỗ chặn, chỉ giao diện mới lộ
 

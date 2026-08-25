@@ -6325,7 +6325,7 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Cố Định",
+     "kieu": "Theo Rule",
      "nvl": "OPG-M12-RM",
      "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
     }
@@ -6532,7 +6532,7 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Cố Định",
+     "kieu": "Theo Rule",
      "nvl": "OPG-M12-RM",
      "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
     }
@@ -6717,7 +6717,7 @@
      "thanh_phan": "Cầu đấu",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 1 | Nếu Kiểu đấu: Dây diện thì SL 30"
     },
     {
      "thanh_phan": "Gioăng chip",
@@ -6739,9 +6739,9 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Cố Định",
+     "kieu": "Theo Rule",
      "nvl": "OPG-M12-RM",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
    ],
    "rules": [
@@ -6860,7 +6860,7 @@
      "thanh_phan": "Cầu đấu",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 1 | Kiểu đấu: Dây diện SL 30"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 1 | Nếu Kiểu đấu: Dây diện thì SL 30"
     },
     {
      "thanh_phan": "Gioăng chip",
@@ -6882,9 +6882,9 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Cố Định",
+     "kieu": "Theo Rule",
      "nvl": "OPG-M12-RM",
-     "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
+     "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
    ],
    "rules": [
@@ -6985,79 +6985,79 @@
      "thanh_phan": "Khung module",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc: 2\nNgang: 4"
     },
     {
      "thanh_phan": "Tai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 1\nCông suất > 600: SL 2"
     },
     {
      "thanh_phan": "Đế bắt nguồn",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc:\n- Công suất <= 250: 1\n- Công suất 300: 2\nNgang:\n- Công suất <=500: 2\n- Công suất <= 1000: 4\n- Công suất 1200-1500: 6"
     },
     {
      "thanh_phan": "Ốc vít bắt đế, hộp",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc:\n- Công suất 50: 2\n- Công suất <= 250: 6\n- Công suất 300: 12\nNgang:\n- Công suất 100: 4\n- Công suất <=500: 12\n- Công suất <= 1000: 24\n- Công suất 1200-1500: 36"
     },
     {
      "thanh_phan": "Ốc ghép ngang",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc: SL 0\nNgang: Công suất / 50"
     },
     {
      "thanh_phan": "Ecu bắt tai, ghép ngang",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc: SL 0\nNgang: Công suất / 50"
     },
     {
      "thanh_phan": "Ốc bắt tai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 6\nCông suất > 600: SL 12"
     },
     {
      "thanh_phan": "Ốc bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Ecu bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Long đen vênh bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Long đen phẳng bắt quai",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Công suất <= 600: SL 2\nCông suất > 600: SL 4"
     },
     {
      "thanh_phan": "Hộp nguồn",
      "kieu": "Theo Rule",
      "nvl": "",
-     "sl_tho": "Ghi chú"
+     "sl_tho": "Dọc:\n- Công suất 50: 0\n- Công suất <= 250: 1\n- Công suất 300: 2\nNgang:\n- Công suất 100: 0\n- Công suất <=500: 2\n- Công suất <= 1000: 4\n- Công suất 1200-1500: 6"
     }
    ],
    "rules": [

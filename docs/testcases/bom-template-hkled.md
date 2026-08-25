@@ -97,6 +97,24 @@ Chốt của Thắng 18/08 trên PM-TASK-00110.
 | TC-CT-08 | 🔴 Bộ đối chiếu tự bắt được lỗi | gieo lỗi phân loại → phải báo lệch | Pass — gieo lỗi ra **112 tổ hợp lệch**; bản đầu của bộ đối chiếu dùng chung hàm phân loại cho cả 2 phía nên **mù** với lỗi TC-CT-06 |
 | TC-CT-09 | Ô Số Lượng trống → cảnh báo bắn được | bộ nạp ghi **0**, không ghi 1 | Pass — ghi 1 thì `qty_defaulted` không bao giờ bắn, đúng cách Xốp góc lọt lưới |
 | TC-KSD-09 | Giao diện — ô tích trong hộp thoại *Tạo Rule* | tích ô thì ô NVL ẩn và hết bắt buộc | Pass (**giao diện**) — tích xong trường *Nguyên Vật Liệu* biến mất hẳn | Pass |
+| TC-CT-10 | *Năng lượng mặt trời* → Nguồn | **1 phẳng**, mọi công suất/kiểu lắp | Pass — 1000W Ngang ra 1; trước ra 4 (đi nhánh hãng khác) | Pass |
+| TC-CT-11 | *Năng lượng mặt trời* → Cầu đấu và Dây điện | vẫn xử lý như **nguồn to** | Pass — 1000W Ngang: Cầu đấu 4, Dây điện 0 | Pass |
+| TC-CT-12 | Khoảng 500 < CS ≤ 1000 ở Ngang (dây điện) | **200** | Pass — khách lấp khoảng trống 22/08, đã bỏ nhánh TODO | Pass |
+| TC-CT-13 | Đối chiếu lại sau bản khách sửa 22/08 chiều | 0 tổ hợp lệch, 0 ô bỏ trống | Pass — 160/160 khớp, không còn ô nào không kết luận được | Pass |
+| TC-MV-01 | Template module M30S050-A/B tạo được BOM | 40/40 mỗi template | Pass — trước 0/40 (báo *"chưa có bộ công thức"*) | Pass |
+| TC-MV-02 | Template module M50S050-A/B | 16/16 mỗi template | Pass | Pass |
+| TC-MV-03 | *Cầu đấu* / *Ốc dây điện* theo **Kiểu đấu** | `Cầu đấu` → 1 / 0 · `Dây điện` → 30 / 1 | Pass — biến thể `-CD-` ra `WPC-MDM…` ×1, không có ốc dây điện; biến thể `-DD-` ra `W-2x0.75-BK` ×30 + `OPG-M12-RM` ×1 | Pass |
+| TC-MV-04 | Dòng khai *Cố Định* mà SL có điều kiện | bộ nạp nâng lên *Số Lượng Theo Công Thức*, có in `↻` | Pass — nếu để nguyên thì dòng bị bỏ khỏi BOM âm thầm | Pass |
+| TC-MV-05 | Vỏ VDP0X — 3 thành phần từng bị chặn | ~~chặn~~ → **tính được** sau khi khách bỏ phụ thuộc vào nguồn (23/08) | Pass — **28/28** biến thể tạo được BOM.
+  ⚠ Số dòng NVL là **10–13 tuỳ biến thể**, KHÔNG phải 13 cho mọi biến thể — bản đầu của ca này ghi "đủ 13 dòng" là **SAI**, suy từ đúng một mẫu.
+  Phân bố thật: 13 dòng ×14 · 12 dòng ×2 · 11 dòng ×10 · 10 dòng ×2.
+  ⚠ Lọc theo đặc tính **`Phân loại vỏ`** (giá trị Dọc/Ngang) — vỏ KHÔNG có đặc tính `Kiểu lắp` như đèn thành phẩm; query nhầm tên thì cột lọc ra rỗng hết. | Pass |
+| TC-MV-10 | Vỏ có **`Phân loại vỏ` = Dọc** bỏ 2 dòng ghép ngang | *Ốc ghép ngang* và *Ecu bắt tai, ghép ngang* = 0 → rụng khỏi BOM | Pass — 12 biến thể `Phân loại vỏ = Dọc` đều ≤ 11 dòng |
+| TC-MV-11 | *Hộp nguồn* = 0 ở hai ca đầu bậc | `Phân loại vỏ`=Dọc + `Công suất`=50 → 0 · `Phân loại vỏ`=Ngang + `Công suất`=100 → 0 | Pass — `VDP0X-050-D-GY-v3.0` ra **10** dòng, `VDP0X-100-N-GY-v3.0` ra **12** dòng |
+| TC-MV-08 | Bảng bậc của vỏ khớp nhánh ĐẦU TIÊN thoả | ca đặc biệt (CS 50, CS 100) trước ngưỡng bao trùm | Pass — `VDP0X-1K0-N` (1000W Ngang): Đế 4 · Ốc vít bắt đế 24 · Hộp nguồn 4 · ghép ngang 20 | Pass |
+| TC-MV-09 | Công suất ngoài mọi bậc | **chặn**, nêu đích danh công suất | Pass — 28/28 tổ hợp thật đều có nhánh phủ nên chưa ai chạm |
+| TC-MV-06 | Giao diện — tạo BOM module `M30S050-3B3-8C-64LED-CD-A` | 7 dòng, ốc 8 và 16 | Pass (**giao diện**) | Pass |
+| TC-MV-07 | Giao diện — tạo BOM vỏ `VDP0X-300-D-GY-v3.0` | hộp thoại nêu rõ lý do, **không khoá form** | Pass (**giao diện**) | Pass |
 | TC-UI-01 | 🔴 Giao diện — cột *Không Sử Dụng* hiện trên lưới rule | có cột, dòng tích ô để trống NVL | Pass (**giao diện**) — DP01S dòng 245/247/259/261 tích ô, ô NVL trống. ⚠ Ban đầu **KHÔNG hiện**: tổng `columns` vượt 11 *và* `__UserSettings` giữ bố cục cũ. Xem patch `reset_bom_rule_grid_view` | Pass |
 | TC-UI-02 | Giao diện — tạo BOM `DP01S300-3B3HT-AD` | 7 dòng, Xốp góc **4**, **không** có dây điện | Pass (**giao diện**) — trước là 8 dòng có `W-3x0.75-BK` 100m và Xốp góc 1 | Pass |
 | TC-UI-03 | Giao diện — tạo BOM `DP01S1K0-3B3HT-AN` (1000W Ngang HKLED) | Nguồn **4**, Cầu đấu **4** | Pass (**giao diện**) — trước cả hai ra 2; Module 20, ốc 40, Xốp góc 4 | Pass |

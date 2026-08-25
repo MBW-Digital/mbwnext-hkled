@@ -245,9 +245,17 @@ def doc(path):
 	sheets, loi = {}, {}
 	for s in wb.sheetnames:
 		try:
-			sheets[s] = _doc_sheet(s, list(wb[s].iter_rows(values_only=True)))
+			ket = _doc_sheet(s, list(wb[s].iter_rows(values_only=True)))
 		except ValueError as e:
 			loi[s] = str(e)
+			continue
+		# Từ 22/08 file khách có thêm các sheet CÔNG THỨC ("Nhóm I (Module)", "Nhóm II
+		# (COB)", "Nhóm III (Chip Module)") — chúng không có bảng thành phần nên đọc ra
+		# rỗng. Không phải sheet BOM Template, bỏ qua chứ đừng để bộ nạp đi tìm mặt hàng
+		# cha tên "Nhóm I (Module)" rồi báo lỗi khó hiểu.
+		if not ket["thanh_phan"]:
+			continue
+		sheets[s] = ket
 	return {"sheets": sheets, "loi": loi}
 
 

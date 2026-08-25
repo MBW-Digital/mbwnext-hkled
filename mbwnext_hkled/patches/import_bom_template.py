@@ -55,5 +55,7 @@ def execute():
 			# thấy 0 sẽ tạm tính 1 và ĐÁNH DẤU lên giao diện. Ghi 1 ở đây là nuốt mất dấu đó.
 			print(f"    ⚠ {g['tp']}: {g['ly_do']}{chi_tiet}"
 				f" — ô Số Lượng để 0, số lượng lấy từ công thức. Xem PM-TASK-00110")
+		for g in bao.get("doi_kieu") or []:
+			print(f"    ↻ {g['tp']}: đổi kiểu {g['tu']} -> {g['sang']} ({g['vi']})")
 
 	frappe.db.commit()

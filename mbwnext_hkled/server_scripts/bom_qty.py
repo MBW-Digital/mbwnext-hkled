@@ -151,6 +151,13 @@ def calc_nguon_qty_module_group(attrs, rule_group):
 	mount = attrs.get("Kiểu lắp")
 	cat = classify_nguon(attrs)
 
+	# Bảng khách 22/08 (bổ sung chiều 22/08, dòng 23 nhóm I): "Năng lượng mặt trời" là một
+	# dòng RIÊNG trong khối Nguồn, số lượng 1 phẳng — không theo Kiểu lắp, không theo Công suất.
+	# Nó nằm dưới nhánh "Nguồn to" nên các thành phần KHÁC vẫn xử lý nó như nguồn to:
+	# Cầu đấu đi chung nhóm hãng khác, Dây điện cấp nguồn ra 0. Chỉ riêng Nguồn là đặc biệt.
+	if attrs.get("Nguồn") == "Năng lượng mặt trời":
+		return 1
+
 	if cat == "nho":
 		return 1 if power <= 50 else power / 50
 
@@ -169,6 +176,12 @@ def calc_cau_dau_qty(attrs, rule_group):
 	power = frappe.utils.flt(attrs.get("Công suất"))
 	mount = attrs.get("Kiểu lắp")
 	cat = classify_nguon(attrs)
+
+	# Module: số lượng theo đặc tính "Kiểu đấu" của chính module, không theo công suất.
+	# ⚠ File khách viết "Dây diện" (thiếu dấu) — so theo giá trị THẬT trên biến thể, đừng
+	# chép nguyên chuỗi trong file vào code.
+	if rule_group == "MODULE_50":
+		return 1 if attrs.get("Kiểu đấu") == "Cầu đấu" else 30
 
 	if rule_group == "P01_P03":
 		if power <= 50:
@@ -223,8 +236,7 @@ def calc_day_dien_cap_nguon_qty(attrs, rule_group):
 				return 0
 			if power <= 500:
 				return 100
-			if power <= 600:
-				return 100  # KHOẢNG TRỐNG DỮ LIỆU 500-600, chờ HKLED xác nhận
+			# Khách đã lấp khoảng trống 500-600 ngày 22/08: mốc giờ là 500 < CS <= 1000.
 			if power <= 1000:
 				return 200
 			return 300
@@ -238,12 +250,16 @@ def calc_day_dien_cap_nguon_qty(attrs, rule_group):
 
 def calc_chip_led_qty(attrs, rule_group):
 	power = frappe.utils.flt(attrs.get("Công suất"))
+	if rule_group == "MODULE_50":
+		return 1          # 1 module = 1 tấm chip
 	if rule_group == "D11_D15":
 		return power / 50  # nhóm này không có ngưỡng, luôn chia
 	return 1 if power < 100 else power / 50
 
 def calc_oc_vit_bat_chip_qty(attrs, rule_group):
 	power = frappe.utils.flt(attrs.get("Công suất"))
+	if rule_group == "MODULE_50":
+		return 8
 	if rule_group == "D11_D15":
 		return (power / 50) * 8
 	return 4 if power < 100 else (power / 50) * 4
@@ -301,13 +317,136 @@ def calc_day_dien_dau_chip_qty(attrs, rule_group):
 # ==================================================================
 
 def calc_lens_qty(attrs, rule_group):
+	if rule_group == "MODULE_50":
+		return 1
 	return frappe.utils.flt(attrs.get("Công suất")) / 50
 
 def calc_gioang_chip_qty(attrs, rule_group):
+	if rule_group == "MODULE_50":
+		return 1
 	return frappe.utils.flt(attrs.get("Công suất")) / 50
 
 def calc_oc_vit_bat_lens_qty(attrs, rule_group):
+	if rule_group == "MODULE_50":
+		return 16
 	return (frappe.utils.flt(attrs.get("Công suất")) / 50) * 16
+
+# ==================================================================
+# NHÓM MODULE (M30S050-*, M50S050-*) VÀ VỎ ĐÈN (VDP0X)
+#
+# Nguồn: CỘT SL của chính sheet rule trong file khách, KHÔNG phải ở 3 sheet
+# "Nhóm I/II/III" — mấy sheet đó chỉ có thành phần của đèn thành phẩm. Đây là chỗ
+# tôi từng tra nhầm rồi báo là "khách chưa có công thức"; xem mục đính chính 22/08
+# trong CLAUDE.md.
+# ==================================================================
+
+def calc_tan_nhiet_qty(attrs, rule_group):
+	if rule_group == "MODULE_50":
+		return 1
+	frappe.throw(f"Chưa cấu hình công thức Tản nhiệt cho nhóm {rule_group}")
+
+def calc_oc_day_dien_qty(attrs, rule_group):
+	if rule_group == "MODULE_50":
+		return 0 if attrs.get("Kiểu đấu") == "Cầu đấu" else 1
+	frappe.throw(f"Chưa cấu hình công thức Ốc dây điện cho nhóm {rule_group}")
+
+# --- vỏ đèn VDP0X -------------------------------------------------
+
+def vo_phan_loai(attrs):
+	"""Dọc/Ngang của VỎ nằm ở đặc tính "Phân loại vỏ", KHÔNG phải "Kiểu lắp".
+
+	Đèn thành phẩm dùng "Kiểu lắp"; vỏ dùng tên khác cho cùng khái niệm (đã khai ở
+	DOI_TEN_DAC_TINH trong doc_bom_sheet.py). Đọc nhầm khoá thì ra None và mọi công
+	thức dưới đây trả nhánh Ngang một cách âm thầm — nên chặn thẳng.
+	"""
+	gt = attrs.get("Phân loại vỏ") or attrs.get("Kiểu lắp")
+	if gt not in ("Dọc", "Ngang"):
+		frappe.throw(
+			f"Biến thể vỏ chưa khai đặc tính Phân loại vỏ (Dọc/Ngang), đang là {gt!r}")
+	return gt
+
+def vo_bac_600(attrs, duoi, tren):
+	"""Dạng lặp lại nhiều nhất ở VDP0X: một mốc duy nhất tại 600W."""
+	return duoi if frappe.utils.flt(attrs.get("Công suất")) <= 600 else tren
+
+def calc_khung_module_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return 2 if vo_phan_loai(attrs) == "Dọc" else 4
+	frappe.throw(f"Chưa cấu hình công thức Khung module cho nhóm {rule_group}")
+
+def calc_tai_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return vo_bac_600(attrs, 2, 4)
+	frappe.throw(f"Chưa cấu hình công thức Tai cho nhóm {rule_group}")
+
+def calc_quai_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return vo_bac_600(attrs, 1, 2)
+	frappe.throw(f"Chưa cấu hình công thức Quai cho nhóm {rule_group}")
+
+def calc_oc_bat_tai_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return vo_bac_600(attrs, 6, 12)
+	frappe.throw(f"Chưa cấu hình công thức Ốc bắt tai cho nhóm {rule_group}")
+
+def calc_bat_quai_qty(attrs, rule_group):
+	"""Dùng chung cho Ốc bắt quai, Ecu bắt quai, Long đen vênh, Long đen phẳng —
+	bốn thành phần này trong bảng khách có SỐ GIỐNG HỆT nhau."""
+	if rule_group == "VO_VDP0X":
+		return vo_bac_600(attrs, 2, 4)
+	frappe.throw(f"Chưa cấu hình công thức nhóm bắt quai cho nhóm {rule_group}")
+
+def calc_ghep_ngang_qty(attrs, rule_group):
+	"""Ốc ghép ngang và Ecu bắt tai, ghép ngang — cùng công thức."""
+	if rule_group == "VO_VDP0X":
+		if vo_phan_loai(attrs) == "Dọc":
+			return 0
+		return frappe.utils.flt(attrs.get("Công suất")) / 50
+	frappe.throw(f"Chưa cấu hình công thức nhóm ghép ngang cho nhóm {rule_group}")
+
+def vo_tra_bac(attrs, ten_thanh_phan, bac_doc, bac_ngang):
+	"""Bảng tra theo (Phân loại vỏ, Công suất) — khớp NHÁNH ĐẦU TIÊN thoả, như bảng khách.
+
+	`bac_*` là danh sách (điều_kiện, số_lượng) xét từ trên xuống. Thứ tự quan trọng:
+	bảng khách đặt ca đặc biệt (Công suất 50, Công suất 100) TRƯỚC ngưỡng bao trùm.
+
+	Không nhánh nào thoả thì THROW nêu đích danh — bảng khách liệt kê theo bậc rời rạc
+	nên công suất mới phát sinh sẽ rơi ra ngoài, và im lặng ở đây là BOM thiếu dòng.
+	"""
+	power = frappe.utils.flt(attrs.get("Công suất"))
+	bang = bac_doc if vo_phan_loai(attrs) == "Dọc" else bac_ngang
+	for hop_le, so_luong in bang:
+		if hop_le(power):
+			return so_luong
+	frappe.throw(
+		f"Thành phần {ten_thanh_phan} của vỏ chưa có số lượng cho công suất {power}W"
+		f" ({vo_phan_loai(attrs)}). Bổ sung bậc công suất này vào bảng khách rồi khai lại.")
+
+# Bảng khách sửa 23/08: BỎ HẲN phụ thuộc vào loại nguồn, chỉ còn Phân loại vỏ + Công suất
+# — hai thứ biến thể vỏ đều có sẵn. Nhờ vậy 3 thành phần này tính được, VDP0X hết chặn.
+def calc_de_bat_nguon_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return vo_tra_bac(attrs, "Đế bắt nguồn",
+			[(lambda p: p <= 250, 1), (lambda p: p == 300, 2)],
+			[(lambda p: p <= 500, 2), (lambda p: p <= 1000, 4),
+				(lambda p: 1200 <= p <= 1500, 6)])
+	frappe.throw(f"Chưa cấu hình công thức Đế bắt nguồn cho nhóm {rule_group}")
+
+def calc_oc_vit_bat_de_hop_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return vo_tra_bac(attrs, "Ốc vít bắt đế, hộp",
+			[(lambda p: p == 50, 2), (lambda p: p <= 250, 6), (lambda p: p == 300, 12)],
+			[(lambda p: p == 100, 4), (lambda p: p <= 500, 12), (lambda p: p <= 1000, 24),
+				(lambda p: 1200 <= p <= 1500, 36)])
+	frappe.throw(f"Chưa cấu hình công thức Ốc vít bắt đế, hộp cho nhóm {rule_group}")
+
+def calc_hop_nguon_qty(attrs, rule_group):
+	if rule_group == "VO_VDP0X":
+		return vo_tra_bac(attrs, "Hộp nguồn",
+			[(lambda p: p == 50, 0), (lambda p: p <= 250, 1), (lambda p: p == 300, 2)],
+			[(lambda p: p == 100, 0), (lambda p: p <= 500, 2), (lambda p: p <= 1000, 4),
+				(lambda p: 1200 <= p <= 1500, 6)])
+	frappe.throw(f"Chưa cấu hình công thức Hộp nguồn cho nhóm {rule_group}")
 
 # ==================================================================
 # DISPATCH TABLE + ENTRY POINT
@@ -340,6 +479,24 @@ def calc_xop_chen_qty(attrs, rule_group):
 	frappe.throw(f"Chưa có số lượng Xốp chèn cho nhóm {rule_group}")
 
 COMPONENT_MAP = {
+	# --- module ---
+	"Tản nhiệt": calc_tan_nhiet_qty,
+	"Ốc dây điện": calc_oc_day_dien_qty,
+	# --- vỏ đèn VDP0X ---
+	"Khung module": calc_khung_module_qty,
+	"Tai": calc_tai_qty,
+	"Quai": calc_quai_qty,
+	"Ốc bắt tai": calc_oc_bat_tai_qty,
+	"Ốc bắt quai": calc_bat_quai_qty,
+	"Ecu bắt quai": calc_bat_quai_qty,
+	"Long đen vênh bắt quai": calc_bat_quai_qty,
+	"Long đen phẳng bắt quai": calc_bat_quai_qty,
+	"Ốc ghép ngang": calc_ghep_ngang_qty,
+	"Ecu bắt tai, ghép ngang": calc_ghep_ngang_qty,
+	"Đế bắt nguồn": calc_de_bat_nguon_qty,
+	"Ốc vít bắt đế, hộp": calc_oc_vit_bat_de_hop_qty,
+	"Hộp nguồn": calc_hop_nguon_qty,
+	# --- đèn thành phẩm ---
 	"Bộ vỏ đèn": calc_bo_vo_den_qty,
 	"Hộp carton": calc_hop_carton_qty,
 	"Xốp góc": calc_xop_goc_qty,
@@ -382,6 +539,10 @@ FORMULA_GROUP_BY_TEMPLATE = {
 }
 
 PREFIX_GROUPS = (
+	# Module và vỏ: mặt hàng cha KHÔNG phải đèn thành phẩm. Công thức lấy từ cột SL
+	# của sheet rule trong file khách (bổ sung 22/08).
+	(("M30S050", "M50S050"), "MODULE_50"),
+	(("VDP0X",), "VO_VDP0X"),
 	(("DP01", "DP02", "DP03"), "P01_P03"),
 	(("DD11", "DD12", "DD13", "DD14", "DD15"), "D11_D15"),
 	(("DD01", "DD02", "DD03", "DD04", "DD05"), "D01_D05"),
