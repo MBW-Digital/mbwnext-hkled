@@ -59,21 +59,14 @@ def _sua_cong_suat_con_don_vi():
 	return da_sua
 
 
-# 16 file của đợt này đánh số từ 12 trở đi; 12 file đợt 1 là 00–11.
-SO_DAU_DOT_2 = 12
-
-
-def _la_file_dot_2(ten_file):
-	dau = ten_file[:2]
-	return dau.isdigit() and int(dau) >= SO_DAU_DOT_2
-
-
 def execute():
-	# CHỈ nạp 16 file của đợt 2. Nạp lại cả 12 file đợt 1 là chuốc lấy lỗi đụng tổ hợp đặc
-	# tính: bản CSV đợt 1 trong repo vẫn còn 56 mã module ghi B5 mà Loại LED là Bridgelux
-	# 3030 (khách đã sửa trên Google Sheet, file trong repo chưa cập nhật) — chúng đụng với
-	# 56 mã B3 đang có trên site. Xem PM-TASK-00126.
-	bao_cao = nhap_tat_ca(loc=_la_file_dot_2)
+	# Nạp cả thư mục, không lọc: bộ nạp bỏ qua mã đã có nên 12 file đợt 1 chạy lại vô hại.
+	#
+	# ⚠ Bản đầu của patch này CÓ lọc, vì chạy thử vỡ ngay ở `ItemVariantExistsError` — bản
+	# CSV đợt 1 trong repo khi đó còn 56 mã module ghi B5 mà Loại LED là Bridgelux 3030,
+	# đụng tổ hợp đặc tính với 56 mã B3 trên site. Đã thay `04-m-module.csv` bằng bản khách
+	# sửa ngày 24/08 nên hết đụng; giữ lọc nữa chỉ che mất lỗi thật nếu sau này lại lệch.
+	bao_cao = nhap_tat_ca()
 
 	cha = bien_the = don_le = lap = 0
 	nhom = []
