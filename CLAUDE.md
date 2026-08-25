@@ -36,11 +36,11 @@ mbwnext_hkled/
 ├── data/
 │   ├── nhap_item.py                     # bộ nạp danh mục vật tư + Phương pháp bổ sung (PM-TASK-00061/67)
 │   ├── danh_muc/*.csv                   # 12 sheet nguồn, chép nguyên xi từ bảng khách gửi
-│   ├── thanh_pham/*.csv                 # 4 file Nhóm I–IV, chỉ 3 cột cần dùng (PM-TASK-00067)
+│   ├── thanh_pham/*.csv                 # 4 file Nhóm I–IV, 59.023 đèn thành phẩm, ĐỦ CỘT (PM-TASK-00126)
 │   ├── doc_bom_sheet.py                 # ĐỌC file Excel BOM Template của khách -> spec.json (PM-TASK-00110)
 │   ├── nhap_bom_template.py             # spec.json -> BOM Template + BOM Rule, có mô phỏng khớp trước khi ghi
 │   └── bom_template/spec.json           # đặc tả 7 sheet đã đọc — bản trong git, diff được khi khách sửa file
-├── patches/                             # 20 patch, chạy post_model_sync
+├── patches/                             # 22 patch, chạy post_model_sync — xem "Dựng site từ số 0"
 │   ├── add_production_plan_bom_button.py       # Custom Field "Tạo BOM Tự Động" trên Production Plan Item
 │   ├── adjust_work_order_schedule_fields.py    # reqd/allow_on_submit cho field lịch trên Work Order
 │   ├── rename_time_to_manufacture_field.py     # sửa lỗi chính tả custom_time_to_manufature -> ...manufacture
@@ -584,6 +584,39 @@ chép hết quyền chuẩn sang Custom DocPerm trước rồi mới thêm dòng
 
 Cũng vì vậy **không khai `Custom DocPerm` vào `fixtures`**: fixtures sẽ chụp lại toàn bộ quyền của
 DocType đó trên site này rồi áp sang site khác khi cài app. Dùng patch, chỉ thêm đúng phần cần.
+
+### Dựng site từ số 0 — thứ tự bắt buộc
+
+`bench migrate` trên site cài mới phải dựng lại được **toàn bộ** 62.054 mặt hàng. Chuỗi
+patch làm việc đó, theo đúng thứ tự trong `patches.txt`:
+
+| # | Patch | Dựng ra |
+|---|---|---|
+| 1 | `seed_item_attribute` | 77 Item Attribute (vỏ rỗng) + chốt tiền đề UOM `Cái` |
+| 2 | `import_danh_muc_vat_tu` | 12 file đợt 1 |
+| 3 | `add_item_replenishment_method` | Custom Field `custom_replenishment_method` |
+| 4 | `import_danh_muc_vat_tu_dot_2` | 18 file đợt 2 → tổng 2.972 mã vật tư |
+| 5 | `import_thanh_pham` | 4 file Nhóm I–IV → 59.023 đèn thành phẩm |
+| 6 | `import_bom_template` | BOM Template + BOM Rule |
+
+⚠ **Thứ tự có ý nghĩa.** `import_bom_template` tra biến thể bằng
+`frappe.get_all("Item", filters={"variant_of": ...})` — chạy trước khi có mặt hàng thì nó ra
+0 rule, in cảnh báo rồi `bench migrate` **vẫn báo thành công**. Đây là kiểu hỏng im lặng tệ
+nhất: site "cài xong" mà không có đèn nào và không có BOM nào. Site đã chạy rồi thì đổi thứ
+tự trong `patches.txt` vô hại — `Patch Log` ghi theo tên patch, không theo vị trí dòng.
+
+⚠ **Thứ tự cài app cũng bắt buộc.** `mbwnext_hkled` phải cài **sau**:
+
+- `mbwnext_localization` — tạo UOM `Cái` trong `after_install`; thiếu nó thì mọi
+  `_tao_item()` vỡ ở `LinkValidationError: Could not find Default Unit of Measure: Cái`.
+  `seed_item_attribute` chặn sớm và báo đúng nguyên nhân.
+- `mbwnext_advanced_selling` — tạo `Item.custom_item_line`, là `insert_after` của
+  `custom_replenishment_method`; thiếu nó thì Custom Field không insert được.
+
+⚠ **Item Attribute không nằm trong `fixtures`.** `_bao_dam_gia_tri()` cố ý `frappe.throw`
+khi đặc tính chưa tồn tại thay vì tự tạo — một cột gõ sai chính tả sẽ lặng lẽ đẻ ra đặc tính
+mới. Danh sách chốt nằm ở `DAC_TINH` trong `seed_item_attribute.py`. Thêm cột đặc tính mới
+vào CSV thì phải thêm tên vào đó; patch tự in cảnh báo liệt kê cột chưa khai.
 
 ### ⚠ Fixtures ghi đè patch
 

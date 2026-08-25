@@ -128,6 +128,9 @@ NHAN_TRONG = ("Ren", "Đầu", "Khe")
 
 DON_VI = "Cái"
 
+# Tên savepoint dùng khi tạo biến thể — xem chỗ bắt `ValidationError` trong `nhap_mot_file`.
+DIEM_LUU = "nhap_item_bien_the"
+
 # PM-TASK-00067: cột khách thêm vào cả 11 sheet, đổ vào Custom Field cùng nghĩa trên Item.
 COT_PHUONG_PHAP = "Phương pháp bổ sung"
 TRUONG_PHUONG_PHAP = "custom_replenishment_method"
@@ -135,8 +138,11 @@ TRUONG_PHUONG_PHAP = "custom_replenishment_method"
 # Nguồn của *Phương pháp bổ sung* nằm ở HAI chỗ:
 #   data/danh_muc/     — vật tư, linh kiện (bảng của PM-TASK-00061, khách thêm cột vào đó)
 #   data/thanh_pham/   — đèn thành phẩm (4 file "Nhóm I…IV" trong thư mục Drive của PM-TASK-00067)
-# File thành phẩm chỉ giữ 3 cột cần dùng, không chép cả bảng: bản gốc là 4 Google Sheet nặng
-# ~10 MB, mà 30+ cột còn lại thuộc việc nhập danh mục đèn — không phải việc của task này.
+# ⚠ Bản đầu chỉ chép 3 cột của file thành phẩm, vì tưởng 4 Google Sheet gốc "nặng ~10 MB" là quá
+# sức cho git. **Đo lại thì sai**: 20 MB thô nhưng chỉ 0,64 MB sau nén, mà git lưu dạng nén. Cái
+# giá thật của việc cắt cột nằm chỗ khác: 59.023 đèn thành phẩm không có nguồn nào dựng lại được,
+# nên site cài mới chạy `bench migrate` xong vẫn thiếu chúng — và `import_bom_template` cần đúng
+# các biến thể đó mới tra được NVL. Nay chép đủ cột để `import_thanh_pham` dựng lại được từ số 0.
 THU_MUC_NGUON = ("danh_muc", "thanh_pham")
 
 
@@ -426,6 +432,11 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 
 	# 2. nạp từng mặt hàng cha
 	for cha, cac_bt in theo_cha.items():
+		# Chốt giao dịch theo từng mặt hàng cha. 4 file thành phẩm sinh 59.023 mặt hàng: dồn hết
+		# vào một giao dịch là ôm hàng trăm nghìn dòng chờ ghi, và mọi lỗi ngoài dự kiến (hết
+		# kết nối, timeout) xoá sạch công của cả lần `bench migrate`. Bộ nạp idempotent nên chốt
+		# sớm không mất gì — lần chạy sau bỏ qua phần đã có.
+		frappe.db.commit()
 		rs = list(cac_bt.values())
 		nhom = _nhom_san_pham(rs[0])
 
@@ -526,12 +537,19 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 			# ERPNext chặn hai biến thể đụng cùng tổ hợp giá trị. Đoạn trên đã lọc các mã đụng
 			# nhau TRONG FILE, nhưng không thấy được mã đã có SẴN TRÊN SITE mang cùng tổ hợp.
 			# Bắt tại đây để một dòng hỏng không làm vỡ cả lần nạp — ghi vào báo cáo để hỏi khách.
+			#
+			# ⚠ Bản đầu bắt lỗi bằng `frappe.db.rollback()` TRẦN. Lệnh đó huỷ **cả giao dịch**
+			# từ lần commit gần nhất, tức một dòng hỏng cuốn theo mọi mặt hàng đã tạo trước đó
+			# trong cùng lần chạy — mà báo cáo vẫn đếm chúng là "đã tạo", nên hỏng im lặng.
+			# Với 910 mã đợt 2 thiệt hại còn nhỏ; với 59.023 đèn thành phẩm là mất trắng lần nạp.
+			# Savepoint chỉ huỷ đúng dòng hỏng, phần đã tạo giữ nguyên.
+			frappe.db.savepoint(DIEM_LUU)
 			try:
 				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha,
 				             dac_tinh=cap, don_vi=(r.get(COT_DON_VI) or "").strip() or None):
 					bc["bien_the_moi"] += 1
 			except frappe.exceptions.ValidationError:
-				frappe.db.rollback()
+				frappe.db.rollback(save_point=DIEM_LUU)
 				bc["bo_qua"]["dung_to_hop_dac_tinh"].append(ma)
 
 	return bc
@@ -594,10 +612,11 @@ def cap_nhat_phuong_phap():
 	return bc
 
 
-def nhap_tat_ca(loc=None):
-	"""Nạp file trong `data/danh_muc/`, trả về danh sách báo cáo theo từng file.
+def nhap_tat_ca(loc=None, ten_thu_muc="danh_muc"):
+	"""Nạp file trong `data/<ten_thu_muc>/`, trả về danh sách báo cáo theo từng file.
 
 	`loc` là hàm nhận tên file, trả về True nếu nạp. Bỏ trống thì nạp tất cả.
+	`ten_thu_muc` chọn nguồn: `danh_muc` (vật tư, linh kiện) hoặc `thanh_pham` (đèn thành phẩm).
 
 	⚠ Patch đợt 2 (PM-TASK-00126) truyền `loc` để **chỉ nạp 16 file của nó**. Nạp lại cả
 	12 file đợt 1 trên site đã có dữ liệu là chuốc lấy `ItemVariantExistsError`: bản CSV
@@ -605,7 +624,7 @@ def nhap_tat_ca(loc=None):
 	sửa trên Google Sheet nhưng file trong repo chưa cập nhật, nên chúng đụng tổ hợp đặc
 	tính với 56 mã B3 đang có trên site.
 	"""
-	thu_muc = thu_muc_du_lieu()
+	thu_muc = thu_muc_du_lieu(ten_thu_muc)
 	ket_qua = []
 	ten_file = sorted(os.listdir(thu_muc))
 	for f in ten_file:

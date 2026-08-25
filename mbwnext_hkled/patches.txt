@@ -21,8 +21,14 @@ mbwnext_hkled.patches.add_production_note_fields
 mbwnext_hkled.patches.add_work_order_sales_info
 mbwnext_hkled.patches.backfill_work_order_start_time
 mbwnext_hkled.patches.set_document_naming_series
+# ⚠ THỨ TỰ CÓ Ý NGHĨA trên site cài mới: mọi patch nạp danh mục phải chạy XONG trước
+# `import_bom_template`, vì engine BOM tra biến thể bằng `variant_of` — chưa có mặt hàng
+# thì nó ra 0 rule, in cảnh báo rồi `bench migrate` vẫn báo thành công (hỏng im lặng).
+# Site đã chạy rồi thì đổi thứ tự ở đây vô hại: `Patch Log` ghi theo tên, không theo vị trí.
+mbwnext_hkled.patches.seed_item_attribute
 mbwnext_hkled.patches.import_danh_muc_vat_tu
 mbwnext_hkled.patches.add_item_replenishment_method
+mbwnext_hkled.patches.import_danh_muc_vat_tu_dot_2
+mbwnext_hkled.patches.import_thanh_pham
 mbwnext_hkled.patches.import_bom_template
 mbwnext_hkled.patches.reset_bom_rule_grid_view
-mbwnext_hkled.patches.import_danh_muc_vat_tu_dot_2
