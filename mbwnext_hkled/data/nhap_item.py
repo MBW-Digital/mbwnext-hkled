@@ -507,9 +507,16 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 				v = (r.get(a) or "").strip()
 				if v:
 					cap.append((DOI_TEN_DAC_TINH.get(a, a), gia_tri_chuan(a, v)))
-			if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha, dac_tinh=cap,
-			             don_vi=(r.get(COT_DON_VI) or "").strip() or None):
-				bc["bien_the_moi"] += 1
+			# ERPNext chặn hai biến thể đụng cùng tổ hợp giá trị. Đoạn trên đã lọc các mã đụng
+			# nhau TRONG FILE, nhưng không thấy được mã đã có SẴN TRÊN SITE mang cùng tổ hợp.
+			# Bắt tại đây để một dòng hỏng không làm vỡ cả lần nạp — ghi vào báo cáo để hỏi khách.
+			try:
+				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha,
+				             dac_tinh=cap, don_vi=(r.get(COT_DON_VI) or "").strip() or None):
+					bc["bien_the_moi"] += 1
+			except frappe.exceptions.ValidationError:
+				frappe.db.rollback()
+				bc["bo_qua"]["dung_to_hop_dac_tinh"].append(ma)
 
 	return bc
 
@@ -571,13 +578,24 @@ def cap_nhat_phuong_phap():
 	return bc
 
 
-def nhap_tat_ca():
-	"""Nạp toàn bộ file trong `data/danh_muc/`, trả về danh sách báo cáo theo từng file."""
+def nhap_tat_ca(loc=None):
+	"""Nạp file trong `data/danh_muc/`, trả về danh sách báo cáo theo từng file.
+
+	`loc` là hàm nhận tên file, trả về True nếu nạp. Bỏ trống thì nạp tất cả.
+
+	⚠ Patch đợt 2 (PM-TASK-00126) truyền `loc` để **chỉ nạp 16 file của nó**. Nạp lại cả
+	12 file đợt 1 trên site đã có dữ liệu là chuốc lấy `ItemVariantExistsError`: bản CSV
+	đợt 1 trong repo vẫn còn 56 mã module ghi B5 mà Loại LED là Bridgelux 3030 — khách đã
+	sửa trên Google Sheet nhưng file trong repo chưa cập nhật, nên chúng đụng tổ hợp đặc
+	tính với 56 mã B3 đang có trên site.
+	"""
 	thu_muc = thu_muc_du_lieu()
 	ket_qua = []
 	ten_file = sorted(os.listdir(thu_muc))
 	for f in ten_file:
 		if not f.endswith(".csv"):
+			continue
+		if loc and not loc(f):
 			continue
 		# chỉ sheet ốc/vít/bulong dựng tên theo khuôn có nhãn cụt; 10 sheet còn lại tên sạch
 		don = "oc-vit-bulong" in f

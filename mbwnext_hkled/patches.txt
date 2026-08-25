@@ -25,3 +25,4 @@ mbwnext_hkled.patches.import_danh_muc_vat_tu
 mbwnext_hkled.patches.add_item_replenishment_method
 mbwnext_hkled.patches.import_bom_template
 mbwnext_hkled.patches.reset_bom_rule_grid_view
+mbwnext_hkled.patches.import_danh_muc_vat_tu_dot_2
