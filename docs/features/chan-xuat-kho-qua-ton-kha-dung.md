@@ -83,6 +83,41 @@ anh Thắng quyết "cho qua hay chặn" nếu đi đường A.
 
 ---
 
+### 1.3 Lõi chặn ở lúc XUẤT KHO, không chặn lúc lưu đơn — đo được trên site
+
+Chỗ này dễ hiểu nhầm thành "bật `reserve_stock` của lõi là chặn được rồi". **Không phải.**
+
+Đợt thử nghiệm 25/08 của Thắng cho bằng chứng trực tiếp — tồn `Thành phẩm 1` chỉ có **26**:
+
+| Đơn | Tích ô cấp chứng từ | Đặt | Giữ chỗ được | Kết quả Submit |
+|---|---|---|---|---|
+| `SO-26-00009` | ✅ | 30 | **26** (thiếu 4) | **qua bình thường** |
+| `SO-26-00010` | ✅ | 5 | **0** | **qua bình thường** |
+| `SO-26-00007` | ❌ | 30 | 0 | qua bình thường |
+| `SO-26-00008` | ❌ | 1 | 0 | qua bình thường |
+
+Không cảnh báo, không chặn Submit, không dấu hiệu nào trên chứng từ nói "đơn này còn 4 cái chưa
+giữ được". Lõi **giữ được bao nhiêu hay bấy nhiêu rồi cho qua**.
+
+Phân vai chính xác:
+
+| Lúc | Lõi có chặn? |
+|---|---|
+| Lưu / Submit **Đơn Bán** thiếu hàng | **Không** |
+| **Xuất kho** ăn vào phần đơn khác đã giữ | **Có** — `stock_ledger.py:2073` gọi `validate_reserved_stock(args)` ngay trong đường ghi sổ kho |
+
+➜ Đúng phần *chặn xuất kho* thì lõi làm được, và làm ở chỗ tốt hơn chỗ mình định đặt (§1.1).
+Cái lõi không làm được vẫn là hai thứ ở §2: **pool nhiều kho** và **bóc BOM**.
+
+⚠ Hai ô tích, hai mức: `Sales Order.reserve_stock` (cấp chứng từ) `default: 0` — **phải có người
+tích**, cơ chế lõi không chạy ngầm. Nhưng `Sales Order Item.reserve_stock` (cấp dòng) `default: 1`,
+nên **tích ô cấp chứng từ là mọi dòng hàng tồn kho ghim theo ngay**, không có bước chọn từng dòng.
+Bằng chứng: `SO-26-00007/00008` có dòng tích sẵn mà giữ chỗ = 0, vì ô cấp chứng từ để trống.
+
+➜ **Ghim thiếu thì cảnh báo hay chặn?** Câu này **đã có đáp**, không cần hỏi lại: mục 6.2 bản phân
+tích của Thắng chốt *"mọi SO đều Ghim được, kể cả khi Available = 0"* — đơn vẫn vào hàng đợi, vẫn
+hiện phần thiếu để lập Yêu cầu Vật tư. Trùng khít hành vi lõi đo được ở trên.
+
 ## 2. Chỗ cơ chế lõi KHÔNG làm được
 
 `Stock Reservation Entry` gắn **cứng** vào dòng hàng của Đơn Bán:
