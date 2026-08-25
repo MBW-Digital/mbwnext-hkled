@@ -269,6 +269,9 @@
 	td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 	tr.sum td { font-weight: 600; background: var(--sunken); }
 	tr.off td { color: var(--ink-faint); }
+	td.ve { white-space: nowrap; }
+	td.ve.trong { color: var(--ink-faint); }
+	td.ve.chua { color: var(--ask); font-style: italic; }
 	.grid-tools { display: flex; gap: 7px; flex-wrap: wrap; }
 
 	/* ---------- nút ---------- */
@@ -478,11 +481,15 @@
 		</p>
 		<p class="doc-meta">
 			<b>Bấm thử được:</b> nút <b>Kiểm Tra Tồn Kho</b>, ô tick <b>Ghim Tồn Khả Dụng</b>
-			(đổi ngay số tồn khả dụng ở Bảng 1), và nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3.
+			(đổi ngay số tồn khả dụng ở Bảng 1), nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3,
+			và nút <b>Hẹn lại ngày giao</b> ở mục D (3 trạng thái).
 			<br>
-			Trạng thái: <b style="color:var(--ask)">bản 3 — anh Thắng đã chốt R1/R2/R3 và 5 mục phản hồi (24/08)</b>.
-			Bản này thêm <b>cột Tồn thực tế</b>, <b>bảng đơn đã xuất kho</b> và <b>danh sách mặt hàng
-			chưa khai thời gian sản xuất</b>. Spec kỹ thuật đã viết xong.
+			Trạng thái: <b style="color:var(--decided)">bản 5 — anh Thắng đã duyệt bản 4 lúc 24/08 11:41</b>.
+			Bản 5 thêm đúng thứ anh xin trong cùng bình luận đó: nút <b>Hẹn lại ngày giao</b> ở mục D
+			giờ trả về <b>một ngày gợi ý</b>, bấm thử được cả <b>3 trạng thái</b>.
+			<br>
+			<i>Nhắc lại thay đổi của bản 4:</i> Bảng 1b đổi sang <b>đơn đang ghim tồn</b>, Bảng 2 thêm
+			<b>cột Ngày hàng về</b>. Mục 7.3 (chặn xuất quá tồn) đã tách sang <code>PM-FEAT-00034</code>.
 		</p>
 	</header>
 
@@ -641,7 +648,7 @@
 
 				<div>
 					<div class="tbl-head">
-						<h4>Bảng 1b · Đơn đã xuất kho DP01S300</h4>
+						<h4>Bảng 1b · Đơn đang ghim tồn DP01S300</h4>
 						<span class="sub">5 đơn có <b>ngày lấy hàng xa nhất</b> · không hiện tên khách hàng</span>
 					</div>
 					<div class="tw">
@@ -649,20 +656,27 @@
 							<thead>
 								<tr>
 									<th>Mã đơn</th><th>Người phụ trách</th>
-									<th class="n">Đã xuất</th><th>Ngày lấy hàng dự kiến</th>
+									<th class="n">Đang ghim</th><th>Ngày lấy hàng dự kiến</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr><td class="mono">SO-26-00131</td><td>Nguyễn Thu Hằng</td><td class="n">8</td><td>12/10/2026</td></tr>
-								<tr><td class="mono">SO-26-00118</td><td>Trà Nguyễn</td><td class="n">5</td><td>28/09/2026</td></tr>
-								<tr><td class="mono">SO-26-00109</td><td>Nguyễn Thu Hằng</td><td class="n">3</td><td>15/09/2026</td></tr>
+								<tr><td class="mono">SO-26-00131</td><td>Nguyễn Thu Hằng</td><td class="n">6</td><td>12/10/2026</td></tr>
+								<tr><td class="mono">SO-26-00118</td><td>Trà Nguyễn</td><td class="n">4</td><td>28/09/2026</td></tr>
+								<tr><td class="mono">SO-26-00109</td><td>Nguyễn Thu Hằng</td><td class="n">4</td><td>15/09/2026</td></tr>
 								<tr><td class="mono">SO-26-00097</td><td>Mai Phương</td><td class="n">2</td><td>05/09/2026</td></tr>
 								<tr class="off"><td class="mono">SO-26-00090</td><td>Trà Nguyễn</td><td class="n">2</td><td>30/08/2026</td></tr>
+								<tr class="sum"><td colspan="2"><b>Cộng — đúng phần đã trừ khỏi tồn khả dụng</b></td><td class="n"><b>18</b></td><td>33 − 18 = <b>15</b></td></tr>
 							</tbody>
 						</table>
 					</div>
 					<p class="hint">
-						Bảng này để anh chị biết <b>đi hỏi ai</b>: đơn nào ngày lấy hàng còn xa thì
+						<b>Anh Thắng chốt 24/08:</b> đơn đang chiếm tồn là <b>đơn đang tích Ghim</b>,
+						không phải đơn đã xuất kho. Nhờ vậy cột <i>Đang ghim</i> cộng lại đúng bằng
+						phần đã bị trừ ở Bảng 1 — bảng này <b>giải thích được con số phía trên</b>.
+						Đơn đã xuất kho thì hàng đã rời kho từ trước, không nằm trong phần chênh ấy.
+					</p>
+					<p class="hint">
+						Bảng để anh chị biết <b>đi hỏi ai</b>: đơn nào ngày lấy hàng còn xa thì
 						thương lượng nhường hàng dễ hơn. Cố ý <b>không hiện tên khách hàng</b> —
 						chỉ mã đơn và người phụ trách.
 					</p>
@@ -680,43 +694,50 @@
 									<th>Mặt hàng</th><th>ĐVT</th>
 									<th class="n">Cần</th><th class="n">Tồn thực tế</th>
 									<th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
-									<th>Nguồn nhu cầu</th>
+									<th>Ngày hàng về</th><th>Nguồn nhu cầu</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td class="mono">VDP0X-300-D-GY-v3.0</td><td>Cái</td>
 									<td class="n">25</td><td class="n"><b>12</b></td><td class="n">4</td><td class="n">21</td>
+									<td class="ve"><b>02/09/2026</b></td>
 									<td class="src">Bộ vỏ đèn · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">M30S050-3B3-5C-64LED-CD-A</td><td>Cái</td>
 									<td class="n">150</td><td class="n"><b>150</b></td><td class="n">150</td><td class="n">0</td>
+									<td class="ve trong">—</td>
 									<td class="src">Module · 25 × 6</td>
 								</tr>
 								<tr>
 									<td class="mono">OVT-M4x8-RT-T-PH-SS201</td><td>Cái</td>
 									<td class="n">300</td><td class="n"><b>1.200</b></td><td class="n">1.200</td><td class="n">0</td>
+									<td class="ve trong">—</td>
 									<td class="src">Ốc vít cố định module · 25 × 12</td>
 								</tr>
 								<tr>
 									<td class="mono">NHKP-300E</td><td>Cái</td>
 									<td class="n">25</td><td class="n"><b>30</b></td><td class="n">6</td><td class="n">19</td>
+									<td class="ve"><b>28/08/2026</b></td>
 									<td class="src">Nguồn · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">WPC-MDF-M15-2P-6B-SS-CD</td><td>Cái</td>
 									<td class="n">25</td><td class="n"><b>25</b></td><td class="n">0</td><td class="n">25</td>
+									<td class="ve chua">chưa có đơn mua</td>
 									<td class="src">Cầu đấu · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">HCT-360x580x185mm-NO</td><td>Cái</td>
 									<td class="n">25</td><td class="n"><b>40</b></td><td class="n">40</td><td class="n">0</td>
+									<td class="ve trong">—</td>
 									<td class="src">Hộp carton · 25 × 1</td>
 								</tr>
 								<tr class="off">
 									<td class="mono">W-3x0.75-BK</td><td>Mét</td>
 									<td class="n">2.500</td><td class="n"><b>4.000</b></td><td class="n">4.000</td><td class="n">0</td>
+									<td class="ve trong">—</td>
 									<td class="src">Dây điện cấp nguồn · 25 × 100</td>
 								</tr>
 							</tbody>
@@ -727,6 +748,12 @@
 						<span><i class="dot" style="background:var(--decided)"></i> đủ tồn</span>
 						<span>Nhu cầu của cùng một mặt hàng từ nhiều dòng đã được <b>cộng dồn trước</b>, rồi mới trừ tồn một lần.</span>
 					</div>
+					<p class="hint">
+						<b>Ngày hàng về</b> = ngày <b>Required By</b> của đơn mua gần nhất còn chứa mặt hàng
+						đó, chỉ tính ngày từ hôm nay trở đi — anh Thắng chốt 24/08. Mặt hàng không có đơn
+						mua nào đang mở thì ghi thẳng <b>chưa có đơn mua</b>, cố ý không để trống: ô trống
+						dễ đọc nhầm thành “về ngay”.
+					</p>
 				</div>
 
 				<div>
@@ -822,11 +849,77 @@
 			<div class="actions">
 				<button class="btn" type="button">Nhận đơn — giao đúng hẹn</button>
 				<button class="btn" type="button">Tư vấn khách đổi mẫu khác</button>
-				<button class="btn" type="button">Hẹn lại ngày giao</button>
+				<button class="btn" type="button" id="btn-hen">Hẹn lại ngày giao</button>
 			</div>
+
+			<div id="hen-box" hidden>
+				<p class="hint" style="margin-top:2px">
+					Xem thử từng trường hợp — cùng một nút, ba kết quả khác nhau tuỳ dữ liệu có đủ hay không:
+				</p>
+				<div class="grid-tools" style="margin-bottom:12px">
+					<button class="btn sm" type="button" data-hen="du">1 · Đủ dữ liệu</button>
+					<button class="btn sm" type="button" data-hen="thieu-dm">2 · Thiếu định mức thời gian</button>
+					<button class="btn sm" type="button" data-hen="thieu-mua">3 · Thiếu ngày hàng về</button>
+				</div>
+
+				<div class="note" id="hen-du">
+					<span class="tag">Trường hợp 1 — đủ dữ liệu</span>
+					<p class="verdict" style="margin:0 0 8px">
+						<span class="pill ok">Gợi ý</span>
+						<span>Sớm nhất giao được:</span> <span class="big">05/09/2026</span>
+					</p>
+					<p style="margin:0">
+						Ghép từ hai vế, <b>nối tiếp nhau chứ không lấy vế lớn hơn</b>:<br>
+						· <b>02/09</b> — vật tư thiếu về muộn nhất (vỏ VDP0X, theo đơn mua đang chạy)<br>
+						· <b>+ 2,5 ngày công</b> — lấp 11.500 phút vào lịch 3 công nhân, tính từ 02/09
+					</p>
+					<p class="hint" style="margin:8px 0 0">
+						Chưa có vật tư thì thợ rảnh cũng không sản xuất được — nên mốc bắt đầu là ngày
+						hàng về, không phải hôm nay.
+					</p>
+				</div>
+
+				<div class="note" id="hen-thieu-dm" hidden
+					style="border-left-color: var(--ask); background: var(--ask-bg)">
+					<span class="tag">Trường hợp 2 — thiếu định mức thời gian</span>
+					<p class="verdict" style="margin:0 0 8px">
+						<span class="pill warn">Chưa đủ căn cứ</span>
+						<span>Sớm nhất giao được:</span> <span class="big">05/09/2026</span>
+					</p>
+					<p style="margin:0">
+						<b>Ngày này mới tính được phần vật tư, chưa tính phần sản xuất</b> của
+						<b>2 mặt hàng</b> chưa khai Thời Gian Sản Xuất — cùng danh sách đã hiện ở Bảng 3.
+						Ngày thật sẽ <b>muộn hơn</b>, không sớm hơn.
+					</p>
+					<p class="hint" style="margin:8px 0 0">
+						Cố ý ghi rõ thay vì hiện trơ một cái ngày: thiếu định mức mà vẫn ra ngày đẹp là
+						kiểu sai nguy hiểm nhất — nhân viên bán hàng hứa sớm rồi giao trễ.
+					</p>
+				</div>
+
+				<div class="note" id="hen-thieu-mua" hidden
+					style="border-left-color: var(--danger); background: var(--danger-bg)">
+					<span class="tag">Trường hợp 3 — thiếu ngày hàng về</span>
+					<p class="verdict" style="margin:0 0 8px">
+						<span class="pill short">Không đưa ngày</span>
+						<span>Chưa xác định được ngày giao</span>
+					</p>
+					<p style="margin:0">
+						Còn <b>1 vật tư chưa có đơn mua nào đang mở</b> (Cầu đấu
+						<span class="mono">WPC-MDF-M15-2P-6B-SS-CD</span>). Không biết bao giờ hàng về thì
+						không suy ra được ngày giao.
+					</p>
+					<p class="hint" style="margin:8px 0 0">
+						Đây là chỗ hệ thống <b>cố ý không trả về ngày nào cả</b>. Một ô trống có giải thích
+						thì nhân viên bán hàng còn đi hỏi mua hàng; một cái ngày sai thì hứa thẳng với khách.
+					</p>
+				</div>
+			</div>
+
 			<p class="hint">
-				Ba nút này <b>chỉ đóng popup</b>. Đặt ở đây để nhắc người dùng việc tiếp theo, chứ
-				hệ thống không tự làm gì. <span class="q-badge">hỏi khách: có cần ghi lại đã chọn gì không?</span>
+				Hai nút đầu <b>chỉ đóng popup</b> — đặt ở đây để nhắc việc tiếp theo, hệ thống không tự
+				làm gì. Riêng <b>Hẹn lại ngày giao</b> thì hiện một ngày gợi ý (anh Thắng chốt 24/08).
+				<span class="q-badge">hỏi khách: có cần ghi lại đã chọn gì không?</span>
 			</p>
 		</div>
 	</div>
@@ -866,12 +959,23 @@
 		</li>
 	</ul>
 
+	<div class="note" style="border-left-color: var(--decided)">
+		<span class="tag">Hai chỗ treo cũ — đã đóng 24/08</span>
+		<b>Thời gian đặt hàng về:</b> anh Thắng chốt lấy ngày <i>Required By</i> của đơn mua gần
+		nhất, nên cột <i>Ngày hàng về</i> ở Bảng 2 đã dựng được — không cần trường thời gian mua
+		hàng mà 1.115 mặt hàng đều bỏ trống.
+		<br><br>
+		<b>Lệnh sản xuất không gắn đơn bán</b> (26/39 lệnh trên site): chuyển sang tính năng
+		<b>Chặn xuất kho quá tồn khả dụng</b>, vì nó chỉ ảnh hưởng luật chặn — thứ vừa được tách
+		khỏi màn này theo đúng anh Thắng chốt 24/08.
+	</div>
+
 	<div class="note" style="border-left-color: var(--ask); background: var(--ask-bg)">
-		<span class="tag">Còn treo — không ảnh hưởng màn này</span>
-		Hai chỗ vẫn chờ khách: <b>thời gian đặt hàng về</b> lấy ở đâu (1.115 mặt hàng Mua hàng,
-		chưa mặt hàng nào khai) — nên cột <i>ngày dự kiến có hàng</i> ở Bảng 2 chưa dựng được;
-		và <b>lệnh sản xuất không gắn đơn bán</b> thì cho xuất hay chặn (26/39 lệnh trên site
-		không gắn đơn nào).
+		<span class="tag">Một chỗ cần khách chuẩn bị dữ liệu</span>
+		Cột <i>Ngày hàng về</i> đọc từ đơn mua thật. Đo trên site ngày 24/08: có <b>2</b> đơn mua
+		đã duyệt, cả hai đều <b>quá hạn</b> (21/08 và 10/08) và là dữ liệu thử. Số dòng có ngày
+		trong tương lai: <b>0</b>. Nghĩa là lúc chạy thử, cột này sẽ toàn <i>chưa có đơn mua</i> —
+		không phải lỗi. Cần vài đơn mua thật trước khi nghiệm thu phần đó.
 	</div>
 
 	<h2 id="s-f">Bốn câu hỏi khách — đã có đáp án</h2>
@@ -885,8 +989,9 @@
 		Càng nhanh càng tốt. <i>Khớp dữ liệu thật trên site: 20 đơn, 16 đơn 1 dòng, 4 đơn 2 dòng —
 		nên lo ngại về tốc độ coi như gỡ.</i></li>
 		<li><b>Bảng 2 có cần cột ngày dự kiến có hàng không?</b><br>
-		→ <b>Có.</b> <i>Nhưng chưa làm được: cả 61.143 mặt hàng đều chưa khai thời gian mua hàng về,
-		và không mặt hàng nào có nhà cung cấp mặc định. Cột sẽ rỗng.</i></li>
+		→ <b>Có — và 24/08 đã có nguồn để tính.</b> Lấy ngày <i>Required By</i> của đơn mua gần nhất
+		còn chứa mặt hàng đó. <i>Bản đầu tưởng phải dựa vào trường thời gian mua hàng về trên mặt
+		hàng — trường đó cả 61.143 mặt hàng đều bỏ trống, đi đường ấy thì cột rỗng vĩnh viễn.</i></li>
 		<li><b>Khi thiếu, muốn thấy thiếu ở khâu nào hay chỉ cần kết luận đủ–thiếu?</b><br>
 		→ <b>Muốn thấy rõ từng khâu</b> — thiếu vỏ / thiếu nguồn / thiếu người.
 		<i>Đã dựng: khối kết luận ở đầu popup Phần B.</i></li>
@@ -935,6 +1040,21 @@
 			document.getElementById("ghim-hint").innerHTML = on
 				? "Đang tính với <b>Ghim Tồn Khả Dụng = có</b>. Đơn khác đã ghim đang giữ 18 cái DP01S300 nên tồn khả dụng còn 15."
 				: "Đang tính với <b>Ghim Tồn Khả Dụng = không</b>. Không trừ phần đơn khác giữ chỗ, nên tồn khả dụng là 33 — nhưng hàng đó có thể bị đơn khác lấy trước.";
+		});
+
+		var henBox = document.getElementById("hen-box");
+		var btnHen = document.getElementById("btn-hen");
+		var henCase = { "du": "hen-du", "thieu-dm": "hen-thieu-dm", "thieu-mua": "hen-thieu-mua" };
+		btnHen.addEventListener("click", function () {
+			henBox.hidden = !henBox.hidden;
+			if (!henBox.hidden) henBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+		});
+		Array.prototype.forEach.call(henBox.querySelectorAll("[data-hen]"), function (b) {
+			b.addEventListener("click", function () {
+				Object.keys(henCase).forEach(function (k) {
+					document.getElementById(henCase[k]).hidden = k !== b.getAttribute("data-hen");
+				});
+			});
 		});
 
 		var warn = document.getElementById("warn-time");

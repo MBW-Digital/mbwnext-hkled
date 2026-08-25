@@ -121,6 +121,29 @@ và BOM Template, cả hai đều là thứ riêng của HKLED. Không đụng a
 Chỉ **một** field mới. `custom_reserved_qty` **không** tạo cột trên `Bin` — tính động lúc bấm
 nút. Đây là ràng buộc đã chốt: *không đụng Stock Balance / Stock Ledger / Bin*.
 
+> ✅ **ĐÃ CHỐT 25/08 — GIỮ `custom_ghim_ton_kha_dung`.** PM-FEAT-00034 chốt **tự làm**
+> (đường B): cơ chế `Stock Reservation Entry` của lõi chỉ tính tồn theo **một kho** và chỉ giữ
+> chỗ được **mặt hàng trên đơn**, không giữ được NVL trong BOM — hai thứ HKLED đều cần. Nên
+> field của mình không phải bản sao, nó làm việc mà lõi không làm được.
+>
+> ⚠ **NHƯNG hai ô tích vẫn sẽ cùng hiện — và đây là vấn đề THẬT, không còn là giả định.**
+> `Sales Order.reserve_stock` của lõi có `depends_on: eval: (doc.docstatus == 0 || doc.reserve_stock)`,
+> tức **không** phụ thuộc `enable_stock_reservation`. Lõi chỉ ẩn nó bằng JS
+> (`selling/doctype/sales_order/sales_order.js:120-123`) khi tính năng **tắt**.
+>
+> Trên `hkled.com` ngày 25/08 lúc 11:20 `enable_stock_reservation` đã được bật **0 → 1** để thử
+> nghiệm cơ chế lõi. Kiểm trên form thật lúc 14h: ô *Reserve Stock* **đang hiện**. Nghĩa là khi
+> dựng `custom_ghim_ton_kha_dung`, người dùng sẽ thấy hai ô cùng nghĩa.
+>
+> Tệ hơn ô tích: bật tính năng thì lõi ghi `Bin.reserved_stock` thật (hiện đang có 26 trên
+> `Thành phẩm 1`), thành **hai sổ giữ chỗ chạy song song** — đúng cái bẫy trừ trùng đã ghi ở
+> §4 của `chan-xuat-kho-qua-ton-kha-dung.md`. Bảng 1 của Phần IV tính tồn khả dụng theo logic
+> riêng, sẽ lệch với con số lõi đang giữ mà không ai giải thích được vì sao.
+>
+> ➜ **Trước khi code Phần IV, phải tắt `enable_stock_reservation` về 0** và dọn SRE do đợt thử
+> nghiệm sinh ra. Không tắt thì dev và test đều đo trên nền đã nhiễu.
+> Xem `chan-xuat-kho-qua-ton-kha-dung.md`.
+
 ## 3. Tập kho
 
 Tồn (cả thực tế lẫn khả dụng) **loại trừ** kho con của hai nhóm:
@@ -169,6 +192,10 @@ ghim_bởi_đơn_khác = Σ (qty − delivered_qty) của mọi Sales Order tho�
                       · name ≠ đơn đang kiểm            ← R3, anh Thắng chốt 5.3
 ```
 
+Dòng cuối là **bắt buộc**, anh Thắng nhắc lại 24/08 (`ptmjq2t3nj`): *"check box Ghim tồn khả dụng
+phải không ảnh hưởng đến số tồn khả dụng ở bảng 1 của chính đơn đó"*. Thiếu nó thì đơn vừa tích
+ghim tự trừ số lượng của chính mình và báo thiếu nhiều gấp đôi.
+
 **Ghim lan xuống NVL** (anh Thắng bổ sung 24/08): với đơn đã ghim, mặt hàng *Sản xuất/Gia công*
 thì **NVL bóc từ BOM mặc định cũng bị ghim theo**. Nghĩa là `ghim_bởi_đơn_khác` phải chạy chính
 bước 3–4 ở trên cho từng đơn đã ghim, không chỉ cộng dòng trên đơn.
@@ -181,30 +208,53 @@ không riêng đơn hiện tại. Xem mục 9.
 **Bảng 1 — mặt hàng trên đơn.** Cột: Mặt hàng · ĐVT · Cần · **Tồn thực tế** · Tồn khả dụng ·
 Thiếu · Bổ sung bằng.
 
-**Bảng 2 — cần mua sau khi bóc BOM.** Thêm cột **Tồn thực tế**; cột *Nguồn nhu cầu* giữ nguyên
+**Bảng 2 — cần mua sau khi bóc BOM.** Cột: Nguyên vật liệu · ĐVT · Cần · **Tồn thực tế** ·
+Tồn khả dụng · Thiếu · **Ngày hàng về (dự kiến)** · Nguồn nhu cầu. Cột *Nguồn nhu cầu* giữ nguyên
 tên Thành Phần BOM (`Bộ vỏ đèn`, `Nguồn`…) vì **dòng kết luận gộp lấy tên khâu từ đúng cột này**.
+Cột *Ngày hàng về* tính theo mục 8.2.
 
 **Bảng 3 — nguồn lực nhân sự.** Tổng theo lịch · Đã phân bổ · Còn lại · Đơn này cần · kết luận.
 Kèm danh sách **mặt hàng Sản xuất/Gia công chưa khai Thời Gian Sản Xuất hoặc = 0** (anh Thắng
 chốt 5.2) — đây là cách duy nhất khiến R2 không im lặng.
+
+**Chân popup — ba lối ra.** Hai nút đầu chỉ đóng popup. Nút **Hẹn lại ngày giao** trả về ngày
+gợi ý theo mục 8.3.
 
 **Dòng kết luận gộp** ở đầu popup: gom dòng thiếu của Bảng 2 theo *Nguồn nhu cầu*, cộng trạng
 thái nhân lực từ Bảng 3 → *"Đơn này vướng ở 3 khâu vật tư. Nhân lực đủ."*
 
 ## 7. Danh sách đơn đang chiếm tồn (mục 7.2)
 
-Hiện khi tồn khả dụng không đủ. **"Chiếm tồn thực tế" = đơn ĐÃ XUẤT KHO** — không phải đơn đang
-ghim. Nguồn: `Stock Ledger Entry` âm trên tập kho hợp lệ, lần về `Delivery Note Item` →
-`against_sales_order`.
+Hiện khi tồn khả dụng không đủ. **"Chiếm tồn" = đơn đang tích *Ghim tồn khả dụng***.
 
-Hiện **mã đơn + người phụ trách + ngày lấy hàng dự kiến**, sắp xếp ngày **giảm dần**, lấy tối đa
-**5** đơn xa nhất.
+> ⚠ Chỗ này **đã đảo một lần**. Bản viết sáng 24/08 ghi *"chiếm tồn = đơn đã xuất kho"*, lấy từ
+> `Stock Ledger Entry` âm → `Delivery Note Item.against_sales_order`. Anh Thắng sửa lại chiều tối
+> cùng ngày (`ptmjq2t3nj`): *"đơn đang chiếm tồn là đơn đang được tích Ghim"*.
 
+Ghi lại **vì sao bản mới đúng hơn**, để không ai đảo ngược lần thứ hai: con số *Tồn khả dụng* ở
+Bảng 1 bị trừ đúng bởi tập đơn đã ghim (công thức mục 5). Bảng này tồn tại để **giải thích phần
+chênh đó** — nên nó phải liệt kê đúng tập ấy. Đơn đã xuất kho thì hàng đã rời `Bin` từ trước,
+nằm ngoài phần chênh, liệt kê ra chỉ khiến sale cộng trừ nhầm.
+
+**Dùng lại đúng truy vấn `ghim_bởi_đơn_khác` ở mục 5, không viết truy vấn thứ hai.** Hai chỗ lệch
+nhau dù chỉ một điều kiện `status` là bảng giải thích sai chính con số nó đang giải thích — loại
+lỗi không ai phát hiện được bằng mắt.
+
+Hiện **mã đơn · người phụ trách · số lượng đang ghim · ngày lấy hàng dự kiến**, sắp xếp ngày
+**giảm dần**, lấy tối đa **5** đơn xa nhất.
+
+- Số lượng đang ghim = `qty − delivered_qty` của dòng chứa mặt hàng đang thiếu — đúng đại lượng
+  đã trừ vào tồn khả dụng, không phải tổng số lượng đơn.
 - Người phụ trách = **`owner` của Sales Order** (người tạo đơn). Site có 0 dòng `Sales Team`.
 - **Không hiện tên khách hàng** — khách đã chốt, và đó cũng là cách gỡ lo ngại lộ thông tin giữa
   các sale.
 
-## 8. Ngày giao dự kiến (mục 7.4 / 7.5)
+## 8. Ngày giao dự kiến
+
+Hai nguồn khác hẳn nhau: phần **mua hàng** suy từ đơn mua đang chạy, phần **sản xuất** suy từ
+lịch nhân sự. Nhưng chúng **nối tiếp nhau**, không phải hai số song song — xem 8.3.
+
+### 8.1 Phần sản xuất (mục 7.4)
 
 Dùng lại **engine Phần III** (`api/work_order_schedule.py`): nó đã biết quét `Employee Schedule`,
 trừ `Employee Allocation` đã có, rồi lấp khối lượng vào chỗ trống bằng sweep-line.
@@ -212,8 +262,64 @@ trừ `Employee Allocation` đã có, rồi lấp khối lượng vào chỗ tr�
 Khối lượng cần lấp = `Σ (số lượng × Thời Gian Sản Xuất (Phút))` của mặt hàng Sản xuất/Gia công.
 Không tạo `Employee Allocation` thật — chỉ mô phỏng, vì kết quả *chỉ để tham khảo*.
 
-⚠ **Chỉ áp cho phần SẢN XUẤT.** NVL *Mua hàng* không có công đoạn nào để lấp vào lịch — xem mục
-10.2, đang treo.
+### 8.2 Ngày hàng về của NVL mua hàng (mục 7.5)
+
+Anh Thắng chốt 24/08 (`ptmjq2t3nj`): lấy **`schedule_date` (Required By) của đơn mua gần nhất có
+chứa mặt hàng đó**. Ví dụ của anh ấy: hôm nay 15, có đơn về ngày 20 và đơn về ngày 30 → hiện
+**ngày 20**.
+
+```
+ngày_hàng_về(mặt hàng) = MIN(poi.schedule_date) với mọi Purchase Order Item thoả:
+                           · po.docstatus = 1
+                           · po.status không thuộc (Closed, Completed, Cancelled)
+                           · poi.qty − poi.received_qty > 0        ← còn thiếu mới tính
+                           · poi.schedule_date >= hôm nay          ← quá hạn thì vô nghĩa
+```
+
+Không có dòng nào thoả → hiện **"chưa có đơn mua"**, *không* bỏ trống. Ô trống đọc như "về ngay",
+đó là kiểu sai im lặng mà R2/R4 đã dính một lần.
+
+⚠ **Nguồn này thay cho `lead_time_days`.** Site có **1.115** mặt hàng *Mua hàng* và **0** mặt hàng
+khai `lead_time_days` — trường đó không dùng được. Cách của anh Thắng đọc từ dữ liệu thật.
+
+⚠ **Chưa nghiệm thu được trên site này.** Đo 24/08: **2** Purchase Order đã submit, cả hai đều có
+`schedule_date` nhưng **đều quá hạn** (21/08 và 10/08) và là dữ liệu thử (`dịch vụ gia công`,
+`Thành phẩm 1`). Số dòng còn thiếu có ngày **trong tương lai: 0**. Viết được, nhưng lúc bàn giao
+cột này sẽ toàn *"chưa có đơn mua"* — cần vài PO thật trước khi test.
+
+### 8.3 Ngày gợi ý cho nút *Hẹn lại ngày giao* (anh Thắng chốt 24/08, `ssvcj7q0rq`)
+
+> *"Ở phần cuối có nút Hẹn lại ngày giao, em cho nó hiện 1 ngày gợi ý em nhé, dựa vào phần 7.4"*
+
+⚠ **7.4 một mình là chưa đủ.** 7.4 chỉ tính công lao động. Nếu đơn còn thiếu NVL phải mua thì thợ
+rảnh cả tháng cũng không sản xuất được trước ngày hàng về. Chạy 7.4 tính từ hôm nay ra ngày
+**sớm hơn thực tế** — đúng hướng nguy hiểm: hứa sớm rồi trễ hẹn.
+
+Hai vế phải **nối tiếp**, không lấy `max()`:
+
+```
+mốc_bắt_đầu = MAX(ngày_hàng_về của mọi NVL còn thiếu)      ← mục 8.2
+ngày_gợi_ý  = engine 8.1 lấp khối lượng sản xuất, TÍNH TỪ mốc_bắt_đầu
+```
+
+Không thiếu NVL nào → `mốc_bắt_đầu` = hôm nay.
+
+**Ba trạng thái trả về — không bao giờ trả về một con số trần.**
+
+| Trạng thái | Điều kiện | Trả về |
+|---|---|---|
+| **Đủ** | mọi NVL thiếu đều có ngày về, mọi mặt hàng Sản xuất/Gia công đều có Thời Gian Sản Xuất | ngày + **cách ra ngày đó** (mốc vật tư + số ngày công) |
+| **Thiếu định mức** | có mặt hàng Sản xuất/Gia công thiếu Thời Gian Sản Xuất | ngày, kèm câu *"mới tính được phần vật tư"* + **danh sách mặt hàng thiếu** — dùng lại đúng danh sách của Bảng 3, không dựng bảng thứ hai. Ghi rõ ngày thật sẽ **muộn hơn** |
+| **Thiếu ngày về** | có NVL thiếu mà **không có đơn mua nào đang mở** | **KHÔNG trả về ngày nào cả** + danh sách vật tư chưa có đơn mua |
+
+⚠ Trạng thái thứ ba là **cố ý**, đừng "sửa cho tiện" thành trả về ngày ước lượng. Một ô trống có
+giải thích thì sale còn đi hỏi mua hàng; một ngày sai thì sale hứa thẳng với khách. Đây chính là
+rủi ro **R4** ở phần đầu file — R4 chưa mất, chỉ được rào lại.
+
+⚠ **Dữ liệu hôm nay khiến gần như mọi đơn rơi vào trạng thái 2 hoặc 3.** Đo 24/08: **3/61.144**
+mặt hàng có Thời Gian Sản Xuất > 0, trong khi **59.692** mặt hàng khai *Phương pháp bổ sung =
+Sản xuất*. Đây là hiện trạng dữ liệu, **không phải tính năng hỏng** — nó tự khỏi khi khách khai
+định mức. Nhưng phải nói trước với khách, đừng để họ tự phát hiện lúc nghiệm thu.
 
 ## 9. Hiệu năng
 
@@ -232,38 +338,42 @@ trong ngân sách:
 `get_all` — sale cần thấy tồn kho tổng, không phải phần mình được phép xem. Nhưng danh sách đơn
 ở mục 7 thì ngược lại: cân nhắc kỹ trước khi chọn hàm.
 
-## 10. Còn treo — chưa code được phần này
+## 10. Còn treo
 
-**10.1 — Lệnh sản xuất không gắn Đơn Bán (ảnh hưởng mục 7.3).** Chuỗi lần vết có thật:
-`Stock Entry.work_order → Work Order.sales_order`, và `Work Order.production_plan →
-Production Plan Sales Order.sales_order`. Nhưng đo trên site: **13/39** lệnh có `sales_order`;
-26 lệnh còn lại không lần ra đơn nào, nên luật *"phiếu thuộc đơn đã ghim thì vẫn được xuất"*
-không đánh giá được → **chặn oan**. Claude đề nghị **cho qua**; chờ anh Thắng chốt.
+**Không còn mục nào chặn việc code Phần IV.** Ba mục treo của bản 24/08 sáng đã đóng:
 
-**10.2 — Ngày có hàng cho NVL Mua hàng.** Site có **1.115** mặt hàng *Mua hàng* và **0** mặt
-hàng khai `lead_time_days`. Chưa có căn cứ nào. Chờ khách trả lời lấy thời gian đặt hàng ở đâu.
+| Mục cũ | Kết cục |
+|---|---|
+| 10.1 — Lệnh sản xuất không gắn Đơn Bán | **Chuyển sang PM-FEAT-00034**, vì chỉ ảnh hưởng mục 7.3 vốn đã tách ra (mục 11) |
+| 10.2 — Ngày có hàng cho NVL Mua hàng | **Đóng** — anh Thắng chốt lấy Required By của đơn mua, xem mục 8.2 |
+| 10.3 — Mục 7.2 không demo được | **Tan** — bảng không còn đọc `Delivery Note Item.against_sales_order` nữa, xem mục 7 |
 
-**10.3 — Mục 7.2 chưa demo được trên site này.** `Delivery Note Item.against_sales_order` đang
-có **0** dòng, nên bảng đơn-đã-xuất-kho sẽ rỗng khi test. Không phải lỗi thiết kế.
+Còn lại là hai chỗ **dữ liệu mỏng**, không phải chỗ chưa quyết — đã ghi tại chính mục liên quan:
+mục 8.2 (0 đơn mua có ngày trong tương lai) và rủi ro R1/R2/R4 ở phần đầu file.
 
-## 11. Mục 7.3 — đề nghị tách thành tính năng riêng
+## 11. Mục 7.3 — đã tách ra tính năng riêng
 
-Chặn xuất quá tồn khả dụng **đổi bản chất** tính năng này: từ *chỉ hiển thị* thành *chặn chứng
-từ*. Phải chặn ở `Stock Entry`, `Delivery Note`, `Material Request` — tức mọi đường xuất kho.
+**Anh Thắng chốt 24/08** (`ptmjq2t3nj`): *"phần 7.3 em tách thành 1 task riêng giúp anh nhé"*.
 
-Ba lý do nên tách:
+→ **PM-FEAT-00034** · `docs/features/chan-xuat-kho-qua-ton-kha-dung.md`
 
-1. Phần IV này khách cần sớm để sale dùng; phần chặn thì **dừng được việc kho** nếu sai, phải
-   thử kỹ hơn nhiều.
-2. Còn treo mục 10.1 — chưa chốt thì chưa code đúng được.
-3. ERPNext v15 **đã có Stock Reservation Entry**, trên site đang tắt. Trước khi dựng cơ chế ghim
-   song song, nên cân nhắc bật cái có sẵn — hai hệ thống giữ chỗ chạy cùng lúc sẽ trừ trùng nhau.
+Lý do tách, giữ lại ở đây để tra ngược: chặn xuất quá tồn khả dụng **đổi bản chất** tính năng
+này, từ *chỉ hiển thị* thành *chặn chứng từ* — phải chặn ở `Stock Entry`, `Delivery Note`,
+`Material Request`, tức mọi đường xuất kho. Phần IV sai thì sale đọc nhầm một con số; phần chặn
+sai thì **dừng việc của kho**.
+
+Mục treo **10.1** (26/39 lệnh sản xuất không lần ra Đơn Bán) theo sang PM-FEAT-00034, vì nó chỉ
+ảnh hưởng luật chặn.
 
 ## 12. Việc kế tiếp
 
-1. Chốt 10.1 và 10.2 với anh Thắng.
-2. Cập nhật mockup: thêm cột *Tồn thực tế*, bảng đơn-đã-xuất-kho, danh sách mặt hàng chưa khai
-   thời gian sản xuất. Khách duyệt lại.
-3. Code theo thứ tự: tập kho → tồn khả dụng → bóc BOM → 3 bảng → ngày giao dự kiến.
-4. Test case theo `erpnext-mbwnext-testcase`, có `TC-REGR` cho app lõi vì mục 7.3 chạm doc_events
-   của Stock Entry.
+1. ✅ **Anh Thắng duyệt mockup 24/08** (`ssvcj7q0rq`: *"được rồi đó em"*). Bản 5 thêm ngày gợi ý
+   ở nút *Hẹn lại ngày giao* theo yêu cầu cùng bình luận đó.
+2. Code theo thứ tự: tập kho → tồn khả dụng → bóc BOM → 3 bảng → ngày giao dự kiến.
+3. Test case theo `erpnext-mbwnext-testcase`. **Không** còn cần `TC-REGR` cho app lõi ở tính năng
+   này — mục 7.3 đã tách sang PM-FEAT-00034, Phần IV giờ thuần đọc, không chạm `doc_events`.
+4. Trước khi nghiệm thu mục 8.2: nhờ anh Thắng tạo vài Purchase Order có Required By trong tương
+   lai, nếu không cột *Ngày hàng về* sẽ toàn *"chưa có đơn mua"* và không ai biết đúng hay sai.
+
+> Bản 24/08 chiều: sửa mục 5 · 6 · 7 · 8 · 10 · 11 · 12 theo bình luận `ptmjq2t3nj`;
+> thêm mục **8.3** theo bình luận `ssvcj7q0rq`.
