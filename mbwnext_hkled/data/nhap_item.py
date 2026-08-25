@@ -98,9 +98,27 @@ DOI_TEN_DAC_TINH = {
 # một công suất, lọc báo cáo sẽ sót.
 # ⚠ Chỉ đưa vào đây thứ CHẮC CHẮN là cùng một giá trị. `Loại LED` có `3030` (PCB không kén hãng)
 # khác hẳn `Lumileds 3030` — đó là giá trị mới thật, không phải viết khác kiểu.
-CHUAN_HOA_GIA_TRI = {
-	"Công suất": {"1W": "1", "2W": "2", "5W": "5"},
-}
+CHUAN_HOA_GIA_TRI = {}
+
+# Đặc tính mà giá trị trong bảng có kèm đơn vị, còn trên site lưu SỐ TRẦN (đơn vị nằm ở `abbr`).
+# ⚠ Bản cũ chỉ liệt kê tay {"1W": "1", "2W": "2", "5W": "5"} vì 12 file đợt 1 hầu hết ghi số trần.
+# 16 file đợt 2 (PM-TASK-00126) ghi **toàn bộ** kèm "W" — nạp thẳng là site có cả `200` (59.959 item
+# cũ) lẫn `200W` (589 item mới) cho cùng một công suất, lọc báo cáo theo công suất sẽ **sót một
+# nửa mà không báo gì**. Đúng cái đã ghi trong CLAUDE.md. Cắt hậu tố cho mọi giá trị dạng số + đơn vị.
+CAT_DON_VI = {"Công suất": "W"}
+
+
+def gia_tri_so_tran(dac_tinh_bang, gia_tri):
+	"""Cắt hậu tố đơn vị nếu phần còn lại là số. `200W` -> `200`; `Điện áp cao` giữ nguyên."""
+	hau_to = CAT_DON_VI.get(dac_tinh_bang)
+	if not hau_to or not gia_tri:
+		return gia_tri
+	v = gia_tri.strip()
+	if v.upper().endswith(hau_to.upper()):
+		than = v[: -len(hau_to)].strip()
+		if re.fullmatch(r"[\d.]+", than):
+			return than
+	return v
 
 # Nhãn bị bỏ lại trơ trọi khi đặc tính tương ứng để trống — chỉ gặp ở sheet Ốc/vít/bulong,
 # nơi tên được ghép theo khuôn "<tên hàng>, Ren <x>, Đầu <y>, Khe <z>, <chất liệu>".
@@ -197,7 +215,8 @@ def _dau_van(r, cot):
 
 def gia_tri_chuan(dac_tinh_bang, gia_tri):
 	"""Giá trị đã chuẩn hoá theo tên cột TRONG BẢNG (trước khi đổi sang tên đặc tính trên site)."""
-	return CHUAN_HOA_GIA_TRI.get(dac_tinh_bang, {}).get(gia_tri, gia_tri)
+	gia_tri = CHUAN_HOA_GIA_TRI.get(dac_tinh_bang, {}).get(gia_tri, gia_tri)
+	return gia_tri_so_tran(dac_tinh_bang, gia_tri)
 
 
 def ten_mat_hang_cha(ten_cha, ten_cac_bien_the):
