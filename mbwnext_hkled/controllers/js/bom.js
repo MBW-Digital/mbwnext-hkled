@@ -62,18 +62,39 @@ frappe.ui.form.on("BOM", {
 	},
 });
 
-function fill_raw_materials(frm, res) {
+async function fill_raw_materials(frm, res) {
 	frm.clear_table("items");
 
-	res.items.forEach((comp) => {
-		const row = frm.add_child("items", {
-			item_code: comp.item_code,
-			qty: comp.qty,
-		});
-		// Kích hoạt trigger item_code của ERPNext để nó tự lấy tên, đơn vị tính, đơn giá,
-		// kho và bom_no của bán thành phẩm — mình chỉ điền mã và số lượng.
-		frm.script_manager.trigger("item_code", row.doctype, row.name);
-	});
+	// PHẢI gọi TUẦN TỰ, không được bắn song song trong forEach.
+	//
+	// Trigger item_code của ERPNext gọi frappe.call({doc: doc, ...}) — dạng run_doc_method, tức
+	// gửi nguyên cả tài liệu BOM lên server. Đường về mới là chỗ hỏng:
+	//   1. handler.py `run_doc_method` trả lại chính bản chụp client vừa gửi (frappe.response.docs).
+	//   2. request.js chạy `frappe.model.sync` TRƯỚC callback → `update_in_locals` ghi đè bảng con
+	//      rồi `clear_keys` XOÁ những trường không có trong bản chụp.
+	//   3. Callback mới `$.extend(d, r.message)` — chỉ cho đúng dòng của nó.
+	// Bắn song song thì phản hồi thứ N xoá sạch dòng 1…N-1, chỉ dòng về cuối cùng còn dữ liệu.
+	// Mất cả 12 trường chứ không riêng uom: item_name, description, stock_uom, uom,
+	// conversion_factor, bom_no, rate, base_rate, stock_qty, image... — nghĩa là BOM ra giá 0 và
+	// bán thành phẩm mất liên kết BOM con. Thắng báo 23/08 (PM-FEAT-00007) vì thấy cột UOM trống.
+	//
+	// Gọi tuần tự thì bản chụp gửi lên đã chứa dữ liệu các dòng trước nên vòng sync không xoá gì.
+	// `script_manager.trigger` trả về `frappe.after_server_call()` (resolve khi ajax_count về 0),
+	// await được vì `$(document).ajaxSend` tăng biến đếm ngay lúc $.ajax chạy.
+	frappe.dom.freeze(__("Đang lấy thông tin nguyên vật liệu..."));
+	try {
+		for (const comp of res.items) {
+			const row = frm.add_child("items", {
+				item_code: comp.item_code,
+				qty: comp.qty,
+			});
+			// Trigger item_code của ERPNext tự lấy tên, đơn vị tính, đơn giá, kho và bom_no
+			// của bán thành phẩm — mình chỉ điền mã và số lượng.
+			await frm.script_manager.trigger("item_code", row.doctype, row.name);
+		}
+	} finally {
+		frappe.dom.unfreeze();
+	}
 
 	frm.refresh_field("items");
 	frappe.show_alert(
