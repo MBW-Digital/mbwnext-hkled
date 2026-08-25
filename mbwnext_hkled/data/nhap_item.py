@@ -79,6 +79,8 @@ COT_CO_DINH = {
 	# `_khoa_bien_the` và `_khoa_ten_bien_the`.
 	"Mã đặc tính",
 	"Tên đặc tính",
+	# Cách file (PZK), (HCT) và 4 file "Nhóm I–IV" gọi cột nhóm sản phẩm — xem `_nhom_san_pham`.
+	"Item Group",
 }
 
 COT_DON_VI = "Đơn vị tính"
@@ -153,7 +155,8 @@ def don_ten(ten):
 
 
 # Ô có giá trị đúng bằng tên một cột — dấu hiệu dòng tiêu đề bị lặp lại giữa bảng.
-DONG_TIEU_DE_LAP = {"Mã sản phẩm", "Tên sản phẩm", "Nhóm sản phẩm", "Mã biến thể", "Tên biến thể",
+DONG_TIEU_DE_LAP = {"Mã sản phẩm", "Tên sản phẩm", "Nhóm sản phẩm", "Item Group",
+                    "Mã biến thể", "Tên biến thể",
                     "Biến thể", "Mô tả", "Phương pháp bổ sung", "Đơn vị tính"}
 
 
@@ -188,6 +191,19 @@ def _khoa_bien_the(dong):
 		if k in dong[0]:
 			return k
 	return KHOA_BIEN_THE[0]
+
+
+# Khách gọi cột nhóm bằng hai tên: "Nhóm sản phẩm" (28 file danh mục) và "Item Group"
+# (file PZK, HCT và 4 file Nhóm I–IV). Cùng nghĩa.
+KHOA_NHOM = ("Nhóm sản phẩm", "Item Group")
+
+
+def _nhom_san_pham(r):
+	for k in KHOA_NHOM:
+		v = (r.get(k) or "").strip()
+		if v:
+			return v
+	return ""
 
 
 def _khoa_ten_bien_the(dong):
@@ -365,7 +381,7 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 			# mã cha này đã có dòng biến thể ở chỗ khác — dòng trống là dòng thừa, bỏ đúng như cũ
 			bc["bo_qua"]["thieu_ma"] += 1
 			continue
-		nhom_r = (r.get("Nhóm sản phẩm") or "").strip()
+		nhom_r = _nhom_san_pham(r)
 		if _tao_nhom(nhom_r):
 			bc["nhom_moi"].append(nhom_r)
 		if _tao_item(cha_r, (r.get("Tên sản phẩm") or "").strip(), nhom_r,
@@ -411,7 +427,7 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 	# 2. nạp từng mặt hàng cha
 	for cha, cac_bt in theo_cha.items():
 		rs = list(cac_bt.values())
-		nhom = (rs[0].get("Nhóm sản phẩm") or "").strip()
+		nhom = _nhom_san_pham(rs[0])
 
 		# Đặc tính của mặt hàng cha = HỢP của mọi đặc tính mà biến thể của nó có giá trị.
 		# ⚠ Bản đầu ở đây bỏ qua cả mặt hàng cha khi các biến thể không dùng cùng một bộ đặc tính,
