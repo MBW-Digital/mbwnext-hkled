@@ -298,6 +298,63 @@ Chọn **Mặt Hàng** trên form BOM → tra BOM Template của mặt hàng cha
 số lượng vẫn do Server Script tính. Mặt hàng không có BOM Template thì **không đụng gì tới form**,
 giữ nguyên hành vi mặc định của ERPNext.
 
+#### ⚠ HAI ĐƯỜNG TẠO BOM, HÀNH XỬ KHÁC NHAU — đọc trước khi sửa một trong hai
+
+| Lối vào | Hàm | Làm gì |
+|---|---|---|
+| Nút trên **Kế hoạch sản xuất** (`Production Plan Item.custom_create_bom`) | `auto_create_bom` → `build_bom_tree` | dựng **CẢ CÂY** bottom-up, tạo BOM cho từng bán thành phẩm rồi nối `bom_no` |
+| Chọn **Mặt Hàng** trên form **BOM** | `get_template_raw_materials` | chỉ **ĐIỀN PHẲNG** bảng Nguyên Vật Liệu |
+
+Hai đường ra đời cách nhau một tháng (08/07 và 08/08) cho hai việc khác nhau, nhưng **người dùng gọi
+cả hai là "tạo BOM tự động"** nên tưởng chúng giống nhau. Thắng phát hiện 24/08: cùng một mặt hàng,
+đi từ Kế hoạch sản xuất thì ra đủ cây, đi từ form BOM thì bán thành phẩm không có BOM.
+
+**Cây BOM 3 tầng là mô hình khách gửi, không phải ca hiếm.** File khách có 7 sheet, mỗi sheet một mặt
+hàng cha, và bảng thành phần của `DP01S` trỏ thẳng sang mã của sheet khác. Trong 7 BOM Template đang
+bật thì `VDP0X` + `M30S050-A/B` + `M50S050-A/B` **tự chúng là bán thành phẩm có template riêng**. Ví
+dụ `DP01S200-6B3HN-AD`: 8 thành phần, 2 trong đó là bán thành phẩm có template. Đèn → vỏ + module →
+linh kiện.
+
+**Cách xử lý (chốt của TungDA/Thắng 24/08)** — `find_missing_sub_assembly_boms()` trong `api/bom.py`
+dò thành phần nào có BOM Template riêng mà chưa có BOM, trả về kèm trong `get_template_raw_materials`;
+`bom.js` hiện banner nêu **đích danh** và thêm nút *"Tạo BOM tự động cho bán thành phẩm"* gọi lại đúng
+`auto_create_bom`. **Một hành vi, hai lối vào.**
+
+⚠️ **KHÔNG tự tạo BOM ngầm lúc người dùng vừa chọn Mặt Hàng.** `create_bom` submit BOM mới rồi **gỡ cờ
+`is_default` của bản cũ** — app này đã vấp đúng chuyện đó một lần, ghi đè `is_default` lên BOM đang
+được Work Order thật tham chiếu, phải cancel + khôi phục tay (xem "Bài học quan trọng"). Tạo/duyệt
+chứng từ thật luôn phải qua một cú bấm rõ ràng, có hộp thoại xác nhận.
+
+#### 🔴 BẪY: `add_child` hàng loạt rồi bắn trigger SONG SONG làm MẤT DỮ LIỆU
+
+Không riêng BOM — **chỗ nào thêm nhiều dòng bảng con rồi gọi `frm.script_manager.trigger()` trong
+vòng lặp đều dính** (Sales Order, Work Order…).
+
+Triệu chứng: mọi dòng trống trường, **trừ đúng dòng cuối**. Thắng báo 23/08 vì thấy cột UOM trống
+7/8 dòng.
+
+Cơ chế — không phải quên set giá trị mà là **bị xoá**:
+1. Trigger `item_code` của ERPNext gọi `frappe.call({doc: doc, ...})` — dạng `run_doc_method`, tức
+   **gửi nguyên cả tài liệu lên server**.
+2. `frappe/handler.py` `run_doc_method` trả lại **chính bản chụp client vừa gửi** (`frappe.response.docs`).
+3. `request.js` chạy `frappe.model.sync` **TRƯỚC** callback → `update_in_locals` ghi đè bảng con, rồi
+   `clear_keys` **XOÁ** những trường không có trong bản chụp.
+4. Callback mới `$.extend(d, r.message)` — chỉ cho đúng dòng của nó.
+
+Bắn N lệnh song song thì phản hồi thứ N xoá sạch dòng 1…N-1. Cái về cuối cùng thắng.
+
+Mất **12 trường** chứ không riêng `uom`: `item_name`, `description`, `stock_uom`, `uom`,
+`conversion_factor`, **`bom_no`**, `rate`, `base_rate`, `stock_qty`, `image`,
+`include_item_in_manufacturing`, `sourced_by_supplier`. Nghĩa là BOM ra **giá 0** và bán thành phẩm
+**mất liên kết BOM con** — hai thứ này im lặng, chỉ `uom` lộ ra vì nó là trường bắt buộc.
+
+**Cách sửa: gọi TUẦN TỰ** — `await` từng trigger trước khi thêm dòng sau. Bản chụp gửi lên khi đó đã
+chứa dữ liệu các dòng trước nên vòng sync không xoá gì. `script_manager.trigger` trả về
+`frappe.after_server_call()` (resolve khi `ajax_count` về 0), `await` được vì `$(document).ajaxSend`
+tăng biến đếm ngay lúc `$.ajax` chạy.
+
+Đo thật trên `VDP0X-1K0-N-GY-v3.0` (13 NVL): trước 12/13 dòng trống UOM → sau **13/13 đủ**.
+
 ⚠️ Đặc tính điều kiện trên site thật tên là **`Nguồn`**, KHÔNG phải `Loại nguồn` như tài liệu thiết kế viết.
 
 ### Engine tự động tạo BOM (`api/bom.py`, whitelisted `auto_create_bom(item_code, company)`)
@@ -427,6 +484,12 @@ lệnh có mốc kết thúc trước mốc bắt đầu.
 **`frm.set_intro` NỐI THÊM banner, không thay thế.** `Layout.show_message()` dùng `appendTo`; chỉ
 chuỗi rỗng mới gọi `empty()`. Đổi giá trị vài lần là chồng một cột banner. Phải gọi `frm.set_intro("")`
 ở đầu handler.
+
+⚠ Hệ quả nặng hơn khi có **từ 2 banner độc lập trở lên** trên cùng một form: không thể gọi
+`frm.set_intro` trực tiếp ở hai chỗ, vì cập nhật chỗ này sẽ nhân đôi hoặc đè chỗ kia — nhất là khi
+một banner cần vẽ lại sau một thao tác. `bom.js` có 2 banner (số lượng tạm tính, và bán thành phẩm
+thiếu BOM) nên phải gom qua `set_banner_section(frm, key, html)` + `render_banners(frm)`: giữ các
+mục trong một object, mỗi lần đổi thì **xoá sạch rồi vẽ lại cả khối**.
 
 **`frappe.msgprint` ra hộp thoại RỖNG** nếu gọi ngay sau khi điền bảng con — chuỗi trigger `item_code`
 của ERPNext còn đang chạy và nó dọn hộp thoại msgprint dùng chung. Dùng banner `frm.set_intro()` thay thế.
@@ -613,7 +676,14 @@ doc = frappe.get_doc("Server Script", SCRIPT_NAME); doc.script = SCRIPT; doc.sav
 ## Tài liệu liên quan
 
 Nguồn yêu cầu trên app PM: dự án `PM-PRJ-00003` (HKLed) › Tài liệu › Tài Liệu Giai Đoạn 1
-- `PM-DOC-00044` — TÀI LIỆU NGHIỆP VỤ NÂNG CẤP GIAI ĐOẠN 1 HKLED.docx (Phần I/II/III bản đầu)
+- `PM-DOC-00044` — TÀI LIỆU NGHIỆP VỤ NÂNG CẤP GIAI ĐOẠN 1 HKLED.docx — ⚠ **chỉ có PHẦN II trở đi**
+  (mở ra là "PHẦN II: BẬC THỢ VÀ GIỜ CÔNG CHUẨN", 415 đoạn). Dòng này trước ghi "Phần I/II/III bản đầu"
+  là **SAI** — sửa 25/08 sau khi hai phiên Claude cùng đi tìm Phần I và đều không có.
+- ⚠ **KHÔNG CÓ tài liệu nghiệp vụ PHẦN I trên PM.** `auto_create_bom` ghi nguồn là "PHẦN I mục 7 tài
+  liệu nghiệp vụ HKLED" và `BOM_Template_Design_HKLED` cũng viện dẫn "Phần I.7", nhưng tài liệu đó
+  **không có trong thư mục tài liệu khách của `PM-FEAT-00007`**. Hệ quả thật: không ai đối chiếu được
+  phạm vi "Tạo BOM tự động" tới đâu, và chính vì thiếu nó mà phần điền form BOM (07/08) bị làm như một
+  việc rời, để lọt lỗ hổng cây BOM bên dưới. Đã xin Thắng up lên (PM-FEAT-00007, 24/08).
 - `PM-DOC-00046` — `BOM_Template_Design_HKLED.md` (spec nâng cấp Phần I, đã implement 2026-07-31)
 - `PM-DOC-00043` — Danh sách thành phẩm (MBW).xlsx (dữ liệu gốc của công thức số lượng)
 
