@@ -116,6 +116,12 @@ fixtures = [
 # before_install = "mbwnext_hkled.install.before_install"
 # after_install = "mbwnext_hkled.install.after_install"
 
+# ⚠ `after_sync`, KHÔNG PHẢI `after_install`: hook này chạy sau khi fixtures đã vào
+# (`installer.py` gọi `sync_fixtures` giữa hai hook), và chỉ chạy lúc CÀI app.
+# Nó dựng toàn bộ phần dữ liệu mà `patches.txt` không dựng được trên site mới —
+# lý do đầy đủ nằm trong docstring của `mbwnext_hkled/install.py`, đọc trước khi sửa.
+after_sync = ["mbwnext_hkled.install.after_sync"]
+
 # Uninstallation
 # ------------
 

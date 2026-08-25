@@ -32,6 +32,7 @@ def execute():
 	cha = bien_the = don_le = lap = 0
 	nhom = []
 	bo_trung = bo_thieu = bo_dung = 0
+	bo_nhom = []
 	for b in bao_cao:
 		cha += b["cha_moi"]
 		bien_the += b["bien_the_moi"]
@@ -41,6 +42,7 @@ def execute():
 		bo_trung += len(b["bo_qua"]["trung_ma_khac_noi_dung"])
 		bo_thieu += b["bo_qua"]["thieu_ma"]
 		bo_dung += len(b["bo_qua"]["dung_to_hop_dac_tinh"])
+		bo_nhom.extend(b["bo_qua"]["thieu_nhom"])
 
 	frappe.db.commit()
 
@@ -58,6 +60,11 @@ def execute():
 		f"[mbwnext_hkled] Phương pháp bổ sung: điền {pp['da_dat']}, giữ nguyên {pp['khong_doi']}, "
 		f"xoá ở {pp['da_xoa_o_cha']} mặt hàng cha."
 	)
+	if bo_nhom:
+		print(
+			f"[mbwnext_hkled] BỎ QUA vì THIẾU NHÓM SẢN PHẨM ({len(bo_nhom)} mã cha, kèm mọi biến thể "
+			f"của chúng): {', '.join(sorted(set(bo_nhom)))}"
+		)
 	if bo_trung or bo_thieu or bo_dung:
 		print(
 			f"[mbwnext_hkled] BỎ QUA (cần HKLED sửa bảng nguồn): {bo_trung} mã trùng khác nội "

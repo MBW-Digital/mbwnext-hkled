@@ -79,6 +79,45 @@ Trường hợp đã truy được rõ:
 - `thanh_pham/01..04-*.csv` — 4 sheet *Nhóm I–IV*, tải **25/08/2026**, thay bản 3 cột cũ bằng bản
   đủ 11–13 cột.
 
+## Lỗ hổng đã biết trong dữ liệu nguồn
+
+### `danh_muc/04-m-module.csv` — trống cột *Nhóm sản phẩm*, cả 152 dòng
+
+Phát hiện 25/08/2026 khi dựng thử site trắng `test.com`. Đây là file **duy nhất** trong 34 file
+có ô nhóm để trống, và nó trống **toàn bộ**: 152/152 dòng, 8 mã cha
+(`M30C050`, `M30S030`, `M30S050-A`, `M30S050-B`, `M30S200`, `M50S050-A`, `M50S050-B`, `M50S200`).
+
+Không phải lỗi lúc tải — file này là 1 trong 2 file truy được rõ nguồn (sheet `(M) Module`,
+`gid=1424293139`), tải lại vẫn thế. **Sheet của khách thật sự không có nhóm cho 8 mã này.**
+
+Vì sao chưa ai thấy: trên `hkled.com` cả 8 mã đã tồn tại từ trước với `item_group = (M) Module`,
+nên bộ nạp gặp `frappe.db.exists` là bỏ qua, không bao giờ chạm tới ô trống. Chỉ site trắng mới lộ.
+
+⚠ **Không tự điền `(M) Module` vào file.** Suy từ tên file ra giá trị dữ liệu là đúng đúng-một-lần
+rồi thành thói quen — lần sau tên file không nói lên nhóm thì sai mà vẫn chạy. Nhóm sản phẩm là
+dữ liệu của khách, phải do khách điền vào sheet rồi tải lại.
+
+Trong lúc chờ: bộ nạp bỏ qua 8 mã cha này kèm mọi biến thể của chúng và in ra danh sách
+(`bo_qua["thieu_nhom"]`). Site mới sẽ **thiếu 152 dòng module** cho tới khi khách bổ sung —
+mà module là linh kiện BOM Template tra tới, nên phải bổ sung trước khi dựng cổng thật.
+
+### Thiếu hẳn 2 nhóm sản phẩm trong bộ file khách gửi
+
+`data/danh_muc/` có 30 file, phủ ốc vít, PCB, LED, chip, module, vỏ, nguồn, chống sét, cầu đấu,
+tản nhiệt, lens, chảo, trụ, gông, kính, móc treo, nắp, choá, quai, tai, viền, gioăng, hộp carton…
+**Không có file nào cho dây điện và mút xốp.** Hai nhóm này tồn tại trên `hkled.com` nhưng không
+có trong bất kỳ CSV nào — do Administrator tạo tay.
+
+| Nhóm | Số mã trên site | Có trong CSV | Chặn BOM Template? |
+|---|---|---|---|
+| `(W) Dây điện` | 7 | **0 — thiếu cả nhóm** | ✅ `W-2x0.75-BK` (4 rule), `W-3x0.75-BK` (2 rule) |
+| `(XOP) Mút, xốp` | 6 | **0 — thiếu cả nhóm** | ✅ `XOP-GOC-110x110x120mm` (2 rule) |
+| `(O) Ốc, vít, bulong` | 70 | 66 (`00-o-oc-vit-bulong.csv`) | ❌ 4 mã `OPG*` thiếu nhưng **0 rule tra tới** |
+
+Cách hỏi khách cho gọn: **xin danh mục 2 nhóm `(W) Dây điện` và `(XOP) Mút, xốp`** — 13 mã, trong
+đó 2 là mặt hàng cha (`WIRE`, `XOP-GOC`). Đừng hỏi thành "19 mã lẻ": 4 mã `OPG*` thuộc nhóm đã có
+file sẵn (chỉ thiếu dòng, không chặn gì), còn `DD11S050` và `dịch vụ gia công` là mã thử.
+
 ## Việc nên làm, chưa làm
 
 1. **Map từng file → sheet + gid.** Hiện chỉ biết workbook, không biết tab. Thiếu cái này thì

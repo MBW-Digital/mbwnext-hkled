@@ -337,9 +337,30 @@ def nhap_mot_sheet(ten_sheet, spec_sheet, chi_kiem=False):
 	return bao
 
 
+DIEM_LUU_SHEET = "nhap_bom_template_sheet"
+
+
 def nhap_tat_ca(chi_kiem=False):
 	spec = _doc_spec()
 	bao = {"bo_qua_sheet": spec.get("loi", {}), "sheets": []}
 	for ten, s in spec["sheets"].items():
-		bao["sheets"].append(nhap_mot_sheet(ten, s, chi_kiem=chi_kiem))
+		# Một sheet hỏng KHÔNG được giết cả lượt nạp.
+		#
+		# ⚠ Vì sao cần: `BOM Template` là Link tới Item, nên NVL nào chưa có trên site là
+		# `LinkValidationError` ném thẳng ra ngoài. Trên site đã chạy thì không bao giờ xảy ra
+		# — mọi mặt hàng đã có sẵn. Trên SITE MỚI thì có: đo ngày 25/08/2026 trên `test.com`,
+		# sheet DP01S tra tới 8 mã module bị bỏ vì thiếu Nhóm sản phẩm, cộng `W-3x0.75-BK` và
+		# `XOP-GOC-110x110x120mm` vốn chỉ được tạo tay trên `hkled.com` chứ không nằm trong
+		# file CSV nào. Lỗi này bay ra sau 2 giờ 22 phút nạp danh mục và bỏ lại site cài dở.
+		#
+		# Bỏ qua sheet hỏng rồi báo tên NVL còn thiếu thì lượt cài chạy hết, và người đọc log
+		# biết chính xác phải bổ sung cái gì. KHÔNG tự tạo mặt hàng thiếu — xem
+		# "THÀ BỎ QUA CÒN HƠN ĐOÁN" trong `nhap_item.py`.
+		frappe.db.savepoint(DIEM_LUU_SHEET)
+		try:
+			bao["sheets"].append(nhap_mot_sheet(ten, s, chi_kiem=chi_kiem))
+		except frappe.exceptions.LinkValidationError as e:
+			frappe.db.rollback(save_point=DIEM_LUU_SHEET)
+			frappe.local.message_log = []
+			bao["sheets"].append({"sheet": ten, "loi": f"thiếu mặt hàng được tra tới — {e}"})
 	return bao
