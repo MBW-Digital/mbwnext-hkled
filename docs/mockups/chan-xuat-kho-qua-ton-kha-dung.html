@@ -1,0 +1,1001 @@
+<meta charset="utf-8">
+<title>Mockup — Chặn xuất kho quá tồn khả dụng (HKLED)</title>
+
+<style>
+	:root {
+		--ground: #f2f4f6;
+		--surface: #ffffff;
+		--sunken: #f7f9fa;
+		--ink: #1c2b36;
+		--ink-soft: #5c6a75;
+		--ink-faint: #8b97a1;
+		--line: #dfe4e8;
+		--line-soft: #eaeef1;
+		--decided: #0f766e;
+		--decided-bg: #ecfdf9;
+		--ask: #b45309;
+		--ask-bg: #fdf6e7;
+		--danger: #b42318;
+		--danger-bg: #fdf2f1;
+		--new: #1d4ed8;
+		--new-bg: #eef3fe;
+		--btn: #202a33;
+		--btn-ink: #ffffff;
+
+		--serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--ground: #14181c;
+			--surface: #1c2126;
+			--sunken: #22282e;
+			--ink: #e4e8ec;
+			--ink-soft: #a4aeb7;
+			--ink-faint: #7b868f;
+			--line: #2f363d;
+			--line-soft: #262c32;
+			--decided: #2dd4bf;
+			--decided-bg: #14262a;
+			--ask: #f0b458;
+			--ask-bg: #2a2317;
+			--danger: #f4a5a0;
+			--danger-bg: #2a1a19;
+			--new: #93c5fd;
+			--new-bg: #172538;
+			--btn: #e4e8ec;
+			--btn-ink: #14181c;
+		}
+	}
+	:root[data-theme="dark"] {
+		--ground: #14181c; --surface: #1c2126; --sunken: #22282e;
+		--ink: #e4e8ec; --ink-soft: #a4aeb7; --ink-faint: #7b868f;
+		--line: #2f363d; --line-soft: #262c32;
+		--decided: #2dd4bf; --decided-bg: #14262a;
+		--ask: #f0b458; --ask-bg: #2a2317;
+		--danger: #f4a5a0; --danger-bg: #2a1a19;
+		--new: #93c5fd; --new-bg: #172538;
+		--btn: #e4e8ec; --btn-ink: #14181c;
+	}
+	:root[data-theme="light"] {
+		--ground: #f2f4f6; --surface: #ffffff; --sunken: #f7f9fa;
+		--ink: #1c2b36; --ink-soft: #5c6a75; --ink-faint: #8b97a1;
+		--line: #dfe4e8; --line-soft: #eaeef1;
+		--decided: #0f766e; --decided-bg: #ecfdf9;
+		--ask: #b45309; --ask-bg: #fdf6e7;
+		--danger: #b42318; --danger-bg: #fdf2f1;
+		--new: #1d4ed8; --new-bg: #eef3fe;
+		--btn: #202a33; --btn-ink: #ffffff;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		background: var(--ground);
+		color: var(--ink);
+		font: 15px/1.6 var(--sans);
+		-webkit-font-smoothing: antialiased;
+	}
+	.page {
+		max-width: 940px;
+		margin: 0 auto;
+		padding: 40px 20px 80px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	/* ---------- giọng tài liệu: serif ---------- */
+	.doc-title {
+		font: 400 30px/1.2 var(--serif);
+		text-wrap: balance;
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+	.doc-meta {
+		color: var(--ink-soft);
+		font-size: 13.5px;
+		margin: 6px 0 0;
+		max-width: 66ch;
+	}
+	.doc-meta code, .mono { font-family: var(--mono); font-size: 0.88em; }
+	h2 {
+		font: 400 21px/1.3 var(--serif);
+		margin: 44px 0 4px;
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+	h2 .gap {
+		font: 600 10.5px/1.7 var(--mono);
+		letter-spacing: 0.04em;
+		color: var(--new);
+		background: var(--new-bg);
+		border-radius: 3px;
+		padding: 1px 7px;
+	}
+	.lede {
+		color: var(--ink-soft);
+		font-size: 14px;
+		margin: 0 0 14px;
+		max-width: 66ch;
+	}
+
+	/* ---------- nav dính ---------- */
+	.nav {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background: color-mix(in srgb, var(--ground) 88%, transparent);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--line);
+		margin: 28px -20px 0;
+		padding: 9px 20px;
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		font-size: 13px;
+	}
+	.nav a {
+		color: var(--ink-soft);
+		text-decoration: none;
+		padding: 4px 10px;
+		border-radius: 5px;
+	}
+	.nav a:hover, .nav a:focus-visible { background: var(--surface); color: var(--ink); }
+
+	/* ---------- khung giả lập ERPNext Desk ---------- */
+	.screen {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.screen-bar {
+		background: var(--sunken);
+		border-bottom: 1px solid var(--line);
+		padding: 7px 14px;
+		font: 500 11.5px/1.6 var(--mono);
+		color: var(--ink-faint);
+		letter-spacing: 0.03em;
+		display: flex;
+		justify-content: space-between;
+		gap: 10px;
+	}
+	.screen-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+	.dialog { max-width: 580px; }
+
+	.wo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+	.wo-head h3 { font: 600 17px/1.3 var(--sans); margin: 2px 0 0; }
+	.crumb { font-size: 12px; color: var(--ink-faint); }
+	.actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- field ---------- */
+	.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+	.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+	.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+	.fld > .lbl {
+		font-size: 11.5px;
+		color: var(--ink-soft);
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.lbl .req { color: var(--danger); }
+	.lbl .fn { font: 10.5px/1.6 var(--mono); color: var(--ink-faint); }
+	.val {
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		background: var(--surface);
+		padding: 7px 10px;
+		font-size: 13.5px;
+		min-height: 34px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.val.ro { background: var(--sunken); color: var(--ink-soft); }
+	.val.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+	.val.pick::after { content: "⌄"; margin-left: auto; color: var(--ink-faint); }
+	.val.locked { opacity: 0.45; }
+	select.val, input.val {
+		font: 13.5px var(--sans); color: inherit; width: 100%;
+		appearance: none;
+	}
+	input.val.num { text-align: right; }
+	/* bảng Sản Lượng chỉ có 2 cột — không để ô nhập kéo dài hết cột */
+	#prod-rows input.val { width: 96px; margin-left: auto; }
+	.fld.dim { opacity: 0.42; }
+
+	/* ---------- tick ---------- */
+	.tick {
+		width: 15px; height: 15px; flex: none;
+		border: 1px solid var(--ink-faint);
+		border-radius: 3px;
+		display: inline-grid;
+		place-items: center;
+		background: var(--surface);
+		cursor: pointer;
+		padding: 0;
+	}
+	.tick[aria-checked="true"] { background: var(--decided); border-color: var(--decided); }
+	.tick[aria-checked="true"]::after {
+		content: "✓"; color: var(--surface); font: 700 10px/1 var(--sans);
+	}
+	:root[data-theme="dark"] .tick[aria-checked="true"]::after,
+	.tick[aria-checked="true"]::after { color: var(--surface); }
+	.tick:focus-visible, .btn:focus-visible, .nav a:focus-visible, select:focus-visible, input:focus-visible {
+		outline: 2px solid var(--new); outline-offset: 2px;
+	}
+	.switch { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+
+	/* ---------- chọn thứ trong tuần ---------- */
+	.wd { display: flex; flex-wrap: wrap; gap: 6px; }
+	.wd label {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		padding: 6px 10px;
+		background: var(--surface);
+		cursor: pointer;
+		user-select: none;
+	}
+	.wd label:has(.tick[aria-checked="true"]) {
+		border-color: var(--decided);
+		background: var(--decided-bg);
+		color: var(--decided);
+	}
+
+	/* ---------- bảng ---------- */
+	.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+	table { width: 100%; border-collapse: collapse; font-size: 13px; }
+	th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+	tbody tr:last-child td { border-bottom: 0; }
+	th {
+		background: var(--sunken);
+		font: 600 10.5px/1.6 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-faint);
+		white-space: nowrap;
+	}
+	td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+	tr.sum td { font-weight: 600; background: var(--sunken); }
+	tr.off td { color: var(--ink-faint); }
+	td.ve { white-space: nowrap; }
+	td.ve.trong { color: var(--ink-faint); }
+	td.ve.chua { color: var(--ask); font-style: italic; }
+	.grid-tools { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- nút ---------- */
+	.btn {
+		font: 500 13px/1.3 var(--sans);
+		padding: 7px 13px;
+		border-radius: 6px;
+		border: 1px solid var(--line);
+		background: var(--surface);
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.btn.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+	.btn.sm { padding: 5px 10px; font-size: 12px; }
+	.btn[hidden] { display: none; }
+
+	.state {
+		font: 600 10.5px/1.7 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 2px 9px;
+		border-radius: 20px;
+		background: var(--new-bg);
+		color: var(--new);
+	}
+
+	/* ---------- ghi chú: giọng serif, 2 màu ngữ nghĩa ---------- */
+	.note {
+		font: 14px/1.6 var(--serif);
+		border-left: 2px solid var(--decided);
+		background: var(--decided-bg);
+		padding: 11px 15px;
+		border-radius: 0 7px 7px 0;
+		margin: 12px 0 0;
+	}
+	.note.ask { border-left-color: var(--ask); background: var(--ask-bg); }
+	.note .tag {
+		font: 600 10.5px/1.6 var(--mono);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		display: block;
+		margin-bottom: 3px;
+		color: var(--decided);
+	}
+	.note.ask .tag { color: var(--ask); }
+	.alert {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--danger-bg);
+		border-left: 2px solid var(--danger);
+		color: var(--danger);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.alert[hidden], .ok-msg[hidden] { display: none; }
+	.ok-msg {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--decided-bg);
+		border-left: 2px solid var(--decided);
+		color: var(--decided);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.hint { font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+	.live {
+		font: 500 12.5px/1.6 var(--mono);
+		color: var(--decided);
+	}
+
+	/* ---------- danh sách câu hỏi ---------- */
+	.qlist { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+	.qlist li {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-left: 2px solid var(--ask);
+		border-radius: 0 8px 8px 0;
+		padding: 13px 16px;
+		display: flex;
+		gap: 12px;
+	}
+	.qlist .qn {
+		font: 600 12px/1.5 var(--mono);
+		color: var(--ask);
+		flex: none;
+		padding-top: 2px;
+	}
+	.qlist p { margin: 0; font-size: 14px; }
+	.qlist p + p { margin-top: 5px; color: var(--ink-soft); font-size: 13px; }
+
+	.plainlist { margin: 0; padding-left: 22px; font-size: 14px; }
+	.plainlist li { margin: 6px 0; }
+
+	.foot {
+		margin-top: 46px;
+		padding-top: 16px;
+		border-top: 1px solid var(--line);
+		font: 13px/1.6 var(--serif);
+		color: var(--ink-soft);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		* { transition: none !important; animation: none !important; }
+	}
+</style>
+<style>
+	/* ---- bổ sung riêng cho màn này ---- */
+	.pop-wrap { position: relative; }
+	.pop {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		box-shadow: 0 10px 34px rgba(16, 24, 32, 0.13);
+		overflow: hidden;
+	}
+	:root:not([data-theme="light"]) .pop { box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45); }
+	@media (prefers-color-scheme: light) {
+		:root:not([data-theme="dark"]) .pop { box-shadow: 0 10px 34px rgba(16, 24, 32, 0.13); }
+	}
+	.pop-bar {
+		display: flex; align-items: center; justify-content: space-between; gap: 12px;
+		padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--sunken);
+	}
+	.pop-bar h3 { margin: 0; font: 600 15px/1.3 var(--sans); }
+	.pop-body { padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+
+	/* ---------- kết luận gộp: đơn này vướng ở KHÂU nào ---------- */
+	/* Khách chốt 20/08: cần thấy thiếu ở khâu nào (vỏ / nguồn / người), không chỉ đủ–thiếu.
+	   Tên khâu lấy từ cột "Nguồn nhu cầu" của Bảng 2 — chính là tên Thành Phần BOM. */
+	.sum {
+		background: var(--sunken);
+		border: 1px solid var(--line);
+		border-radius: 9px;
+		padding: 13px 15px;
+	}
+	.sum-verdict { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin: 0 0 11px; }
+	.sum-verdict .txt { font-size: 14px; }
+	.khau { display: flex; gap: 8px; flex-wrap: wrap; margin: 0; }
+	.kh {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 7px;
+		border: 1px solid var(--line);
+		border-radius: 7px;
+		padding: 6px 11px;
+		background: var(--surface);
+		font-size: 13px;
+	}
+	.kh b { font-weight: 600; }
+	.kh i { font-style: normal; font-variant-numeric: tabular-nums; }
+	.kh.short { border-color: var(--danger); background: var(--danger-bg); }
+	.kh.short i { color: var(--danger); font-weight: 600; }
+	.kh.ok i { color: var(--decided); }
+	.sum .hint { margin-top: 10px; }
+
+	.tbl-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 7px; }
+	.tbl-head h4 { margin: 0; font: 600 13px/1.4 var(--sans); }
+	.tbl-head .sub { font-size: 12.5px; color: var(--ink-faint); }
+
+	.pill {
+		font: 600 10.5px/1.7 var(--sans);
+		letter-spacing: 0.04em; text-transform: uppercase;
+		padding: 1px 8px; border-radius: 20px; white-space: nowrap;
+	}
+	.pill.ok { background: var(--decided-bg); color: var(--decided); }
+	.pill.short { background: var(--danger-bg); color: var(--danger); }
+	.pill.buy { background: var(--new-bg); color: var(--new); }
+	.pill.warn { background: var(--ask-bg); color: var(--ask); }
+
+	/* thanh so sánh nhu cầu / nguồn lực còn lại */
+	.bars { display: flex; flex-direction: column; gap: 9px; }
+	.bar-row { display: grid; grid-template-columns: 132px 1fr 92px; align-items: center; gap: 11px; font-size: 13px; }
+	.bar-row .cap { color: var(--ink-soft); }
+	/* span mặc định là inline nên height không ăn — phải block, nếu không thanh rỗng trơn */
+	.bar-track {
+		display: block; height: 9px; border-radius: 5px;
+		background: var(--sunken); border: 1px solid var(--line-soft); overflow: hidden;
+	}
+	.bar-fill { display: block; height: 100%; border-radius: 5px; }
+	.bar-fill.avail { background: var(--decided); }
+	.bar-fill.need { background: var(--ask); }
+	.bar-row .amt { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 12.5px; }
+
+	.verdict { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+	.verdict .big { font: 600 19px/1.2 var(--sans); font-variant-numeric: tabular-nums; }
+
+	.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-soft); }
+	.legend span { display: inline-flex; align-items: center; gap: 6px; }
+	.dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+
+	.q-badge {
+		font: 600 10px/1.6 var(--mono); letter-spacing: 0.04em;
+		color: var(--ask); background: var(--ask-bg);
+		border-radius: 3px; padding: 1px 6px; margin-left: 6px; white-space: nowrap;
+	}
+	.src { font: 11px/1.5 var(--mono); color: var(--ink-faint); }
+</style>
+<style>
+	/* ---------- bổ sung riêng cho tính năng Chặn xuất kho ---------- */
+	.lvl0 td:first-child { font-weight: 600; }
+	.lvl1 td:first-child { padding-left: 26px; }
+	.lvl2 td:first-child { padding-left: 44px; }
+	tr.lvl1 td:first-child::before,
+	tr.lvl2 td:first-child::before {
+		content: "└ ";
+		color: var(--ink-faint);
+		font-family: var(--mono);
+	}
+	tr.dim td { color: var(--ink-faint); }
+	.caseswitch { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+	.caseswitch .btn[aria-pressed="true"] {
+		background: var(--btn); color: var(--btn-ink); border-color: var(--btn);
+	}
+	.case[hidden] { display: none; }
+	.msgbox {
+		font: 13.5px/1.6 var(--sans);
+		border: 1px solid var(--line);
+		border-radius: 8px;
+		overflow: hidden;
+	}
+	.msgbox > .cap {
+		background: var(--sunken);
+		border-bottom: 1px solid var(--line);
+		padding: 6px 13px;
+		font: 600 11px/1.6 var(--mono);
+		letter-spacing: 0.04em;
+		color: var(--ink-faint);
+		text-transform: uppercase;
+	}
+	.msgbox > .body { padding: 13px 15px; }
+	.msgbox .title { font-weight: 600; display: block; margin-bottom: 5px; }
+	.msgbox.stop .title { color: var(--danger); }
+	.msgbox.pass .title { color: var(--decided); }
+	.msgbox .mono { font-size: 12.5px; }
+	.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+	@media (max-width: 720px) { .two { grid-template-columns: 1fr; } }
+	.whlist { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+	.whlist li {
+		font: 12.5px/1.5 var(--mono);
+		border: 1px solid var(--line);
+		border-radius: 20px;
+		padding: 3px 11px;
+		background: var(--sunken);
+	}
+	.whlist li.no { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); text-decoration: line-through; }
+	.whlist li.yes { border-color: var(--decided); color: var(--decided); background: var(--decided-bg); }
+
+	/* Pill trung tính: `.pill` trần trong hệ gốc chỉ có kiểu chữ, không nền — đứng cạnh
+	   pill có màu thì trông như lỗi hiển thị. Cho nền xám để nó vẫn là một viên. */
+	.pill:not(.ok):not(.short):not(.buy):not(.warn) {
+		background: var(--sunken);
+		color: var(--ink-soft);
+		box-shadow: inset 0 0 0 1px var(--line);
+	}
+</style>
+
+<div class="page">
+
+	<h1 class="doc-title">Chặn xuất kho quá tồn khả dụng</h1>
+	<p class="doc-meta">
+		Mockup <b>bản 1</b> · HKLED · PM Feature <code>PM-FEAT-00034</code> · 25/08/2026<br>
+		Tách từ mục 7.3 Phần IV. Dựng theo bản phân tích <code>PhanTich_TonKhaDung_va_CoCheGhim_v2</code>
+		của anh Thắng và quy tắc rẽ nhánh khách chốt ngày 25/08.
+	</p>
+
+	<p class="note ask">
+		<span class="tag">Đọc trước</span>
+		Mọi con số trong trang này là <b>số minh hoạ</b> để chốt bố cục và cách diễn đạt, không phải
+		số đo từ hệ thống. Mã hàng, tên hàng và tên kho thì lấy thật từ <code>hkled.com</code>.
+	</p>
+
+	<nav class="nav">
+		<a href="#a">A · Ô Ghim trên Đơn Bán</a>
+		<a href="#b">B · Kết quả Ghim</a>
+		<a href="#c">C · Khi chặn xuất kho</a>
+		<a href="#d">D · Kho nào vào pool</a>
+		<a href="#e">E · Bốn câu cần chốt</a>
+	</nav>
+
+	<!-- ══════════════════════════ A ══════════════════════════ -->
+	<h2 id="a">A. Ô Ghim trên Đơn Bán <span class="gap">mới</span></h2>
+	<p class="lede">
+		Ghim là <b>cấp chứng từ</b>, không phải từng dòng. Bấm là chụp ảnh tồn tại thời điểm đó và
+		xếp đơn vào hàng đợi ưu tiên theo <i>thời điểm ghim</i>.
+	</p>
+
+	<div class="screen">
+		<div class="screen-bar">
+			<span>Sales Order · SO-26-00147</span>
+			<span>Đã duyệt</span>
+		</div>
+		<div class="screen-body">
+			<div class="wo-head">
+				<div>
+					<div class="crumb">Bán hàng › Đơn Bán</div>
+					<h3>SO-26-00147 — Công ty TNHH Chiếu sáng Minh Long</h3>
+				</div>
+				<div class="actions">
+					<button class="btn sm" type="button">Tính lại</button>
+					<button class="btn sm primary" type="button">Xem chi tiết ghim</button>
+				</div>
+			</div>
+
+			<div class="switch">
+				<span class="tick" role="checkbox" aria-checked="true" tabindex="0"></span>
+				<label><b>Ghim tồn khả dụng</b> cho đơn này</label>
+			</div>
+			<p class="hint">
+				Thời điểm ghim: <span class="mono">25/08/2026 09:14:02</span> · quyết định thứ tự ưu tiên
+				khi hàng về. Bỏ tích là trả lại phần chưa dùng cho các đơn sau.
+			</p>
+
+			<div class="ok-msg">
+				Đã ghim. 2/3 dòng giữ chỗ được xuống tận nguyên vật liệu; 1 dòng chỉ giữ ở mức thành phẩm
+				vì chưa có công thức — xem mục B.
+			</div>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr>
+							<th>Mã hàng</th>
+							<th>Tên hàng</th>
+							<th class="n">SL đặt</th>
+							<th>Phương pháp bổ sung</th>
+							<th>Kết quả ghim</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td class="mono">DP01S200-6B3HN-AD</td>
+							<td>Đèn LED pha P01 SMD (Khung xám) 200W · Trắng 6.000–6.500K</td>
+							<td class="n">40</td>
+							<td>Sản xuất</td>
+							<td><span class="pill warn">Ghim theo công thức</span></td>
+						</tr>
+						<tr>
+							<td class="mono">DP02S1K5-3P5SL-BN</td>
+							<td>Đèn LED pha P02 SMD (Khung hộp kín) 1500W · Vàng 3.000–3.200K</td>
+							<td class="n">10</td>
+							<td>Sản xuất</td>
+							<td><span class="pill">Chỉ ghim thành phẩm</span></td>
+						</tr>
+						<tr>
+							<td class="mono">PLS-M30S200-L288-G70/140</td>
+							<td>Lens Module SMD 3030 200W · 288 mắt LED, góc 70/140</td>
+							<td class="n">120</td>
+							<td>Mua hàng</td>
+							<td><span class="pill ok">Ghim đủ</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<p class="note">
+		<span class="tag">Chốt của khách 25/08</span>
+		Mặt hàng <b>Sản xuất/Gia công</b> mà <b>đủ rule và có BOM Template</b> thì hệ thống tự sinh
+		công thức rồi bóc xuống nguyên vật liệu. <b>Chưa đủ rule hoặc chưa có template</b> thì
+		<b>chỉ ghim chính mặt hàng đó</b>, không bóc gì thêm.
+	</p>
+
+	<!-- ══════════════════════════ B ══════════════════════════ -->
+	<h2 id="b">B. Kết quả Ghim — ba trường hợp <span class="gap">mới</span></h2>
+	<p class="lede">
+		Đây là màn hình người bán hàng nhìn sau khi bấm Ghim. Bấm nút để xem từng trường hợp.
+	</p>
+
+	<div class="caseswitch" role="group" aria-label="Chọn trường hợp">
+		<button class="btn sm" type="button" data-case="sx" aria-pressed="true">1 · Sản xuất, đủ công thức</button>
+		<button class="btn sm" type="button" data-case="thieu" aria-pressed="false">2 · Sản xuất, chưa có công thức</button>
+		<button class="btn sm" type="button" data-case="mua" aria-pressed="false">3 · Mua hàng</button>
+	</div>
+
+	<!-- ---- 1. sản xuất, đủ công thức ---- -->
+	<div class="screen case" data-case="sx">
+		<div class="screen-bar">
+			<span>Chi tiết ghim · DP01S200-6B3HN-AD · đặt 40</span>
+			<span>Ghim lúc 09:14:02</span>
+		</div>
+		<div class="screen-body">
+			<div class="sum">
+				<div class="sum-verdict">
+					<span class="pill warn">Giữ được một phần</span>
+					<span class="txt">Giữ chỗ được <b>12/40</b> thành phẩm; phần thiếu đã bóc công thức xuống nguyên vật liệu.</span>
+				</div>
+				<p class="khau">
+					<span class="kh ok"><b>Đã giữ</b> <i>12</i></span>
+					<span class="kh short"><b>Còn thiếu</b> <i>28</i></span>
+					<span class="kh"><b>Cấp công thức</b> <i>2</i></span>
+				</p>
+			</div>
+
+			<div class="tbl-head">
+				<h4>Bóc theo cấp — chỉ bóc trên phần THIẾU</h4>
+				<span class="sub">28 chiếc chưa có sẵn mới phải làm, không bóc cả 40</span>
+			</div>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr>
+							<th>Mặt hàng</th>
+							<th class="n">Cần</th>
+							<th class="n">Tồn khả dụng</th>
+							<th class="n">Đã giữ</th>
+							<th class="n">Còn thiếu</th>
+							<th>Xử lý</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="lvl0">
+							<td class="mono">DP01S200-6B3HN-AD</td>
+							<td class="n">40</td><td class="n">12</td><td class="n">12</td><td class="n">28</td>
+							<td><span class="pill warn">Bóc công thức</span></td>
+						</tr>
+						<tr class="lvl1">
+							<td class="mono">VDP0X-200-AD</td>
+							<td class="n">28</td><td class="n">28</td><td class="n">28</td><td class="n">0</td>
+							<td><span class="pill ok">Đủ</span></td>
+						</tr>
+						<tr class="lvl1">
+							<td class="mono">M30S200-B</td>
+							<td class="n">28</td><td class="n">6</td><td class="n">6</td><td class="n">22</td>
+							<td><span class="pill warn">Bóc tiếp</span></td>
+						</tr>
+						<tr class="lvl2">
+							<td class="mono">PLS-M30S200-L288-G70/140</td>
+							<td class="n">22</td><td class="n">0</td><td class="n">0</td><td class="n">22</td>
+							<td><span class="pill buy">Cần mua</span></td>
+						</tr>
+						<tr class="lvl1">
+							<td class="mono">HCT-P01-200</td>
+							<td class="n">28</td><td class="n">40</td><td class="n">28</td><td class="n">0</td>
+							<td><span class="pill ok">Đủ</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<p class="hint">
+				Công thức lấy từ <span class="mono">BOM Template DP01S</span> — 8 thành phần:
+				Bộ vỏ đèn, Module, Ốc vít cố định module, Nguồn, Cầu đấu, Dây điện cấp nguồn,
+				Hộp carton, Xốp góc. Bảng trên rút gọn còn 4 dòng cho dễ nhìn.
+			</p>
+
+			<div class="ok-msg">
+				Đã tạo Yêu cầu Vật tư cho 22 <span class="mono">PLS-M30S200-L288-G70/140</span>.
+			</div>
+		</div>
+	</div>
+
+	<!-- ---- 2. sản xuất, chưa có công thức ---- -->
+	<div class="screen case" data-case="thieu" hidden>
+		<div class="screen-bar">
+			<span>Chi tiết ghim · DP02S1K5-3P5SL-BN · đặt 10</span>
+			<span>Ghim lúc 09:14:02</span>
+		</div>
+		<div class="screen-body">
+			<div class="sum">
+				<div class="sum-verdict">
+					<span class="pill">Chỉ ghim thành phẩm</span>
+					<span class="txt">Giữ chỗ được <b>0/10</b>. Chưa bóc được công thức nên không giữ chỗ nguyên vật liệu.</span>
+				</div>
+				<p class="khau">
+					<span class="kh ok"><b>Đã giữ</b> <i>0</i></span>
+					<span class="kh short"><b>Còn thiếu</b> <i>10</i></span>
+					<span class="kh"><b>Cấp công thức</b> <i>0</i></span>
+				</p>
+			</div>
+
+			<div class="alert">
+				<b>Chưa bóc được công thức cho mặt hàng này.</b><br>
+				Mặt hàng cha <span class="mono">DP02S</span> chưa có BOM Template. Đơn vẫn được ghim và vẫn
+				giữ vị trí trong hàng đợi, nhưng chỉ giữ chỗ ở mức thành phẩm — nguyên vật liệu để làm ra
+				nó <b>không được giữ chỗ</b>, đơn khác vẫn lấy đi được.
+			</div>
+
+			<p class="hint">
+				Khai đủ BOM Template và rule cho <span class="mono">DP02S</span> rồi bấm <b>Tính lại</b>
+				trên đơn thì dòng này sẽ tự bóc xuống nguyên vật liệu.
+			</p>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr>
+							<th>Mặt hàng</th>
+							<th class="n">Cần</th>
+							<th class="n">Tồn khả dụng</th>
+							<th class="n">Đã giữ</th>
+							<th class="n">Còn thiếu</th>
+							<th>Xử lý</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="lvl0">
+							<td class="mono">DP02S1K5-3P5SL-BN</td>
+							<td class="n">10</td><td class="n">0</td><td class="n">0</td><td class="n">10</td>
+							<td><span class="pill">Dừng ở đây</span></td>
+						</tr>
+						<tr class="lvl1 dim">
+							<td colspan="6">chưa có công thức — không bóc tiếp</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- ---- 3. mua hàng ---- -->
+	<div class="screen case" data-case="mua" hidden>
+		<div class="screen-bar">
+			<span>Chi tiết ghim · PLS-M30S200-L288-G70/140 · đặt 120</span>
+			<span>Ghim lúc 09:14:02</span>
+		</div>
+		<div class="screen-body">
+			<div class="sum">
+				<div class="sum-verdict">
+					<span class="pill ok">Giữ đủ</span>
+					<span class="txt">Giữ chỗ được <b>120/120</b>. Mặt hàng Mua hàng thì chỉ giữ chính nó, không bóc gì.</span>
+				</div>
+				<p class="khau">
+					<span class="kh ok"><b>Đã giữ</b> <i>120</i></span>
+					<span class="kh"><b>Còn thiếu</b> <i>0</i></span>
+				</p>
+			</div>
+
+			<div class="tw">
+				<table>
+					<thead>
+						<tr>
+							<th>Mặt hàng</th>
+							<th class="n">Cần</th>
+							<th class="n">Tồn khả dụng</th>
+							<th class="n">Đã giữ</th>
+							<th class="n">Còn thiếu</th>
+							<th>Xử lý</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="lvl0">
+							<td class="mono">PLS-M30S200-L288-G70/140</td>
+							<td class="n">120</td><td class="n">145</td><td class="n">120</td><td class="n">0</td>
+							<td><span class="pill ok">Đủ</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<p class="hint">
+				Tồn khả dụng 145 là tổng của <b>mọi kho hợp lệ</b>, không phải một kho — xem mục D.
+			</p>
+		</div>
+	</div>
+
+	<!-- ══════════════════════════ C ══════════════════════════ -->
+	<h2 id="c">C. Khi chặn xuất kho — chữ thủ kho nhìn thấy <span class="gap">mới</span></h2>
+	<p class="lede">
+		Đây là phần cần duyệt kỹ nhất: câu chặn xuất hiện đúng lúc người ta đang vội. Câu phải nói được
+		<b>thiếu bao nhiêu</b> và <b>vì sao</b>, không chỉ nói "không đủ tồn".
+	</p>
+
+	<div class="two">
+		<div class="msgbox stop">
+			<div class="cap">Chặn · Phiếu xuất kho không thuộc đơn nào</div>
+			<div class="body">
+				<span class="title">Không đủ tồn khả dụng để xuất kho</span>
+				<p style="margin:0 0 8px">
+					<span class="mono">PLS-M30S200-L288-G70/140</span> — Lens Module SMD 3030 200W<br>
+					Tồn khả dụng <b>25</b>, yêu cầu xuất <b>120</b> — <b>thiếu 95</b>.
+				</p>
+				<p style="margin:0" class="hint">
+					Phần còn lại đang được các đơn đã ghim giữ chỗ: SO-26-00147 giữ 120.
+				</p>
+			</div>
+		</div>
+
+		<div class="msgbox pass">
+			<div class="cap">Cho phép · Phiếu giao hàng của chính đơn đã ghim</div>
+			<div class="body">
+				<span class="title">Xuất từ phần đã giữ chỗ của SO-26-00147</span>
+				<p style="margin:0 0 8px">
+					<span class="mono">PLS-M30S200-L288-G70/140</span> — xuất <b>40</b>.<br>
+					Phần giữ chỗ còn lại của đơn: <b>120 → 80</b>.
+				</p>
+				<p style="margin:0" class="hint">
+					Tồn khả dụng chung <b>không đổi</b> — 40 chiếc này lấy từ phần đã giữ, không lấy từ phần chung.
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<p class="note ask">
+		<span class="tag">Cần anh Thắng duyệt chữ</span>
+		Ba chỗ cần chốt trong câu chặn: (1) có nêu <b>tên đơn đang giữ</b> không, hay chỉ nói "các đơn
+		đã ghim" — nêu tên thì tiện tra nhưng lộ thông tin đơn khác cho người không liên quan;
+		(2) gọi là <b>"tồn khả dụng"</b> hay <b>"tồn còn được dùng"</b>; (3) có nút bấm thẳng sang
+		tạo Yêu cầu Vật tư ngay trên thông báo không.
+	</p>
+
+	<p class="note">
+		<span class="tag">Đã chốt</span>
+		<b>Yêu cầu Vật tư không bị chặn.</b> Nó không làm giảm tồn, chặn ở đó là chặn một dự định.
+		Cùng lắm là <b>cảnh báo</b>.
+	</p>
+
+	<!-- ══════════════════════════ D ══════════════════════════ -->
+	<h2 id="d">D. Kho nào vào pool tồn khả dụng <span class="gap">mới</span></h2>
+	<p class="lede">
+		Tồn khả dụng gộp <b>toàn bộ kho</b>, trừ hai nhóm. Đây chính là chỗ cơ chế có sẵn của ERPNext
+		không đáp được — nó chỉ tính theo từng kho một.
+	</p>
+
+	<ul class="whlist">
+		<li class="yes">Kho thành phẩm - HKL</li>
+		<li class="yes">Kho bán thành phẩm - HKL</li>
+		<li class="yes">Kho nguyên vật liệu - HKL</li>
+		<li class="yes">Kho khuyến mãi/hàng mẫu - HKL</li>
+		<li class="yes">Kho ký gửi - HKL</li>
+		<li class="no">Kho hàng lỗi cần sửa chữa - HKL</li>
+		<li class="no">Kho hàng lỗi/trả - HKL</li>
+		<li class="no">Kho trung chuyển - HKL</li>
+		<li class="no">Kho đang sản xuất - HKL</li>
+	</ul>
+
+	<p class="hint" style="margin-top:10px">
+		Gạch đỏ = không tính vào pool, <b>cả hai chiều</b>. Chuyển hàng sang Kho đang sản xuất thì tồn
+		khả dụng <b>giảm</b>, không phải tăng — đây là chỗ dễ hiểu ngược nhất.
+	</p>
+
+	<p class="note ask">
+		<span class="tag">Cần khách xác nhận</span>
+		Danh sách trên suy từ tên nhóm kho đang có trên hệ thống: loại trừ mọi kho thuộc
+		<b>Nhóm kho lỗi</b> và <b>Nhóm kho trung chuyển</b>. Riêng <b>Kho ký gửi</b> và
+		<b>Kho khuyến mãi/hàng mẫu</b> em xếp vào pool theo suy đoán — hàng ký gửi có được tính là
+		bán được không thì em không tự quyết.
+	</p>
+
+	<!-- ══════════════════════════ E ══════════════════════════ -->
+	<h2 id="e">E. Bốn câu cần chốt trước khi code</h2>
+	<p class="lede">Không câu nào chặn việc duyệt mockup, nhưng cả bốn phải có đáp trước khi viết code.</p>
+
+	<ol class="qlist">
+		<li>
+			<span class="qn">1</span>
+			<p><b>Ai được phép sinh công thức?</b></p>
+			<p>Sinh BOM tự động hiện đòi người bấm có quyền tạo BOM, mà người tích ô Ghim là nhân viên
+			bán hàng. Đề nghị: thao tác Ghim tự sinh ở chế độ hệ thống, sale không cần thêm quyền —
+			thay vì cấp quyền tạo BOM cho sale.</p>
+		</li>
+		<li>
+			<span class="qn">2</span>
+			<p><b>Sinh công thức sẽ đổi BOM mặc định của mặt hàng.</b></p>
+			<p>Nếu BOM hiện tại còn khớp template thì giữ nguyên; lệch thì tạo mới và gỡ cờ mặc định của
+			bản cũ. Nghĩa là bản sửa tay của bên sản xuất có thể bị thay. Khách chấp nhận chứ?</p>
+		</li>
+		<li>
+			<span class="qn">3</span>
+			<p><b>Bấm Ghim mất bao lâu?</b></p>
+			<p>Đơn nhiều dòng có thể phải sinh cả cây công thức ngay lúc bấm. Chưa đo. Nếu lâu thì
+			chuyển sang chạy nền và hiện trạng thái "đang tính".</p>
+		</li>
+		<li>
+			<span class="qn">4</span>
+			<p><b>Bổ sung công thức sau khi đã ghim thì sao?</b></p>
+			<p>Hôm nay dòng rơi vào "chỉ ghim thành phẩm"; tuần sau template đủ. Tự bóc lại, hay phải bấm
+			<b>Tính lại</b>? Mockup đang vẽ theo hướng có nút Tính lại.</p>
+		</li>
+	</ol>
+
+	<h2>Một con số nên biết trước khi nghiệm thu</h2>
+	<p class="lede">
+		Đo trên <code>hkled.com</code> ngày 25/08 — không phải để phản đối, mà để không ai bất ngờ.
+	</p>
+
+	<div class="tw">
+		<table>
+			<thead><tr><th>Chỉ số</th><th class="n">Số</th><th>Nghĩa</th></tr></thead>
+			<tbody>
+				<tr><td>Mặt hàng khai <i>Sản xuất</i></td><td class="n">59.742</td><td>gần như toàn bộ đèn thành phẩm</td></tr>
+				<tr><td>Biến thể được 8 BOM Template phủ</td><td class="n">10.380</td><td>khoảng <b>17%</b></td></tr>
+				<tr><td>Mặt hàng đang có tồn</td><td class="n">6</td><td>trên toàn hệ thống</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<p class="note ask">
+		<span class="tag">Hệ quả thực tế</span>
+		Với <b>83%</b> mặt hàng chưa có template, Ghim rơi vào nhánh <i>chỉ ghim thành phẩm</i>. Mà đèn
+		thành phẩm gần như luôn tồn 0. Nên kết quả nhìn thấy sẽ là <b>"thiếu toàn bộ"</b> — đúng thiết
+		kế, nhưng dễ bị hiểu thành "bật lên mà chẳng giữ được gì". Nên thống nhất <b>phủ template tới
+		đâu thì bật tính năng</b>.
+	</p>
+
+	<p class="foot">
+		Mockup bản 1 · 25/08/2026 · dựng cho PM-FEAT-00034.<br>
+		Nguồn: bản phân tích <code>PhanTich_TonKhaDung_va_CoCheGhim_v2</code> (anh Thắng, 24/08) và quy
+		tắc rẽ nhánh khách chốt 25/08. Mã hàng, tên hàng, tên kho lấy thật từ <code>hkled.com</code>;
+		số lượng là số minh hoạ.
+	</p>
+
+</div>
+
+<script>
+	// Ô tích Ghim: bấm/Enter/Space đổi trạng thái, để người duyệt thử được cảm giác thật.
+	document.querySelectorAll('.tick[role="checkbox"]').forEach(function (t) {
+		function doi() {
+			t.setAttribute("aria-checked", t.getAttribute("aria-checked") === "true" ? "false" : "true");
+		}
+		t.addEventListener("click", doi);
+		t.addEventListener("keydown", function (e) {
+			if (e.key === "Enter" || e.key === " ") { e.preventDefault(); doi(); }
+		});
+	});
+
+	document.querySelectorAll(".caseswitch .btn").forEach(function (b) {
+		b.addEventListener("click", function () {
+			var chon = b.dataset.case;
+			document.querySelectorAll(".caseswitch .btn").forEach(function (x) {
+				x.setAttribute("aria-pressed", String(x.dataset.case === chon));
+			});
+			document.querySelectorAll(".case").forEach(function (s) {
+				s.hidden = s.dataset.case !== chon;
+			});
+		});
+	});
+</script>
