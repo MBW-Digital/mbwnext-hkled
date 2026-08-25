@@ -57,6 +57,12 @@ import re
 import frappe
 
 # Cột không phải đặc tính biến thể.
+#
+# ⚠ Bộ nạp đọc theo **TÊN CỘT**, không theo vị trí — xem `_khoa_bien_the`, `_nhom_san_pham`,
+# `_cot_dac_tinh`. Đây là chủ ý, vì file CSV trong `data/` **tải tay từ Google Sheet của khách**,
+# không do code nào sinh ra: thứ tự cột và cách đặt dấu nháy do khách quyết và có thể đổi bất cứ
+# lúc nào. Đọc theo tên thì khách đảo cột **không hỏng gì** — chỉ tạo một diff toàn file khó rà,
+# chứ không sai dữ liệu. Đổi sang đọc theo vị trí là mất tính chất đó.
 COT_CO_DINH = {
 	"Mã sản phẩm",
 	"Tên sản phẩm",
