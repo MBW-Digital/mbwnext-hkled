@@ -530,9 +530,9 @@
 
 	<h1 class="doc-title">Chặn xuất kho quá tồn khả dụng</h1>
 	<p class="doc-meta">
-		Mockup <b>bản 1</b> · HKLED · PM Feature <code>PM-FEAT-00034</code> · 25/08/2026<br>
+		Mockup <b>bản 2</b> · HKLED · PM Feature <code>PM-FEAT-00034</code> · 25/08/2026<br>
 		Tách từ mục 7.3 Phần IV. Dựng theo bản phân tích <code>PhanTich_TonKhaDung_va_CoCheGhim_v2</code>
-		của anh Thắng và quy tắc rẽ nhánh khách chốt ngày 25/08.
+		của anh Thắng, quy tắc rẽ nhánh khách chốt 25/08, và 4 chốt của anh Thắng chiều 25/08.
 	</p>
 
 	<p class="note ask">
@@ -546,7 +546,7 @@
 		<a href="#b">B · Kết quả Ghim</a>
 		<a href="#c">C · Khi chặn xuất kho</a>
 		<a href="#d">D · Kho nào vào pool</a>
-		<a href="#e">E · Bốn câu cần chốt</a>
+		<a href="#e">E · Đã chốt</a>
 	</nav>
 
 	<!-- ══════════════════════════ A ══════════════════════════ -->
@@ -844,7 +844,7 @@
 					Tồn khả dụng <b>25</b>, yêu cầu xuất <b>120</b> — <b>thiếu 95</b>.
 				</p>
 				<p style="margin:0" class="hint">
-					Phần còn lại đang được các đơn đã ghim giữ chỗ: SO-26-00147 giữ 120.
+					Phần còn lại đang được giữ chỗ cho đơn khác.
 				</p>
 			</div>
 		</div>
@@ -864,12 +864,10 @@
 		</div>
 	</div>
 
-	<p class="note ask">
-		<span class="tag">Cần anh Thắng duyệt chữ</span>
-		Ba chỗ cần chốt trong câu chặn: (1) có nêu <b>tên đơn đang giữ</b> không, hay chỉ nói "các đơn
-		đã ghim" — nêu tên thì tiện tra nhưng lộ thông tin đơn khác cho người không liên quan;
-		(2) gọi là <b>"tồn khả dụng"</b> hay <b>"tồn còn được dùng"</b>; (3) có nút bấm thẳng sang
-		tạo Yêu cầu Vật tư ngay trên thông báo không.
+	<p class="note">
+		<span class="tag">Đã chốt 25/08</span>
+		<b>Không nêu tên đơn đang giữ chỗ</b> — chỉ báo tồn không đủ. Tránh để người không liên quan
+		thấy đơn của khách khác. Và gọi thống nhất là <b>“Tồn khả dụng”</b> ở mọi nơi.
 	</p>
 
 	<p class="note">
@@ -902,45 +900,62 @@
 		khả dụng <b>giảm</b>, không phải tăng — đây là chỗ dễ hiểu ngược nhất.
 	</p>
 
-	<p class="note ask">
-		<span class="tag">Cần khách xác nhận</span>
-		Danh sách trên suy từ tên nhóm kho đang có trên hệ thống: loại trừ mọi kho thuộc
-		<b>Nhóm kho lỗi</b> và <b>Nhóm kho trung chuyển</b>. Riêng <b>Kho ký gửi</b> và
-		<b>Kho khuyến mãi/hàng mẫu</b> em xếp vào pool theo suy đoán — hàng ký gửi có được tính là
-		bán được không thì em không tự quyết.
+	<p class="note">
+		<span class="tag">Đã chốt 25/08</span>
+		<b>Kho ký gửi</b> và <b>Kho khuyến mãi/hàng mẫu</b> <b>CÓ</b> tính vào pool — em hỏi vì tự
+		suy đoán, nay khách xác nhận.
+		<br><br>
+		Và một chốt hay hơn: quy tắc trong hệ thống chỉ loại trừ <b>đúng hai nhóm</b>
+		<i>Nhóm kho lỗi</i> và <i>Nhóm kho trung chuyển</i>. Kho nào về sau không muốn tính vào pool
+		thì <b>chuyển kho đó vào một trong hai nhóm</b> — không phải sửa phần mềm. Thêm kho mới cũng
+		không phải sửa gì.
 	</p>
 
 	<!-- ══════════════════════════ E ══════════════════════════ -->
-	<h2 id="e">E. Bốn câu cần chốt trước khi code</h2>
-	<p class="lede">Không câu nào chặn việc duyệt mockup, nhưng cả bốn phải có đáp trước khi viết code.</p>
+	<h2 id="e">E. Đã chốt — và một chỗ phải cẩn thận khi code</h2>
+	<p class="lede">Bốn câu ở bản 1 đã có đáp ngày 25/08. Giữ lại đây để khỏi phải tra ngược bình luận.</p>
 
 	<ol class="qlist">
 		<li>
-			<span class="qn">1</span>
-			<p><b>Ai được phép sinh công thức?</b></p>
-			<p>Sinh BOM tự động hiện đòi người bấm có quyền tạo BOM, mà người tích ô Ghim là nhân viên
-			bán hàng. Đề nghị: thao tác Ghim tự sinh ở chế độ hệ thống, sale không cần thêm quyền —
-			thay vì cấp quyền tạo BOM cho sale.</p>
+			<span class="qn">✓</span>
+			<p><b>Ai được phép sinh công thức?</b> ➜ Chạy ở <b>chế độ hệ thống</b>.</p>
+			<p>Nhân viên bán hàng <b>không cần</b> quyền tạo BOM.</p>
 		</li>
 		<li>
-			<span class="qn">2</span>
-			<p><b>Sinh công thức sẽ đổi BOM mặc định của mặt hàng.</b></p>
-			<p>Nếu BOM hiện tại còn khớp template thì giữ nguyên; lệch thì tạo mới và gỡ cờ mặc định của
-			bản cũ. Nghĩa là bản sửa tay của bên sản xuất có thể bị thay. Khách chấp nhận chứ?</p>
+			<span class="qn">✓</span>
+			<p><b>Sinh công thức có đổi BOM mặc định không?</b> ➜ <b>Chỉ sinh khi mặt hàng chưa có BOM nào.</b></p>
+			<p>Đã có BOM rồi thì <b>không tạo gì</b>, chỉ tính theo công thức mẫu hiện tại. Việc tạo BOM
+			là của bộ phận sản xuất. Chốt này hay hơn đề xuất ban đầu của em (“đừng tạo gì cả”):
+			vẫn không bao giờ đè lên BOM đang có, mà mặt hàng mới vẫn có sẵn BOM để sản xuất dùng.</p>
 		</li>
 		<li>
-			<span class="qn">3</span>
-			<p><b>Bấm Ghim mất bao lâu?</b></p>
-			<p>Đơn nhiều dòng có thể phải sinh cả cây công thức ngay lúc bấm. Chưa đo. Nếu lâu thì
-			chuyển sang chạy nền và hiện trạng thái "đang tính".</p>
+			<span class="qn">✓</span>
+			<p><b>Bổ sung công thức sau khi đã ghim thì sao?</b> ➜ Phải bấm <b>Tính lại</b> trên đơn.</p>
+			<p>Không tự bóc lại — đúng như mockup đang vẽ.</p>
 		</li>
 		<li>
-			<span class="qn">4</span>
-			<p><b>Bổ sung công thức sau khi đã ghim thì sao?</b></p>
-			<p>Hôm nay dòng rơi vào "chỉ ghim thành phẩm"; tuần sau template đủ. Tự bóc lại, hay phải bấm
-			<b>Tính lại</b>? Mockup đang vẽ theo hướng có nút Tính lại.</p>
+			<span class="qn">✓</span>
+			<p><b>Độ phủ công thức mẫu mới ~17%.</b> ➜ Khách làm dần, cập nhật dần lên.</p>
+			<p>Nghĩa là ngày đầu phần lớn mặt hàng rơi vào nhánh <i>chỉ ghim thành phẩm</i> — xem số
+			bên dưới.</p>
+		</li>
+		<li>
+			<span class="qn">⚠</span>
+			<p><b>Chỗ phải cẩn thận khi code — không phải câu hỏi cho anh.</b></p>
+			<p>Hàm sinh BOM tự động đang có <b>không</b> làm đúng luật vừa chốt: nếu BOM hiện tại
+			<i>lệch</i> công thức mẫu thì nó <b>tạo lại và thay BOM mặc định</b>. Tức nếu bên sản xuất
+			chỉnh tay một BOM, rồi có người bấm Ghim, thì bản chỉnh tay bị thay mất.</p>
+			<p>Bên em sẽ chặn từ ngoài: <b>chỉ gọi sinh BOM khi mặt hàng chưa có BOM nào</b>, đúng chốt
+			của anh. Em ghi ra đây để anh biết chỗ này cần test kỹ, không phải để anh quyết.</p>
 		</li>
 	</ol>
+
+	<p class="note ask">
+		<span class="tag">Nhờ anh test đúng ca này</span>
+		Lấy một mặt hàng <b>đã có BOM</b>, sửa tay BOM đó cho khác công thức mẫu, rồi bấm Ghim trên
+		một đơn có mặt hàng đó. <b>BOM sửa tay phải còn nguyên.</b> Đây là ca hệ thống từng hỏng
+		thật một lần, nên em muốn nó nằm trong danh sách test ngay từ đầu.
+	</p>
 
 	<h2>Một con số nên biết trước khi nghiệm thu</h2>
 	<p class="lede">
@@ -967,7 +982,7 @@
 	</p>
 
 	<p class="foot">
-		Mockup bản 1 · 25/08/2026 · dựng cho PM-FEAT-00034.<br>
+		Mockup bản 2 · 25/08/2026 · dựng cho PM-FEAT-00034.<br>
 		Nguồn: bản phân tích <code>PhanTich_TonKhaDung_va_CoCheGhim_v2</code> (anh Thắng, 24/08) và quy
 		tắc rẽ nhánh khách chốt 25/08. Mã hàng, tên hàng, tên kho lấy thật từ <code>hkled.com</code>;
 		số lượng là số minh hoạ.

@@ -257,7 +257,80 @@ App đã có sẵn bộ giải thành phần từ template mà **không cần t�
 chính: `api/bom.py::get_active_template`, `resolve_components`, `get_template_raw_materials`.
 Ghim nên đi qua đường này. Không phải viết mới, chỉ là đấu nối.
 
-### ⚠ Ghim KHÔNG nên tạo BOM — chỉ đọc thành phần từ template
+### ✅ ĐÃ CHỐT 25/08 — sinh BOM, nhưng **chỉ khi mặt hàng chưa có BOM nào**
+
+Chốt của Thắng (`niacm7u6vk`), và nó **tốt hơn** phương án em đề xuất:
+
+| | Đề xuất của em | **Chốt của Thắng** |
+|---|---|---|
+| Mặt hàng **chưa có** BOM | không tạo gì | **tạo BOM** (chế độ hệ thống) |
+| Mặt hàng **đã có** BOM | không tạo gì | **không tạo gì**, chỉ tính theo BOM Template hiện tại |
+| Ai tạo BOM về sau | bộ phận sản xuất | bộ phận sản xuất |
+
+Em đề nghị "đừng tạo BOM gì cả" để né rủi ro ghi đè. Thắng chốt "chỉ tạo khi chưa có" —
+**vẫn diệt được rủi ro đó** (không bao giờ đè lên BOM đang tồn tại), mà lại tiện cho sản xuất vì
+mặt hàng mới có sẵn BOM dùng ngay. Giải bằng **luật nghiệp vụ** thay vì bằng cách né kỹ thuật.
+
+Chạy ở **chế độ hệ thống** nên nhân viên bán hàng không cần quyền tạo BOM.
+
+### 🔴 `auto_create_bom` KHÔNG làm đúng luật này — phải chặn trước khi gọi
+
+Đây là chỗ dễ vấp nhất khi code, vì đọc lướt sẽ tưởng gọi thẳng hàm có sẵn là xong.
+
+`auto_create_bom` gọi `is_bom_tree_valid()`, và **nếu BOM hiện tại lệch template thì nó tạo lại**,
+rồi `create_bom` gỡ cờ `is_default` của bản cũ. Tức đúng ca nguy hiểm:
+
+> Sản xuất chỉnh tay một BOM ➜ BOM đó lệch template ➜ nhân viên bán hàng bấm Ghim ➜ **bản chỉnh
+> tay bị thay mất**, trong khi xưởng đang chạy theo nó.
+
+App **đã vấp đúng chuyện này một lần** (xem *Bài học quan trọng* trong `CLAUDE.md`): ghi đè
+`is_default` lên BOM đang được Work Order thật tham chiếu, phải cancel và khôi phục tay.
+
+➜ Luồng Ghim **không được gọi thẳng** `auto_create_bom`. Chốt chặn phải nằm **bên ngoài**, kiểm
+trước khi gọi — không dựa vào `is_bom_tree_valid` bên trong, vì nó kiểm *"BOM có khớp template
+không"*, còn luật của Thắng là *"có BOM hay chưa"*. Hai câu hỏi khác nhau.
+
+```
+tpl = get_active_template(ma)
+nếu tpl là None                         -> chỉ ghim thành phẩm
+
+kq = get_template_raw_materials(ma)
+nếu kq rỗng / có "error" / qty_defaulted khác rỗng
+                                        -> chỉ ghim thành phẩm  (chưa đủ rule)
+
+nếu mặt hàng CHƯA có BOM nào            -> auto_create_bom(ma)   (chế độ hệ thống)
+                                           # chỉ ở nhánh này, và chỉ lần đầu
+netting theo kq["items"]                -> luôn tính từ Template, không đọc bản ghi BOM
+```
+
+⚠ Netting **luôn** lấy số liệu từ `get_template_raw_materials`, kể cả khi mặt hàng đã có BOM —
+đúng chốt của Thắng: *"nếu đã có BOM rồi thì chỉ thực hiện việc tính toán theo BOM Template hiện
+tại"*. Việc tạo BOM là **tác dụng phụ cho sản xuất**, không phải nguồn số liệu của Ghim.
+
+### Chữ và phạm vi — chốt 25/08 (`oqfdoo6eai`)
+
+| Chỗ | Chốt |
+|---|---|
+| Câu chặn xuất kho | **Chỉ báo tồn không đủ.** Không nêu tên đơn đang giữ chỗ |
+| Cách gọi | **"Tồn khả dụng"** |
+| `Kho ký gửi`, `Kho khuyến mãi/hàng mẫu` | **CÓ** tính vào pool |
+| Quy tắc kho | Loại trừ **đúng hai nhóm** `Nhóm kho lỗi` và `Nhóm kho trung chuyển`. Kho nào cần loại về sau thì **khách chuyển kho đó vào một trong hai nhóm** — code không hard-code danh sách kho |
+
+Ý cuối là chốt tốt: quy tắc trong code không bao giờ phải sửa khi khách thêm kho mới.
+
+### Ghim rồi mới bổ sung rule/template
+
+Chốt: phải bấm **Tính lại** trên đơn, không tự bóc lại.
+
+### Độ phủ BOM Template
+
+Thắng: *"anh sẽ đốc thúc khách làm dần để cập nhật dần lên"*. Tức chấp nhận triển khai dần —
+ngày đầu phần lớn mặt hàng rơi vào nhánh *chỉ ghim thành phẩm*. Không còn là câu chặn, nhưng
+**số liệu ở §5b vẫn phải nói với khách trước khi nghiệm thu**, kẻo hiểu thành "bật lên mà chẳng
+giữ được gì".
+
+### ~~Đề xuất cũ: Ghim không tạo BOM~~ — đã bị thay bởi chốt ở trên
+
 
 Ra ngày 25/08, sau khi đối chiếu chéo với phiên đang giữ mảng BOM (`ab01c6be`).
 
@@ -305,7 +378,7 @@ form BOM: **bấm nút + hộp thoại xác nhận** nói rõ *"sẽ tạo và D
 
 ---
 
-### Nhưng độ phủ template mới ~17% — câu này cần khách trả lời
+### Độ phủ template mới ~17% — khách chấp nhận làm dần (chốt 25/08)
 
 | | |
 |---|---|
@@ -334,13 +407,20 @@ theo phần mình vừa khảo sát.
 
 ## 7. Việc kế tiếp
 
-1. ~~Anh Thắng trả lời 2 câu ở §5~~ — **xong 25/08**, xem §5.
-2. **Khách trả lời câu độ phủ BOM Template ở §5b.** Đây là câu chặn duy nhất còn lại.
-3. Có đáp rồi mới dựng **mockup**: màn hình Ghim trên Đơn Bán + câu thông báo chặn (chữ thủ kho
-   nhìn thấy) + cách hiển thị phần thiếu. Khách duyệt mockup rồi mới code.
-4. Test case bắt buộc có `TC-REGR` liệt kê **đủ 8 chứng từ ở bảng §1.1** — đường B tự gánh cả 8,
-   thiếu một cái là thủng.
-5. Thêm cho đường B: `TC-VALID` phải phủ ca **mặt hàng Sản xuất không có template** (83% ở §5b) —
-   đúng nhánh cảnh báo của quy tắc 15.
+**Hết câu chặn nghiệp vụ.** Toàn bộ câu hỏi đã có đáp ngày 25/08.
+
+1. ~~Anh Thắng trả lời 2 câu ở §5~~ · ~~4 câu về cách sinh BOM~~ · ~~độ phủ template~~ — **xong 25/08**.
+2. **Mockup bản 2** theo 3 chốt về chữ ở §5b — xong, chờ Thắng duyệt.
+3. Còn chặn về **hạ tầng**, không phải nghiệp vụ: `enable_stock_reservation` đang bật trên
+   `hkled.com` từ đợt thử nghiệm 25/08, chưa tắt. Không tắt thì hai sổ giữ chỗ chạy song song và
+   mọi số đo đều nhiễu — xem §1.3 và §2 của `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`.
+4. Thứ tự code: **engine trước** (thuộc tính năng này), rồi hiển thị của Phần IV, rồi chặn xuất.
+   Xem `ghim-ton-kha-dung-toan-canh.md`.
+5. Test case bắt buộc:
+   - `TC-REGR` liệt kê **đủ 8 chứng từ ở bảng §1.1** — đường B tự gánh cả 8, thiếu một cái là thủng.
+   - `TC-VALID` phủ ca **mặt hàng Sản xuất không có template** (83% ở §5b) — nhánh *chỉ ghim thành phẩm*.
+   - `TC-VALID` phủ ca **mặt hàng ĐÃ có BOM lệch template** — phải chứng minh Ghim **không** đụng
+     `is_default`. Đây là ca app từng vấp, không được để tái phát.
+
 
 > Hạn 05/09/2026 để **tạm** cho đủ trường bắt buộc của PM — chưa phải hạn khách chốt.
