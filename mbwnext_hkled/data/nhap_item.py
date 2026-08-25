@@ -71,7 +71,17 @@ COT_CO_DINH = {
 	# "Chưa có Item Attribute 'Phương pháp bổ sung' trên site" — vỡ luôn `bench migrate`
 	# trên site cài mới. Đã vấp khi nạp sheet Lens (PM-TASK-00108).
 	"Phương pháp bổ sung",
+	# PM-TASK-00126: 16 file danh mục đợt 2 dùng thêm mấy tên cột này.
+	# ⚠ "Đơn vị tính" là TRƯỜNG `stock_uom` của Item, KHÔNG phải đặc tính biến thể. Thiếu dòng này
+	# là bộ nạp dừng ở "Chưa có Item Attribute 'Đơn vị tính' trên site" — đã vấp thật khi nạp đợt 2.
+	"Đơn vị tính",
+	# Hai cột dưới là cách file (SLP) và sheet "(M) Module (1)" gọi mã/tên biến thể — xem
+	# `_khoa_bien_the` và `_khoa_ten_bien_the`.
+	"Mã đặc tính",
+	"Tên đặc tính",
 }
+
+COT_DON_VI = "Đơn vị tính"
 
 # Cột trong bảng -> Item Attribute đã có trên site.
 # Không tạo đặc tính mới: đã đối chiếu giá trị và thấy trùng khít 100%.
@@ -124,18 +134,49 @@ def don_ten(ten):
 	return ", ".join(giu)
 
 
+# Ô có giá trị đúng bằng tên một cột — dấu hiệu dòng tiêu đề bị lặp lại giữa bảng.
+DONG_TIEU_DE_LAP = {"Mã sản phẩm", "Tên sản phẩm", "Nhóm sản phẩm", "Mã biến thể", "Tên biến thể",
+                    "Biến thể", "Mô tả", "Phương pháp bổ sung", "Đơn vị tính"}
+
+
 def _doc_csv(duong_dan):
+	"""Đọc CSV, bỏ dòng trống mã và **dòng tiêu đề lặp giữa bảng**.
+
+	⚠ Khách gộp nhiều bảng con vào một sheet nên tiêu đề xuất hiện lại ở giữa — file (TSE) có 6 dòng
+	như vậy, file (SLP) có 1. Không lọc thì bộ nạp tạo ra mặt hàng tên "Mã sản phẩm", và nó **không
+	báo lỗi gì**: mã hợp lệ, tên hợp lệ, nhóm hợp lệ. Đây không phải đoán ý khách — ô mã trùng khít
+	tên một cột thì chắc chắn là tiêu đề, không phải mã hàng.
+	"""
 	with open(duong_dan, encoding="utf-8") as f:
 		tat_ca = list(csv.DictReader(f))
 	dong = []
 	for r in tat_ca:
-		if (r.get("Mã sản phẩm") or "").strip():
-			dong.append(r)
+		ma_cha = (r.get("Mã sản phẩm") or "").strip()
+		if not ma_cha or ma_cha in DONG_TIEU_DE_LAP:
+			continue
+		dong.append(r)
 	return dong
 
 
+# Khách gọi cột mã biến thể bằng ba tên khác nhau tuỳ file. "Mã đặc tính" xuất hiện ở file (SLP)
+# và sheet "(M) Module (1)" — cùng nghĩa, không phải cột đặc tính. Đã đối chiếu dữ liệu: giá trị là
+# mã biến thể của mặt hàng cha ở cùng dòng, không phải tên đặc tính.
+KHOA_BIEN_THE = ("Mã biến thể", "Biến thể", "Mã đặc tính")
+KHOA_TEN_BIEN_THE = ("Tên biến thể", "Tên đặc tính")
+
+
 def _khoa_bien_the(dong):
-	return "Mã biến thể" if "Mã biến thể" in dong[0] else "Biến thể"
+	for k in KHOA_BIEN_THE:
+		if k in dong[0]:
+			return k
+	return KHOA_BIEN_THE[0]
+
+
+def _khoa_ten_bien_the(dong):
+	for k in KHOA_TEN_BIEN_THE:
+		if k in dong[0]:
+			return k
+	return KHOA_TEN_BIEN_THE[0]
 
 
 def _cot_dac_tinh(dong):
@@ -237,14 +278,16 @@ def sua_ten_neu_lech(ma, ten_dung):
 	return True
 
 
-def _tao_item(ma, ten, nhom, mo_ta=None, cha=None, dac_tinh=None, la_cha=False):
+def _tao_item(ma, ten, nhom, mo_ta=None, cha=None, dac_tinh=None, la_cha=False, don_vi=None):
 	if frappe.db.exists("Item", ma):
 		return False
 	doc = frappe.new_doc("Item")
 	doc.item_code = ma
 	doc.item_name = ten
 	doc.item_group = nhom
-	doc.stock_uom = DON_VI
+	# Đơn vị lấy từ file nếu có và site đã khai; không có thì dùng mặc định "Cái".
+	# Không tự tạo UOM mới — đó là danh mục dùng chung, tạo bừa là đẻ ra "Cái"/"cái"/"CÁI".
+	doc.stock_uom = don_vi if (don_vi and frappe.db.exists("UOM", don_vi)) else DON_VI
 	doc.is_stock_item = 1
 	doc.standard_rate = 0
 	if mo_ta:
@@ -280,7 +323,39 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 	if not dong:
 		return bc
 	kbt = _khoa_bien_the(dong)
+	ktbt = _khoa_ten_bien_the(dong)
 	cot_dt = _cot_dac_tinh(dong)
+
+	# 0. Hàng KHÔNG CÓ BIẾN THỂ: dòng có mã sản phẩm nhưng ô mã biến thể để trống.
+	#
+	# ⚠ 12 file đợt 1 (PM-TASK-00061) luôn có mã biến thể nên trường hợp này chưa từng xảy ra, và
+	# bản cũ xếp chúng vào `bo_qua["thieu_ma"]` rồi bỏ luôn — 16 file đợt 2 (PM-TASK-00126) có 85
+	# dòng như vậy, tức 85 mặt hàng biến mất mà báo cáo chỉ ghi "thiếu mã", rất dễ đọc lướt qua.
+	#
+	# Đây KHÔNG phải đoán ý khách: dòng có đủ mã sản phẩm + tên + nhóm, chỉ trống ô biến thể, thì
+	# đúng nghĩa là mặt hàng không có biến thể. Đã kiểm: không mã cha nào vừa có dòng biến thể vừa
+	# có dòng trống, nên không có chuyện nhầm dòng thừa thành mặt hàng riêng.
+	con_lai = []
+	co_bien_the = {(r.get("Mã sản phẩm") or "").strip() for r in dong if (r.get(kbt) or "").strip()}
+	for r in dong:
+		cha_r = (r.get("Mã sản phẩm") or "").strip()
+		if (r.get(kbt) or "").strip():
+			con_lai.append(r)
+			continue
+		if cha_r in co_bien_the:
+			# mã cha này đã có dòng biến thể ở chỗ khác — dòng trống là dòng thừa, bỏ đúng như cũ
+			bc["bo_qua"]["thieu_ma"] += 1
+			continue
+		nhom_r = (r.get("Nhóm sản phẩm") or "").strip()
+		if _tao_nhom(nhom_r):
+			bc["nhom_moi"].append(nhom_r)
+		if _tao_item(cha_r, (r.get("Tên sản phẩm") or "").strip(), nhom_r,
+		             (r.get("Mô tả") or "").strip() or None,
+		             don_vi=(r.get(COT_DON_VI) or "").strip() or None):
+			bc["hang_don_le"] += 1
+	dong = con_lai
+	if not dong:
+		return bc
 
 	# 1. gom theo mặt hàng cha, loại dòng hỏng
 	theo_ma = {}
@@ -350,10 +425,11 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 		if don_le:
 			for r in rs:
 				ma = (r.get(kbt) or "").strip()
-				ten = (r.get("Tên biến thể") or r.get("Tên sản phẩm") or "").strip()
+				ten = (r.get(ktbt) or r.get("Tên sản phẩm") or "").strip()
 				if don_ten_bien_the:
 					ten = don_ten(ten)
-				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None):
+				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None,
+				             don_vi=(r.get(COT_DON_VI) or "").strip() or None):
 					bc["hang_don_le"] += 1
 			continue
 
@@ -390,20 +466,21 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 
 		ten_bt = []
 		for r in rs:
-			t = (r.get("Tên biến thể") or "").strip()
+			t = (r.get(ktbt) or "").strip()
 			if don_ten_bien_the:
 				t = don_ten(t)
 			ten_bt.append(t)
 		ten_cha = ten_mat_hang_cha((rs[0].get("Tên sản phẩm") or "").strip(), ten_bt)
 
-		if _tao_item(cha, ten_cha, nhom, dac_tinh=dt_site, la_cha=True):
+		if _tao_item(cha, ten_cha, nhom, dac_tinh=dt_site, la_cha=True,
+		             don_vi=(rs[0].get(COT_DON_VI) or "").strip() or None):
 			bc["cha_moi"] += 1
 		elif sua_ten_neu_lech(cha, ten_cha):
 			bc["cha_doi_ten"] = bc.get("cha_doi_ten", 0) + 1
 
 		for r in rs:
 			ma = (r.get(kbt) or "").strip()
-			ten = (r.get("Tên biến thể") or "").strip()
+			ten = (r.get(ktbt) or "").strip()
 			if don_ten_bien_the:
 				ten = don_ten(ten)
 			cap = []
@@ -411,7 +488,8 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 				v = (r.get(a) or "").strip()
 				if v:
 					cap.append((DOI_TEN_DAC_TINH.get(a, a), gia_tri_chuan(a, v)))
-			if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha, dac_tinh=cap):
+			if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha, dac_tinh=cap,
+			             don_vi=(r.get(COT_DON_VI) or "").strip() or None):
 				bc["bien_the_moi"] += 1
 
 	return bc
@@ -443,7 +521,9 @@ def cap_nhat_phuong_phap():
 			dem = 0
 			for r in dong:
 				gia_tri = (r.get(COT_PHUONG_PHAP) or "").strip()
-				ma = (r.get(kbt) or "").strip()
+				# Hàng không có biến thể: mã nằm ở cột "Mã sản phẩm". Bản cũ chỉ đọc cột mã biến
+				# thể nên 85 mặt hàng loại này bị bỏ trắng Phương pháp bổ sung (PM-TASK-00126).
+				ma = (r.get(kbt) or "").strip() or (r.get("Mã sản phẩm") or "").strip()
 				if not ma or not gia_tri:
 					continue
 				hien = frappe.db.get_value("Item", ma, ["has_variants", TRUONG_PHUONG_PHAP])
