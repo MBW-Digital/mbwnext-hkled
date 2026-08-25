@@ -95,6 +95,23 @@ def resolve_components(item_code, template_name, warnings=None):
 	return components
 
 
+def find_missing_sub_assembly_boms(components):
+	"""Trong danh sách thành phần vừa tra, tìm những cái tự nó là bán thành phẩm có BOM Template
+	riêng (đèn -> vỏ + module, PM-FEAT-00007) nhưng CHƯA có BOM nào — ERPNext chỉ nối `bom_no` vào
+	BOM đã có sẵn (`get_bom_material_detail`), không tự tạo, nên những dòng này bị bỏ sót nếu không
+	nhắc riêng. Thắng phát hiện 24/08, TungDA chốt hướng cảnh báo + nút "Tạo BOM tự động" trên form.
+	"""
+	missing = []
+	for comp in components:
+		item_code = comp["item_code"]
+		if not get_active_template(item_code):
+			continue
+		if frappe.db.get_value("Item", item_code, "default_bom"):
+			continue
+		missing.append(item_code)
+	return missing
+
+
 @frappe.whitelist()
 def get_template_raw_materials(item_code):
 	"""NVL + số lượng suy từ BOM Template cho một biến thể — dùng để điền sẵn bảng Nguyên Vật Liệu
@@ -133,6 +150,7 @@ def get_template_raw_materials(item_code):
 		"item_template": frappe.db.get_value("Item", item_code, "variant_of"),
 		"items": components,
 		"qty_defaulted": warnings,
+		"missing_sub_assembly_boms": find_missing_sub_assembly_boms(components),
 	}
 
 
