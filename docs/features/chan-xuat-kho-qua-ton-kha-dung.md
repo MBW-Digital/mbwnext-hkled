@@ -222,6 +222,54 @@ App đã có sẵn bộ giải thành phần từ template mà **không cần t�
 chính: `api/bom.py::get_active_template`, `resolve_components`, `get_template_raw_materials`.
 Ghim nên đi qua đường này. Không phải viết mới, chỉ là đấu nối.
 
+### ⚠ Ghim KHÔNG nên tạo BOM — chỉ đọc thành phần từ template
+
+Ra ngày 25/08, sau khi đối chiếu chéo với phiên đang giữ mảng BOM (`ab01c6be`).
+
+Khách chốt nguyên văn: *"đủ rule và có BOM Template thì **tự sinh BOM**, rồi chạy tính toán ghim"*.
+Làm đúng chữ đó là gọi `auto_create_bom`, và kéo theo ba cái giá:
+
+| Giá | Chi tiết |
+|---|---|
+| Quyền | `auto_create_bom` đòi `frappe.has_permission("BOM", "create")`. Người tích ô Ghim là nhân viên bán hàng |
+| **Đổi dữ liệu gốc** | `create_bom` submit BOM mới rồi **gỡ cờ `is_default` của bản cũ**. App **đã vấp đúng chuyện này một lần** — ghi đè `is_default` lên BOM đang được Work Order thật tham chiếu, phải cancel và khôi phục tay (xem *Bài học quan trọng* trong `CLAUDE.md`) |
+| Lỗi trộn lẫn | `auto_create_bom` throw ở **4** chỗ, và tầng dưới (`build_bom_tree` → `resolve_components` → Server Script `bom_qty.py`) còn ~30 chỗ throw nữa. Bắt exception làm luồng điều khiển sẽ nuốt cả **lỗi cấu hình hệ thống** lẫn *"chưa đủ rule"* vào chung một nhánh |
+
+**Nhưng Ghim không cần bản ghi BOM.** Nó chỉ cần biết **NVL và số lượng** để trừ dần. Thứ đó lấy
+được mà không tạo gì:
+
+| Hàm (đã có sẵn, `api/bom.py`) | Trả về | Có throw? |
+|---|---|---|
+| `get_active_template(item_code)` | tên template, hoặc `None` | **không** — chỉ `db.get_value` |
+| `get_template_raw_materials(item_code)` | `{}` nếu không template · `{"error": …}` nếu tính không ra · `items` + `qty_defaulted` nếu được | **không** với lỗi công thức (cố ý; nó còn cắt `frappe.local.message_log` để trình duyệt khỏi hiện cụm đỏ). Chỉ throw khi thiếu quyền `BOM Template read` |
+
+➜ **Nhánh rẽ của khách viết được bằng đúng hai hàm này**, không cần `try/except` quanh
+`auto_create_bom`, không cần viết vị từ mới:
+
+```
+tpl = get_active_template(ma)
+nếu tpl là None                      -> chỉ ghim thành phẩm
+kq = get_template_raw_materials(ma)
+nếu kq rỗng, có "error", hoặc qty_defaulted khác rỗng
+                                     -> chỉ ghim thành phẩm  (chưa đủ rule)
+ngược lại                            -> netting theo kq["items"]
+```
+
+➜ Đi hướng này thì **hai câu đang treo ở §5b tự tan**: không cần cấp quyền `BOM create` cho nhân
+viên bán hàng (chỉ cần `BOM Template read`), và không đụng `is_default`.
+
+Tạo BOM thật vẫn xảy ra — nhưng ở **Production Plan / Work Order**, đúng chỗ nó đang nằm, do người
+có quyền bấm.
+
+⚠ Đây là chỗ **làm đúng chữ sẽ tệ hơn làm đúng ý**. Khách mô tả *cơ chế họ hình dung*
+("tự sinh BOM"), còn thứ họ *cần* là ghim được xuống NVL. Phải hỏi lại khách trước khi code —
+đã hỏi qua PM, dẫn chính tai nạn `is_default` ở trên làm căn cứ.
+
+Nếu khách vẫn muốn sinh BOM ngay lúc Ghim thì phương án dự phòng là cách mảng BOM đang làm trên
+form BOM: **bấm nút + hộp thoại xác nhận** nói rõ *"sẽ tạo và DUYỆT n BOM thật"*, không tạo ngầm.
+
+---
+
 ### Nhưng độ phủ template mới ~17% — câu này cần khách trả lời
 
 | | |
