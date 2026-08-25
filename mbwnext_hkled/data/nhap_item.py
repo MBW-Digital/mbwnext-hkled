@@ -57,6 +57,12 @@ import re
 import frappe
 
 # Cột không phải đặc tính biến thể.
+#
+# ⚠ Bộ nạp đọc theo **TÊN CỘT**, không theo vị trí — xem `_khoa_bien_the`, `_nhom_san_pham`,
+# `_cot_dac_tinh`. Đây là chủ ý, vì file CSV trong `data/` **tải tay từ Google Sheet của khách**,
+# không do code nào sinh ra: thứ tự cột và cách đặt dấu nháy do khách quyết và có thể đổi bất cứ
+# lúc nào. Đọc theo tên thì khách đảo cột **không hỏng gì** — chỉ tạo một diff toàn file khó rà,
+# chứ không sai dữ liệu. Đổi sang đọc theo vị trí là mất tính chất đó.
 COT_CO_DINH = {
 	"Mã sản phẩm",
 	"Tên sản phẩm",
@@ -71,7 +77,19 @@ COT_CO_DINH = {
 	# "Chưa có Item Attribute 'Phương pháp bổ sung' trên site" — vỡ luôn `bench migrate`
 	# trên site cài mới. Đã vấp khi nạp sheet Lens (PM-TASK-00108).
 	"Phương pháp bổ sung",
+	# PM-TASK-00126: 16 file danh mục đợt 2 dùng thêm mấy tên cột này.
+	# ⚠ "Đơn vị tính" là TRƯỜNG `stock_uom` của Item, KHÔNG phải đặc tính biến thể. Thiếu dòng này
+	# là bộ nạp dừng ở "Chưa có Item Attribute 'Đơn vị tính' trên site" — đã vấp thật khi nạp đợt 2.
+	"Đơn vị tính",
+	# Hai cột dưới là cách file (SLP) và sheet "(M) Module (1)" gọi mã/tên biến thể — xem
+	# `_khoa_bien_the` và `_khoa_ten_bien_the`.
+	"Mã đặc tính",
+	"Tên đặc tính",
+	# Cách file (PZK), (HCT) và 4 file "Nhóm I–IV" gọi cột nhóm sản phẩm — xem `_nhom_san_pham`.
+	"Item Group",
 }
+
+COT_DON_VI = "Đơn vị tính"
 
 # Cột trong bảng -> Item Attribute đã có trên site.
 # Không tạo đặc tính mới: đã đối chiếu giá trị và thấy trùng khít 100%.
@@ -88,15 +106,36 @@ DOI_TEN_DAC_TINH = {
 # một công suất, lọc báo cáo sẽ sót.
 # ⚠ Chỉ đưa vào đây thứ CHẮC CHẮN là cùng một giá trị. `Loại LED` có `3030` (PCB không kén hãng)
 # khác hẳn `Lumileds 3030` — đó là giá trị mới thật, không phải viết khác kiểu.
-CHUAN_HOA_GIA_TRI = {
-	"Công suất": {"1W": "1", "2W": "2", "5W": "5"},
-}
+CHUAN_HOA_GIA_TRI = {}
+
+# Đặc tính mà giá trị trong bảng có kèm đơn vị, còn trên site lưu SỐ TRẦN (đơn vị nằm ở `abbr`).
+# ⚠ Bản cũ chỉ liệt kê tay {"1W": "1", "2W": "2", "5W": "5"} vì 12 file đợt 1 hầu hết ghi số trần.
+# 16 file đợt 2 (PM-TASK-00126) ghi **toàn bộ** kèm "W" — nạp thẳng là site có cả `200` (59.959 item
+# cũ) lẫn `200W` (589 item mới) cho cùng một công suất, lọc báo cáo theo công suất sẽ **sót một
+# nửa mà không báo gì**. Đúng cái đã ghi trong CLAUDE.md. Cắt hậu tố cho mọi giá trị dạng số + đơn vị.
+CAT_DON_VI = {"Công suất": "W"}
+
+
+def gia_tri_so_tran(dac_tinh_bang, gia_tri):
+	"""Cắt hậu tố đơn vị nếu phần còn lại là số. `200W` -> `200`; `Điện áp cao` giữ nguyên."""
+	hau_to = CAT_DON_VI.get(dac_tinh_bang)
+	if not hau_to or not gia_tri:
+		return gia_tri
+	v = gia_tri.strip()
+	if v.upper().endswith(hau_to.upper()):
+		than = v[: -len(hau_to)].strip()
+		if re.fullmatch(r"[\d.]+", than):
+			return than
+	return v
 
 # Nhãn bị bỏ lại trơ trọi khi đặc tính tương ứng để trống — chỉ gặp ở sheet Ốc/vít/bulong,
 # nơi tên được ghép theo khuôn "<tên hàng>, Ren <x>, Đầu <y>, Khe <z>, <chất liệu>".
 NHAN_TRONG = ("Ren", "Đầu", "Khe")
 
 DON_VI = "Cái"
+
+# Tên savepoint dùng khi tạo biến thể — xem chỗ bắt `ValidationError` trong `nhap_mot_file`.
+DIEM_LUU = "nhap_item_bien_the"
 
 # PM-TASK-00067: cột khách thêm vào cả 11 sheet, đổ vào Custom Field cùng nghĩa trên Item.
 COT_PHUONG_PHAP = "Phương pháp bổ sung"
@@ -105,8 +144,11 @@ TRUONG_PHUONG_PHAP = "custom_replenishment_method"
 # Nguồn của *Phương pháp bổ sung* nằm ở HAI chỗ:
 #   data/danh_muc/     — vật tư, linh kiện (bảng của PM-TASK-00061, khách thêm cột vào đó)
 #   data/thanh_pham/   — đèn thành phẩm (4 file "Nhóm I…IV" trong thư mục Drive của PM-TASK-00067)
-# File thành phẩm chỉ giữ 3 cột cần dùng, không chép cả bảng: bản gốc là 4 Google Sheet nặng
-# ~10 MB, mà 30+ cột còn lại thuộc việc nhập danh mục đèn — không phải việc của task này.
+# ⚠ Bản đầu chỉ chép 3 cột của file thành phẩm, vì tưởng 4 Google Sheet gốc "nặng ~10 MB" là quá
+# sức cho git. **Đo lại thì sai**: 20 MB thô nhưng chỉ 0,64 MB sau nén, mà git lưu dạng nén. Cái
+# giá thật của việc cắt cột nằm chỗ khác: 59.023 đèn thành phẩm không có nguồn nào dựng lại được,
+# nên site cài mới chạy `bench migrate` xong vẫn thiếu chúng — và `import_bom_template` cần đúng
+# các biến thể đó mới tra được NVL. Nay chép đủ cột để `import_thanh_pham` dựng lại được từ số 0.
 THU_MUC_NGUON = ("danh_muc", "thanh_pham")
 
 
@@ -124,18 +166,63 @@ def don_ten(ten):
 	return ", ".join(giu)
 
 
+# Ô có giá trị đúng bằng tên một cột — dấu hiệu dòng tiêu đề bị lặp lại giữa bảng.
+DONG_TIEU_DE_LAP = {"Mã sản phẩm", "Tên sản phẩm", "Nhóm sản phẩm", "Item Group",
+                    "Mã biến thể", "Tên biến thể",
+                    "Biến thể", "Mô tả", "Phương pháp bổ sung", "Đơn vị tính"}
+
+
 def _doc_csv(duong_dan):
+	"""Đọc CSV, bỏ dòng trống mã và **dòng tiêu đề lặp giữa bảng**.
+
+	⚠ Khách gộp nhiều bảng con vào một sheet nên tiêu đề xuất hiện lại ở giữa — file (TSE) có 6 dòng
+	như vậy, file (SLP) có 1. Không lọc thì bộ nạp tạo ra mặt hàng tên "Mã sản phẩm", và nó **không
+	báo lỗi gì**: mã hợp lệ, tên hợp lệ, nhóm hợp lệ. Đây không phải đoán ý khách — ô mã trùng khít
+	tên một cột thì chắc chắn là tiêu đề, không phải mã hàng.
+	"""
 	with open(duong_dan, encoding="utf-8") as f:
 		tat_ca = list(csv.DictReader(f))
 	dong = []
 	for r in tat_ca:
-		if (r.get("Mã sản phẩm") or "").strip():
-			dong.append(r)
+		ma_cha = (r.get("Mã sản phẩm") or "").strip()
+		if not ma_cha or ma_cha in DONG_TIEU_DE_LAP:
+			continue
+		dong.append(r)
 	return dong
 
 
+# Khách gọi cột mã biến thể bằng ba tên khác nhau tuỳ file. "Mã đặc tính" xuất hiện ở file (SLP)
+# và sheet "(M) Module (1)" — cùng nghĩa, không phải cột đặc tính. Đã đối chiếu dữ liệu: giá trị là
+# mã biến thể của mặt hàng cha ở cùng dòng, không phải tên đặc tính.
+KHOA_BIEN_THE = ("Mã biến thể", "Biến thể", "Mã đặc tính")
+KHOA_TEN_BIEN_THE = ("Tên biến thể", "Tên đặc tính")
+
+
 def _khoa_bien_the(dong):
-	return "Mã biến thể" if "Mã biến thể" in dong[0] else "Biến thể"
+	for k in KHOA_BIEN_THE:
+		if k in dong[0]:
+			return k
+	return KHOA_BIEN_THE[0]
+
+
+# Khách gọi cột nhóm bằng hai tên: "Nhóm sản phẩm" (28 file danh mục) và "Item Group"
+# (file PZK, HCT và 4 file Nhóm I–IV). Cùng nghĩa.
+KHOA_NHOM = ("Nhóm sản phẩm", "Item Group")
+
+
+def _nhom_san_pham(r):
+	for k in KHOA_NHOM:
+		v = (r.get(k) or "").strip()
+		if v:
+			return v
+	return ""
+
+
+def _khoa_ten_bien_the(dong):
+	for k in KHOA_TEN_BIEN_THE:
+		if k in dong[0]:
+			return k
+	return KHOA_TEN_BIEN_THE[0]
 
 
 def _cot_dac_tinh(dong):
@@ -156,7 +243,8 @@ def _dau_van(r, cot):
 
 def gia_tri_chuan(dac_tinh_bang, gia_tri):
 	"""Giá trị đã chuẩn hoá theo tên cột TRONG BẢNG (trước khi đổi sang tên đặc tính trên site)."""
-	return CHUAN_HOA_GIA_TRI.get(dac_tinh_bang, {}).get(gia_tri, gia_tri)
+	gia_tri = CHUAN_HOA_GIA_TRI.get(dac_tinh_bang, {}).get(gia_tri, gia_tri)
+	return gia_tri_so_tran(dac_tinh_bang, gia_tri)
 
 
 def ten_mat_hang_cha(ten_cha, ten_cac_bien_the):
@@ -237,14 +325,16 @@ def sua_ten_neu_lech(ma, ten_dung):
 	return True
 
 
-def _tao_item(ma, ten, nhom, mo_ta=None, cha=None, dac_tinh=None, la_cha=False):
+def _tao_item(ma, ten, nhom, mo_ta=None, cha=None, dac_tinh=None, la_cha=False, don_vi=None):
 	if frappe.db.exists("Item", ma):
 		return False
 	doc = frappe.new_doc("Item")
 	doc.item_code = ma
 	doc.item_name = ten
 	doc.item_group = nhom
-	doc.stock_uom = DON_VI
+	# Đơn vị lấy từ file nếu có và site đã khai; không có thì dùng mặc định "Cái".
+	# Không tự tạo UOM mới — đó là danh mục dùng chung, tạo bừa là đẻ ra "Cái"/"cái"/"CÁI".
+	doc.stock_uom = don_vi if (don_vi and frappe.db.exists("UOM", don_vi)) else DON_VI
 	doc.is_stock_item = 1
 	doc.standard_rate = 0
 	if mo_ta:
@@ -280,7 +370,39 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 	if not dong:
 		return bc
 	kbt = _khoa_bien_the(dong)
+	ktbt = _khoa_ten_bien_the(dong)
 	cot_dt = _cot_dac_tinh(dong)
+
+	# 0. Hàng KHÔNG CÓ BIẾN THỂ: dòng có mã sản phẩm nhưng ô mã biến thể để trống.
+	#
+	# ⚠ 12 file đợt 1 (PM-TASK-00061) luôn có mã biến thể nên trường hợp này chưa từng xảy ra, và
+	# bản cũ xếp chúng vào `bo_qua["thieu_ma"]` rồi bỏ luôn — 16 file đợt 2 (PM-TASK-00126) có 85
+	# dòng như vậy, tức 85 mặt hàng biến mất mà báo cáo chỉ ghi "thiếu mã", rất dễ đọc lướt qua.
+	#
+	# Đây KHÔNG phải đoán ý khách: dòng có đủ mã sản phẩm + tên + nhóm, chỉ trống ô biến thể, thì
+	# đúng nghĩa là mặt hàng không có biến thể. Đã kiểm: không mã cha nào vừa có dòng biến thể vừa
+	# có dòng trống, nên không có chuyện nhầm dòng thừa thành mặt hàng riêng.
+	con_lai = []
+	co_bien_the = {(r.get("Mã sản phẩm") or "").strip() for r in dong if (r.get(kbt) or "").strip()}
+	for r in dong:
+		cha_r = (r.get("Mã sản phẩm") or "").strip()
+		if (r.get(kbt) or "").strip():
+			con_lai.append(r)
+			continue
+		if cha_r in co_bien_the:
+			# mã cha này đã có dòng biến thể ở chỗ khác — dòng trống là dòng thừa, bỏ đúng như cũ
+			bc["bo_qua"]["thieu_ma"] += 1
+			continue
+		nhom_r = _nhom_san_pham(r)
+		if _tao_nhom(nhom_r):
+			bc["nhom_moi"].append(nhom_r)
+		if _tao_item(cha_r, (r.get("Tên sản phẩm") or "").strip(), nhom_r,
+		             (r.get("Mô tả") or "").strip() or None,
+		             don_vi=(r.get(COT_DON_VI) or "").strip() or None):
+			bc["hang_don_le"] += 1
+	dong = con_lai
+	if not dong:
+		return bc
 
 	# 1. gom theo mặt hàng cha, loại dòng hỏng
 	theo_ma = {}
@@ -316,8 +438,13 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 
 	# 2. nạp từng mặt hàng cha
 	for cha, cac_bt in theo_cha.items():
+		# Chốt giao dịch theo từng mặt hàng cha. 4 file thành phẩm sinh 59.023 mặt hàng: dồn hết
+		# vào một giao dịch là ôm hàng trăm nghìn dòng chờ ghi, và mọi lỗi ngoài dự kiến (hết
+		# kết nối, timeout) xoá sạch công của cả lần `bench migrate`. Bộ nạp idempotent nên chốt
+		# sớm không mất gì — lần chạy sau bỏ qua phần đã có.
+		frappe.db.commit()
 		rs = list(cac_bt.values())
-		nhom = (rs[0].get("Nhóm sản phẩm") or "").strip()
+		nhom = _nhom_san_pham(rs[0])
 
 		# Đặc tính của mặt hàng cha = HỢP của mọi đặc tính mà biến thể của nó có giá trị.
 		# ⚠ Bản đầu ở đây bỏ qua cả mặt hàng cha khi các biến thể không dùng cùng một bộ đặc tính,
@@ -350,10 +477,11 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 		if don_le:
 			for r in rs:
 				ma = (r.get(kbt) or "").strip()
-				ten = (r.get("Tên biến thể") or r.get("Tên sản phẩm") or "").strip()
+				ten = (r.get(ktbt) or r.get("Tên sản phẩm") or "").strip()
 				if don_ten_bien_the:
 					ten = don_ten(ten)
-				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None):
+				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None,
+				             don_vi=(r.get(COT_DON_VI) or "").strip() or None):
 					bc["hang_don_le"] += 1
 			continue
 
@@ -390,20 +518,21 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 
 		ten_bt = []
 		for r in rs:
-			t = (r.get("Tên biến thể") or "").strip()
+			t = (r.get(ktbt) or "").strip()
 			if don_ten_bien_the:
 				t = don_ten(t)
 			ten_bt.append(t)
 		ten_cha = ten_mat_hang_cha((rs[0].get("Tên sản phẩm") or "").strip(), ten_bt)
 
-		if _tao_item(cha, ten_cha, nhom, dac_tinh=dt_site, la_cha=True):
+		if _tao_item(cha, ten_cha, nhom, dac_tinh=dt_site, la_cha=True,
+		             don_vi=(rs[0].get(COT_DON_VI) or "").strip() or None):
 			bc["cha_moi"] += 1
 		elif sua_ten_neu_lech(cha, ten_cha):
 			bc["cha_doi_ten"] = bc.get("cha_doi_ten", 0) + 1
 
 		for r in rs:
 			ma = (r.get(kbt) or "").strip()
-			ten = (r.get("Tên biến thể") or "").strip()
+			ten = (r.get(ktbt) or "").strip()
 			if don_ten_bien_the:
 				ten = don_ten(ten)
 			cap = []
@@ -411,8 +540,23 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 				v = (r.get(a) or "").strip()
 				if v:
 					cap.append((DOI_TEN_DAC_TINH.get(a, a), gia_tri_chuan(a, v)))
-			if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha, dac_tinh=cap):
-				bc["bien_the_moi"] += 1
+			# ERPNext chặn hai biến thể đụng cùng tổ hợp giá trị. Đoạn trên đã lọc các mã đụng
+			# nhau TRONG FILE, nhưng không thấy được mã đã có SẴN TRÊN SITE mang cùng tổ hợp.
+			# Bắt tại đây để một dòng hỏng không làm vỡ cả lần nạp — ghi vào báo cáo để hỏi khách.
+			#
+			# ⚠ Bản đầu bắt lỗi bằng `frappe.db.rollback()` TRẦN. Lệnh đó huỷ **cả giao dịch**
+			# từ lần commit gần nhất, tức một dòng hỏng cuốn theo mọi mặt hàng đã tạo trước đó
+			# trong cùng lần chạy — mà báo cáo vẫn đếm chúng là "đã tạo", nên hỏng im lặng.
+			# Với 910 mã đợt 2 thiệt hại còn nhỏ; với 59.023 đèn thành phẩm là mất trắng lần nạp.
+			# Savepoint chỉ huỷ đúng dòng hỏng, phần đã tạo giữ nguyên.
+			frappe.db.savepoint(DIEM_LUU)
+			try:
+				if _tao_item(ma, ten, nhom, (r.get("Mô tả") or "").strip() or None, cha=cha,
+				             dac_tinh=cap, don_vi=(r.get(COT_DON_VI) or "").strip() or None):
+					bc["bien_the_moi"] += 1
+			except frappe.exceptions.ValidationError:
+				frappe.db.rollback(save_point=DIEM_LUU)
+				bc["bo_qua"]["dung_to_hop_dac_tinh"].append(ma)
 
 	return bc
 
@@ -443,7 +587,9 @@ def cap_nhat_phuong_phap():
 			dem = 0
 			for r in dong:
 				gia_tri = (r.get(COT_PHUONG_PHAP) or "").strip()
-				ma = (r.get(kbt) or "").strip()
+				# Hàng không có biến thể: mã nằm ở cột "Mã sản phẩm". Bản cũ chỉ đọc cột mã biến
+				# thể nên 85 mặt hàng loại này bị bỏ trắng Phương pháp bổ sung (PM-TASK-00126).
+				ma = (r.get(kbt) or "").strip() or (r.get("Mã sản phẩm") or "").strip()
 				if not ma or not gia_tri:
 					continue
 				hien = frappe.db.get_value("Item", ma, ["has_variants", TRUONG_PHUONG_PHAP])
@@ -472,13 +618,25 @@ def cap_nhat_phuong_phap():
 	return bc
 
 
-def nhap_tat_ca():
-	"""Nạp toàn bộ file trong `data/danh_muc/`, trả về danh sách báo cáo theo từng file."""
-	thu_muc = thu_muc_du_lieu()
+def nhap_tat_ca(loc=None, ten_thu_muc="danh_muc"):
+	"""Nạp file trong `data/<ten_thu_muc>/`, trả về danh sách báo cáo theo từng file.
+
+	`loc` là hàm nhận tên file, trả về True nếu nạp. Bỏ trống thì nạp tất cả.
+	`ten_thu_muc` chọn nguồn: `danh_muc` (vật tư, linh kiện) hoặc `thanh_pham` (đèn thành phẩm).
+
+	⚠ Patch đợt 2 (PM-TASK-00126) truyền `loc` để **chỉ nạp 16 file của nó**. Nạp lại cả
+	12 file đợt 1 trên site đã có dữ liệu là chuốc lấy `ItemVariantExistsError`: bản CSV
+	đợt 1 trong repo vẫn còn 56 mã module ghi B5 mà Loại LED là Bridgelux 3030 — khách đã
+	sửa trên Google Sheet nhưng file trong repo chưa cập nhật, nên chúng đụng tổ hợp đặc
+	tính với 56 mã B3 đang có trên site.
+	"""
+	thu_muc = thu_muc_du_lieu(ten_thu_muc)
 	ket_qua = []
 	ten_file = sorted(os.listdir(thu_muc))
 	for f in ten_file:
 		if not f.endswith(".csv"):
+			continue
+		if loc and not loc(f):
 			continue
 		# chỉ sheet ốc/vít/bulong dựng tên theo khuôn có nhãn cụt; 10 sheet còn lại tên sạch
 		don = "oc-vit-bulong" in f
