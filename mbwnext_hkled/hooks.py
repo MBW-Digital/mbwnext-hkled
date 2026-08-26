@@ -24,12 +24,30 @@ app_license = "mit"
 # ➜ TRƯỚC KHI CÀI LÊN SITE THẬT: `bench --site <site> list-apps | grep localization`.
 #   Đã có thì an toàn. Chưa có mà site đã có dữ liệu thì DỪNG, hỏi trước.
 #
-# ⚠ KHÔNG CHẶN ĐƯỢC BẰNG CODE TỪ APP NÀY. Đã kiểm `frappe/installer.py`: `required_apps`
-# giải ở dòng 284-288, còn hook sớm nhất của app (`before_install`) mãi dòng 305 và
-# `before_app_install` dòng 310 — nghĩa là KHÔNG hook nào chạy trước, lúc mình có tiếng nói
-# thì localization đã cài xong và đã xoá xong. Chỗ duy nhất rào được là chính
-# `del_masterdataCore()` bên `mbwnext_localization` (app lõi, phải xin phép mới sửa).
-# Nên dòng cảnh báo này hiện là lớp bảo vệ duy nhất — đừng xoá nó đi cho gọn.
+# ⚠ KHÔNG CHẶN ĐƯỢC TỪ APP NÀY — nhưng KHÔNG PHẢI "không đâu chặn được".
+# Ghi rõ để người đọc sau khỏi tìm nhầm chỗ, hoặc ngừng tìm quá sớm.
+#
+# Chỗ xoá dữ liệu nằm ở LƯỢT GỌI TRONG: `install_app("mbwnext_hkled")` đệ quy sang
+# `install_app("mbwnext_localization")` tại dòng 287. Phải đọc thứ tự của lượt TRONG đó:
+#
+#     310  before_app_install       ← điểm chặn DUY NHẤT chạy trước lúc xoá
+#     325  after_install của localization -> del_masterdataCore() -> DELETE FROM
+#
+# `before_install` (305) và `before_app_install` (310) của lượt trong đều thuộc về
+# localization / các app đã cài, không phải app này. Còn ở lượt NGOÀI thì hook sớm nhất của
+# `mbwnext_hkled` là 305 — mãi sau 287, tức sau khi đã xoá xong. Nên từ app này: không kịp.
+#
+# ⚠ VÀ `before_app_install` CŨNG KHÔNG CỨU ĐƯỢC CA NÀY. `frappe.get_hooks("before_app_install")`
+# gom hook từ `get_installed_apps()` (`frappe/__init__.py::_load_app_hooks`) — tức chỉ các app
+# ĐÃ CÀI trên site. Lúc lượt trong chạy, `mbwnext_hkled` chưa được `add_to_installed_apps()`,
+# nên hook của chính nó KHÔNG bắn. Muốn dùng điểm này thì phải là một app lõi khác đã nằm sẵn
+# trên site đứng ra khai — mà đúng cảnh nguy hiểm nhất (site khách chỉ có app lõi) thì chưa
+# chắc có app nào chịu ôm. (Kết luận này đọc từ mã nguồn, CHƯA chạy thử.)
+#
+# ➜ Rào đúng chỗ nhất vẫn là chính `del_masterdataCore()` bên `mbwnext_localization`: nó là
+# nơi duy nhất biết chắc site có dữ liệu hay không, ngay trước khi xoá. App lõi, phải xin
+# phép mới sửa. Chừng nào chưa sửa được ở đó thì dòng cảnh báo phía trên là lớp bảo vệ duy
+# nhất đang thực sự tồn tại — đừng xoá nó đi cho gọn.
 
 # ── Vì sao đúng hai app này, không hơn không kém ──
 #
