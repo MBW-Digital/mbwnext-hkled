@@ -37,11 +37,27 @@ Dùng `db.set_value` chứ không `doc.save`: `variant_of` là trường chỉ-�
 import frappe
 
 
+# Liệt kê tường minh chứ không dò động từ `DocField`: danh sách này là thứ người sau
+# phải đọc được và cãi lại được. Dò động thì đúng hơn về lý thuyết nhưng biến rào an
+# toàn thành hộp đen, và mỗi phiên bản Frappe lại cho ra một tập khác nhau.
+#
+# ⚠ Bổ sung `BOM Item` và 6 bảng chứng từ sau khi phiên cozy-dev-a2 soi phía BOM và
+# chỉ ra rằng bản đầu thiếu chúng. Với 4 mã XOP thì cả 7 bảng cũ lẫn 7 bảng mới đều
+# ra 0 nên kết quả không đổi — nhưng patch chạy trên mọi site, và một biến thể đang
+# nằm trong BOM chuẩn ERPNext thì tuyệt đối không được đổi cha.
 BANG_THAM_CHIEU = (
 	("Stock Ledger Entry", "item_code"),
 	("Bin", "item_code"),
 	("BOM Rule", "item"),
 	("BOM Component Table", "item"),
+	("BOM Item", "item_code"),
+	("BOM", "item"),
+	("Work Order Item", "item_code"),
+	("Stock Entry Detail", "item_code"),
+	("Delivery Note Item", "item_code"),
+	("Purchase Receipt Item", "item_code"),
+	("Sales Invoice Item", "item_code"),
+	("Purchase Invoice Item", "item_code"),
 	("Sales Order Item", "item_code"),
 	("Purchase Order Item", "item_code"),
 	("Item Price", "item_code"),
@@ -89,8 +105,16 @@ def _dac_tinh_cua(ma):
 
 
 def _con_tham_chieu(ma):
+	"""Đếm dấu vết nghiệp vụ. Bảng chưa có trên site thì bỏ qua, không để vỡ migrate.
+
+	Site không cài đủ app (hoặc bản Frappe khác) có thể thiếu một vài bảng trong danh
+	sách. Đếm thẳng vào bảng không tồn tại là `OperationalError` giữa chừng migrate —
+	đúng kiểu hỏng đắt nhất, vì nó dừng cả loạt patch phía sau.
+	"""
 	dau_vet = {}
 	for dt, truong in BANG_THAM_CHIEU:
+		if not frappe.db.table_exists(dt):
+			continue
 		n = frappe.db.count(dt, {truong: ma})
 		if n:
 			dau_vet[dt] = n
