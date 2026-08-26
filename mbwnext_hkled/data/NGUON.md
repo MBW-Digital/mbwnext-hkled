@@ -23,7 +23,7 @@ không phải mốc chính xác. Từ nay tải file mới thì ghi thẳng ngà
 
 | File | Số dòng | sha256 (12 ký tự đầu) | Ngày vào repo |
 |---|---|---|---|
-| `00-o-oc-vit-bulong.csv` | 48 | `18bf3c8202e2` | 2026-08-11 |
+| `00-o-oc-vit-bulong.csv` | 51 | `f81b534d6838` | 2026-08-26 |
 | `01-pcb.csv` | 44 | `5526d54e32c0` | 2026-08-11 |
 | `02-led.csv` | 32 | `e63ed8fc729a` | 2026-08-11 |
 | `03-c-chip-led.csv` | 626 | `a8baeb4a4543` | 2026-08-11 |
@@ -60,30 +60,21 @@ không phải mốc chính xác. Từ nay tải file mới thì ghi thẳng ngà
 
 | `30-w-day-dien.csv` | 6 | `1c2fe7f1e496` | 2026-08-26 |
 | `31-xop-mut-xop.csv` | 5 | `7deac2cd726b` | 2026-08-26 |
-| `32-opg-oc-siet-cap.csv` | 3 | `d06399212394` | 2026-08-26 ⚠ |
 
-### ⚠ `32-opg-oc-siet-cap.csv` — FILE DUY NHẤT KHÔNG PHẢI KHÁCH GỬI
+### Từng có một file tạm, nay đã bỏ — ghi lại vì cách làm còn dùng lại được
 
-Mọi file khác trong `data/` đều tải từ Google Sheet của khách. **File này thì không** — nó do
-đội mình dựng ngày 26/08/2026 bằng cách **đọc ngược 4 mã `OPG` đang có trên `hkled.com`**.
+Sáng 26/08/2026 bốn mã `OPG` chưa có trong file nào, mà chúng chặn 4 BOM Template. Thay vì
+chờ khách soạn từ đầu, đã **đọc ngược dữ liệu 4 mã đó trên `hkled.com`** dựng thành bản nháp
+`32-opg-oc-siet-cap.csv`, rồi nhờ anh Thắng đưa khách soát — kèm chỉ rõ **hai ô cố ý để
+trống** (`Mô tả`, `Phương pháp bổ sung`) vì trên site không có dữ liệu đáng tin.
 
-Vì sao phải làm vậy: thành phần `Ốc dây điện` của 4 BOM Template module có NVL cố định là
-`OPG-M12-RM`, mà mã đó **không nằm trong file nào** — sheet `(O) Ốc, vít, bulong` của khách có
-47 dòng, không dòng nào là OPG. Thiếu nó thì 4 template không dựng được. Bốn mã này do
-Administrator tạo tay trên site ngày 18/08.
+Cùng chiều hôm đó khách bổ sung thẳng vào sheet `(O) Ốc, vít, bulong`, điền cả
+`Phương pháp bổ sung = Mua hàng` — đúng ô đã hỏi. File tạm **đã xoá**, 3 dòng nay nằm đúng
+chỗ trong `00-o-oc-vit-bulong.csv` (47 → 50 dòng).
 
-**Chép nguyên văn, không bịa ô nào.** Ô nào trên site không có thì để trống:
-
-| Cột | Vì sao trống |
-|---|---|
-| `Mô tả` | trên site chỉ chép lại tên mặt hàng; các dòng thật của sheet ghi công dụng — phải để khách điền |
-| `Phương pháp bổ sung` | trên site đang rỗng, trong khi mọi dòng khác của sheet `(O)` đều là *Mua hàng*. **Không tự điền** — đã hỏi khách |
-| `Độ dài` · `Hình dạng đầu` · `Kiểu khe vặn` | ốc siết cáp không có các thuộc tính này |
-
-⚠ **ĐÂY LÀ FILE TẠM.** Khi khách gửi bản chính thức thì **xoá file này đi** và để 4 mã nằm
-trong `00-o-oc-vit-bulong.csv` cho đúng chỗ. Cố ý tách ra file riêng thay vì chèn thẳng vào
-`00-…`: chèn vào thì lần sau khách gửi lại sheet `(O)`, mình ghi đè và **3 dòng này biến mất
-không ai hay**. Tách ra thì nó sống sót và nhìn thấy được.
+Cách này đáng dùng lại khi thiếu dữ liệu: **đưa bản nháp cho khách chê, đừng đưa form trống**
+— nhưng phải (a) chép nguyên văn, không bịa ô nào, (b) nói rõ ô nào trống và vì sao, (c) tách
+thành file riêng có đánh dấu để lúc thay còn thấy mà xoá.
 
 ## Sheet nguồn đã biết
 
