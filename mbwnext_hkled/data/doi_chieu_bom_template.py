@@ -55,8 +55,22 @@ bản trong file mới, và **bản mà bộ nạp đã ghi lần trước** (b�
 ⚠ **BẢN GỐC LÀ LẦN NẠP CUỐI, KHÔNG PHẢI `spec.json` HIỆN TẠI.** Chỗ này tôi kết luận sai
 một lần (commit `a13ed32` ghi bản gốc là `f155666`) — sửa lại ngày 26/08/2026:
 
-	BẢN GỐC của hkled.com = spec.json @ 8f8795b (22/08)   ← lần bộ nạp chạy cuối
-	spec.json @ f155666 (24/08)                            ← bản sửa CHƯA nạp
+	BẢN GỐC của hkled.com = spec.json @ HEAD               ← đúng lại từ 26/08/2026
+
+Trước 26/08 thì không phải vậy, và đây là lý do:
+
+	spec.json @ 8f8795b (22/08)   ← lần bộ nạp chạy cuối, site phản ánh bản này
+	spec.json @ f155666 (24/08)   ← lệch 4 dòng so với site, và LỆCH ĐÓ LÀ LỖI
+
+4 dòng lệch (`Ốc dây điện` của `M30S050-A/B`, `M50S050-A/B`) hoá ra **không phải bản sửa
+hợp lệ chưa nạp** — chúng là **lỗi đọc bảng khách**: chữ *"Theo rule"* trong bảng khách là
+SỐ LƯỢNG theo rule, NVL vẫn cố định; bản trích 24/08 dịch thành `"Theo Rule"` của hệ thống
+mình, nghĩa là NVL do rule quyết. Anh Thắng xác nhận 26/08. Đã sửa 4 dòng đó về `Cố Định`,
+và sau khi sửa thì lệnh này ra **0 lệch cả hai bảng** — site và file nói cùng một thứ.
+
+⚠ Bài học giữ lại: lệch giữa file và site có **ba** nguồn, không phải hai — file đổi chưa
+nạp · khách sửa tay · **và file sai**. Ca thứ ba nhìn giống hệt ca thứ nhất. Phân biệt bằng
+cách hỏi khách, không phải bằng dấu thời gian.
 
 Bằng chứng: mọi `BOM Rule` và `BOM Component Table` trên site đều mang `modified`
 `2026-08-22 10:49` — mốc nạp hàng loạt; sau đó không ai chạy lại bộ nạp, còn `spec.json` thì

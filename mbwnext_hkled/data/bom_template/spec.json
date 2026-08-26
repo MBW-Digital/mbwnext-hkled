@@ -6325,7 +6325,7 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Theo Rule",
+     "kieu": "Cố Định",
      "nvl": "OPG-M12-RM",
      "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
     }
@@ -6532,7 +6532,7 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Theo Rule",
+     "kieu": "Cố Định",
      "nvl": "OPG-M12-RM",
      "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
     }
@@ -6739,7 +6739,7 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Theo Rule",
+     "kieu": "Cố Định",
      "nvl": "OPG-M12-RM",
      "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
@@ -6882,7 +6882,7 @@
     },
     {
      "thanh_phan": "Ốc dây điện",
-     "kieu": "Theo Rule",
+     "kieu": "Cố Định",
      "nvl": "OPG-M12-RM",
      "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }

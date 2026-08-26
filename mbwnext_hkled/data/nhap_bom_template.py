@@ -61,7 +61,38 @@ CHUA_CO_DU_LIEU = {
 
 def _doc_spec():
 	with open(SPEC, encoding="utf-8") as f:
-		return json.load(f)
+		spec = json.load(f)
+	_canh_bao_theo_rule_lai(spec)
+	return spec
+
+
+def _canh_bao_theo_rule_lai(spec):
+	"""Bắt kiểu đọc nhầm bảng khách: *"Theo rule"* của khách là SỐ LƯỢNG theo rule, không phải NVL.
+
+	⚠ Đã vấp thật 26/08/2026. Bảng khách ghi thành phần `Ốc dây điện` như sau:
+
+	    Ốc dây điện | Theo rule | OPG-M12-RM | SL | Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1
+
+	Chữ *"Theo rule"* ở cột kiểu là **số lượng theo rule** — NVL thì cố định, luôn là
+	`OPG-M12-RM`. Nhưng `"Theo Rule"` trong hệ thống mình nghĩa **ngược lại**: NVL do rule
+	quyết, ô NVL để trống. Bản trích spec ngày 24/08 dịch thẳng chữ sang chữ nên 4 sheet
+	module mất NVL, không rule nào khớp, và **cả 4 BOM Template bị bỏ** — mà trên site không
+	ai thấy vì bản spec đó chưa từng được nạp.
+
+	Chữ ký của lỗi rất gọn, nên bắt được bằng máy: `kieu == "Theo Rule"` mà **`nvl` khác
+	rỗng**. Mọi thành phần "Theo Rule" thật đều có `nvl` rỗng — đã kiểm cả 44 mục trong spec,
+	chỉ đúng 4 mục hỏng có NVL. In cảnh báo chứ KHÔNG tự sửa: dịch sai ý khách là chuyện phải
+	hỏi khách, không phải đoán.
+	"""
+	for ten, sheet in (spec.get("sheets") or {}).items():
+		for t in sheet.get("thanh_phan") or []:
+			if t.get("kieu") == "Theo Rule" and (t.get("nvl") or "").strip():
+				print(
+					f"[mbwnext_hkled] ⚠ SPEC NGHI ĐỌC NHẦM — {ten} · {t['thanh_phan']}: "
+					f"kiểu 'Theo Rule' mà vẫn có NVL {t['nvl']!r}. Trong bảng khách "
+					f"'Theo rule' thường là SỐ LƯỢNG theo rule, NVL thì cố định — "
+					f"nếu đúng vậy thì kiểu phải là 'Cố Định'. Hỏi lại trước khi nạp."
+				)
 
 
 def _dac_tinh_bien_the(item_cha):
