@@ -155,6 +155,27 @@ import json
 import frappe
 
 
+# Chữ ký của MỘT lệch đã biết trước và vô hại — xem mục "Lệch dự kiến" trong docstring.
+# Spec `5f25811` đổi `Ốc dây điện` sang `Theo Rule` và chuyển NVL sang rule; site nào chưa nạp
+# lại thì lệch đúng hình dạng này.
+#
+# ⚠ TỰ HẾT HẠN, cố ý làm vậy: nạp xong thì `component_type` trên site thành `Theo Rule`, chữ ký
+# không còn khớp, và 4 dòng đó lập tức được tính là lệch THẬT. Không ai phải nhớ đi xoá đoạn
+# này. Ghi kỳ vọng bằng chữ trong tài liệu thì lần migrate sau người chạy vẫn chờ "4 lệch" và
+# vẫy qua một lệch thật — phiên BOM chỉ ra đúng chỗ đó.
+LECH_DU_KIEN = {
+	"thanh_phan": "Ốc dây điện",
+	"khac": {
+		"component_type": {"file": "Theo Rule", "site": "Số Lượng Theo Công Thức"},
+		"item": {"file": "", "site": "OPG-M12-RM"},
+	},
+}
+
+
+def _la_lech_du_kien(d):
+	return d.get("thanh_phan") == LECH_DU_KIEN["thanh_phan"] and d.get("khac") == LECH_DU_KIEN["khac"]
+
+
 def _chuan_attrs(v):
 	"""Chuẩn hoá cond_attrs về một chuỗi so sánh được: site lưu JSON, bộ dựng trả dict."""
 	if v is None or v == "":
@@ -298,11 +319,13 @@ def chay():
 		print(f"  {ten:<12}{s['so_rule_file']:>7}{s['so_rule_site']:>7}"
 		      f"{len(s['lech']):>7}{len(s['chi_co_site']):>12}{len(s['chi_co_file']):>12}")
 
-	ct_lech = ct_site = ct_file = 0
+	ct_lech = ct_site = ct_file = ct_du_kien = 0
 	print("\nBOM Component Table")
 	print(f"{'  sheet':<14}{'file':>7}{'site':>7}{'LỆCH':>7}{'chỉ ở site':>12}{'chỉ ở file':>12}")
 	for ten, s in bao["sheet"].items():
-		ct_lech += len(s["ct_lech"])
+		du_kien = [d for d in s["ct_lech"] if _la_lech_du_kien(d)]
+		ct_du_kien += len(du_kien)
+		ct_lech += len(s["ct_lech"]) - len(du_kien)
 		ct_site += len(s["ct_chi_co_site"])
 		ct_file += len(s["ct_chi_co_file"])
 		print(f"  {ten:<12}{s['ct_file']:>7}{s['ct_site']:>7}"
@@ -317,6 +340,10 @@ def chay():
 			print(f"  ⚠ Rule · {ten} · {d['thanh_phan']} · {d['dieu_kien']}: "
 			      f"chỉ có trên site, item={d['item']!r} (sửa {d['modified']})")
 		for d in s["ct_lech"]:
+			if _la_lech_du_kien(d):
+				print(f"  · DỰ KIẾN · {ten} · {d['thanh_phan']}: site chưa nạp spec mới "
+				      f"(sửa {d['modified']}) — nạp lại là hết")
+				continue
 			cts = ", ".join(f"{c}: file={v['file']!r} ≠ site={v['site']!r}"
 			                for c, v in d["khac"].items())
 			print(f"  ⚠ Thành phần · {ten} · {d['thanh_phan']}: {cts} (sửa {d['modified']})")
@@ -330,6 +357,10 @@ def chay():
 		print(f"  · ngoài spec: {d['bom_template']!r} (item {d['item_template']}, "
 		      f"is_active={d['is_active']}, {d['so_rule']} rule) — bộ nạp không đụng tới")
 
+	if ct_du_kien:
+		print(f"\n· {ct_du_kien} dòng lệch DỰ KIẾN (site chưa nạp spec mới) — không tính là lệch.")
+		print("  ⚠ Vẫn phải soi cột `sửa` của chúng: trùng mốc nạp hàng loạt thì yên tâm, muộn")
+		print("    hơn thì có người đụng tay, DỪNG. Đây là 4 dòng phép đếm không cứu được.")
 	tong = tong_lech + tong_site + ct_lech + ct_site
 	if tong:
 		print(f"\n🔴 CÓ {tong} dòng KHÁC với file ({tong_lech + tong_site} rule, "
