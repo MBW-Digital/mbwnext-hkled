@@ -52,23 +52,33 @@ bản trong file mới, và **bản mà bộ nạp đã ghi lần trước** (b�
 	site != gốc, file != gốc, site != file     -> ĐỤNG NHAU        -> báo, đừng đoán
 	site != gốc, file != gốc, site == file     -> trùng ý          -> không phải làm gì
 
-⚠ **BẢN GỐC HIỆN CÓ SẴN, MIỄN PHÍ — VÀ SẼ MẤT.** Ngày 25-26/08/2026 đã đo: 733/733 rule trên
-`hkled.com` khớp **tuyệt đối** với `spec.json` tại commit `f155666` (24/08,
-sha256 `cfca5e9de78e…`). Khách chưa sửa rule nào. Nên:
+⚠ **BẢN GỐC LÀ LẦN NẠP CUỐI, KHÔNG PHẢI `spec.json` HIỆN TẠI.** Chỗ này tôi kết luận sai
+một lần (commit `a13ed32` ghi bản gốc là `f155666`) — sửa lại ngày 26/08/2026:
 
-	BẢN GỐC của hkled.com = spec.json @ f155666
+	BẢN GỐC của hkled.com = spec.json @ 8f8795b (22/08)   ← lần bộ nạp chạy cuối
+	spec.json @ f155666 (24/08)                            ← bản sửa CHƯA nạp
 
-Không cần thêm trường vào DocType, không cần bảng phụ — chỉ cần `git show
-f155666:mbwnext_hkled/data/bom_template/spec.json`.
+Bằng chứng: mọi `BOM Rule` và `BOM Component Table` trên site đều mang `modified`
+`2026-08-22 10:49` — mốc nạp hàng loạt; sau đó không ai chạy lại bộ nạp, còn `spec.json` thì
+đã có thêm commit `f155666` ngày 24/08.
 
-Điều này **chỉ đúng chừng nào khách chưa sửa rule nào**. Khách sửa một rule rồi mới đi dựng
-bản gốc thì bản sửa đó bị coi là "bộ nạp đã ghi" và sẽ bị đè mất ở lần nạp sau — hỏng đúng
-thứ hướng B sinh ra để bảo vệ. Từ lúc đó trở đi muốn có bản gốc thì **bắt buộc phải lưu**
-(thêm trường vào `BOM Rule` ghi giá trị bộ nạp đã ghi, hoặc ghi mốc commit spec cho từng
-template).
+Vì sao sai mà phần rule vẫn khớp: đã đo, **hai bản spec sinh ra `bom_rules` giống hệt nhau**
+(733/733 với cả `8f8795b` lẫn `f155666`) — thay đổi 24/08 chỉ chạm `thanh_phan`. Nên với
+`bom_rules` thì nhầm bản gốc vô hại. Với `bom_component_table` thì **không**: 4 dòng
+`Ốc dây điện` của `M30S050-A/B` và `M50S050-A/B` đổi `kieu` từ `Cố Định` sang `Theo Rule`
+trong commit 24/08.
 
-➜ Chạy lệnh này trước khi làm phần hợp nhất. Còn ra `✅ 0 lệch` thì mốc trên còn dùng được;
-ra `🔴` rồi thì mốc đã hỏng, phải đổi cách.
+Đây chính là kiểu hỏng âm thầm mà hướng B sinh ra để chặn, chỉ khác chiều: lấy `f155666` làm
+bản gốc thì 4 dòng đó bị xếp nhầm là "khách sửa" → **GIỮ** → bản sửa 24/08 của đội mình
+không bao giờ vào được site, và không có gì báo. Xếp đúng (`site == gốc`, `file != gốc`) thì
+ra **ĐÈ**, đúng như mong muốn.
+
+➜ **Cách xác định bản gốc**: là commit `spec.json` cuối cùng **trước** lần bộ nạp chạy gần
+nhất. Lần nạp gần nhất đọc bằng `max(modified)` của `BOM Rule`. Đừng mặc định lấy HEAD.
+
+➜ Chạy lệnh này trước khi làm phần hợp nhất. Còn ra `✅ 0 lệch` thì bản gốc còn suy ra được
+từ git; ra `🔴` thì phải soi tiếp: lệch đó là **file đổi chưa nạp** hay **khách sửa thật** —
+hai thứ nhìn giống nhau nếu chỉ so hai bản.
 
 ## Cách kiểm chéo, KHÔNG dùng lệnh này
 
@@ -112,7 +122,12 @@ def _chuan_attrs(v):
 
 def so_sanh():
 	"""Trả về báo cáo dạng dict. Không in, không sửa gì."""
-	from mbwnext_hkled.data.nhap_bom_template import _dac_tinh_bien_the, _doc_spec, dung_rules
+	from mbwnext_hkled.data.nhap_bom_template import (
+		_dac_tinh_bien_the,
+		_doc_spec,
+		_so_luong,
+		dung_rules,
+	)
 
 	spec = _doc_spec()
 	bao = {"sheet": {}, "loi": dict(spec.get("loi") or {}), "ngoai_spec": []}
@@ -157,6 +172,44 @@ def so_sanh():
 				             "site": {"item": hien[0], "khong_su_dung": hien[1]},
 				             "modified": str(r.modified)})
 
+		# BẢNG THỨ HAI — `bom_component_table`. `nhap_mot_sheet()` xoá cả hai bảng
+		# (`doc.set(..., [])` hai dòng liền nhau), nên hợp nhất mà chỉ lo `bom_rules` là
+		# hướng B **vẫn thủng ở đây**. Và đây mới là chỗ `qty` sống: `BOM Rule` không có
+		# trường `qty` nào cả, số lượng thật đi vào BOM nằm ở bảng này.
+		ct_file = {}
+		for t in s["thanh_phan"]:
+			sl, _ly_do = _so_luong(t["sl_tho"])
+			kieu = t["kieu"]
+			# lặp lại đúng phép nâng kiểu của bộ nạp, nếu không sẽ báo lệch giả
+			if sl is None and kieu == "Cố Định":
+				kieu = "Số Lượng Theo Công Thức"
+			ct_file[t["thanh_phan"]] = {
+				"component_type": kieu,
+				"qty": float(sl if sl is not None else 0),
+				"item": (t["nvl"] if t["kieu"] != "Theo Rule" else None) or "",
+			}
+		ct_site, ct_lech, ct_chi_site = {}, [], []
+		if bt:
+			for r in frappe.get_all(
+				"BOM Component Table",
+				filters={"parent": bt, "parenttype": "BOM Template"},
+				fields=["bom_component", "component_type", "qty", "item", "modified"],
+				limit_page_length=0,
+			):
+				ct_site[r.bom_component] = r
+		for tp, r in ct_site.items():
+			f = ct_file.get(tp)
+			hien = {"component_type": r.component_type, "qty": float(r.qty or 0),
+			        "item": r.item or ""}
+			if f is None:
+				ct_chi_site.append({"thanh_phan": tp, "site": hien,
+				                    "modified": str(r.modified)})
+			else:
+				khac = {c: {"file": f[c], "site": hien[c]} for c in f if f[c] != hien[c]}
+				if khac:
+					ct_lech.append({"thanh_phan": tp, "khac": khac,
+					                "modified": str(r.modified)})
+
 		bao["sheet"][ten] = {
 			"bom_template": bt,
 			"so_rule_file": len(tu_file),
@@ -165,6 +218,11 @@ def so_sanh():
 			"chi_co_site": chi_site,
 			"chi_co_file": [{"thanh_phan": k[0], "cond_attrs": k[1]}
 			                for k in tu_file if k not in tren_site],
+			"ct_file": len(ct_file),
+			"ct_site": len(ct_site),
+			"ct_lech": ct_lech,
+			"ct_chi_co_site": ct_chi_site,
+			"ct_chi_co_file": [tp for tp in ct_file if tp not in ct_site],
 		}
 
 	for bt in frappe.get_all("BOM Template", fields=["name", "item_template", "is_active"]):
@@ -181,21 +239,40 @@ def chay():
 	"""Bản in ra màn hình, để gọi bằng `bench execute`."""
 	bao = so_sanh()
 	tong_lech = tong_site = tong_file = 0
-	print(f"{'sheet':<14}{'file':>7}{'site':>7}{'LỆCH':>7}{'chỉ ở site':>12}{'chỉ ở file':>12}")
+	print("BOM Rule")
+	print(f"{'  sheet':<14}{'file':>7}{'site':>7}{'LỆCH':>7}{'chỉ ở site':>12}{'chỉ ở file':>12}")
 	for ten, s in bao["sheet"].items():
 		tong_lech += len(s["lech"])
 		tong_site += len(s["chi_co_site"])
 		tong_file += len(s["chi_co_file"])
-		print(f"{ten:<14}{s['so_rule_file']:>7}{s['so_rule_site']:>7}"
+		print(f"  {ten:<12}{s['so_rule_file']:>7}{s['so_rule_site']:>7}"
 		      f"{len(s['lech']):>7}{len(s['chi_co_site']):>12}{len(s['chi_co_file']):>12}")
+
+	ct_lech = ct_site = ct_file = 0
+	print("\nBOM Component Table")
+	print(f"{'  sheet':<14}{'file':>7}{'site':>7}{'LỆCH':>7}{'chỉ ở site':>12}{'chỉ ở file':>12}")
+	for ten, s in bao["sheet"].items():
+		ct_lech += len(s["ct_lech"])
+		ct_site += len(s["ct_chi_co_site"])
+		ct_file += len(s["ct_chi_co_file"])
+		print(f"  {ten:<12}{s['ct_file']:>7}{s['ct_site']:>7}"
+		      f"{len(s['ct_lech']):>7}{len(s['ct_chi_co_site']):>12}{len(s['ct_chi_co_file']):>12}")
+	print()
 
 	for ten, s in bao["sheet"].items():
 		for d in s["lech"]:
-			print(f"  ⚠ {ten} · {d['thanh_phan']} · {d['dieu_kien']}: "
+			print(f"  ⚠ Rule · {ten} · {d['thanh_phan']} · {d['dieu_kien']}: "
 			      f"file={d['file']['item']!r} ≠ site={d['site']['item']!r} (sửa {d['modified']})")
 		for d in s["chi_co_site"]:
-			print(f"  ⚠ {ten} · {d['thanh_phan']} · {d['dieu_kien']}: "
+			print(f"  ⚠ Rule · {ten} · {d['thanh_phan']} · {d['dieu_kien']}: "
 			      f"chỉ có trên site, item={d['item']!r} (sửa {d['modified']})")
+		for d in s["ct_lech"]:
+			cts = ", ".join(f"{c}: file={v['file']!r} ≠ site={v['site']!r}"
+			                for c, v in d["khac"].items())
+			print(f"  ⚠ Thành phần · {ten} · {d['thanh_phan']}: {cts} (sửa {d['modified']})")
+		for d in s["ct_chi_co_site"]:
+			print(f"  ⚠ Thành phần · {ten} · {d['thanh_phan']}: chỉ có trên site "
+			      f"(sửa {d['modified']})")
 
 	for ten, loi in bao["loi"].items():
 		print(f"  ⚠ BỎ QUA sheet {ten}: {loi}")
@@ -203,9 +280,15 @@ def chay():
 		print(f"  · ngoài spec: {d['bom_template']!r} (item {d['item_template']}, "
 		      f"is_active={d['is_active']}, {d['so_rule']} rule) — bộ nạp không đụng tới")
 
-	if tong_lech or tong_site:
-		print(f"\n🔴 CÓ {tong_lech + tong_site} rule KHÁC với file. "
-		      f"Chạy `import_bom_template` bây giờ là GHI ĐÈ MẤT. Hỏi trước khi migrate.")
+	tong = tong_lech + tong_site + ct_lech + ct_site
+	if tong:
+		print(f"\n🔴 CÓ {tong} dòng KHÁC với file ({tong_lech + tong_site} rule, "
+		      f"{ct_lech + ct_site} thành phần).")
+		print("   ⚠ KHÁC KHÔNG CÓ NGHĨA LÀ KHÁCH SỬA. Hai khả năng nhìn giống hệt nhau:")
+		print("     · file đã đổi mà CHƯA nạp  -> nạp lại là đúng, không mất gì")
+		print("     · khách sửa trên màn hình  -> nạp lại là MẤT")
+		print("   Phân biệt bằng cột `sửa`: trùng mốc nạp hàng loạt gần nhất thì là file đổi;")
+		print("   lẻ ra mốc muộn hơn thì là khách sửa. Xem mục MỐC GỐC trong docstring.")
 	else:
-		print("\n✅ Không rule nào lệch — chạy lại `import_bom_template` không mất gì.")
+		print("\n✅ Không dòng nào lệch — chạy lại `import_bom_template` không mất gì.")
 	return bao
