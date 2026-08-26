@@ -6326,7 +6326,7 @@
     {
      "thanh_phan": "Ốc dây điện",
      "kieu": "Theo Rule",
-     "nvl": "OPG-M12-RM",
+     "nvl": "",
      "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
     }
    ],
@@ -6482,6 +6482,12 @@
       "Số lượng LED": "49"
      },
      "nvl": "PZK-M30S050-64L"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OPG-M12-RM"
     }
    ]
   },
@@ -6533,7 +6539,7 @@
     {
      "thanh_phan": "Ốc dây điện",
      "kieu": "Theo Rule",
-     "nvl": "OPG-M12-RM",
+     "nvl": "",
      "sl_tho": "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây diện SL 1"
     }
    ],
@@ -6689,6 +6695,12 @@
       "Số lượng LED": "49"
      },
      "nvl": "PZK-M30S050-64L"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OPG-M12-RM"
     }
    ]
   },
@@ -6740,7 +6752,7 @@
     {
      "thanh_phan": "Ốc dây điện",
      "kieu": "Theo Rule",
-     "nvl": "OPG-M12-RM",
+     "nvl": "",
      "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
    ],
@@ -6832,6 +6844,12 @@
       "Kiểu đấu": "Dây điện"
      },
      "nvl": "W-2x0.75-BK"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OPG-M12-RM"
     }
    ]
   },
@@ -6883,7 +6901,7 @@
     {
      "thanh_phan": "Ốc dây điện",
      "kieu": "Theo Rule",
-     "nvl": "OPG-M12-RM",
+     "nvl": "",
      "sl_tho": "Nếu Kiểu đấu: Cầu đấu thì SL 0 | Nếu Kiểu đấu: Dây diện thì SL 1"
     }
    ],
@@ -6975,6 +6993,12 @@
       "Kiểu đấu": "Dây điện"
      },
      "nvl": "W-2x0.75-BK"
+    },
+    {
+     "thanh_phan": "Ốc dây điện",
+     "moi_bien_the": true,
+     "cond": {},
+     "nvl": "OPG-M12-RM"
     }
    ]
   },

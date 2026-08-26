@@ -23,11 +23,11 @@ không phải mốc chính xác. Từ nay tải file mới thì ghi thẳng ngà
 
 | File | Số dòng | sha256 (12 ký tự đầu) | Ngày vào repo |
 |---|---|---|---|
-| `00-o-oc-vit-bulong.csv` | 48 | `18bf3c8202e2` | 2026-08-11 |
+| `00-o-oc-vit-bulong.csv` | 51 | `f81b534d6838` | 2026-08-26 |
 | `01-pcb.csv` | 44 | `5526d54e32c0` | 2026-08-11 |
 | `02-led.csv` | 32 | `e63ed8fc729a` | 2026-08-11 |
 | `03-c-chip-led.csv` | 626 | `a8baeb4a4543` | 2026-08-11 |
-| `04-m-module.csv` | 152 | `bdb151bb9dc5` | 2026-08-11 |
+| `04-m-module.csv` | 152 | `58492e409ed6` | 2026-08-26 |
 | `05-v-vo-den.csv` | 265 | `78f0e38a4a8c` | 2026-08-11 |
 | `06-n-nguon.csv` | 263 | `8a7b6536e55d` | 2026-08-11 |
 | `07-spd-chong-set.csv` | 16 | `f804ab807ccb` | 2026-08-11 |
@@ -58,6 +58,24 @@ không phải mốc chính xác. Từ nay tải file mới thì ghi thẳng ngà
 | `03-nhom-iii-chip-module.csv` | 4800 | `6f55158f505d` | 2026-08-17 |
 | `04-nhom-iv-khac.csv` | 8012 | `e7e0cb17ff99` | 2026-08-17 |
 
+| `30-w-day-dien.csv` | 6 | `1c2fe7f1e496` | 2026-08-26 |
+| `31-xop-mut-xop.csv` | 5 | `7deac2cd726b` | 2026-08-26 |
+
+### Từng có một file tạm, nay đã bỏ — ghi lại vì cách làm còn dùng lại được
+
+Sáng 26/08/2026 bốn mã `OPG` chưa có trong file nào, mà chúng chặn 4 BOM Template. Thay vì
+chờ khách soạn từ đầu, đã **đọc ngược dữ liệu 4 mã đó trên `hkled.com`** dựng thành bản nháp
+`32-opg-oc-siet-cap.csv`, rồi nhờ anh Thắng đưa khách soát — kèm chỉ rõ **hai ô cố ý để
+trống** (`Mô tả`, `Phương pháp bổ sung`) vì trên site không có dữ liệu đáng tin.
+
+Cùng chiều hôm đó khách bổ sung thẳng vào sheet `(O) Ốc, vít, bulong`, điền cả
+`Phương pháp bổ sung = Mua hàng` — đúng ô đã hỏi. File tạm **đã xoá**, 3 dòng nay nằm đúng
+chỗ trong `00-o-oc-vit-bulong.csv` (47 → 50 dòng).
+
+Cách này đáng dùng lại khi thiếu dữ liệu: **đưa bản nháp cho khách chê, đừng đưa form trống**
+— nhưng phải (a) chép nguyên văn, không bịa ô nào, (b) nói rõ ô nào trống và vì sao, (c) tách
+thành file riêng có đánh dấu để lúc thay còn thấy mà xoá.
+
 ## Sheet nguồn đã biết
 
 Bốn sheet dưới đây là các workbook đã dùng để tải. **Chưa map được từng file → từng sheet/gid**,
@@ -68,7 +86,7 @@ trừ trường hợp ghi rõ bên dưới.
 | `13WwnFkR4RjsQ0Dx5RcirO9k7UD8f7StLIeUwuJoMig8` | *(chưa xác định)* |
 | `1bu7QScvClDFbZHske_YtIPCdhc_Pv2Pj5hJD9rs4PEc` | *(chưa xác định)* |
 | `1J9-mwkS8a4uKhEv0p6iAYM2w45n7K4nM56AOEpS2NHQ` | *(chưa xác định)* |
-| `1jX3qxiPOvM2rif23s6hcmztRM9V9CLIAb2KTtYqx1tc` | *(chưa xác định)* |
+| `1jX3qxiPOvM2rif23s6hcmztRM9V9CLIAb2KTtYqx1tc` | **`04-m-module` · `30-w-day-dien` · `31-xop-mut-xop`** (xác định 26/08/2026) |
 
 Trường hợp đã truy được rõ:
 
@@ -78,6 +96,31 @@ Trường hợp đã truy được rõ:
   sheet đầu tiên. Phải dùng `&gid=<số>`, lấy gid bằng cách bấm vào tab rồi đọc trên thanh địa chỉ.
 - `thanh_pham/01..04-*.csv` — 4 sheet *Nhóm I–IV*, tải **25/08/2026**, thay bản 3 cột cũ bằng bản
   đủ 11–13 cột.
+
+## Lỗ hổng đã biết trong dữ liệu nguồn
+
+### ✅ ĐÃ VÁ 26/08/2026 — hai lỗ hổng dưới đây đã đóng
+
+Cả hai do anh Thắng lấy từ khách sau `PM-TASK-00130`, tải về cùng ngày.
+
+**`04-m-module.csv` trống cột *Nhóm sản phẩm* (cả 152/152 dòng, 8 mã cha).** Khách đã điền.
+Đã đối chiếu bản mới với bản cũ: **đúng 152 ô thay đổi, toàn bộ ở cột `Nhóm sản phẩm`,
+`'' → '(M) Module'`** — không ô nào khác bị sửa, không thêm bớt dòng hay cột. Ghi lại phép
+đối chiếu này vì đó là cách duy nhất biết khách chỉ điền chứ không sửa gì thêm.
+
+**Thiếu hẳn 2 nhóm `(W) Dây điện` và `(XOP) Mút, xốp`** — không mã nào nằm trong 30 file cũ.
+Nay có `30-w-day-dien.csv` (7 mã) và `31-xop-mut-xop.csv` (7 mã).
+
+⚠ **`31-xop-mut-xop.csv` có cây KHÁC với `hkled.com`.** File khách có **hai** mặt hàng cha:
+`XOP-GOC` *(Xốp chèn góc hộp)* 1 biến thể, và `XOP-DDG` *(Xốp chèn đầu đèn đường)* 4 biến thể.
+Trên `hkled.com` chỉ có một cha `XOP-GOC`, và **cả 4 mã DDG bị gán làm biến thể của nó** — sai
+nghiệp vụ, xốp chèn đầu đèn đường không phải biến thể của xốp chèn góc hộp. Bản của khách đúng
+hơn. Hệ quả: site dựng từ file có `XOP-DDG` mà `hkled.com` không có, và cây trên `hkled.com`
+vẫn sai cho tới khi ai đó sửa tay (bộ nạp gặp mã đã có thì bỏ qua, không sửa cây).
+
+⚠ **Ba Item Attribute mới đi kèm**: `Số lõi`, `Tiết diện`, `Màu dây` (từ sheet dây điện). Đã thêm
+vào `patches/seed_item_attribute.py` — thiếu chúng thì `_bao_dam_gia_tri` throw và cả lượt nạp
+danh mục dừng giữa chừng. Đã quét toàn bộ 32 file: **không còn đặc tính nào khác bị thiếu.**
 
 ## Việc nên làm, chưa làm
 

@@ -1,7 +1,7 @@
 # Copyright (c) 2026, MBWD and contributors
 # For license information, please see license.txt
 
-"""Tạo sẵn 77 Item Attribute mà bộ nạp danh mục cần (PM-TASK-00126).
+"""Tạo sẵn 80 Item Attribute mà bộ nạp danh mục cần (PM-TASK-00126).
 
 **Vấn đề patch này chữa.** `nhap_item._bao_dam_gia_tri()` cố tình `frappe.throw` khi Item
 Attribute chưa tồn tại, thay vì tự tạo — thêm một đặc tính là quyết định về mô hình dữ
@@ -71,6 +71,10 @@ DAC_TINH = (
 	"Model",
 	"Màu sơn",
 	"Màu ánh sáng",
+	# Ba đặc tính Màu dây / Số lõi / Tiết diện do sheet (W) Dây điện mang vào, 26/08/2026.
+	# Thiếu chúng thì `_bao_dam_gia_tri` throw và cả lượt nạp danh mục dừng giữa chừng.
+	# Chúng KHÔNG xếp liền nhau — mỗi cái nằm đúng vị trí bảng chữ cái của nó.
+	"Màu dây",
 	"Mạch",
 	"Nguồn",
 	"Phân loại",
@@ -91,10 +95,12 @@ DAC_TINH = (
 	"Quang thông",
 	"Rộng",
 	"Số lõi (Số cực)",
+	"Số lõi",
 	"Số lượng LED",
 	"Số mắt LED",
 	"Thương hiệu",
 	"Tính năng",
+	"Tiết diện",
 	"Tăng cứng khung móng",
 	"Version",
 	"Vật liệu",

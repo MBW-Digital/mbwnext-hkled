@@ -18,7 +18,7 @@ Bảng nguồn có lỗi thật (trùng mã, thiếu ô, mã ghép hụt). Bộ 
 điền ô trống, không tự chọn giữa hai dòng mâu thuẫn**. Dòng nào không xử lý được thì bỏ qua và ghi
 vào báo cáo để hỏi khách. Đoán một cái mã sai rồi để nó chạy vào chứng từ thật thì gỡ rất đắt.
 
-Ba nhóm bị bỏ qua, xem `bao_cao["bo_qua"]`:
+Bốn nhóm bị bỏ qua, xem `bao_cao["bo_qua"]`:
 
 1. **Trùng mã biến thể, nội dung khác nhau** — cùng một mã gán cho hai sản phẩm khác nhau.
    Ví dụ thật: `CM30S050-6P3-5C` có hai dòng, một dòng 64 LED một dòng 50 LED — mã không mã hoá số
@@ -26,6 +26,11 @@ Ba nhóm bị bỏ qua, xem `bao_cao["bo_qua"]`:
 2. **Mã biến thể để trống**.
 3. **Mã ghép hụt** — ví dụ `-BN` ở sheet Vỏ đèn: công thức trong bảng tính mất phần đầu, còn mỗi
    hậu tố, 3 dòng khác công suất dùng chung một "mã".
+4. **Thiếu Nhóm sản phẩm** — `item_group` là trường bắt buộc của Item. Trước 25/08/2026 chỗ này
+   không được bắt: bộ nạp truyền chuỗi rỗng xuống `Item.insert()` và **ném lỗi giữa chừng**, giết
+   cả lượt cài app trên site mới (đo trên site trắng `test.com`: chết ở mặt hàng thứ 853). Trên
+   `hkled.com` không ai thấy vì 8 mã đó đã có sẵn từ trước nên bộ nạp bỏ qua. Nhóm là dữ liệu của
+   khách — không tự suy từ tên file, bỏ qua và hỏi.
 
 Trùng mã mà **nội dung giống hệt** thì không phải lỗi — chỉ là dòng lặp, giữ dòng đầu.
 
@@ -364,7 +369,7 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 		"hang_don_le": 0,
 		"lap_y_het": 0,
 		"bo_qua": {"trung_ma_khac_noi_dung": [], "cha_lech_dac_tinh": [], "thieu_ma": 0,
-		           "dung_to_hop_dac_tinh": []},
+		           "dung_to_hop_dac_tinh": [], "thieu_nhom": []},
 	}
 	dong = _doc_csv(duong_dan)
 	if not dong:
@@ -394,6 +399,9 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 			bc["bo_qua"]["thieu_ma"] += 1
 			continue
 		nhom_r = _nhom_san_pham(r)
+		if not nhom_r:
+			bc["bo_qua"]["thieu_nhom"].append(cha_r)
+			continue
 		if _tao_nhom(nhom_r):
 			bc["nhom_moi"].append(nhom_r)
 		if _tao_item(cha_r, (r.get("Tên sản phẩm") or "").strip(), nhom_r,
@@ -445,6 +453,11 @@ def nhap_mot_file(duong_dan, don_ten_bien_the=False):
 		frappe.db.commit()
 		rs = list(cac_bt.values())
 		nhom = _nhom_san_pham(rs[0])
+		if not nhom:
+			# Bỏ cả mặt hàng cha lẫn mọi biến thể của nó: biến thể thừa hưởng nhóm từ cha,
+			# tạo cha bằng nhóm bịa ra là sai xuyên suốt cây.
+			bc["bo_qua"]["thieu_nhom"].append(cha)
+			continue
 
 		# Đặc tính của mặt hàng cha = HỢP của mọi đặc tính mà biến thể của nó có giá trị.
 		# ⚠ Bản đầu ở đây bỏ qua cả mặt hàng cha khi các biến thể không dùng cùng một bộ đặc tính,

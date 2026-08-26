@@ -143,6 +143,27 @@ nút. Đây là ràng buộc đã chốt: *không đụng Stock Balance / Stock 
 > ➜ **Trước khi code Phần IV, phải tắt `enable_stock_reservation` về 0** và dọn SRE do đợt thử
 > nghiệm sinh ra. Không tắt thì dev và test đều đo trên nền đã nhiễu.
 > Xem `chan-xuat-kho-qua-ton-kha-dung.md`.
+>
+> **✅ ĐÃ XỬ LÝ 26/08/2026** — anh Thắng tắt và dọn. Đo lại trên `hkled.com`:
+> `enable_stock_reservation = 0` · **0** Bin có `reserved_stock` · 4 đơn thử `SO-26-00007→00010`
+> đã xoá · **0** đơn còn `reserve_stock = 1`. Nền đo đã sạch, đoạn cảnh báo trên hết hiệu lực.
+
+### ⚠ ĐO PHẦN TỒN BỊ GIỮ CHỖ BẰNG `Bin.reserved_stock`, ĐỪNG CỘNG `Stock Reservation Entry`
+
+Ghi lại vì suýt đọc sai ngay trong lần dọn trên. Sau khi dọn, bảng SRE **vẫn còn 1 bản ghi**
+`MAT-SRE-2026-00001`, và nó **vẫn mang `reserved_qty = 26`**:
+
+	Stock Reservation Entry  docstatus = 2 (Đã huỷ)  ·  sum(reserved_qty) = 26.0
+	Bin                      sum(reserved_stock)     = 0.0
+
+Thực tế không giữ gì — `Bin` mới là nơi ghi phần tồn bị chiếm. Con số 26 trên SRE là **giá trị
+lịch sử nằm trên chứng từ đã huỷ**, Frappe không xoá và không đưa về 0.
+
+Ai đo tồn khả dụng bằng cách cộng `Stock Reservation Entry.reserved_qty` mà quên lọc
+`docstatus < 2` sẽ ra **26** — một con số trông y hệt số thật, không lệch kiểu, không lỗi.
+Đúng loại sai âm thầm mà cả tính năng này sinh ra để chặn.
+
+➜ Nguồn đúng là **`Bin.reserved_stock`**. Dùng SRE thì bắt buộc lọc `docstatus`.
 
 ## 3. Tập kho
 
@@ -248,6 +269,30 @@ Hiện **mã đơn · người phụ trách · số lượng đang ghim · ngày
 - Người phụ trách = **`owner` của Sales Order** (người tạo đơn). Site có 0 dòng `Sales Team`.
 - **Không hiện tên khách hàng** — khách đã chốt, và đó cũng là cách gỡ lo ngại lộ thông tin giữa
   các sale.
+
+### 7.1 Hiện ở đâu, và đơn nhiều dòng thì sao (anh Thắng hỏi 25/08, `6l9rin0adf`)
+
+Anh Thắng hỏi: *"đơn đó nhiều mặt hàng thì nó hiện mỗi mặt hàng 5 dòng như vậy à, hay chỉ chuột
+vào dòng mặt hàng nào nó mới hiện"*. Mockup bản 5 **không trả lời được** — ví dụ trong đó chỉ có
+đúng một mặt hàng bị ghim nên luật hiển thị không lộ ra. Chốt ở bản 6:
+
+1. Bảng này **gập sẵn**, không hiện cho tới khi người dùng bấm.
+2. Chỉ dòng nào **đang bị đơn khác ghim** mới có nút bung — điều kiện đúng là
+   `tồn_khả_dụng < tồn_thực_tế`. Dòng không bị ghim hiện chữ mờ *"không đơn nào ghim"*, không có
+   nút.
+3. Nút nằm ngay trong ô **Tồn khả dụng** của Bảng 1, dạng `▸ 18 đang ghim` — con số chính là
+   phần đã bị trừ, nên người đọc thấy ngay nút này giải thích cái gì.
+4. Bấm dòng nào bung bảng của **riêng dòng đó**, bấm lần nữa gập lại. Mỗi lúc chỉ cần một bảng.
+5. Bỏ tick **Ghim Tồn Khả Dụng** thì không còn gì bị trừ → ẩn luôn cả nút bung lẫn chữ mờ, và
+   gập bảng lại.
+
+**Vì sao gập chứ không bung sẵn.** Đơn 20 dòng mà 12 dòng bị ghim thì bung sẵn ra 12 bảng, hơn
+60 dòng, phải cuộn hết mới tới Bảng 2. Thứ tự công việc của sale là: trước hết trả lời *"đơn này
+nhận được không"*, rồi mới đi hỏi nhường hàng cho **một** mặt hàng cụ thể. Đi hỏi ai là **bước
+hai** — để sau một cú bấm là đúng chỗ của nó.
+
+⚠ Khi code: nút chỉ được hiện khi thật sự có đơn khác ghim. Đừng hiện nút rồi bung ra bảng rỗng —
+người dùng sẽ hiểu là hệ thống hỏng chứ không hiểu là "không có đơn nào".
 
 ## 8. Ngày giao dự kiến
 

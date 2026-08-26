@@ -61,7 +61,38 @@ CHUA_CO_DU_LIEU = {
 
 def _doc_spec():
 	with open(SPEC, encoding="utf-8") as f:
-		return json.load(f)
+		spec = json.load(f)
+	_canh_bao_theo_rule_lai(spec)
+	return spec
+
+
+def _canh_bao_theo_rule_lai(spec):
+	"""Bắt kiểu đọc nhầm bảng khách: *"Theo rule"* của khách là SỐ LƯỢNG theo rule, không phải NVL.
+
+	⚠ Đã vấp thật 26/08/2026. Bảng khách ghi thành phần `Ốc dây điện` như sau:
+
+	    Ốc dây điện | Theo rule | OPG-M12-RM | SL | Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1
+
+	Chữ *"Theo rule"* ở cột kiểu là **số lượng theo rule** — NVL thì cố định, luôn là
+	`OPG-M12-RM`. Nhưng `"Theo Rule"` trong hệ thống mình nghĩa **ngược lại**: NVL do rule
+	quyết, ô NVL để trống. Bản trích spec ngày 24/08 dịch thẳng chữ sang chữ nên 4 sheet
+	module mất NVL, không rule nào khớp, và **cả 4 BOM Template bị bỏ** — mà trên site không
+	ai thấy vì bản spec đó chưa từng được nạp.
+
+	Chữ ký của lỗi rất gọn, nên bắt được bằng máy: `kieu == "Theo Rule"` mà **`nvl` khác
+	rỗng**. Mọi thành phần "Theo Rule" thật đều có `nvl` rỗng — đã kiểm cả 44 mục trong spec,
+	chỉ đúng 4 mục hỏng có NVL. In cảnh báo chứ KHÔNG tự sửa: dịch sai ý khách là chuyện phải
+	hỏi khách, không phải đoán.
+	"""
+	for ten, sheet in (spec.get("sheets") or {}).items():
+		for t in sheet.get("thanh_phan") or []:
+			if t.get("kieu") == "Theo Rule" and (t.get("nvl") or "").strip():
+				print(
+					f"[mbwnext_hkled] ⚠ SPEC NGHI ĐỌC NHẦM — {ten} · {t['thanh_phan']}: "
+					f"kiểu 'Theo Rule' mà vẫn có NVL {t['nvl']!r}. Trong bảng khách "
+					f"'Theo rule' thường là SỐ LƯỢNG theo rule, NVL thì cố định — "
+					f"nếu đúng vậy thì kiểu phải là 'Cố Định'. Hỏi lại trước khi nạp."
+				)
 
 
 def _dac_tinh_bien_the(item_cha):
@@ -301,18 +332,21 @@ def nhap_mot_sheet(ten_sheet, spec_sheet, chi_kiem=False):
 			bao["sl_thieu"].append({
 				"tp": t["thanh_phan"], "ly_do": ly_do, "ghi_trong_sheet": t["sl_tho"],
 			})
-			# Khách khai "Cố Định" nhưng số lượng lại ĐỔI theo đặc tính (vd Ốc dây điện:
-			# "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1") — hai thứ mâu thuẫn.
-			# "Cố Định" lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đúng cho cả
-			# hai trường hợp; để nguyên là dòng bị bỏ khỏi BOM một cách âm thầm.
-			# Nâng lên "Số Lượng Theo Công Thức" để Server Script tính, NVL vẫn lấy từ ô
-			# khách khai. Ghi lại để người đọc báo cáo biết bộ nạp đã đổi kiểu.
-			if kieu == "Cố Định":
-				kieu = "Số Lượng Theo Công Thức"
-				bao.setdefault("doi_kieu", []).append({
-					"tp": t["thanh_phan"], "tu": "Cố Định", "sang": kieu,
-					"vi": ly_do,
-				})
+			# ĐÃ BỎ 26/08/2026: chỗ này từng tự nâng "Cố Định" -> "Số Lượng Theo Công Thức"
+			# khi ô số lượng là công thức chứ không phải con số.
+			#
+			# Anh Thắng chốt bỏ hẳn kiểu "Số Lượng Theo Công Thức" — chỉ còn hai kiểu:
+			# "Theo Rule" (NVL do rule quyết, số lượng do Server Script tính) và "Cố Định"
+			# (NVL và số lượng đều cố định). Thành phần duy nhất dùng kiểu bị bỏ là
+			# `Ốc dây điện` của 4 sheet module, nay đã chuyển sang "Theo Rule" trong spec,
+			# theo đúng khuôn `Ốc ghép ngang` của VDP0X: một rule `moi_bien_the` cấp NVL,
+			# số lượng (kể cả ca SL 0) để `bom_qty.py` tính từ `sl_tho`.
+			#
+			# ⚠ Đã kiểm trước khi bỏ: sau khi đổi 4 dòng đó, KHÔNG còn thành phần "Cố Định"
+			# nào có ô số lượng đọc không ra số. Nên bỏ đoạn này không làm dòng nào rơi khỏi
+			# BOM. Nếu sau này báo cáo `sl_thieu` xuất hiện dòng "Cố Định", đó là dấu hiệu
+			# bảng nguồn có ca mới — HỎI KHÁCH xem nó là "Theo Rule" hay số cố định, đừng
+			# dựng lại phép tự nâng kiểu.
 		doc.append("bom_component_table", {
 			"bom_component": t["thanh_phan"],
 			"component_type": kieu,
@@ -337,9 +371,30 @@ def nhap_mot_sheet(ten_sheet, spec_sheet, chi_kiem=False):
 	return bao
 
 
+DIEM_LUU_SHEET = "nhap_bom_template_sheet"
+
+
 def nhap_tat_ca(chi_kiem=False):
 	spec = _doc_spec()
 	bao = {"bo_qua_sheet": spec.get("loi", {}), "sheets": []}
 	for ten, s in spec["sheets"].items():
-		bao["sheets"].append(nhap_mot_sheet(ten, s, chi_kiem=chi_kiem))
+		# Một sheet hỏng KHÔNG được giết cả lượt nạp.
+		#
+		# ⚠ Vì sao cần: `BOM Template` là Link tới Item, nên NVL nào chưa có trên site là
+		# `LinkValidationError` ném thẳng ra ngoài. Trên site đã chạy thì không bao giờ xảy ra
+		# — mọi mặt hàng đã có sẵn. Trên SITE MỚI thì có: đo ngày 25/08/2026 trên `test.com`,
+		# sheet DP01S tra tới 8 mã module bị bỏ vì thiếu Nhóm sản phẩm, cộng `W-3x0.75-BK` và
+		# `XOP-GOC-110x110x120mm` vốn chỉ được tạo tay trên `hkled.com` chứ không nằm trong
+		# file CSV nào. Lỗi này bay ra sau 2 giờ 22 phút nạp danh mục và bỏ lại site cài dở.
+		#
+		# Bỏ qua sheet hỏng rồi báo tên NVL còn thiếu thì lượt cài chạy hết, và người đọc log
+		# biết chính xác phải bổ sung cái gì. KHÔNG tự tạo mặt hàng thiếu — xem
+		# "THÀ BỎ QUA CÒN HƠN ĐOÁN" trong `nhap_item.py`.
+		frappe.db.savepoint(DIEM_LUU_SHEET)
+		try:
+			bao["sheets"].append(nhap_mot_sheet(ten, s, chi_kiem=chi_kiem))
+		except frappe.exceptions.LinkValidationError as e:
+			frappe.db.rollback(save_point=DIEM_LUU_SHEET)
+			frappe.local.message_log = []
+			bao["sheets"].append({"sheet": ten, "loi": f"thiếu mặt hàng được tra tới — {e}"})
 	return bao
