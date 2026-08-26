@@ -143,6 +143,27 @@ nút. Đây là ràng buộc đã chốt: *không đụng Stock Balance / Stock 
 > ➜ **Trước khi code Phần IV, phải tắt `enable_stock_reservation` về 0** và dọn SRE do đợt thử
 > nghiệm sinh ra. Không tắt thì dev và test đều đo trên nền đã nhiễu.
 > Xem `chan-xuat-kho-qua-ton-kha-dung.md`.
+>
+> **✅ ĐÃ XỬ LÝ 26/08/2026** — anh Thắng tắt và dọn. Đo lại trên `hkled.com`:
+> `enable_stock_reservation = 0` · **0** Bin có `reserved_stock` · 4 đơn thử `SO-26-00007→00010`
+> đã xoá · **0** đơn còn `reserve_stock = 1`. Nền đo đã sạch, đoạn cảnh báo trên hết hiệu lực.
+
+### ⚠ ĐO PHẦN TỒN BỊ GIỮ CHỖ BẰNG `Bin.reserved_stock`, ĐỪNG CỘNG `Stock Reservation Entry`
+
+Ghi lại vì suýt đọc sai ngay trong lần dọn trên. Sau khi dọn, bảng SRE **vẫn còn 1 bản ghi**
+`MAT-SRE-2026-00001`, và nó **vẫn mang `reserved_qty = 26`**:
+
+	Stock Reservation Entry  docstatus = 2 (Đã huỷ)  ·  sum(reserved_qty) = 26.0
+	Bin                      sum(reserved_stock)     = 0.0
+
+Thực tế không giữ gì — `Bin` mới là nơi ghi phần tồn bị chiếm. Con số 26 trên SRE là **giá trị
+lịch sử nằm trên chứng từ đã huỷ**, Frappe không xoá và không đưa về 0.
+
+Ai đo tồn khả dụng bằng cách cộng `Stock Reservation Entry.reserved_qty` mà quên lọc
+`docstatus < 2` sẽ ra **26** — một con số trông y hệt số thật, không lệch kiểu, không lỗi.
+Đúng loại sai âm thầm mà cả tính năng này sinh ra để chặn.
+
+➜ Nguồn đúng là **`Bin.reserved_stock`**. Dùng SRE thì bắt buộc lọc `docstatus`.
 
 ## 3. Tập kho
 
