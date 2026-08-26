@@ -8,7 +8,37 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# required_apps = []
+# ⚠ HAI APP NÀY PHẢI CÓ TRƯỚC, KHÔNG PHẢI QUY ƯỚC CHO ĐẸP.
+#
+# Trước 26/08/2026 chỗ này để trống và thứ tự cài chỉ nằm trong docstring của `install.py` —
+# tức người ta chỉ đọc SAU KHI đã cài sai. Khai ở đây thì Frappe tự cài đúng thứ tự
+# (`installer.py:300-303` lặp `required_apps` rồi gọi `install_app` cho từng cái, trước khi
+# cài app này), không ai gõ sai được nữa.
+#
+# · `mbwnext_localization` — `after_install` của nó chạy `del_masterdataCore()` =
+#   `DELETE FROM tab<doctype>` cho Item Group, UOM, UOM Conversion, Territory, Stock Entry
+#   Type, Province, Commune. Cài nó SAU app này là xoá sạch phân nhóm của cả danh mục: đo
+#   trên site trắng `test.com`, Item Group tụt 50 → 8 và 61.835/61.836 mặt hàng trỏ vào nhóm
+#   không tồn tại.
+# · `mbwnext_advanced_selling` — thêm Custom Field cho `Item` (`setup/custom_fields.json`).
+#   Cài sau khi `after_sync` của app này đã nạp 62.054 mặt hàng thì các cột đó rỗng toàn bộ.
+#
+# Bốn app lõi còn lại (buying, stock, accounting, distribution_map) KHÔNG chạm `Item` và
+# không xoá gì, nên cố ý không khai — khai thừa chỉ làm lệnh cài dài ra và khó gỡ khi lỗi.
+#
+# ⚠ PHẢI CÓ TIỀN TỐ TỔ CHỨC, và phần sau dấu `/` PHẢI LÀ TÊN APP (gạch dưới), không phải
+# tên repo GitHub (`mbwnext-localization`, gạch ngang). Chuỗi không có `/` thì
+# `parse_app_name()` đi hỏi GitHub rồi 404 → `InvalidRemoteException`; ghi đúng tên repo thì
+# hỏng ở "App not in apps.txt". Đây không phải đường clone — xem `mbwnext_advanced_buying/
+# hooks.py` để biết đầy đủ, chỗ đó đã hỏng vì đúng lý do này.
+#
+# ⚠ HỆ QUẢ PHẢI BIẾT: cài app này lên site THIẾU localization sẽ tự chạy `del_masterdataCore()`.
+# Trên site trắng thì đó đúng là việc cần làm. Trên site ĐANG CÓ DỮ LIỆU thì đó là mất dữ
+# liệu, và lệnh không hỏi. Kiểm `bench --site <site> list-apps` trước khi cài lên site thật.
+required_apps = [
+	"MBW-Digital/mbwnext_localization",
+	"MBW-Digital/mbwnext_advanced_selling",
+]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
