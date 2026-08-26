@@ -60,6 +60,30 @@ không phải mốc chính xác. Từ nay tải file mới thì ghi thẳng ngà
 
 | `30-w-day-dien.csv` | 6 | `1c2fe7f1e496` | 2026-08-26 |
 | `31-xop-mut-xop.csv` | 5 | `7deac2cd726b` | 2026-08-26 |
+| `32-opg-oc-siet-cap.csv` | 3 | `d06399212394` | 2026-08-26 ⚠ |
+
+### ⚠ `32-opg-oc-siet-cap.csv` — FILE DUY NHẤT KHÔNG PHẢI KHÁCH GỬI
+
+Mọi file khác trong `data/` đều tải từ Google Sheet của khách. **File này thì không** — nó do
+đội mình dựng ngày 26/08/2026 bằng cách **đọc ngược 4 mã `OPG` đang có trên `hkled.com`**.
+
+Vì sao phải làm vậy: thành phần `Ốc dây điện` của 4 BOM Template module có NVL cố định là
+`OPG-M12-RM`, mà mã đó **không nằm trong file nào** — sheet `(O) Ốc, vít, bulong` của khách có
+47 dòng, không dòng nào là OPG. Thiếu nó thì 4 template không dựng được. Bốn mã này do
+Administrator tạo tay trên site ngày 18/08.
+
+**Chép nguyên văn, không bịa ô nào.** Ô nào trên site không có thì để trống:
+
+| Cột | Vì sao trống |
+|---|---|
+| `Mô tả` | trên site chỉ chép lại tên mặt hàng; các dòng thật của sheet ghi công dụng — phải để khách điền |
+| `Phương pháp bổ sung` | trên site đang rỗng, trong khi mọi dòng khác của sheet `(O)` đều là *Mua hàng*. **Không tự điền** — đã hỏi khách |
+| `Độ dài` · `Hình dạng đầu` · `Kiểu khe vặn` | ốc siết cáp không có các thuộc tính này |
+
+⚠ **ĐÂY LÀ FILE TẠM.** Khi khách gửi bản chính thức thì **xoá file này đi** và để 4 mã nằm
+trong `00-o-oc-vit-bulong.csv` cho đúng chỗ. Cố ý tách ra file riêng thay vì chèn thẳng vào
+`00-…`: chèn vào thì lần sau khách gửi lại sheet `(O)`, mình ghi đè và **3 dòng này biến mất
+không ai hay**. Tách ra thì nó sống sót và nhìn thấy được.
 
 ## Sheet nguồn đã biết
 
