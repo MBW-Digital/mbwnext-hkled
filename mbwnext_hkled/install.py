@@ -36,6 +36,39 @@ không đụng tới nó, nên không tốn 62.054 lần `db.exists` mỗi lần
 
 LUẬT: thêm patch nào **tạo dữ liệu** (không phải sửa dữ liệu sẵn có) thì phải thêm
 tên nó vào `CAC_BUOC` dưới đây, nếu không site mới sẽ thiếu đúng phần đó.
+
+## THỨ TỰ CÀI APP — app lõi TRƯỚC, app khách SAU CÙNG
+
+    1. erpnext
+    2. hrms · print_designer                (độc lập, đâu cũng được)
+    3. mbwnext_localization                 ⚠ PHẢI TRƯỚC MỌI APP MBWNEXT KHÁC
+    4. mbwnext_advanced_selling
+    5. mbwnext_advanced_buying · _stock · _accounting · _distribution_map
+    6. super_admin
+    7. mbwnext_hkled                        ⚠ APP KHÁCH, CUỐI CÙNG
+
+Không phải quy ước cho đẹp — hai ràng buộc đo được, cả hai vấp thật ngày 25-26/08/2026:
+
+**(a) `mbwnext_localization` phải đứng trước.** `install/after_install.py::del_masterdataCore()`
+gọi `frappe.db.sql("DELETE FROM tab<doctype>")` — SQL thẳng, không kiểm liên kết — cho
+`Item Group`, `UOM`, `UOM Conversion`, `Territory`, `Stock Entry Type`, `Province`, `Commune`,
+rồi dựng lại bộ chuẩn MBWD. Cài nó SAU app khách là **xoá sạch phân nhóm của cả danh mục**:
+đo trên `test.com`, Item Group tụt 50 → 8 và 61.835/61.836 mặt hàng trỏ vào nhóm không tồn
+tại. (Mặt hàng và UOM thì còn — `tabItem.item_group` giữ nguyên chuỗi tên, dựng lại nhóm là
+liên kết tự nối.) `mbwnext_advanced_selling` cũng có `del_masterdataCore` nhưng hẹp hơn
+nhiều: chỉ xoá Customer Group.
+
+**(b) `mbwnext_advanced_selling` phải đứng trước app khách.** Nó thêm Custom Field cho `Item`
+(`setup/custom_fields.json`). Cài sau khi app khách đã nạp 62 nghìn mặt hàng thì các cột đó
+rỗng toàn bộ. Ba app lõi còn lại không chạm `Item` nên đứng sau vô hại — nhưng đừng dựa vào
+điều đó, nó đúng ở thời điểm đo chứ không phải luật.
+
+⚠ **ĐỪNG lấy thứ tự từ `bench --site <site> list-apps`.** Nó in theo `idx` của bảng
+`Installed Application`, phản ánh lịch sử cài của site đó chứ không phải thứ tự đúng.
+Thứ tự lấy từ `hkled.com` ngày 25/08 có `mbwnext_localization` ở vị trí 9 (sau các app
+advanced_*) và `mbwnext_hkled` ở vị trí 10 (trước `mbwnext_advanced_accounting`) — sai cả
+hai ràng buộc trên. Chạy theo nó thì `bench install-app mbwnext_advanced_buying` chết ngay
+ở `InvalidRemoteException` vì `required_apps` trỏ tới `mbwnext_localization` chưa cài.
 """
 
 import frappe
