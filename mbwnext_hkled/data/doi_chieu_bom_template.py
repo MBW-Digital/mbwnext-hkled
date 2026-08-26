@@ -103,13 +103,30 @@ patch chờ `bench migrate`. Nên lệnh này **sẽ báo 4 lệch**, và đó l
 Chạy lệnh này NGAY TRƯỚC khi nạp lại — đừng tin con số đo hôm trước, khách đang giai đoạn
 test và có thể sửa bất cứ lúc nào. Đọc kết quả:
 
-	BOM Component Table: lệch = 4, đúng 4 dòng `Ốc dây điện`
-	                     (file `Theo Rule` + NVL rỗng ≠ site `Số Lượng Theo Công Thức` + OPG-M12-RM)
-	BOM Rule           : "chỉ ở file" = 4, mỗi sheet module 1 — rule `Ốc dây điện` mới thêm
-	cột `sửa` của cả 4 dòng trùng mốc nạp hàng loạt gần nhất
+⚠ ĐẾM SỐ DÒNG VÀ ĐỌC TÊN LÀ KHÔNG ĐỦ. Nếu khách sửa tay **đúng một trong 4 dòng đang dự
+kiến lệch**, kết quả vẫn ra "lệch = 4, đúng 4 dòng `Ốc dây điện`" — cái sửa nằm trùng lên
+cái dự kiến, phép đếm mù đúng chỗ đó. Phải so **giá trị**, không chỉ so tên trường.
+
+Lệch dự kiến có hình dạng chính xác như sau, cả 4 dòng giống hệt nhau:
+
+	BOM Component Table — mỗi dòng `Ốc dây điện`, trường `khac` phải ĐÚNG BẰNG:
+	    component_type : file 'Theo Rule'  ≠  site 'Số Lượng Theo Công Thức'
+	    item           : file ''           ≠  site 'OPG-M12-RM'
+	BOM Rule — "chỉ ở file" = 4, mỗi sheet module 1 (rule `Ốc dây điện` mới thêm)
+	cột `sửa` của cả 4 dòng TRÙNG mốc nạp hàng loạt gần nhất
 	                                            → ĐÚNG DỰ KIẾN, nạp tiếp
-	có bất kỳ dòng nào khác, HOẶC mốc `sửa` muộn hơn lần nạp
+
+	`khac` có thêm trường khác (`qty`…), hoặc giá trị `site` khác hai giá trị trên,
+	hoặc xuất hiện dòng ngoài 4 dòng đó, hoặc mốc `sửa` MUỘN HƠN lần nạp
 	                                            → DỪNG, hỏi trước khi nạp
+
+Vì sao so giá trị là kín: khách sửa NVL thì `item.site` khác `OPG-M12-RM`; sửa số lượng thì
+`khac` mọc thêm `qty`. Việc nạp lại chỉ sinh đúng hai trường trên với đúng hai cặp giá trị
+đó. Hai thứ không lẫn nhau được.
+
+⚠ Điều kiện "mốc `sửa` muộn hơn lần nạp → DỪNG" áp cho **cả 4 dòng dự kiến lệch**, đừng miễn
+cho chúng vì "đằng nào cũng lệch" — chúng chính là chỗ phép đếm không cứu được, nên mốc thời
+gian là lớp bảo vệ còn lại duy nhất ở đó.
 
 Sau khi nạp lại thành công thì cả hai bảng phải về 0 lệch, và đoạn này bỏ đi được.
 
