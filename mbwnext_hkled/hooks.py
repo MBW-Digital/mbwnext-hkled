@@ -8,33 +8,51 @@ app_license = "mit"
 # Apps
 # ------------------
 
-# ⚠ HAI APP NÀY PHẢI CÓ TRƯỚC, KHÔNG PHẢI QUY ƯỚC CHO ĐẸP.
+# ☢️ ĐỌC DÒNG NÀY TRƯỚC KHI GÕ `bench install-app mbwnext_hkled`.
 #
-# Trước 26/08/2026 chỗ này để trống và thứ tự cài chỉ nằm trong docstring của `install.py` —
-# tức người ta chỉ đọc SAU KHI đã cài sai. Khai ở đây thì Frappe tự cài đúng thứ tự
-# (`installer.py:300-303` lặp `required_apps` rồi gọi `install_app` cho từng cái, trước khi
-# cài app này), không ai gõ sai được nữa.
+# Khai `required_apps` biến lệnh cài app này thành một lệnh CÓ THỂ XOÁ DỮ LIỆU. Trên site
+# THIẾU `mbwnext_localization`, Frappe tự cài nó trước, và `after_install` của nó chạy
+# `del_masterdataCore()` = `frappe.db.sql("DELETE FROM tab<doctype>")` — SQL thẳng, không
+# kiểm liên kết, không hỏi — cho `Item Group`, `UOM`, `UOM Conversion`, `Territory`,
+# `Stock Entry Type`, `Province`, `Commune`.
 #
-# · `mbwnext_localization` — `after_install` của nó chạy `del_masterdataCore()` =
-#   `DELETE FROM tab<doctype>` cho Item Group, UOM, UOM Conversion, Territory, Stock Entry
-#   Type, Province, Commune. Cài nó SAU app này là xoá sạch phân nhóm của cả danh mục: đo
-#   trên site trắng `test.com`, Item Group tụt 50 → 8 và 61.835/61.836 mặt hàng trỏ vào nhóm
-#   không tồn tại.
+# Site trắng: đó đúng là việc cần làm. Site ĐANG CÓ DỮ LIỆU: mất sạch phân nhóm danh mục.
+# Đã dính thật trên `test.com` ngày 26/08/2026 — Item Group 50 → 8, và 61.835/61.836 mặt
+# hàng trỏ vào nhóm không còn tồn tại. (Mặt hàng thì còn: `tabItem.item_group` giữ nguyên
+# chuỗi tên, dựng lại bản ghi nhóm là liên kết tự nối.)
+#
+# ➜ TRƯỚC KHI CÀI LÊN SITE THẬT: `bench --site <site> list-apps | grep localization`.
+#   Đã có thì an toàn. Chưa có mà site đã có dữ liệu thì DỪNG, hỏi trước.
+#
+# ⚠ KHÔNG CHẶN ĐƯỢC BẰNG CODE TỪ APP NÀY. Đã kiểm `frappe/installer.py`: `required_apps`
+# giải ở dòng 284-288, còn hook sớm nhất của app (`before_install`) mãi dòng 305 và
+# `before_app_install` dòng 310 — nghĩa là KHÔNG hook nào chạy trước, lúc mình có tiếng nói
+# thì localization đã cài xong và đã xoá xong. Chỗ duy nhất rào được là chính
+# `del_masterdataCore()` bên `mbwnext_localization` (app lõi, phải xin phép mới sửa).
+# Nên dòng cảnh báo này hiện là lớp bảo vệ duy nhất — đừng xoá nó đi cho gọn.
+
+# ── Vì sao đúng hai app này, không hơn không kém ──
+#
+# Trước 26/08/2026 chỗ này để trống và thứ tự cài chỉ nằm trong docstring `install.py` — tức
+# người ta chỉ đọc SAU KHI đã cài sai. Khai ở đây thì Frappe tự cài đúng thứ tự, không ai gõ
+# sai được nữa.
+#
+# · `mbwnext_localization`    — lý do ở khối trên: nó xoá `Item Group`/`UOM`. Cài SAU app này
+#   là xoá mất phân nhóm của danh mục vừa nạp.
 # · `mbwnext_advanced_selling` — thêm Custom Field cho `Item` (`setup/custom_fields.json`).
-#   Cài sau khi `after_sync` của app này đã nạp 62.054 mặt hàng thì các cột đó rỗng toàn bộ.
+#   Cài sau khi `after_sync` đã nạp 62.054 mặt hàng thì các cột đó rỗng toàn bộ.
 #
 # Bốn app lõi còn lại (buying, stock, accounting, distribution_map) KHÔNG chạm `Item` và
 # không xoá gì, nên cố ý không khai — khai thừa chỉ làm lệnh cài dài ra và khó gỡ khi lỗi.
 #
-# ⚠ PHẢI CÓ TIỀN TỐ TỔ CHỨC, và phần sau dấu `/` PHẢI LÀ TÊN APP (gạch dưới), không phải
-# tên repo GitHub (`mbwnext-localization`, gạch ngang). Chuỗi không có `/` thì
-# `parse_app_name()` đi hỏi GitHub rồi 404 → `InvalidRemoteException`; ghi đúng tên repo thì
-# hỏng ở "App not in apps.txt". Đây không phải đường clone — xem `mbwnext_advanced_buying/
-# hooks.py` để biết đầy đủ, chỗ đó đã hỏng vì đúng lý do này.
+# ⚠ PHẢI CÓ TIỀN TỐ TỔ CHỨC, và phần sau dấu `/` PHẢI LÀ TÊN APP (gạch dưới), không phải tên
+# repo GitHub (`mbwnext-localization`, gạch ngang). Chuỗi không có `/` thì `parse_app_name()`
+# đi hỏi GitHub rồi 404 → `InvalidRemoteException`; ghi đúng tên repo thì hỏng ở "App not in
+# apps.txt". Đây không phải đường clone — `mbwnext_advanced_buying/hooks.py` đã hỏng vì đúng
+# lý do này.
 #
-# ⚠ HỆ QUẢ PHẢI BIẾT: cài app này lên site THIẾU localization sẽ tự chạy `del_masterdataCore()`.
-# Trên site trắng thì đó đúng là việc cần làm. Trên site ĐANG CÓ DỮ LIỆU thì đó là mất dữ
-# liệu, và lệnh không hỏi. Kiểm `bench --site <site> list-apps` trước khi cài lên site thật.
+# 📌 Tác dụng phụ có lợi, Frappe tự có: khai dòng này thì `bench uninstall-app` TỪ CHỐI gỡ hai
+# app trên chừng nào `mbwnext_hkled` còn cài ("... is a dependency of ...", installer.py:383).
 required_apps = [
 	"MBW-Digital/mbwnext_localization",
 	"MBW-Digital/mbwnext_advanced_selling",
