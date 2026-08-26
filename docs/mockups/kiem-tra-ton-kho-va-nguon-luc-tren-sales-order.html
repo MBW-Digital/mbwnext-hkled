@@ -466,6 +466,25 @@
 		border-radius: 3px; padding: 1px 6px; margin-left: 6px; white-space: nowrap;
 	}
 	.src { font: 11px/1.5 var(--mono); color: var(--ink-faint); }
+
+	/* bản 6 — Bảng 1b gập/bung theo từng dòng mặt hàng */
+	.ghim-btn {
+		display: inline-flex; align-items: center; gap: .3em;
+		margin-top: .25em; padding: .1em .5em;
+		font: inherit; font-size: .82em; line-height: 1.5;
+		color: var(--decided); background: var(--decided-bg);
+		border: 1px solid color-mix(in srgb, var(--decided) 35%, transparent);
+		border-radius: 999px; cursor: pointer; white-space: nowrap;
+	}
+	.ghim-btn:hover { border-color: var(--decided); }
+	/* ⚠ BẮT BUỘC. `display: inline-flex` ở trên ĐÈ mất `display:none` mà trình duyệt gán cho
+	   thuộc tính `hidden` (quy tắc của tác giả thắng quy tắc mặc định). Thiếu dòng này thì
+	   `btn1b.hidden = true` trong JS không giấu được nút — bỏ tick Ghim mà nút "18 đang ghim"
+	   vẫn nằm đó. Không lỗi, không cảnh báo, chỉ sai khi nhìn bằng mắt. */
+	.ghim-btn[hidden], .ghim-none[hidden] { display: none; }
+	.ghim-btn .caret { transition: transform .15s ease; }
+	.ghim-btn[aria-expanded="true"] .caret { transform: rotate(90deg); }
+	.ghim-none { font-size: .82em; opacity: .55; }
 </style>
 
 <div class="page">
@@ -480,13 +499,20 @@
 			<b>6 module</b> M30S050, <b>12 ốc</b>, nguồn <b>NHKP-300E</b>.
 		</p>
 		<p class="doc-meta">
-			<b>Bấm thử được:</b> nút <b>Kiểm Tra Tồn Kho</b>, ô tick <b>Ghim Tồn Khả Dụng</b>
-			(đổi ngay số tồn khả dụng ở Bảng 1), nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3,
+			<b>Bấm thử được:</b> nút <b>Kiểm Tra Tồn Kho</b>, nút <b>18 đang ghim</b> ở cột
+			<i>Tồn khả dụng</i> Bảng 1 (bung/gập Bảng 1b), ô tick <b>Ghim Tồn Khả Dụng</b>
+			(đổi ngay số tồn khả dụng ở Bảng 1, và ẩn luôn nút bung vì không còn gì bị ghim), nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3,
 			và nút <b>Hẹn lại ngày giao</b> ở mục D (3 trạng thái).
 			<br>
-			Trạng thái: <b style="color:var(--decided)">bản 5 — anh Thắng đã duyệt bản 4 lúc 24/08 11:41</b>.
-			Bản 5 thêm đúng thứ anh xin trong cùng bình luận đó: nút <b>Hẹn lại ngày giao</b> ở mục D
-			giờ trả về <b>một ngày gợi ý</b>, bấm thử được cả <b>3 trạng thái</b>.
+			Trạng thái: <b style="color:var(--decided)">bản 6 — trả lời câu anh Thắng hỏi 25/08 17:06</b>.
+			Anh hỏi Bảng 1b hiện ở đâu, và đơn nhiều mặt hàng thì có hiện mỗi mặt hàng 5 dòng không.
+			Bản 5 <b>không trả lời được</b> — ví dụ chỉ có đúng một mặt hàng bị ghim nên không lộ ra
+			luật hiển thị. Bản 6: Bảng 1b <b>gập sẵn</b>, chỉ dòng nào đang bị đơn khác ghim mới có
+			nút bung; bấm dòng nào bung dòng ấy. Xem <b>Bảng 1</b> ở mục B và phần giải thích ngay
+			dưới Bảng 1b.
+			<br>
+			<i>Nhắc lại bản 5:</i> nút <b>Hẹn lại ngày giao</b> ở mục D trả về <b>một ngày gợi ý</b>,
+			bấm thử được cả <b>3 trạng thái</b>.
 			<br>
 			<i>Nhắc lại thay đổi của bản 4:</i> Bảng 1b đổi sang <b>đơn đang ghim tồn</b>, Bảng 2 thêm
 			<b>cột Ngày hàng về</b>. Mục 7.3 (chặn xuất quá tồn) đã tách sang <code>PM-FEAT-00034</code>.
@@ -628,13 +654,20 @@
 								<tr>
 									<td class="mono">DP01S300-3B3HT-AD</td><td>Cái</td>
 									<td class="n">40</td><td class="n"><b>33</b></td>
-									<td class="n" id="ton-1">15</td><td class="n" id="thieu-1">25</td>
+									<td class="n"><span id="ton-1">15</span><br>
+										<button type="button" class="ghim-btn" id="btn-1b"
+										        aria-expanded="false" aria-controls="bang-1b">
+											<span class="caret">▸</span> <span id="btn-1b-so">18</span> đang ghim
+										</button>
+									</td><td class="n" id="thieu-1">25</td>
 									<td><span class="pill ok">Sản xuất</span></td>
 								</tr>
 								<tr>
 									<td class="mono">NHKP-250E</td><td>Cái</td>
 									<td class="n">20</td><td class="n"><b>32</b></td>
-									<td class="n" id="ton-2">32</td><td class="n" id="thieu-2">0</td>
+									<td class="n"><span id="ton-2">32</span><br>
+										<span class="ghim-none" id="ghim-none-2">không đơn nào ghim</span>
+									</td><td class="n" id="thieu-2">0</td>
 									<td><span class="pill buy">Mua hàng</span></td>
 								</tr>
 							</tbody>
@@ -646,7 +679,7 @@
 					</p>
 				</div>
 
-				<div>
+				<div id="bang-1b" hidden>
 					<div class="tbl-head">
 						<h4>Bảng 1b · Đơn đang ghim tồn DP01S300</h4>
 						<span class="sub">5 đơn có <b>ngày lấy hàng xa nhất</b> · không hiện tên khách hàng</span>
@@ -679,6 +712,25 @@
 						Bảng để anh chị biết <b>đi hỏi ai</b>: đơn nào ngày lấy hàng còn xa thì
 						thương lượng nhường hàng dễ hơn. Cố ý <b>không hiện tên khách hàng</b> —
 						chỉ mã đơn và người phụ trách.
+					</p>
+					<p class="hint">
+						<b>Anh Thắng hỏi 25/08:</b> đơn nhiều mặt hàng thì có hiện mỗi mặt hàng 5 dòng
+						như vậy không? <b>Không.</b> Bản 5 chưa nói rõ chỗ này — bản 6 chốt như sau:
+					</p>
+					<p class="hint">
+						1) Bảng 1b <b>gập sẵn</b>, không hiện cho tới khi bấm.
+						2) Chỉ mặt hàng nào <b>đang bị đơn khác ghim</b> mới có nút bung — tức
+						<i>Tồn khả dụng</i> nhỏ hơn <i>Tồn thực tế</i>. Trong ví dụ này chỉ
+						<b>DP01S300</b> có; <b>NHKP-250E</b> tồn khả dụng bằng tồn thực tế nên
+						không có gì để giải thích, hiện chữ mờ <i>“không đơn nào ghim”</i>.
+						3) Bấm dòng nào thì bảng 1b của <b>riêng dòng đó</b> bung ra, bấm lần nữa thì gập lại.
+					</p>
+					<p class="hint">
+						<b>Vì sao gập chứ không bung sẵn:</b> đơn 20 dòng mà 12 dòng bị ghim thì bung
+						sẵn ra <b>12 bảng, hơn 60 dòng</b> — người bán hàng phải cuộn qua hết mới tới
+						Bảng 2. Mà thứ tự công việc của họ là: trước hết trả lời <i>“đơn này nhận được
+						không”</i>, rồi mới đi hỏi nhường hàng cho <b>một</b> mặt hàng cụ thể. Đi hỏi ai
+						là <b>bước hai</b>, nên để nó nằm sau một cú bấm là đúng chỗ.
 					</p>
 				</div>
 
@@ -1031,6 +1083,16 @@
 			hint.hidden = false;
 		});
 
+		// Bảng 1b gập/bung theo dòng mặt hàng (bản 6, trả lời anh Thắng 25/08)
+		var btn1b = document.getElementById("btn-1b");
+		var bang1b = document.getElementById("bang-1b");
+		btn1b.addEventListener("click", function () {
+			var mo = btn1b.getAttribute("aria-expanded") !== "true";
+			btn1b.setAttribute("aria-expanded", mo ? "true" : "false");
+			bang1b.hidden = !mo;
+			if (mo) bang1b.scrollIntoView({ behavior: "smooth", block: "nearest" });
+		});
+
 		var tick = document.getElementById("tick-ghim");
 		tick.addEventListener("click", function () {
 			var on = tick.getAttribute("aria-checked") !== "true";
@@ -1040,6 +1102,17 @@
 			document.getElementById("ghim-hint").innerHTML = on
 				? "Đang tính với <b>Ghim Tồn Khả Dụng = có</b>. Đơn khác đã ghim đang giữ 18 cái DP01S300 nên tồn khả dụng còn 15."
 				: "Đang tính với <b>Ghim Tồn Khả Dụng = không</b>. Không trừ phần đơn khác giữ chỗ, nên tồn khả dụng là 33 — nhưng hàng đó có thể bị đơn khác lấy trước.";
+			// Bỏ tick thì không trừ phần ai ghim nữa, nên chẳng còn gì để giải thích:
+			// giấu luôn nút bung và gập bảng 1b lại, thay vì để nút trỏ tới một con số
+			// không còn ảnh hưởng gì tới cột Tồn khả dụng.
+			btn1b.hidden = !on;
+			// Bỏ tick thì cả dòng không-bị-ghim cũng hết ý nghĩa: để lại chú thích
+			// "không đơn nào ghim" trong khi dòng kia đã sạch dấu vết là lệch nhau.
+			document.getElementById("ghim-none-2").hidden = !on;
+			if (!on) {
+				btn1b.setAttribute("aria-expanded", "false");
+				bang1b.hidden = true;
+			}
 		});
 
 		var henBox = document.getElementById("hen-box");

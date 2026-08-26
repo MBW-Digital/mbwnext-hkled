@@ -249,6 +249,30 @@ Hiện **mã đơn · người phụ trách · số lượng đang ghim · ngày
 - **Không hiện tên khách hàng** — khách đã chốt, và đó cũng là cách gỡ lo ngại lộ thông tin giữa
   các sale.
 
+### 7.1 Hiện ở đâu, và đơn nhiều dòng thì sao (anh Thắng hỏi 25/08, `6l9rin0adf`)
+
+Anh Thắng hỏi: *"đơn đó nhiều mặt hàng thì nó hiện mỗi mặt hàng 5 dòng như vậy à, hay chỉ chuột
+vào dòng mặt hàng nào nó mới hiện"*. Mockup bản 5 **không trả lời được** — ví dụ trong đó chỉ có
+đúng một mặt hàng bị ghim nên luật hiển thị không lộ ra. Chốt ở bản 6:
+
+1. Bảng này **gập sẵn**, không hiện cho tới khi người dùng bấm.
+2. Chỉ dòng nào **đang bị đơn khác ghim** mới có nút bung — điều kiện đúng là
+   `tồn_khả_dụng < tồn_thực_tế`. Dòng không bị ghim hiện chữ mờ *"không đơn nào ghim"*, không có
+   nút.
+3. Nút nằm ngay trong ô **Tồn khả dụng** của Bảng 1, dạng `▸ 18 đang ghim` — con số chính là
+   phần đã bị trừ, nên người đọc thấy ngay nút này giải thích cái gì.
+4. Bấm dòng nào bung bảng của **riêng dòng đó**, bấm lần nữa gập lại. Mỗi lúc chỉ cần một bảng.
+5. Bỏ tick **Ghim Tồn Khả Dụng** thì không còn gì bị trừ → ẩn luôn cả nút bung lẫn chữ mờ, và
+   gập bảng lại.
+
+**Vì sao gập chứ không bung sẵn.** Đơn 20 dòng mà 12 dòng bị ghim thì bung sẵn ra 12 bảng, hơn
+60 dòng, phải cuộn hết mới tới Bảng 2. Thứ tự công việc của sale là: trước hết trả lời *"đơn này
+nhận được không"*, rồi mới đi hỏi nhường hàng cho **một** mặt hàng cụ thể. Đi hỏi ai là **bước
+hai** — để sau một cú bấm là đúng chỗ của nó.
+
+⚠ Khi code: nút chỉ được hiện khi thật sự có đơn khác ghim. Đừng hiện nút rồi bung ra bảng rỗng —
+người dùng sẽ hiểu là hệ thống hỏng chứ không hiểu là "không có đơn nào".
+
 ## 8. Ngày giao dự kiến
 
 Hai nguồn khác hẳn nhau: phần **mua hàng** suy từ đơn mua đang chạy, phần **sản xuất** suy từ
