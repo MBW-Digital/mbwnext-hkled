@@ -36,6 +36,40 @@ Hàm này trả lời đúng một câu: **khách đã sửa gì chưa.** Không
 đó khách chưa sửa rule nào. Ngoài spec có đúng 1 cái: `thành phẩm 1` (`DD11S050`), bản thử
 tay từ 03/08, `is_active = 0`.
 
+## MỐC GỐC ĐÃ CHỐT — đọc trước khi làm phần hợp nhất của hướng B
+
+Thắng chốt 26/08/2026: **dữ liệu trên hệ thống là gốc** (hướng B). Nghĩa là bộ nạp không
+được đè lên rule khách đã tự sửa. Nhưng file spec **vẫn đang đổi** (3 lần trong 7 ngày:
+19/08, 22/08, 24/08), nên cũng không được ngừng đè hẳn — bản sửa file lần sau sẽ không vào
+được.
+
+Muốn phân biệt "khách sửa" với "file đổi" thì cần **ba bản**, không phải hai: bản trên site,
+bản trong file mới, và **bản mà bộ nạp đã ghi lần trước** (bản gốc). Có bản gốc thì mọi ca
+đều quyết được, kể cả ca cả hai cùng đổi:
+
+	site == gốc, file != gốc                  -> chỉ file đổi      -> ĐÈ
+	site != gốc, file == gốc                  -> chỉ khách sửa     -> GIỮ
+	site != gốc, file != gốc, site != file     -> ĐỤNG NHAU        -> báo, đừng đoán
+	site != gốc, file != gốc, site == file     -> trùng ý          -> không phải làm gì
+
+⚠ **BẢN GỐC HIỆN CÓ SẴN, MIỄN PHÍ — VÀ SẼ MẤT.** Ngày 25-26/08/2026 đã đo: 733/733 rule trên
+`hkled.com` khớp **tuyệt đối** với `spec.json` tại commit `f155666` (24/08,
+sha256 `cfca5e9de78e…`). Khách chưa sửa rule nào. Nên:
+
+	BẢN GỐC của hkled.com = spec.json @ f155666
+
+Không cần thêm trường vào DocType, không cần bảng phụ — chỉ cần `git show
+f155666:mbwnext_hkled/data/bom_template/spec.json`.
+
+Điều này **chỉ đúng chừng nào khách chưa sửa rule nào**. Khách sửa một rule rồi mới đi dựng
+bản gốc thì bản sửa đó bị coi là "bộ nạp đã ghi" và sẽ bị đè mất ở lần nạp sau — hỏng đúng
+thứ hướng B sinh ra để bảo vệ. Từ lúc đó trở đi muốn có bản gốc thì **bắt buộc phải lưu**
+(thêm trường vào `BOM Rule` ghi giá trị bộ nạp đã ghi, hoặc ghi mốc commit spec cho từng
+template).
+
+➜ Chạy lệnh này trước khi làm phần hợp nhất. Còn ra `✅ 0 lệch` thì mốc trên còn dùng được;
+ra `🔴` rồi thì mốc đã hỏng, phải đổi cách.
+
 ## Cách kiểm chéo, KHÔNG dùng lệnh này
 
 Lệnh này so **nội dung**. Muốn xác nhận độc lập thì đừng chạy lại chính nó — cùng một logic
