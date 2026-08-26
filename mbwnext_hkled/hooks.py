@@ -37,12 +37,22 @@ app_license = "mit"
 # localization / các app đã cài, không phải app này. Còn ở lượt NGOÀI thì hook sớm nhất của
 # `mbwnext_hkled` là 305 — mãi sau 287, tức sau khi đã xoá xong. Nên từ app này: không kịp.
 #
-# ⚠ VÀ `before_app_install` CŨNG KHÔNG CỨU ĐƯỢC CA NÀY. `frappe.get_hooks("before_app_install")`
-# gom hook từ `get_installed_apps()` (`frappe/__init__.py::_load_app_hooks`) — tức chỉ các app
-# ĐÃ CÀI trên site. Lúc lượt trong chạy, `mbwnext_hkled` chưa được `add_to_installed_apps()`,
-# nên hook của chính nó KHÔNG bắn. Muốn dùng điểm này thì phải là một app lõi khác đã nằm sẵn
-# trên site đứng ra khai — mà đúng cảnh nguy hiểm nhất (site khách chỉ có app lõi) thì chưa
-# chắc có app nào chịu ôm. (Kết luận này đọc từ mã nguồn, CHƯA chạy thử.)
+# ⚠ `before_app_install` CHẶN ĐƯỢC THẬT — ĐÃ ĐO, KHÔNG PHẢI SUY. Nhưng KHÔNG khai được từ
+# chính app này. `frappe.get_hooks("before_app_install")` gom hook từ `get_installed_apps()`
+# (`frappe/__init__.py::_load_app_hooks` — không truyền `app_name` thì lấy danh sách app ĐÃ
+# CÀI). Lúc lượt trong chạy ở dòng 287, `mbwnext_hkled` chưa qua `add_to_installed_apps()`
+# (mãi dòng 318 của lượt ngoài), nên hook của chính nó không bao giờ bắn. Phải là **một app
+# khác đã nằm sẵn trên site** đứng ra khai.
+#
+# Đo ngày 26/08/2026 trên `test.com`: dựng một app rỗng khai
+# `before_app_install`, cài nó trước, gỡ localization, rồi `bench install-app mbwnext_hkled`.
+# Kết quả: hook BẮN với `app='mbwnext_localization'`, throw, `RC=1`, và
+# **Item Group giữ nguyên 101 (không tụt về 8), Item 61.836, UOM 37** — chặn đúng trước
+# `del_masterdataCore()`, không mất dòng nào.
+#
+# ➜ Nghĩa là nếu không sửa được app lõi thì vẫn còn đường: cho một app lõi ĐANG CÓ SẴN trên
+# mọi site khách ôm hook này. Điểm yếu: đúng cảnh nguy hiểm nhất — site mới tinh chỉ có
+# erpnext — thì chưa app nào ôm.
 #
 # ➜ Rào đúng chỗ nhất vẫn là chính `del_masterdataCore()` bên `mbwnext_localization`: nó là
 # nơi duy nhất biết chắc site có dữ liệu hay không, ngay trước khi xoá. App lõi, phải xin
