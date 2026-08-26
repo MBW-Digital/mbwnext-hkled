@@ -331,8 +331,32 @@ frappe.ui.form.on("BOM Template", {
 			return;
 		}
 		grid.add_custom_button(__(NHAN_NUT_TIM_RULE), () => mo_tim_rule(frm), "top");
+		khoa_o_dieu_kien(grid);
 	},
 });
+
+/* Khoá ô Điều Kiện — Thắng chốt 26/08 11:11 (PM-FEAT-00007).
+
+   Ô Thuộc Tính Điều Kiện chứa JSON, mở ra sửa tay được chỉ vì lúc làm chưa ai nghĩ tới, không
+   phải vì có ai cần. Gõ sai tên đặc tính trong đó — "Công Suất" thay vì "Công suất" — thì rule
+   VẪN LƯU BÌNH THƯỜNG, không báo lỗi gì, nhưng không còn khớp biến thể nào: cột Biến Thể Khớp
+   tụt về 0 và chỉ ai để ý cột đó mới thấy. Hậu quả lộ ra ở chỗ khác, lúc khác — vài hôm sau có
+   người tạo BOM cho biến thể thuộc nhóm đó và nhận "Chưa thiết lập NVL cho thành phần ...",
+   không ai nối được hai việc với nhau nữa.
+
+   read_only KHÔNG chặn được ghi từ server hay từ API, và không cần chặn: bộ nạp, nút Tạo Rule
+   đều ghi qua đường đó và đều đúng. Ca hỏng cần chặn chỉ có một — tay người gõ vào ô.
+
+   ⚠ PHẢI tắt luôn nút thêm dòng của lưới. cond_attrs là trường BẮT BUỘC (reqd=1); khoá ô lại
+   mà vẫn cho thêm dòng trắng là đẩy người dùng vào ngõ cụt: lưu thì báo thiếu trường bắt buộc,
+   mà không còn đường nào điền vào. Từ nay thêm rule chỉ qua nút Tạo Rule — vốn đã là đường
+   đúng, và cũng là đường duy nhất kiểm được trùng điều kiện trước khi thêm. */
+function khoa_o_dieu_kien(grid) {
+	// Đặt trước toggle_enable: cờ này đọc trong setup_toolbar(), mà toggle_enable tự gọi
+	// refresh sau đó — gộp một lượt vẽ lại thay vì hai.
+	grid.cannot_add_rows = true;
+	grid.toggle_enable("cond_attrs", false);
+}
 
 function mo_tim_rule(frm) {
 	if (!frm.doc.item_template) {
