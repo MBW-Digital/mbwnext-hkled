@@ -332,18 +332,21 @@ def nhap_mot_sheet(ten_sheet, spec_sheet, chi_kiem=False):
 			bao["sl_thieu"].append({
 				"tp": t["thanh_phan"], "ly_do": ly_do, "ghi_trong_sheet": t["sl_tho"],
 			})
-			# Khách khai "Cố Định" nhưng số lượng lại ĐỔI theo đặc tính (vd Ốc dây điện:
-			# "Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1") — hai thứ mâu thuẫn.
-			# "Cố Định" lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đúng cho cả
-			# hai trường hợp; để nguyên là dòng bị bỏ khỏi BOM một cách âm thầm.
-			# Nâng lên "Số Lượng Theo Công Thức" để Server Script tính, NVL vẫn lấy từ ô
-			# khách khai. Ghi lại để người đọc báo cáo biết bộ nạp đã đổi kiểu.
-			if kieu == "Cố Định":
-				kieu = "Số Lượng Theo Công Thức"
-				bao.setdefault("doi_kieu", []).append({
-					"tp": t["thanh_phan"], "tu": "Cố Định", "sang": kieu,
-					"vi": ly_do,
-				})
+			# ĐÃ BỎ 26/08/2026: chỗ này từng tự nâng "Cố Định" -> "Số Lượng Theo Công Thức"
+			# khi ô số lượng là công thức chứ không phải con số.
+			#
+			# Anh Thắng chốt bỏ hẳn kiểu "Số Lượng Theo Công Thức" — chỉ còn hai kiểu:
+			# "Theo Rule" (NVL do rule quyết, số lượng do Server Script tính) và "Cố Định"
+			# (NVL và số lượng đều cố định). Thành phần duy nhất dùng kiểu bị bỏ là
+			# `Ốc dây điện` của 4 sheet module, nay đã chuyển sang "Theo Rule" trong spec,
+			# theo đúng khuôn `Ốc ghép ngang` của VDP0X: một rule `moi_bien_the` cấp NVL,
+			# số lượng (kể cả ca SL 0) để `bom_qty.py` tính từ `sl_tho`.
+			#
+			# ⚠ Đã kiểm trước khi bỏ: sau khi đổi 4 dòng đó, KHÔNG còn thành phần "Cố Định"
+			# nào có ô số lượng đọc không ra số. Nên bỏ đoạn này không làm dòng nào rơi khỏi
+			# BOM. Nếu sau này báo cáo `sl_thieu` xuất hiện dòng "Cố Định", đó là dấu hiệu
+			# bảng nguồn có ca mới — HỎI KHÁCH xem nó là "Theo Rule" hay số cố định, đừng
+			# dựng lại phép tự nâng kiểu.
 		doc.append("bom_component_table", {
 			"bom_component": t["thanh_phan"],
 			"component_type": kieu,
