@@ -94,6 +94,25 @@ nhất. Lần nạp gần nhất đọc bằng `max(modified)` của `BOM Rule`.
 từ git; ra `🔴` thì phải soi tiếp: lệch đó là **file đổi chưa nạp** hay **khách sửa thật** —
 hai thứ nhìn giống nhau nếu chỉ so hai bản.
 
+## Đọc kết quả ở lần chạy TỚI (26/08/2026 → tới khi hkled.com nạp lại)
+
+Spec vừa đổi 4 dòng `Ốc dây điện` (`M30S050-A/B`, `M50S050-A/B`) từ `Cố Định` sang
+`Theo Rule`, mà `hkled.com` thì **chưa nạp lại** — `import_bom_template` còn nằm trong nhóm
+patch chờ `bench migrate`. Nên lệnh này **sẽ báo 4 lệch**, và đó là lệch HỢP LỆ.
+
+Chạy lệnh này NGAY TRƯỚC khi nạp lại — đừng tin con số đo hôm trước, khách đang giai đoạn
+test và có thể sửa bất cứ lúc nào. Đọc kết quả:
+
+	BOM Component Table: lệch = 4, đúng 4 dòng `Ốc dây điện`
+	                     (file `Theo Rule` + NVL rỗng ≠ site `Số Lượng Theo Công Thức` + OPG-M12-RM)
+	BOM Rule           : "chỉ ở file" = 4, mỗi sheet module 1 — rule `Ốc dây điện` mới thêm
+	cột `sửa` của cả 4 dòng trùng mốc nạp hàng loạt gần nhất
+	                                            → ĐÚNG DỰ KIẾN, nạp tiếp
+	có bất kỳ dòng nào khác, HOẶC mốc `sửa` muộn hơn lần nạp
+	                                            → DỪNG, hỏi trước khi nạp
+
+Sau khi nạp lại thành công thì cả hai bảng phải về 0 lệch, và đoạn này bỏ đi được.
+
 ## Cách kiểm chéo, KHÔNG dùng lệnh này
 
 Lệnh này so **nội dung**. Muốn xác nhận độc lập thì đừng chạy lại chính nó — cùng một logic
