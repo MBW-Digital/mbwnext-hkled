@@ -80,7 +80,7 @@ Chuẩn bị: tạo trước 3 item NVL tên `ZZTEST-NVL-A/B/C` (Nhóm hàng b�
 | C2 | Tạo BOM Template mới, chọn Mặt Hàng Cha = `DD11S200` | **Nhóm Công Thức tự điền `D11_D15`** |
 | C3 | Đổi Mặt Hàng Cha sang `DP01S050-A` | Nhóm Công Thức **giữ nguyên giá trị cũ** (chỉ gợi ý khi đang trống) — xoá trắng rồi chọn lại thì mới gợi ý `P01_P03` |
 | C4 | Dòng 1: Thành Phần BOM = `Hộp carton`, Kiểu = `Cố Định` | Hiện cả **Số Lượng** và **Mặt Hàng**, cả hai bắt buộc |
-| C5 | Dòng 2: Thành Phần BOM = `Module`, Kiểu = `Số Lượng Theo Công Thức` | Hiện **Mặt Hàng** (bắt buộc), **ẩn Số Lượng** |
+| ~~C5~~ | ~~Dòng 2: Thành Phần BOM = `Module`, Kiểu = `Số Lượng Theo Công Thức`~~ | **KHÔNG CÒN ÁP DỤNG từ 27/08** — kiểu này đã bỏ, ô chọn chỉ còn `Cố Định` và `Theo Rule` |
 | C6 | Dòng 3: Thành Phần BOM = `Nguồn`, Kiểu = `Theo Rule` | **Ẩn cả** Số Lượng và Mặt Hàng; hiện nút **Tạo Rule** |
 | C7 | Bấm **Tạo Rule** | Dialog "Tạo Rule — Chọn NVL theo Nguồn", liệt kê các giá trị `Nguồn` thật của item cha, mỗi giá trị 1 ô chọn Item |
 | C8 | Chọn NVL cho 2 giá trị, bỏ trống phần còn lại → **Xác Nhận** | Alert "Đã thêm 2 dòng, cập nhật 0 dòng"; tab **Công Thức Thành Phần** có đúng 2 dòng |
