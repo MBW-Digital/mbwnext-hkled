@@ -485,6 +485,28 @@
 	.ghim-btn .caret { transition: transform .15s ease; }
 	.ghim-btn[aria-expanded="true"] .caret { transform: rotate(90deg); }
 	.ghim-none { font-size: .82em; opacity: .55; }
+
+	/* bản 7 — ô nhập Số Lượng Giữ Chỗ trên từng dòng (anh Thắng chốt 02/09 12:32) */
+	.gc {
+		width: 3.6em; padding: .2em .4em; text-align: right;
+		font: inherit; font-variant-numeric: tabular-nums;
+		border: 1px solid var(--line); border-radius: 3px;
+		background: var(--card); color: inherit;
+	}
+	/* Nút tăng/giảm của input number chiếm gần hết bề ngang ở cỡ chữ này và CHE MẤT con số —
+	   chỉ lộ ra khi mở trình duyệt thật, đã vấp đúng kiểu này ở bản 6 với nút bung Bảng 1b. */
+	.gc::-webkit-outer-spin-button, .gc::-webkit-inner-spin-button {
+		-webkit-appearance: none; margin: 0;
+	}
+	.gc { -moz-appearance: textfield; appearance: textfield; }
+	.gc:focus { outline: 2px solid var(--decided); outline-offset: 1px; }
+	/* Bỏ tick = TẠM NGỪNG, không phải xoá. Số vẫn nằm đó, chỉ mờ đi và không sửa được —
+	   luật 2 anh Thắng chốt: sale sửa tay 20 dòng mà lỡ bỏ tick là mất sạch thì không có
+	   đường lấy lại. */
+	.gc:disabled { opacity: .4; cursor: not-allowed; }
+	.gc-max { display: block; font-size: .74em; opacity: .55; margin-top: .15em; white-space: nowrap; }
+	/* Gõ chạm trần thì báo ngay tại chỗ, đừng để người dùng tưởng bàn phím hỏng. */
+	.gc-cap { color: var(--danger); font-weight: 600; }
 </style>
 
 <div class="page">
@@ -499,20 +521,34 @@
 			<b>6 module</b> M30S050, <b>12 ốc</b>, nguồn <b>NHKP-300E</b>.
 		</p>
 		<p class="doc-meta">
-			<b>Bấm thử được:</b> nút <b>Kiểm Tra Tồn Kho</b>, nút <b>18 đang ghim</b> ở cột
-			<i>Tồn khả dụng</i> Bảng 1 (bung/gập Bảng 1b), ô tick <b>Ghim Tồn Khả Dụng</b>
-			(đổi ngay số tồn khả dụng ở Bảng 1, và ẩn luôn nút bung vì không còn gì bị ghim), nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3,
-			và nút <b>Hẹn lại ngày giao</b> ở mục D (3 trạng thái).
+			<b>Bấm thử được:</b> <b>ô Giữ chỗ</b> ở Bảng 1 (sửa số, cột <i>Thiếu</i> đổi theo ngay;
+			gõ quá tồn thì bị chặn và báo tại chỗ), ô tick <b>Ghim Tồn Khả Dụng</b> (bỏ tick thì số
+			<b>mờ đi chứ không mất</b>), nút <b>Kiểm Tra Tồn Kho</b>, nút <b>18 đang ghim</b> ở Bảng 1
+			và <b>8 đang ghim</b> ở Bảng 2, nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3, nút
+			<b>Hẹn lại ngày giao</b> ở mục D (3 trạng thái).
 			<br>
-			Trạng thái: <b style="color:var(--decided)">bản 6 — trả lời câu anh Thắng hỏi 25/08 17:06</b>.
-			Anh hỏi Bảng 1b hiện ở đâu, và đơn nhiều mặt hàng thì có hiện mỗi mặt hàng 5 dòng không.
-			Bản 5 <b>không trả lời được</b> — ví dụ chỉ có đúng một mặt hàng bị ghim nên không lộ ra
-			luật hiển thị. Bản 6: Bảng 1b <b>gập sẵn</b>, chỉ dòng nào đang bị đơn khác ghim mới có
-			nút bung; bấm dòng nào bung dòng ấy. Xem <b>Bảng 1</b> ở mục B và phần giải thích ngay
-			dưới Bảng 1b.
+			Trạng thái: <b style="color:var(--decided)">bản 7 — theo phản hồi của khách 27/08 và
+			chốt của anh Thắng 02/09</b>. Bốn thay đổi:
 			<br>
-			<i>Nhắc lại bản 5:</i> nút <b>Hẹn lại ngày giao</b> ở mục D trả về <b>một ngày gợi ý</b>,
-			bấm thử được cả <b>3 trạng thái</b>.
+			<b>1) Ghim giờ là một CON SỐ, không còn là ô tích có/không.</b> Khách nêu tình huống anh A
+			nhường một phần hàng cho anh B; ô tích chỉ nhả được <b>cả đơn</b> nên A định nhường 4 cái
+			mặt hàng này lại mất luôn 2 cái mặt hàng kia. Nay: tick ở cấp đơn để điền nhanh mức tối đa
+			cho mọi dòng, rồi sửa từng dòng. <b>Không cho gõ vượt tồn</b> (anh Thắng chốt), phần chênh
+			ra cột <i>Thiếu</i>. Bỏ tick là <b>tạm ngừng</b>, số vẫn nằm đó.
+			<br>
+			<b>2) Bảng 2 thêm cột SL về.</b> Khách hỏi ngoài ngày về thì về bao nhiêu. Đặt cạnh cột
+			<i>Thiếu</i> chứ không thay: vỏ đèn thiếu 21 mà đơn mua sớm nhất chỉ có 10.
+			<br>
+			<b>3) Bảng 2 thêm “đang bị ghim trên đơn nào”</b> — khách hỏi vì sao Bảng 1 có mà Bảng 2
+			không. Do mockup thiếu, không phải khó. Bảng 2b có thêm cột <b>Bóc ra từ</b>, vì đơn kia
+			<i>không có dòng vật tư đó trên đơn</i>.
+			<br>
+			<b>4) Sửa một lỗi trong chính bản phân tích, do câu hỏi của khách chỉ ra:</b> phần đã sản
+			xuất xong vẫn bị ghim <i>cả</i> nguyên vật liệu <i>lẫn</i> thành phẩm — cùng một lượng vật
+			tư trừ hai lần, đơn khác thấy thiếu ảo. Nay chỉ bóc định mức cho phần <b>chưa sản xuất</b>.
+			<br>
+			<i>Nhắc lại bản 6:</i> Bảng 1b <b>gập sẵn</b>, chỉ dòng đang bị ghim mới có nút bung.
+			<i>Bản 5:</i> nút <b>Hẹn lại ngày giao</b> trả về một ngày gợi ý, bấm thử được 3 trạng thái.
 			<br>
 			<i>Nhắc lại thay đổi của bản 4:</i> Bảng 1b đổi sang <b>đơn đang ghim tồn</b>, Bảng 2 thêm
 			<b>cột Ngày hàng về</b>. Mục 7.3 (chặn xuất quá tồn) đã tách sang <code>PM-FEAT-00034</code>.
@@ -646,7 +682,7 @@
 								<tr>
 									<th>Mặt hàng</th><th>ĐVT</th>
 									<th class="n">Cần</th><th class="n">Tồn thực tế</th>
-									<th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
+									<th class="n">Tồn khả dụng</th><th class="n">Giữ chỗ</th><th class="n">Thiếu</th>
 									<th>Bổ sung bằng</th>
 								</tr>
 							</thead>
@@ -659,7 +695,13 @@
 										        aria-expanded="false" aria-controls="bang-1b">
 											<span class="caret">▸</span> <span id="btn-1b-so">18</span> đang ghim
 										</button>
-									</td><td class="n" id="thieu-1">25</td>
+									</td>
+									<td class="n">
+										<input class="gc" id="gc-1" type="number" min="0" max="15" value="15"
+										       inputmode="numeric" aria-label="Số lượng giữ chỗ DP01S300">
+										<span class="gc-max" id="gc-max-1">tối đa 15</span>
+									</td>
+									<td class="n" id="thieu-1">25</td>
 									<td><span class="pill ok">Sản xuất</span></td>
 								</tr>
 								<tr>
@@ -667,7 +709,13 @@
 									<td class="n">20</td><td class="n"><b>32</b></td>
 									<td class="n"><span id="ton-2">32</span><br>
 										<span class="ghim-none" id="ghim-none-2">không đơn nào ghim</span>
-									</td><td class="n" id="thieu-2">0</td>
+									</td>
+									<td class="n">
+										<input class="gc" id="gc-2" type="number" min="0" max="20" value="20"
+										       inputmode="numeric" aria-label="Số lượng giữ chỗ NHKP-250E">
+										<span class="gc-max" id="gc-max-2">tối đa 20</span>
+									</td>
+									<td class="n" id="thieu-2">0</td>
 									<td><span class="pill buy">Mua hàng</span></td>
 								</tr>
 							</tbody>
@@ -746,19 +794,27 @@
 									<th>Mặt hàng</th><th>ĐVT</th>
 									<th class="n">Cần</th><th class="n">Tồn thực tế</th>
 									<th class="n">Tồn khả dụng</th><th class="n">Thiếu</th>
-									<th>Ngày hàng về</th><th>Nguồn nhu cầu</th>
+									<th>Ngày hàng về</th><th class="n">SL về</th><th>Nguồn nhu cầu</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr>
 									<td class="mono">VDP0X-300-D-GY-v3.0</td><td>Cái</td>
-									<td class="n">25</td><td class="n"><b>12</b></td><td class="n">4</td><td class="n">21</td>
+									<td class="n">25</td><td class="n"><b>12</b></td>
+									<td class="n">4<br>
+										<button type="button" class="ghim-btn" id="btn-2b"
+										        aria-expanded="false" aria-controls="bang-2b">
+											<span class="caret">▸</span> 8 đang ghim
+										</button>
+									</td><td class="n">21</td>
 									<td class="ve"><b>02/09/2026</b></td>
+									<td class="n"><b>10</b><br><span class="gc-max gc-cap">vẫn thiếu 11</span></td>
 									<td class="src">Bộ vỏ đèn · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">M30S050-3B3-5C-64LED-CD-A</td><td>Cái</td>
 									<td class="n">150</td><td class="n"><b>150</b></td><td class="n">150</td><td class="n">0</td>
+									<td class="ve trong">—</td>
 									<td class="ve trong">—</td>
 									<td class="src">Module · 25 × 6</td>
 								</tr>
@@ -766,29 +822,36 @@
 									<td class="mono">OVT-M4x8-RT-T-PH-SS201</td><td>Cái</td>
 									<td class="n">300</td><td class="n"><b>1.200</b></td><td class="n">1.200</td><td class="n">0</td>
 									<td class="ve trong">—</td>
+									<td class="ve trong">—</td>
 									<td class="src">Ốc vít cố định module · 25 × 12</td>
 								</tr>
 								<tr>
 									<td class="mono">NHKP-300E</td><td>Cái</td>
-									<td class="n">25</td><td class="n"><b>30</b></td><td class="n">6</td><td class="n">19</td>
+									<td class="n">25</td><td class="n"><b>30</b></td>
+									<td class="n">6<br><span class="ghim-none">24 đang ghim</span></td><td class="n">19</td>
 									<td class="ve"><b>28/08/2026</b></td>
+									<td class="n"><b>50</b></td>
 									<td class="src">Nguồn · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">WPC-MDF-M15-2P-6B-SS-CD</td><td>Cái</td>
-									<td class="n">25</td><td class="n"><b>25</b></td><td class="n">0</td><td class="n">25</td>
+									<td class="n">25</td><td class="n"><b>25</b></td>
+									<td class="n">0<br><span class="ghim-none">25 đang ghim</span></td><td class="n">25</td>
 									<td class="ve chua">chưa có đơn mua</td>
+									<td class="ve trong">—</td>
 									<td class="src">Cầu đấu · 25 × 1</td>
 								</tr>
 								<tr>
 									<td class="mono">HCT-360x580x185mm-NO</td><td>Cái</td>
 									<td class="n">25</td><td class="n"><b>40</b></td><td class="n">40</td><td class="n">0</td>
 									<td class="ve trong">—</td>
+									<td class="ve trong">—</td>
 									<td class="src">Hộp carton · 25 × 1</td>
 								</tr>
 								<tr class="off">
 									<td class="mono">W-3x0.75-BK</td><td>Mét</td>
 									<td class="n">2.500</td><td class="n"><b>4.000</b></td><td class="n">4.000</td><td class="n">0</td>
+									<td class="ve trong">—</td>
 									<td class="ve trong">—</td>
 									<td class="src">Dây điện cấp nguồn · 25 × 100</td>
 								</tr>
@@ -800,6 +863,48 @@
 						<span><i class="dot" style="background:var(--decided)"></i> đủ tồn</span>
 						<span>Nhu cầu của cùng một mặt hàng từ nhiều dòng đã được <b>cộng dồn trước</b>, rồi mới trừ tồn một lần.</span>
 					</div>
+					<div id="bang-2b" hidden>
+						<div class="tbl-head">
+							<h4>Bảng 2b · Đơn đang ghim VDP0X-300-D-GY-v3.0</h4>
+							<span class="sub">vật tư bị ghim <b>gián tiếp</b> — khác Bảng 1b</span>
+						</div>
+						<div class="tw">
+							<table>
+								<thead>
+									<tr>
+										<th>Mã đơn</th><th>Người phụ trách</th>
+										<th class="n">Đang ghim</th><th>Bóc ra từ</th><th>Ngày lấy hàng dự kiến</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr><td class="mono">SO-26-00131</td><td>Nguyễn Thu Hằng</td><td class="n">6</td>
+										<td class="src">DP01S300-3B3HT-AD · 6 × 1</td><td>12/10/2026</td></tr>
+									<tr><td class="mono">SO-26-00118</td><td>Trà Nguyễn</td><td class="n">2</td>
+										<td class="src">DP01S300-6P3HN-BN · 2 × 1</td><td>28/09/2026</td></tr>
+								</tbody>
+							</table>
+						</div>
+						<p class="hint">
+							<b>Khách hỏi 27/08:</b> phần “đang bị ghim trên đơn nào” mới có ở Bảng 1, Bảng 2 chưa
+							thấy — do mockup chưa làm thôi hay gặp khó khăn? <b>Do mockup thiếu, không phải khó.</b>
+							Bản 7 bổ sung.
+						</p>
+						<p class="hint">
+							Nhưng nó <b>hiện khác Bảng 1b</b>, và chỗ khác đó quan trọng: hai đơn kia
+							<b>không có dòng vỏ đèn nào trên đơn</b> — họ bán <i>đèn thành phẩm</i>. Vỏ bị ghim là do
+							<b>bóc định mức của đơn họ ra</b>. Nên có thêm cột <b>Bóc ra từ</b> để người đọc biết
+							con số 6 và 2 từ đâu mà có; không có cột đó thì mở đơn SO-26-00131 tìm mãi không thấy
+							dòng vỏ đèn nào, tưởng hệ thống sai.
+						</p>
+					</div>
+
+					<p class="hint">
+						<b>SL về</b> = phần <b>chưa nhận</b> của đúng đơn mua đã dùng để ra <i>Ngày hàng về</i>
+						(anh Thắng xác nhận 27/08). Cố ý đặt <b>cạnh</b> cột <i>Thiếu</i> chứ không thay nó:
+						vỏ đèn thiếu <b>21</b> mà đơn mua về sớm nhất chỉ có <b>10</b> — nhìn thấy “02/09 có hàng
+						về” mà không thấy về bao nhiêu thì dễ nhận đơn rồi vẫn thiếu. Nên dòng đó ghi thẳng
+						<b>vẫn thiếu 11</b>.
+					</p>
 					<p class="hint">
 						<b>Ngày hàng về</b> = ngày <b>Required By</b> của đơn mua gần nhất còn chứa mặt hàng
 						đó, chỉ tính ngày từ hôm nay trở đi — anh Thắng chốt 24/08. Mặt hàng không có đơn
@@ -1093,12 +1198,70 @@
 			if (mo) bang1b.scrollIntoView({ behavior: "smooth", block: "nearest" });
 		});
 
+		// Bảng 2b — vật tư bị ghim GIÁN TIẾP qua định mức của đơn khác (bản 7)
+		var btn2b = document.getElementById("btn-2b");
+		var bang2b = document.getElementById("bang-2b");
+		btn2b.addEventListener("click", function () {
+			var mo = btn2b.getAttribute("aria-expanded") !== "true";
+			btn2b.setAttribute("aria-expanded", mo ? "true" : "false");
+			bang2b.hidden = !mo;
+			if (mo) bang2b.scrollIntoView({ behavior: "smooth", block: "nearest" });
+		});
+
+		/* ----- Ô Số Lượng Giữ Chỗ (bản 7, anh Thắng chốt 02/09) -----
+		   Ba luật:
+		   1. Tick ở cấp ĐƠN, ô số lượng ở TỪNG DÒNG. Tick một cái là điền mức tối đa cho mọi dòng.
+		   2. Bỏ tick KHÔNG xoá số — chỉ khoá lại và làm mờ. Tick lại thì số cũ còn nguyên.
+		   3. KHÔNG cho gõ vượt tồn khả dụng (anh Thắng chốt 12:40). Phần thiếu không mất đi:
+		      nó ra cột `Thiếu` theo mục 5b — `thiếu = cần − giữ chỗ` khi đơn có tick.
+		   Con số `tối đa` phải đổi theo trạng thái tick, vì tồn khả dụng của dòng 1 đổi 15 <-> 33. */
+		var DONG = [
+			{ gc: "gc-1", max: "gc-max-1", thieu: "thieu-1", can: 40, kdCo: 15, kdKhong: 33 },
+			{ gc: "gc-2", max: "gc-max-2", thieu: "thieu-2", can: 20, kdCo: 32, kdKhong: 32 }
+		];
+
+		function veDong(d, on) {
+			var o = document.getElementById(d.gc);
+			var tran = Math.min(d.can, on ? d.kdCo : d.kdKhong);
+			o.max = tran;
+			o.disabled = !on;
+			if (Number(o.value) > tran) o.value = tran;   // hạ tồn thì số đang giữ phải theo
+			document.getElementById(d.max).textContent = on ? "tối đa " + tran : "tạm ngừng";
+			document.getElementById(d.max).className = "gc-max";
+			// thiếu: có tick thì trừ theo phần MÌNH GIỮ, không tick thì trừ theo tồn khả dụng
+			var thieu = on ? d.can - Number(o.value) : d.can - d.kdKhong;
+			document.getElementById(d.thieu).textContent = Math.max(0, thieu);
+		}
+
+		DONG.forEach(function (d) {
+			var o = document.getElementById(d.gc);
+			o.addEventListener("input", function () {
+				var tran = Number(o.max);
+				if (Number(o.value) > tran) {
+					o.value = tran;
+					var nhan = document.getElementById(d.max);
+					nhan.className = "gc-max gc-cap";
+					nhan.textContent = "chỉ còn " + tran;
+					return veThieu(d);
+				}
+				document.getElementById(d.max).className = "gc-max";
+				document.getElementById(d.max).textContent = "tối đa " + tran;
+				veThieu(d);
+			});
+		});
+
+		function veThieu(d) {
+			var o = document.getElementById(d.gc);
+			document.getElementById(d.thieu).textContent =
+				Math.max(0, d.can - Number(o.value));
+		}
+
 		var tick = document.getElementById("tick-ghim");
 		tick.addEventListener("click", function () {
 			var on = tick.getAttribute("aria-checked") !== "true";
 			tick.setAttribute("aria-checked", on ? "true" : "false");
 			document.getElementById("ton-1").textContent = on ? "15" : "33";
-			document.getElementById("thieu-1").textContent = on ? "25" : "7";
+			DONG.forEach(function (d) { veDong(d, on); });
 			document.getElementById("ghim-hint").innerHTML = on
 				? "Đang tính với <b>Ghim Tồn Khả Dụng = có</b>. Đơn khác đã ghim đang giữ 18 cái DP01S300 nên tồn khả dụng còn 15."
 				: "Đang tính với <b>Ghim Tồn Khả Dụng = không</b>. Không trừ phần đơn khác giữ chỗ, nên tồn khả dụng là 33 — nhưng hàng đó có thể bị đơn khác lấy trước.";
@@ -1109,11 +1272,16 @@
 			// Bỏ tick thì cả dòng không-bị-ghim cũng hết ý nghĩa: để lại chú thích
 			// "không đơn nào ghim" trong khi dòng kia đã sạch dấu vết là lệch nhau.
 			document.getElementById("ghim-none-2").hidden = !on;
+			btn2b.hidden = !on;
 			if (!on) {
 				btn1b.setAttribute("aria-expanded", "false");
 				bang1b.hidden = true;
+				btn2b.setAttribute("aria-expanded", "false");
+				bang2b.hidden = true;
 			}
 		});
+
+		DONG.forEach(function (d) { veDong(d, true); });   // trạng thái đầu: đang tick
 
 		var henBox = document.getElementById("hen-box");
 		var btnHen = document.getElementById("btn-hen");

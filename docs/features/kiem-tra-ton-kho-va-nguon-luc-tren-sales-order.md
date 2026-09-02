@@ -116,9 +116,26 @@ và BOM Template, cả hai đều là thứ riêng của HKLED. Không đụng a
 
 | DocType | Field | Kiểu | Ghi chú |
 |---|---|---|---|
-| Sales Order | `custom_ghim_ton_kha_dung` | Check | Tích = giữ chỗ tồn cho đơn này |
+| Sales Order | `custom_ghim_ton_kha_dung` | Check | Công tắc chung cho cả đơn |
+| Sales Order Item | `custom_so_luong_giu_cho` | Float | Số lượng đơn này thực sự giữ, **theo từng dòng** |
 
-Chỉ **một** field mới. `custom_reserved_qty` **không** tạo cột trên `Bin` — tính động lúc bấm
+> ✅ **ĐỔI 02/09 — THÊM Ô SỐ LƯỢNG, GIỮ CẢ Ô TÍCH** (anh Thắng chốt `12:32` và `12:40`).
+>
+> Bản đầu chỉ có ô tích. Không đủ: khách nêu tình huống A nhường một phần hàng cho B
+> (phản hồi 27/08), mà ô tích thì **chỉ nhả được cả đơn**, không nhả một phần — A định
+> nhường 4 cái *item 1* nhưng mất luôn 2 cái *item 2* vì bỏ tích là nhả sạch.
+>
+> Ba luật đã chốt:
+>
+> 1. **Ô tích ở cấp ĐƠN, ô số lượng ở TỪNG DÒNG.** Tích một cái là hệ thống điền mức tối đa
+>    cho mọi dòng — đơn 20 dòng không phải gõ 20 ô.
+> 2. **Bỏ tích KHÔNG xoá số đã nhập**, chỉ làm mờ và ngừng áp dụng. Tích lại thì số cũ còn
+>    nguyên. Sale sửa tay 20 dòng rồi lỡ bỏ tích mà mất sạch thì không có đường lấy lại.
+> 3. **Sửa tay KHÔNG được vượt tồn khả dụng** — anh Thắng chốt 12:40, chặn cứng ở mức tối đa.
+>
+> ⚠ Luật 3 đảo lại đề xuất ban đầu của tôi (cho gõ vượt + chữ đỏ). Lý do tôi phản đối là
+> *"phần thiếu biến mất khỏi màn hình"*; anh Thắng gỡ đúng chỗ đó bằng cách cho phần thiếu
+> ra thành một cột riêng — xem mục 5b. Lo ngại được giải, không phải bị bỏ qua. `custom_reserved_qty` **không** tạo cột trên `Bin` — tính động lúc bấm
 nút. Đây là ràng buộc đã chốt: *không đụng Stock Balance / Stock Ledger / Bin*.
 
 > ✅ **ĐÃ CHỐT 25/08 — GIỮ `custom_ghim_ton_kha_dung`.** PM-FEAT-00034 chốt **tự làm**
@@ -186,7 +203,7 @@ Thứ tự này là **quy tắc nghiệp vụ đã chốt** (Notes mục 4), kh�
 **Bước 1 — Gom nhu cầu mặt hàng trên đơn.** Cộng dồn theo `item_code` (một đơn có thể có cùng
 mặt hàng ở nhiều dòng).
 
-**Bước 2 — Trừ tồn cho mặt hàng trên đơn.** `thiếu = cần − tồn_khả_dụng`. Ra **Bảng 1**.
+**Bước 2 — Trừ tồn cho mặt hàng trên đơn.** `thiếu` tính theo mục **5b**. Ra **Bảng 1**.
 
 **Bước 3 — Bóc BOM cho phần CÒN THIẾU.** Chỉ bóc `thiếu`, không bóc cả `cần` — bóc cả thì mua
 thừa đúng bằng phần đang có trong kho.
@@ -218,19 +235,74 @@ phải không ảnh hưởng đến số tồn khả dụng ở bảng 1 của c
 ghim tự trừ số lượng của chính mình và báo thiếu nhiều gấp đôi.
 
 **Ghim lan xuống NVL** (anh Thắng bổ sung 24/08): với đơn đã ghim, mặt hàng *Sản xuất/Gia công*
-thì **NVL bóc từ BOM mặc định cũng bị ghim theo**. Nghĩa là `ghim_bởi_đơn_khác` phải chạy chính
+thì **NVL bóc từ BOM mặc định cũng bị ghim theo**.
+
+> 🔴 **SỬA 02/09 — CHỈ BÓC PHẦN CHƯA SẢN XUẤT. Lỗi đếm hai lần, do khách chỉ ra.**
+>
+> Khách hỏi (27/08): *"sản xuất xong 5 sản phẩm rồi thì có chuyển từ ghim NVL sang ghim thành
+> phẩm không?"* Theo bản viết trước thì **không chuyển, mà ghim cả hai** — và đó là lỗi:
+>
+> `delivered_qty` chỉ giảm khi **giao cho khách**, không giảm khi **sản xuất xong**. Nên sau khi
+> sản xuất: NVL đã tiêu hao vào thành phẩm (`Bin.actual_qty` đã giảm thật), mà công thức vẫn bóc
+> BOM ra ghim tiếp → **cùng một lượng vật tư bị trừ hai lần**, đơn khác thấy *thiếu ảo*.
+>
+> ```
+> lượng bóc BOM = qty − delivered_qty − đã_sản_xuất
+> đã_sản_xuất   = Σ produced_qty của Work Order gắn với đơn đó, cho mặt hàng đó
+> ```
+>
+> Phần đã sản xuất xong thì chuyển sang **ghim thành phẩm**, đúng như khách hình dung. Nghĩa là `ghim_bởi_đơn_khác` phải chạy chính
 bước 3–4 ở trên cho từng đơn đã ghim, không chỉ cộng dòng trên đơn.
 
 ⚠ Đây là chỗ **tốn nhất** của cả tính năng: mỗi lần bấm nút phải bóc BOM cho *mọi đơn đang ghim*,
 không riêng đơn hiện tại. Xem mục 9.
 
+## 5b. Công thức cột *Thiếu* — đổi 02/09
+
+```
+thiếu = cần − phần_mình_chắc_chắn_có
+
+đơn CÓ tích ghim     → phần_mình_chắc_chắn_có = custom_so_luong_giu_cho của dòng
+đơn KHÔNG tích ghim  → phần_mình_chắc_chắn_có = tồn_khả_dụng
+```
+
+⚠ **Vì sao không giữ `cần − tồn_khả_dụng` cho mọi trường hợp.** Từ khi giữ chỗ là một con số
+chứ không còn là ô tích, công thức cũ hỏng ở đúng ca mà tính năng này sinh ra để phục vụ:
+
+	đơn A cần 5 · tồn khả dụng 5 · A tự hạ giữ chỗ xuống 1 (nhường cho B)
+	  công thức cũ:  thiếu = 5 − 5 = 0    → màn hình báo đơn A ĐỦ HÀNG
+	  thực tế:       A chỉ giữ 1
+
+Tệ hơn con số sai là **con số tự nhảy**: ngay khi B ghim 4 cái đó, đơn A nhảy từ `thiếu 0` lên
+`thiếu 4` trong khi **không ai đụng vào đơn A**. Sale mở đơn buổi sáng thấy đủ, chiều mở lại
+thấy thiếu, không có gì giải thích.
+
+Công thức mới cho ra `thiếu 4` ngay từ đầu và **đứng yên** dù B có ghim hay không.
+
+Với ca của anh Thắng (cần 6, tồn 4, giữ 4) cả hai công thức đều ra **2** — nên đây là mở rộng,
+không phải đảo ngược.
+
 ## 6. Ba bảng + dòng kết luận
 
 **Bảng 1 — mặt hàng trên đơn.** Cột: Mặt hàng · ĐVT · Cần · **Tồn thực tế** · Tồn khả dụng ·
-Thiếu · Bổ sung bằng.
+**Giữ chỗ** · Thiếu · Bổ sung bằng. Cột *Giữ chỗ* là ô nhập (mục 2); *Thiếu* theo mục 5b.
 
 **Bảng 2 — cần mua sau khi bóc BOM.** Cột: Nguyên vật liệu · ĐVT · Cần · **Tồn thực tế** ·
-Tồn khả dụng · Thiếu · **Ngày hàng về (dự kiến)** · Nguồn nhu cầu. Cột *Nguồn nhu cầu* giữ nguyên
+Tồn khả dụng · Thiếu · **Ngày hàng về (dự kiến)** · **SL về** · Nguồn nhu cầu.
+
+> ✅ **BỔ SUNG 02/09 theo phản hồi của khách 27/08.** Hai cột/khối mới:
+>
+> **Cột `SL về`** — khách hỏi *"ngoài ngày dự kiến hàng về thì hiển thị thêm số lượng hàng về"*,
+> anh Thắng xác nhận lấy theo **đúng đơn mua đã dùng để ra ngày** (mục 8.2), tức
+> `poi.qty − poi.received_qty` của chính dòng đó.
+> ⚠ Đặt **cạnh** cột *Thiếu*, không thay nó: số về **có thể nhỏ hơn** phần thiếu (thiếu 100 mà
+> đơn về sớm nhất chỉ có 30). Chỉ thấy *"20/9 có hàng"* mà không thấy về bao nhiêu thì sale
+> nhận đơn rồi vẫn thiếu.
+>
+> **Khối "đơn nào đang ghim" cho Bảng 2** — khách hỏi *"trên Bảng 2 vẫn chưa thấy, do mockup
+> chưa làm thôi hay gặp khó khăn gì"*. Trả lời: **thiếu ở mockup, không phải khó.** Nhưng hiện
+> **khác Bảng 1**: đơn kia *không có dòng NVL đó trên đơn* — NVL bị ghim là do **bóc BOM của
+> đơn kia** (mục 5). Nên số lượng hiện ở đây là lượng NVL bóc ra, không phải số lượng trên đơn. Cột *Nguồn nhu cầu* giữ nguyên
 tên Thành Phần BOM (`Bộ vỏ đèn`, `Nguồn`…) vì **dòng kết luận gộp lấy tên khâu từ đúng cột này**.
 Cột *Ngày hàng về* tính theo mục 8.2.
 
@@ -409,6 +481,20 @@ sai thì **dừng việc của kho**.
 
 Mục treo **10.1** (26/39 lệnh sản xuất không lần ra Đơn Bán) theo sang PM-FEAT-00034, vì nó chỉ
 ảnh hưởng luật chặn.
+
+## 11b. Hai việc đã tách sang tính năng khác (02/09)
+
+Ghi ở đây để người đọc mục 5b và mục 2 lần ra được phần còn lại, vì cả hai **dùng chung con số
+`custom_so_luong_giu_cho`** — đọc một mình một tính năng sẽ không hiểu vì sao lại có bước phân bổ.
+
+| Việc | Đi đâu | Vì sao tách |
+|---|---|---|
+| **Phân bổ hàng vào phần ghim khi hàng mua đã về** | **PM-FEAT-00036** · `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` · hạn 14/09 | Anh Thắng mở 02/09. Hệ quả trực tiếp của luật *chặn cứng ở tồn khả dụng*: đơn cần 6 chỉ giữ được 4, hai cái còn lại phải được ghim **tự động** khi hàng về, không thì sale phải nhớ quay lại bấm tay |
+| **Tạo Phiếu Yêu Cầu Mua Hàng từ popup** | anh Thắng tách task riêng (31/08) | Khách yêu cầu 28/08. Cách tính đã chốt: `cần mua = đang thiếu − phiếu YCM đang chờ − đơn mua chưa về`, **không huỷ phiếu cũ, không chồng phiếu**. Lõi ERPNext đã làm sẵn phép trừ này cho mặt hàng trên đơn (`sales_order.py::get_requested_item_qty`); phần **Bảng 2 (NVL) phải tự tính** vì NVL không nằm trên đơn |
+
+⚠ **Không có chức năng nhường hàng giữa hai đơn** — khách chốt 31/08 chọn *"A chỉ cần nhả ra, ai
+lấy thì lấy"*. Nghĩa là phần A nhả ra vào **kho chung**, không đến đích danh B; hai bên tự gọi
+điện cho nhau. Đừng dựng lại chức năng này nếu không có yêu cầu mới.
 
 ## 12. Việc kế tiếp
 
