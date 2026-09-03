@@ -486,6 +486,7 @@ def tinh_nhu_cau(
 	tu_ngay=None,
 	den_ngay=None,
 	lui_thang=12,
+	bao_tien_do=None,
 ):
 	"""Tính nhu cầu vật tư cần mua. **Chỉ đọc** — không tạo BOM, không tạo đơn mua.
 
@@ -496,6 +497,8 @@ def tinh_nhu_cau(
 	"""
 	kieu = str(kieu)
 	canh_bao, chua_no_duoc, gia_cong = [], [], {}
+	bao = bao_tien_do or (lambda pt, mo_ta: None)
+	bao(5, _("Đang dựng kỳ và gom nhu cầu"))
 	company = company or frappe.defaults.get_user_default("Company") or frappe.db.get_value(
 		"Company", {}, "name"
 	)
@@ -532,6 +535,9 @@ def tinh_nhu_cau(
 				mot_ky[m] = sl[i]
 		if not mot_ky:
 			continue
+		# Nổ định mức chiếm gần hết thời gian chạy, nên thanh tiến độ phải nhích ở ĐÂY. Báo theo
+		# số kỳ đã xong chứ không theo số mã: người dùng đọc được "kỳ 2/4", không đọc được "137 mã".
+		bao(10 + int(75 * i / so_ky_that), _("Nổ định mức kỳ {0}/{1}").format(i + 1, so_ky_that))
 		for nvl, sl in no_dinh_muc(mot_ky, canh_bao, chua_no_duoc, gia_cong, None, bo_nho).items():
 			nhu_cau_nvl.setdefault(nvl, [0.0] * so_ky_that)
 			nhu_cau_nvl[nvl][i] += sl
@@ -547,6 +553,7 @@ def tinh_nhu_cau(
 	ma_hang = list(nhu_cau_nvl)
 
 	# ── 3. Tồn khả dụng — cùng một cơ sở với Phần IV (đầu bài mục 5) ─────────
+	bao(88, _("Trừ tồn và kéo tồn qua kỳ"))
 	kho = _kho_hop_le(company)
 	ton = _ton_thuc_te(ma_hang, kho)
 
@@ -675,3 +682,100 @@ def gop_lap_ke_hoach(kieu=KIEU_THEO_DON, **tham_so):
 		})
 	kq["lap_ke_hoach"] = gop
 	return kq
+
+
+# ── Chạy nền (đầu bài mục 6.2 — quy mô 250–350 dòng mỗi kỳ) ───────────────────
+#
+# Vì sao không gọi thẳng `tinh_nhu_cau` từ trình duyệt: chi phí tuyến tính theo số BIẾN THỂ khác
+# nhau, đo 03/09 là ~0,15 s mỗi biến thể, tức 300 biến thể ≈ 44 giây. Quá ngưỡng timeout của
+# gateway, và kể cả không quá thì để người dùng ngồi nhìn màn hình đứng im 44 giây là hỏng.
+#
+# ⚠ Kết quả đi qua `frappe.cache()` — nhưng đây KHÔNG phải cái đệm đã bị gỡ ở `_thanh_phan_theo_template`.
+# Ở đó là đệm dữ liệu dẫn xuất, sống lâu, và rủi ro là trả SỐ CŨ. Ở đây là chỗ gửi kết quả của
+# đúng một lần bấm sang cho đúng lần bấm đó lấy: khoá sinh mới mỗi lần, không ai đọc lại lần thứ hai.
+
+TIEN_DO = "hkled_nhu_cau_tien_do"
+XONG = "hkled_nhu_cau_xong"
+
+
+def _khoa_ket_qua(ma_phien):
+	return "hkled_nhu_cau_kq:%s" % ma_phien
+
+
+def _khoa_tien_do(ma_phien):
+	return "hkled_nhu_cau_td:%s" % ma_phien
+
+
+@frappe.whitelist()
+def tinh_nen(**tham_so):
+	"""Đẩy phép tính sang hàng đợi, trả về mã phiên để trình duyệt lắng nghe.
+
+	Trình duyệt nghe hai sự kiện realtime rồi gọi `lay_ket_qua(ma_phien)`.
+	"""
+	tham_so.pop("cmd", None)
+	ma_phien = frappe.generate_hash(length=12)
+	frappe.enqueue(
+		"mbwnext_hkled.api.nhu_cau_vat_tu._chay_nen",
+		queue="short",
+		# 44 giây là ca xấu nhất đo được; để 600 s cho dữ liệu thật lớn hơn mà vẫn có trần rõ ràng,
+		# thay vì chạy vô hạn khi cây định mức có gì đó bất thường.
+		timeout=600,
+		ma_phien=ma_phien,
+		tham_so=tham_so,
+		nguoi_dung=frappe.session.user,
+	)
+	return {"ma_phien": ma_phien}
+
+
+def _chay_nen(ma_phien, tham_so, nguoi_dung):
+	"""Chạy trong worker. Mọi lỗi phải ĐI TỚI trình duyệt, không được chết lặng trong log.
+
+	Job chết mà không báo gì thì màn hình quay mãi ở 5% — người dùng không biết nên chờ hay bấm lại.
+	"""
+	def bao(phan_tram, mo_ta):
+		# GHI VÀO CACHE TRƯỚC, phát realtime sau. Realtime là đường nhanh; cache là đường chắc.
+		#
+		# ⚠ Không được chỉ dựa vào realtime: đo 03/09 trên chính bench này, socketio chạy ở cổng
+		# 9006 còn site vào qua 8012, nên trình duyệt báo "Error connecting to socket.io: timeout"
+		# và trang treo vĩnh viễn ở 3% — job đã chạy xong, chỉ là không ai báo cho màn hình biết.
+		# Bản đầu của hàm này chỉ có realtime, và đó là lỗi thiết kế: một tính năng không được hỏng
+		# hoàn toàn chỉ vì một kênh phụ không nối được.
+		frappe.cache().set_value(
+			_khoa_tien_do(ma_phien), {"phan_tram": phan_tram, "mo_ta": mo_ta}, expires_in_sec=1800
+		)
+		frappe.publish_realtime(
+			TIEN_DO, {"ma_phien": ma_phien, "phan_tram": phan_tram, "mo_ta": mo_ta},
+			user=nguoi_dung,
+		)
+
+	try:
+		kq = tinh_nhu_cau(bao_tien_do=bao, **tham_so)
+		kq["ma_phien"] = ma_phien
+	except Exception:
+		frappe.log_error(title="Tính nhu cầu vật tư thất bại", message=frappe.get_traceback())
+		kq = {"loi": frappe.get_traceback(with_context=False).strip().splitlines()[-1]}
+
+	frappe.cache().set_value(_khoa_ket_qua(ma_phien), kq, expires_in_sec=1800)
+	frappe.publish_realtime(XONG, {"ma_phien": ma_phien}, user=nguoi_dung)
+
+
+@frappe.whitelist()
+def lay_ket_qua(ma_phien):
+	"""Lấy kết quả của một lần bấm. Hết hạn (30 phút) thì báo rõ để người dùng bấm lại."""
+	kq = frappe.cache().get_value(_khoa_ket_qua(ma_phien))
+	if kq is None:
+		frappe.throw(_("Kết quả đã hết hạn hoặc chưa tính xong — bấm Tính toán lại"))
+	return kq
+
+
+@frappe.whitelist()
+def trang_thai(ma_phien):
+	"""Tiến độ + đã xong chưa — đường hỏi vòng, dùng khi realtime không tới được.
+
+	Trả `xong=True` ngay khi kết quả đã nằm trong cache, kể cả khi trình duyệt bỏ lỡ mọi sự kiện
+	realtime. Rẻ: hai lần đọc Redis, không đụng database.
+	"""
+	if frappe.cache().get_value(_khoa_ket_qua(ma_phien)) is not None:
+		return {"xong": True}
+	td = frappe.cache().get_value(_khoa_tien_do(ma_phien)) or {}
+	return {"xong": False, "phan_tram": td.get("phan_tram"), "mo_ta": td.get("mo_ta")}

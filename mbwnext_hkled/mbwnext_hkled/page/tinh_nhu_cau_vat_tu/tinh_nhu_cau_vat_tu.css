@@ -1,0 +1,237 @@
+/* Tính nhu cầu vật tư cần mua theo kỳ — PM-FEAT-00030.
+   Dùng biến màu của Frappe (--text-color, --border-color…) để trang theo được cả giao diện sáng
+   lẫn tối, thay vì đóng cứng mã màu như trang Gantt viết hồi tháng 8. */
+
+.hkled-nc {
+	padding: 0 15px 30px;
+}
+
+/* ── Bộ lọc ─────────────────────────────────────────────────────────────── */
+
+.hkled-nc-loc {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px 18px;
+	align-items: flex-end;
+	padding: 12px 0 16px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.hkled-nc-o {
+	min-width: 150px;
+}
+
+.hkled-nc-o > label {
+	display: block;
+	font-size: var(--text-xs);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--text-muted);
+	margin-bottom: 4px;
+}
+
+.hkled-nc-phu {
+	text-transform: none;
+	letter-spacing: 0;
+	font-weight: 400;
+}
+
+.hkled-nc-o .form-group {
+	margin-bottom: 0;
+}
+
+/* ── Thanh tiến độ ──────────────────────────────────────────────────────── */
+
+.hkled-nc-tiendo {
+	margin: 16px 0;
+}
+
+.hkled-nc-tiendo .thanh {
+	height: 6px;
+	border-radius: 3px;
+	background: var(--control-bg);
+	overflow: hidden;
+}
+
+.hkled-nc-tiendo .day {
+	height: 100%;
+	width: 0;
+	background: var(--primary);
+	/* Chuyển mượt để thanh không giật từng nấc lớn giữa các kỳ. */
+	transition: width 0.35s ease;
+}
+
+.hkled-nc-tiendo .chu {
+	margin-top: 6px;
+	font-size: var(--text-sm);
+	color: var(--text-muted);
+}
+
+/* ── Tóm tắt + cảnh báo ─────────────────────────────────────────────────── */
+
+.hkled-nc-tomtat {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 8px;
+	margin: 16px 0 10px;
+	font-size: var(--text-sm);
+	color: var(--text-muted);
+}
+
+.hkled-nc-tomtat .hkled-nc-so {
+	color: var(--text-color);
+}
+
+.hkled-nc-canhbao {
+	margin: 10px 0 4px;
+}
+
+.hkled-nc-canhbao .d {
+	padding: 8px 12px;
+	margin-bottom: 6px;
+	border-left: 3px solid var(--yellow-500);
+	background: var(--bg-yellow, var(--control-bg));
+	border-radius: 0 4px 4px 0;
+	font-size: var(--text-sm);
+	/* Danh sách số đơn có thể rất dài — cho xuống dòng thay vì tràn ngang. */
+	overflow-wrap: anywhere;
+}
+
+.hkled-nc-canhbao .d.nang {
+	border-left-color: var(--red-500);
+	background: var(--bg-red, var(--control-bg));
+}
+
+/* ── Bảng ───────────────────────────────────────────────────────────────── */
+
+/* Nhiều kỳ thì bảng rộng hơn màn hình. Cuộn ngang TRONG khung này, không để cả trang trôi ngang. */
+.hkled-nc-khung {
+	overflow-x: auto;
+	margin-top: 8px;
+}
+
+.hkled-nc-t {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: var(--text-sm);
+	white-space: nowrap;
+}
+
+.hkled-nc-t th,
+.hkled-nc-t td {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--border-color);
+	text-align: left;
+}
+
+.hkled-nc-t thead th {
+	position: sticky;
+	top: 0;
+	background: var(--fg-color);
+	font-size: var(--text-xs);
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	z-index: 1;
+}
+
+.hkled-nc-t th.ky {
+	text-align: center;
+	border-left: 1px solid var(--border-color);
+}
+
+.hkled-nc-t th.ky span {
+	font-weight: 400;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+/* Số luôn canh phải và dùng chữ số đều bề ngang, để các cột số so sánh được bằng mắt. */
+.hkled-nc-t .s {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* KHÔNG ép font monospace ở cột Mã: font mono của Frappe thiếu glyph tiếng Việt nên trình duyệt
+   thay thế theo TỪNG KÝ TỰ, và mã có dấu ("Bán thành phẩm 2") hiện ra giãn chữ loang lổ. Thấy
+   ngay trên màn hình thật 03/09. Chỉ cần một chút letter-spacing để mã vẫn tách khỏi cột Tên. */
+.hkled-nc-t .ma {
+	letter-spacing: 0.01em;
+}
+
+.hkled-nc-t tbody tr:hover {
+	background: var(--highlight-color);
+}
+
+/* Nhu cầu là số nền, làm mờ để cột Cần mua nổi lên — đó mới là thứ người dùng phải hành động. */
+.hkled-nc-t td.mo {
+	color: var(--text-muted);
+}
+
+.hkled-nc-t td.can {
+	font-weight: 600;
+}
+
+.hkled-nc-t td.am {
+	color: var(--red-500);
+}
+
+.hkled-nc-t .tong {
+	border-left: 1px solid var(--border-color);
+	font-weight: 600;
+}
+
+.hkled-nc-t .tong .con {
+	font-weight: 400;
+	color: var(--text-muted);
+}
+
+/* "chưa khai" khác hẳn "khai là 0" — phải nhìn ra ngay, không được trông giống một con số. */
+.hkled-nc-t td.chua-khai {
+	color: var(--text-light);
+	font-style: italic;
+	font-size: var(--text-xs);
+}
+
+.hkled-nc-chugiai,
+.hkled-nc-trong {
+	margin-top: 10px;
+	font-size: var(--text-sm);
+	color: var(--text-muted);
+}
+
+.hkled-nc-trong {
+	padding: 28px 0;
+	text-align: center;
+}
+
+/* ── Phụ lục ────────────────────────────────────────────────────────────── */
+
+.hkled-nc-phu-luc {
+	margin-top: 26px;
+}
+
+.hkled-nc-phu-luc h5 {
+	margin: 20px 0 6px;
+	font-size: var(--text-base);
+	font-weight: 600;
+}
+
+.hkled-nc-phu-luc h5.canh {
+	color: var(--yellow-600, var(--text-color));
+}
+
+.hkled-nc-phu-luc .hkled-nc-phu {
+	display: block;
+	margin-bottom: 8px;
+	font-size: var(--text-sm);
+	color: var(--text-muted);
+	white-space: normal;
+}
+
+.hkled-nc-t.nho {
+	max-width: 760px;
+}
