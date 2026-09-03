@@ -35,7 +35,7 @@ nằm ở đơn hiện tại mà ở chỗ phải bóc định mức cho **mọi
 
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import flt, get_datetime, getdate, nowdate
 
 
 # Hai nhóm kho bị loại khỏi mọi phép tính tồn (mục 3 của đầu bài).
@@ -342,6 +342,180 @@ def _ngay_hang_ve(ma_hang):
 	return ket
 
 
+# ══════════ Bảng 3 — nguồn lực nhân sự ══════════
+#
+# Cột theo mục 6 của đầu bài: Tổng theo lịch · Đã phân bổ · Còn lại · Đơn này cần · kết luận,
+# kèm danh sách mặt hàng Sản xuất/Gia công **chưa khai Thời Gian Sản Xuất** (anh Thắng chốt 5.2).
+#
+# ⚠ ĐƠN VỊ CỦA MỌI CON SỐ Ở ĐÂY LÀ **PHÚT CHUẨN**, không phải phút đồng hồ.
+#   Đầu bài mục 8.1: khối lượng = Σ(số lượng × Thời Gian Sản Xuất). Engine Phần III tiêu thụ
+#   khối lượng đó với tốc độ Σ(Năng Lực/100). Nên muốn so hai vế thì **năng lực phải nhân vào
+#   phía CUNG**: một người 90% ngồi 100 phút chỉ làm xong 90 phút chuẩn. Không nhân là so
+#   phút đồng hồ với phút chuẩn — hai đơn vị khác nhau, và sai về phía "báo đủ".
+
+TRANG_THAI_NHAN_SU_TINH = ("Active",)
+
+
+def _phut_giao_nhau(a1, a2, b1, b2):
+	"""Số phút hai khoảng thời gian chồng lên nhau. Không chồng thì 0."""
+	dau = max(a1, b1)
+	cuoi = min(a2, b2)
+	if cuoi <= dau:
+		return 0.0
+	return (cuoi - dau).total_seconds() / 60.0
+
+
+def _nang_luc():
+	"""{tên nhân sự: hệ số năng lực} — chỉ nhân sự đang làm việc.
+
+	Không khai Năng Lực thì coi là 100%: đó là mức "bình thường", đoán thấp hơn sẽ báo thiếu ảo.
+	"""
+	rows = frappe.get_all(
+		"Employee",
+		filters={"status": ["in", list(TRANG_THAI_NHAN_SU_TINH)]},
+		fields=["name", "employee_name", "custom_performance_factor_"],
+	)
+	ra = {}
+	for r in rows:
+		he_so = flt(r.get("custom_performance_factor_")) or 100.0
+		# Employee Schedule/Allocation nối bằng `employee_name`, không phải mã nhân sự.
+		ra[r.get("employee_name") or r["name"]] = he_so / 100.0
+	return ra
+
+
+def nguon_luc_nhan_su(don):
+	"""Bảng 3. Trả về dict; **không bao giờ tự nhận là "Đủ" khi chưa đo được**.
+
+	⚠ Đây là chỗ rủi ro R2 của đầu bài nằm: *"Bảng 3 sẽ ra gần 0 phút và luôn kết luận Đủ —
+	  sai mà không có gì báo. Loại lỗi tệ nhất: im lặng và ra số đẹp."* Đo trên site 03/09 cho
+	  thấy nó còn tệ hơn dự đoán vì **CẢ HAI VẾ đều rỗng**:
+
+	      Employee Schedule   149 dòng / 3 người, nhưng chỉ tới 31/08 → từ hôm nay: 0 dòng
+	      Employee Allocation còn hiệu lực trong tương lai: 0
+	      Mặt hàng Sản xuất/Gia công CHƯA khai Thời Gian Sản Xuất: 59.743 / 59.746
+
+	  0 so với 0 thì mọi phép so sánh đều ra "đủ". Nên hàm này **tách bạch ba trạng thái**:
+	  `du` · `khong_du` · `chua_tinh_duoc`, và chỉ trả `du` khi **cả hai vế thật sự đo được**.
+	"""
+	hom_nay = getdate(nowdate())
+	den = getdate(don.delivery_date) if don.get("delivery_date") else hom_nay
+	if den < hom_nay:
+		# Ngày giao đã qua — cùng cách xử lý với ngày trên Yêu Cầu Mặt Hàng: kẹp về hôm nay và
+		# NÓI RA, thay vì tính trên một khoảng âm rồi ra 0 phút.
+		den = hom_nay
+		ngay_bi_kep = True
+	else:
+		ngay_bi_kep = False
+
+	tu_dt = get_datetime(f"{hom_nay} 00:00:00")
+	den_dt = get_datetime(f"{den} 23:59:59")
+
+	nang_luc = _nang_luc()
+
+	# ── Vế CUNG: lịch làm việc trong kỳ, quy về phút chuẩn ─────────────────────────
+	lich = frappe.get_all(
+		"Employee Schedule",
+		filters={"date": ["between", [hom_nay, den]]},
+		fields=["employee_name", "start_time", "end_time"],
+	)
+	tong_theo_lich = 0.0
+	nguoi_co_lich = set()
+	for r in lich:
+		hs = nang_luc.get(r["employee_name"])
+		if hs is None:
+			continue  # nhân sự đã nghỉ việc: có lịch cũ nhưng không còn là năng lực
+		phut = _phut_giao_nhau(get_datetime(r["start_time"]), get_datetime(r["end_time"]), tu_dt, den_dt)
+		if phut > 0:
+			tong_theo_lich += phut * hs
+			nguoi_co_lich.add(r["employee_name"])
+
+	# ── Đã phân bổ: cam kết ở Work Order khác, tính phần CHỒNG LÊN kỳ đang xét ─────
+	da_phan_bo = 0.0
+	for r in frappe.get_all(
+		"Employee Allocation",
+		filters={"start_time": ["<", den_dt], "end_time": [">", tu_dt]},
+		fields=["employee_name", "start_time", "end_time"],
+	):
+		hs = nang_luc.get(r["employee_name"])
+		if hs is None:
+			continue
+		da_phan_bo += _phut_giao_nhau(
+			get_datetime(r["start_time"]), get_datetime(r["end_time"]), tu_dt, den_dt
+		) * hs
+
+	con_lai = max(0.0, tong_theo_lich - da_phan_bo)
+
+	# ── Vế CẦU: khối lượng đơn này cần ────────────────────────────────────────────
+	nhu_cau = _gom_nhu_cau(don.get("items"))
+	pp = {
+		r["name"]: (r.get("custom_replenishment_method") or "").strip()
+		for r in frappe.get_all(
+			"Item", filters={"name": ["in", list(nhu_cau)]},
+			fields=["name", "custom_replenishment_method"],
+		)
+	} if nhu_cau else {}
+	phai_san_xuat = {m: sl for m, sl in nhu_cau.items() if pp.get(m) in ("Sản xuất", "Gia công")}
+
+	tgsx = {}
+	if phai_san_xuat:
+		tgsx = {
+			r["name"]: flt(r.get("custom_time_to_manufacture"))
+			for r in frappe.get_all(
+				"Item",
+				filters={"name": ["in", list(phai_san_xuat)]},
+				fields=["name", "custom_time_to_manufacture"],
+			)
+		}
+
+	don_can = 0.0
+	thieu_dinh_muc = []
+	for ma, sl in sorted(phai_san_xuat.items()):
+		phut = tgsx.get(ma, 0.0)
+		if phut > 0:
+			don_can += sl * phut
+		else:
+			thieu_dinh_muc.append(ma)
+
+	# ── Kết luận: chỉ nói "Đủ" khi ĐO ĐƯỢC cả hai vế ──────────────────────────────
+	ly_do = []
+	if not phai_san_xuat:
+		ket_luan = "khong_ap_dung"
+		ly_do.append("Đơn này không có mặt hàng nào phải sản xuất hoặc gia công.")
+	elif thieu_dinh_muc and not don_can:
+		ket_luan = "chua_tinh_duoc"
+		ly_do.append(
+			f"Chưa mặt hàng nào trên đơn khai Thời Gian Sản Xuất "
+			f"({len(thieu_dinh_muc)} mặt hàng), nên không tính được đơn này cần bao nhiêu công."
+		)
+	elif not nguoi_co_lich:
+		ket_luan = "chua_tinh_duoc"
+		ly_do.append("Chưa nhân sự nào được xếp lịch làm việc trong khoảng đang xét.")
+	else:
+		ket_luan = "du" if con_lai >= don_can else "khong_du"
+
+	# Cảnh báo nói thêm, KHÔNG đổi kết luận — người đọc cần biết con số đang thiếu phần nào.
+	if thieu_dinh_muc and don_can:
+		ly_do.append(
+			f"Con số 'đơn này cần' mới tính được phần đã khai; còn {len(thieu_dinh_muc)} mặt hàng "
+			"chưa khai Thời Gian Sản Xuất nên thực tế sẽ CAO HƠN."
+		)
+	if ngay_bi_kep:
+		ly_do.append("Ngày giao của đơn đã qua — tính trong đúng ngày hôm nay.")
+
+	return {
+		"tu_ngay": str(hom_nay),
+		"den_ngay": str(den),
+		"so_nhan_su_co_lich": len(nguoi_co_lich),
+		"tong_theo_lich": tong_theo_lich,
+		"da_phan_bo": da_phan_bo,
+		"con_lai": con_lai,
+		"don_can": don_can,
+		"ket_luan": ket_luan,
+		"ly_do": ly_do,
+		"thieu_dinh_muc": thieu_dinh_muc,
+	}
+
+
 @frappe.whitelist()
 def kiem_tra(sales_order=None, doc=None):
 	"""Điểm vào của nút *Kiểm Tra Tồn Kho*. Trả về dữ liệu cho Bảng 1 và Bảng 2.
@@ -400,6 +574,7 @@ def kiem_tra(sales_order=None, doc=None):
 		"so_kho_tinh_ton": len(kho),
 		"bang1": bang1,
 		"bang2": bang2,
+		"bang3": nguon_luc_nhan_su(don),
 		"canh_bao": canh_bao,
 	}
 
@@ -522,7 +697,6 @@ def tao_yeu_cau_mua_hang(sales_order):
 	  đơn nào cũng vỡ ngay lúc lưu, và lỗi hiện ra là "Row #1: Reqd by Date cannot be before
 	  Transaction Date", người dùng không nối được về nút vừa bấm.
 	"""
-	from frappe.utils import getdate, nowdate
 
 	can_mua, canh_bao, kq = tinh_can_mua(sales_order)
 	if not can_mua:
