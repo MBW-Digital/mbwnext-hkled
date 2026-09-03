@@ -87,10 +87,29 @@ def _chen_vao_bo_cuc_da_luu():
 		grid = (data.get("GridView") or {}).get(DOCTYPE_CON)
 		if not isinstance(grid, list) or not grid:
 			continue
-		if any(c.get("fieldname") == FIELDNAME for c in grid):
-			continue
 
-		# chèn ngay sau `qty`; không có `qty` thì đặt cuối
+		# BƯỚC 1 — bỏ những cột ĐANG VÔ HÌNH SẴN.
+		#
+		# Đây là chỗ bản đầu của patch bỏ sót, và vì thế nó báo "không đủ chỗ" cho cả hai
+		# người dùng trên site. Bố cục của họ đã vượt trần từ trước (11 và 13 đơn vị) nên
+		# Frappe vốn đã cắt phần đuôi — những mục đó **không hiện trên màn hình dù có nằm
+		# trong bố cục**. Bỏ chúng đi thì người dùng KHÔNG mất gì đang nhìn thấy, mà lại có
+		# chỗ cho cột mới.
+		giu, cong_don = [], 1
+		for c in grid:
+			if c.get("fieldname") == FIELDNAME:
+				continue                       # sẽ chèn lại đúng chỗ ở bước 2
+			rong = int(c.get("columns") or 0) or 1
+			# Chừa sẵn 1 đơn vị cho cột Giữ Chỗ sắp chèn. Không chừa thì cắt xong vừa đủ trần,
+			# chèn thêm là vượt lại đúng 1 — bản trước vấp chỗ này, và vì mọi cột lúc đó đã
+			# rộng 1 nên bước thu hẹp không còn gì để thu.
+			if cong_don + rong > TRAN - 1:
+				break                          # từ đây trở đi vốn đã không hiện
+			cong_don += rong
+			giu.append(c)
+		grid = giu
+
+		# BƯỚC 2 — chèn ngay sau `qty`; không có `qty` thì đặt cuối
 		vi_tri = len(grid)
 		for i, c in enumerate(grid):
 			if c.get("fieldname") == "qty":
@@ -98,20 +117,19 @@ def _chen_vao_bo_cuc_da_luu():
 				break
 		grid.insert(vi_tri, {"fieldname": FIELDNAME, "columns": 1})
 
+		# BƯỚC 3 — vẫn chật thì thu hẹp cột RỘNG NHẤT, không hạ xuống dưới 1
 		tong = sum(int(c.get("columns") or 0) for c in grid)
-		if 1 + tong > TRAN:
-			# lấy chỗ từ cột RỘNG NHẤT (trừ chính cột vừa chèn), không hạ xuống dưới 1
-			can_bot = 1 + tong - TRAN
-			for _ in range(can_bot):
-				ung_vien = [
-					c for c in grid
-					if c.get("fieldname") != FIELDNAME and int(c.get("columns") or 0) > 1
-				]
-				if not ung_vien:
-					khong_du_cho.append(row["user"])
-					break
-				rong_nhat = max(ung_vien, key=lambda c: int(c.get("columns") or 0))
-				rong_nhat["columns"] = int(rong_nhat["columns"]) - 1
+		while 1 + tong > TRAN:
+			ung_vien = [
+				c for c in grid
+				if c.get("fieldname") != FIELDNAME and int(c.get("columns") or 0) > 1
+			]
+			if not ung_vien:
+				khong_du_cho.append(row["user"])
+				break
+			rong_nhat = max(ung_vien, key=lambda c: int(c.get("columns") or 0))
+			rong_nhat["columns"] = int(rong_nhat["columns"]) - 1
+			tong -= 1
 
 		data.setdefault("GridView", {})[DOCTYPE_CON] = grid
 		frappe.db.sql(
