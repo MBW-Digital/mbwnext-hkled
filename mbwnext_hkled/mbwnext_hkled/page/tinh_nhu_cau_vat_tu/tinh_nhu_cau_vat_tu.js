@@ -261,12 +261,22 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 				${phu ? `<div class="phu">${phu}</div>` : ""}
 			</div>`;
 
-		let h = o(__("Vật tư cần mua"), dong.length, kq.kieu === "1" ? __("Theo đơn hàng") : __("Theo lượng bán trước"));
+		// Cả ba thẻ phải cùng một thứ bậc: NHÃN nhỏ ở trên, SỐ lớn ở giữa, chú thích nhỏ ở dưới.
+		// Thẻ thứ ba từng lấy "4 kỳ" làm nhãn và khoảng ngày làm giá trị — ngược thứ bậc so với hai
+		// thẻ kia, mà khoảng ngày lại dài nên phải thu nhỏ chữ, thành ra thẻ nào cũng lệch nhịp.
+		const don_vi = { Ngày: __("ngày"), Tuần: __("tuần"), Tháng: __("tháng") };
+		let h = o(
+			__("Vật tư cần mua"),
+			dong.length,
+			kq.kieu === "1" ? __("Theo đơn hàng") : __("Theo lượng bán trước")
+		);
 		h += o(__("Tổng còn phải mua"), this.so(tong), "");
 		h += o(
-			kq.kieu === "1" ? __("{0} kỳ", [ky.length]) : __("Một khoảng"),
-			`<span class="nho">${khoang}</span>`,
-			kq.khoang_tham_chieu ? __("đối chiếu {0} → {1}", kq.khoang_tham_chieu) : ""
+			__("Kỳ tính"),
+			kq.kieu === "1"
+				? `${ky.length} <span class="dv">${don_vi[this.o_loai_ky.get_value()] || ""}</span>`
+				: __("Một khoảng"),
+			khoang + (kq.khoang_tham_chieu ? ` · ${__("đối chiếu {0} → {1}", kq.khoang_tham_chieu)}` : "")
 		);
 		this.$nd.find(".hkled-nc-tomtat").removeAttr("hidden").html(h);
 	}

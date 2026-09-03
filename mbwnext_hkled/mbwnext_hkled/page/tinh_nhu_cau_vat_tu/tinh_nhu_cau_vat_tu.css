@@ -101,9 +101,11 @@
 	font-variant-numeric: tabular-nums;
 }
 
-.hkled-nc-the .gt .nho {
+/* Đơn vị đi kèm số lớn: nhỏ và nhạt hơn, để con số vẫn là thứ mắt bắt trước. */
+.hkled-nc-the .gt .dv {
 	font-size: var(--text-md);
 	font-weight: 500;
+	color: var(--text-muted);
 }
 
 .hkled-nc-the .phu {
