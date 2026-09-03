@@ -577,6 +577,91 @@ Dựng một Đơn Bán thiếu hàng **trong giao dịch rồi `rollback`** —
 	đơn ngày giao 24/08 (quá khứ)  →  phiếu lấy ngày hôm nay, `ngay_bi_kep = true`
 	sau rollback       →  0 rò rỉ, không còn Đơn Bán lẫn phiếu thử nào
 
+## 12c. Ba thứ chỉ lộ ra khi mở giao diện (03/09 chiều)
+
+Cả ba đều **chạy đúng** dưới `bench execute` — không lệnh nào báo sai. Chúng chỉ lộ khi ngồi bấm
+thật trên cổng 8012.
+
+### 1. Ô tích nằm trong mục GẬP, người bán hàng không thấy
+
+`custom_ghim_ton_kha_dung` neo sau `custom_note`, mà `custom_note` nằm trong mục **Thông Tin Sản
+Xuất** — mục này mặc định **gập lại**. Mở đơn ra không có ô tích nào cả; phải bấm bung một mục tên
+"Thông Tin Sản Xuất" thì nhân viên bán hàng mới thấy, và họ không có lý do gì để bấm vào đó.
+
+➜ Neo lại sau `set_warehouse` (*Chọn kho xuất*), mục **Mật Hàng**, **không gập được**, nằm ngay
+trên lưới hàng hoá mà nó điều khiển. `add_sales_order_ghim_fields.py` có thêm bước `_nan_vi_tri()`
+sửa cả những site đã chạy bản patch cũ — `_create` bỏ qua trường đã tồn tại nên không tự sửa được.
+
+**Bài học chung:** `insert_after` quyết định trường rơi vào MỤC nào, và mục có thể đang gập.
+Chọn neo phải nhìn cả mục chứ không chỉ nhìn trường đứng cạnh.
+
+### 2. Cột Giữ Chỗ LUÔN hiện, `depends_on` không giấu được cột lưới
+
+`custom_so_luong_giu_cho` khai `depends_on: eval:parent.custom_ghim_ton_kha_dung`. Điều đó đúng
+với ô nhập trong form chi tiết dòng, **không đúng với cột trên lưới**: `grid.js::setup_visible_columns`
+dựng cột từ `user_defined_columns` (`__UserSettings.GridView`) và không hề đọc `depends_on`.
+
+Đã thử `grid.toggle_display("custom_so_luong_giu_cho", false)` trên cổng 8012: **không ăn**. Nó đặt
+`hidden` lên docfield toàn cục, còn `setup_user_defined_columns()` lấy docfield bằng
+`frappe.meta.get_docfield(doctype, fieldname)` rồi tự gán `in_list_view = 1` đè lên; thêm nữa
+`setup_visible_columns()` **thoát sớm** nếu `visible_columns` đã dựng.
+
+➜ **Chấp nhận cột luôn hiện**, giá trị 0 khi đơn không ghim. Không đi ép cột ẩn động: phải viết
+lại `user_defined_columns` lúc chạy, tức ghi vào cài đặt lưới dùng chung của người dùng — đắt và
+dễ hỏng hơn nhiều so với một chữ số 0.
+
+⚠ Chỗ này tôi **đã báo sai cho anh Thắng** ("cột chỉ hiện khi tích ô") trước khi mở giao diện ra
+xem. Đã đính chính trên PM.
+
+### 3. "Không cho nhập vượt tồn khả dụng" chưa hề được thực thi
+
+Anh Thắng chốt 02/09 12:40, mockup bản 7 đã diễn cảnh gõ 99 tự về 15. Nhưng trong mã nguồn
+**không có chỗ nào chặn**: `dien_muc_toi_da` chỉ kẹp lúc TỰ ĐIỀN, người dùng gõ tay sau đó thì
+không ai kiểm. Gõ 99 trên tồn 31, bấm Lưu — lưu được.
+
+Nguy ở chỗ con số này **không chỉ nằm trên đơn của mình**: `ghim_boi_don_khac` đọc thẳng nó rồi
+trừ khỏi tồn khả dụng của **mọi đơn khác**. Một dòng ghim 99 trên tồn 31 làm các đơn còn lại thấy
+thiếu ảo 68 cái và đi mua hàng không cần mua.
+
+➜ Chặn ở **hai lớp**:
+
+| Lớp | Ở đâu | Làm gì |
+|---|---|---|
+| Giao diện | `sales_order.js::kep_giu_cho` | gõ quá thì kéo về trần ngay, báo đỏ tại chỗ |
+| Máy chủ | `python_hook/sales_order.py::chan_giu_cho_vuot_ton` | chặn thật, kể cả đường API / Data Import |
+
+Hai điểm tinh trong hàm máy chủ:
+
+- **Chỉ chặn khi người dùng TĂNG số.** Tồn tụt sau khi đơn đã lưu là chuyện bình thường; chặn cứng
+  theo trần hiện tại sẽ khoá luôn những sửa đổi chẳng liên quan gì tới ghim — đúng cái bẫy
+  `validate_schedule_date` của lõi đã giăng ở Yêu Cầu Mặt Hàng.
+- **Cộng dồn theo mã, không xét từng dòng.** Nhiều dòng cùng một mã ăn chung một lượng tồn; xét
+  riêng lẻ thì đơn 3 dòng × 20 trên tồn 20 lọt cả ba.
+
+⚠ Bẫy đã vấp ngay khi viết: `ghim_khac, _ = ghim_boi_don_khac(...)` — `_` là **hàm dịch của
+Frappe**, gán đè lên nó thì `_("...")` ở câu thông báo nổ `'list' object is not callable`. Chỗ nổ
+nằm **trong nhánh chặn**, nên nhìn từ ngoài vẫn thấy "đã chặn thành công", chỉ sai câu thông báo.
+Không có test in ra nguyên văn câu lỗi thì không ai phát hiện.
+
+### Đã đo lại sau khi sửa (cổng 8012, 03/09)
+
+	ô tích:  mục "Mật Hàng", không gập      → mở đơn là thấy ngay
+	gõ 99 trên lưới (tồn 31, cần 20)        → tự về 20, báo đỏ
+	lưu 99 bằng API                          → CHẶN, câu thông báo đúng chữ
+	lưu 20 / lưu 0 / bỏ tích rồi lưu 99      → cho qua (đúng)
+	giả lập tồn tụt còn 5, cũ 5 → mới 5 / 4  → cho qua (không tăng thì không khoá)
+	                            cũ 5 → mới 6  → CHẶN
+	2 dòng cùng mã, 3+3 trên tồn 5           → CHẶN ở dòng thứ hai
+
+### Còn một câu hỏi ĐANG CHỜ ANH THẮNG
+
+Phiếu Yêu Cầu Mặt Hàng sinh từ Bảng 2 đang cho **13 dòng vật tư về "Kho thành phẩm"**, vì đó là
+kho của Đơn Bán. Đo trên site: **0 / 62.055** bản ghi *Item Default* có khai kho mặc định, và
+`Stock Settings.default_warehouse` cũng trống — nên hôm nay kho của Đơn Bán là **nguồn duy nhất**
+có thể lấy, không phải lỗi lập trình. Nhưng vật tư về kho thành phẩm thì sai về nghiệp vụ.
+**Chưa tự đổi** — đổi thứ tự ưu tiên là đổi hành vi anh Thắng chưa duyệt, và hôm nay đổi cũng
+không ra kết quả khác vì không mặt hàng nào khai kho.
+
 ## 12. Việc kế tiếp
 
 1. ✅ **Anh Thắng duyệt mockup 24/08** (`ssvcj7q0rq`: *"được rồi đó em"*). Bản 5 thêm ngày gợi ý

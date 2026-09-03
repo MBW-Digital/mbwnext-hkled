@@ -46,7 +46,14 @@ SALES_ORDER_FIELDS = [
 		"fieldname": "custom_ghim_ton_kha_dung",
 		"label": "Ghim Tồn Khả Dụng",
 		"fieldtype": "Check",
-		"insert_after": "custom_note",
+		# Neo sau `set_warehouse` (Chọn kho xuất), tức NGAY TRÊN lưới hàng hoá và trong mục
+		# *Mật Hàng* — mục này KHÔNG gập lại được.
+		#
+		# ⚠ Bản đầu neo sau `custom_note`, và `custom_note` nằm trong mục **Thông Tin Sản Xuất**
+		#   vốn mặc định GẬP. Mở đơn ra không thấy ô tích đâu; phải bấm bung mục "Thông Tin Sản
+		#   Xuất" mới thấy — nhân viên bán hàng không có lý do gì để bấm vào đó. Lộ ra khi test
+		#   trên giao diện 03/09; chạy `bench execute` thì vĩnh viễn không thấy.
+		"insert_after": "set_warehouse",
 		"default": "0",
 		"description": (
 			"Tích ô này thì số lượng chưa giao của đơn được giữ chỗ, các đơn khác không dùng "
@@ -72,6 +79,31 @@ SALES_ORDER_ITEM_FIELDS = [
 ]
 
 
+# Trường đã tạo bằng bản patch cũ thì `_create` bỏ qua, nên phải nắn riêng chỗ đã đặt sai.
+# Chỉ nắn khi nó vẫn đang ở đúng vị trí cũ — người dùng tự kéo đi chỗ khác thì để yên.
+SUA_VI_TRI = [
+	("Sales Order", "custom_ghim_ton_kha_dung", "custom_note", "set_warehouse"),
+]
+
+
+def _nan_vi_tri():
+	sua = []
+	for doctype, fieldname, cu, moi in SUA_VI_TRI:
+		name = f"{doctype}-{fieldname}"
+		if not frappe.db.exists("Custom Field", name):
+			continue
+		if frappe.db.get_value("Custom Field", name, "insert_after") != cu:
+			continue
+		if not frappe.db.exists("DocField", {"parent": doctype, "fieldname": moi}) and not (
+			frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": moi})
+		):
+			# Neo mới không tồn tại trên site này — để nguyên còn hơn đẩy trường về cuối form.
+			continue
+		frappe.db.set_value("Custom Field", name, "insert_after", moi)
+		sua.append(f"{fieldname}: {cu} → {moi}")
+	return sua
+
+
 def _create(doctype, fields):
 	them = []
 	for spec in fields:
@@ -88,9 +120,13 @@ def _create(doctype, fields):
 def execute():
 	them = _create("Sales Order", SALES_ORDER_FIELDS)
 	them += _create("Sales Order Item", SALES_ORDER_ITEM_FIELDS)
+	sua = _nan_vi_tri()
 
 	for dt in ("Sales Order", "Sales Order Item"):
 		frappe.clear_cache(doctype=dt)
+
+	if sua:
+		print(f"[mbwnext_hkled] Ghim tồn khả dụng: nắn lại vị trí — {'; '.join(sua)}")
 
 	if them:
 		print(f"[mbwnext_hkled] Ghim tồn khả dụng: tạo {len(them)} trường — {', '.join(them)}")

@@ -60,6 +60,13 @@ frappe.ui.form.on("Sales Order Item", {
 			frappe.model.set_value(cdt, cdn, "custom_note", frm.doc.custom_note);
 		}
 	},
+
+	// PM-FEAT-00023: gõ quá tồn khả dụng thì kéo về mức tối đa ngay tại chỗ, đừng để người dùng
+	// bấm Lưu rồi mới ăn thông báo lỗi từ server. Server vẫn chặn độc lập
+	// (`python_hook/sales_order.py::chan_giu_cho_vuot_ton`) — đây chỉ là lớp cho êm tay.
+	custom_so_luong_giu_cho(frm, cdt, cdn) {
+		kep_giu_cho(frm, locals[cdt][cdn]);
+	},
 });
 
 // Chỉ ghi đè dòng đang TRỐNG hoặc đang giữ đúng giá trị cũ của đầu đơn. Dòng người dùng đã sửa tay
@@ -99,6 +106,55 @@ function lan_toa_ghi_chu(frm) {
 
 const NHAN_NUT_PHIEU = "Tạo Yêu Cầu Mặt Hàng";
 
+// Trần của một dòng = ít hơn giữa "đơn cần" và "kho còn", trừ tiếp phần các dòng KHÁC cùng mã
+// trên chính đơn này đã giữ. Không trừ phần đó thì đơn 3 dòng cùng một mã sẽ giữ gấp ba.
+function kep_giu_cho(frm, row) {
+	if (!row || !frm.doc.custom_ghim_ton_kha_dung) return;
+	const moi = flt(row.custom_so_luong_giu_cho);
+	if (moi <= 0) return;
+
+	const ap_dung = (kha_dung) => {
+		const cua_dong_khac = (frm.doc.items || [])
+			.filter((r) => r.name !== row.name && r.item_code === row.item_code)
+			.reduce((t, r) => t + flt(r.custom_so_luong_giu_cho), 0);
+		const tran = Math.max(0, Math.min(flt(row.qty), flt(kha_dung) - cua_dong_khac));
+		if (moi <= tran) return;
+
+		frappe.model.set_value(row.doctype, row.name, "custom_so_luong_giu_cho", tran);
+		frappe.show_alert({
+			message: __("{0}: chỉ giữ chỗ được {1} — đã sửa lại giúp anh/chị.", [
+				row.item_code,
+				format_number(tran),
+			]),
+			indicator: "red",
+		});
+	};
+
+	const cache = frm.__hkled_kha_dung;
+	if (cache && row.item_code in cache) {
+		ap_dung(cache[row.item_code]);
+		return;
+	}
+	// Chưa có số trong tay thì hỏi server một lần rồi nhớ lại, đừng hỏi mỗi lần gõ phím.
+	frappe.call({
+		method: "mbwnext_hkled.api.kiem_tra_ton_kho.kiem_tra",
+		args: { sales_order: frm.doc.name },
+		callback(r) {
+			if (!r.message) return;
+			const kd = nho_kha_dung(frm, r.message);
+			if (row.item_code in kd) ap_dung(kd[row.item_code]);
+		},
+	});
+}
+
+// Tồn khả dụng ở đây LUÔN là số đã trừ phần các đơn khác giữ (`kiem_tra` trả về vậy) và KHÔNG
+// gồm phần chính đơn này đang giữ — nên dùng thẳng làm trần được, không phải cộng trừ gì thêm.
+function nho_kha_dung(frm, du_lieu) {
+	frm.__hkled_kha_dung = {};
+	(du_lieu.bang1 || []).forEach((d) => (frm.__hkled_kha_dung[d.ma] = d.ton_kha_dung));
+	return frm.__hkled_kha_dung;
+}
+
 function dien_muc_toi_da(frm) {
 	frappe.call({
 		method: "mbwnext_hkled.api.kiem_tra_ton_kho.kiem_tra",
@@ -107,8 +163,7 @@ function dien_muc_toi_da(frm) {
 		freeze_message: __("Đang tính mức giữ chỗ tối đa…"),
 		callback(r) {
 			if (!r.message) return;
-			const kha_dung = {};
-			(r.message.bang1 || []).forEach((d) => (kha_dung[d.ma] = d.ton_kha_dung));
+			const kha_dung = nho_kha_dung(frm, r.message);
 			let da_dien = 0;
 			(frm.doc.items || []).forEach((row) => {
 				// Tối đa = ít hơn giữa "đơn cần" và "kho còn". Không cho vượt tồn — anh Thắng
@@ -137,7 +192,9 @@ function mo_kiem_tra(frm) {
 		freeze: true,
 		freeze_message: __("Đang kiểm tra tồn kho…"),
 		callback(r) {
-			if (r.message) ve_popup(frm, r.message);
+			if (!r.message) return;
+			nho_kha_dung(frm, r.message);
+			ve_popup(frm, r.message);
 		},
 	});
 }
