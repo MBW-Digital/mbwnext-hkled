@@ -36,3 +36,4 @@ mbwnext_hkled.patches.sua_cha_bien_the_lech
 mbwnext_hkled.patches.dat_don_vi_tinh_mac_dinh
 mbwnext_hkled.patches.add_sales_order_ghim_fields
 mbwnext_hkled.patches.them_cot_giu_cho_vao_luoi
+mbwnext_hkled.patches.them_ton_toi_thieu_vao_kho_mac_dinh

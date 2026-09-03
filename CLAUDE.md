@@ -852,10 +852,8 @@ nên không qua hàm đó nữa, nhưng **trường `slug` của PM Feature vẫ
 | `chan-xuat-kho-qua-ton-kha-dung` | PM-FEAT-00034 | ✔ | ✔ (.html) | — | — |
 | `phan-v-tinh-toan-nhu-cau-vat-tu-can-mua-theo-ky` | PM-FEAT-00030 | ✔ | — | — | — |
 | `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` | PM-FEAT-00036 | ✔ | — | — | — |
+| `khai-kho-mac-dinh-va-ton-toi-thieu-theo-cong-ty` | PM-FEAT-00037 | ✔ | — | — | — |
 
-⚠ `PM-FEAT-00037` (Khai kho mặc định và tồn tối thiểu theo công ty) **chưa có file trong repo** —
-mới ở giai đoạn phân tích. Phần đọc kho mặc định thì đã có: `api/kiem_tra_ton_kho.py::_kho_mac_dinh`
-đọc bảng con `Item Default` **có sẵn của lõi**, không dựng bảng mới.
 
 Test case của các PM Task rời (không thuộc feature nào) đặt theo nhóm việc:
 `ghi-chu-san-xuat-va-ke-hoach-tu-don-ban.md` (PM-TASK-00046/47/49/50),
