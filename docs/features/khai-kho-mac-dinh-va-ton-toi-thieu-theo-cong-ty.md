@@ -71,6 +71,8 @@ này **không phải viết lại phần đọc**, chỉ lo phần khai.
 | `Item Reorder.warehouse_reorder_level` — *Mức đặt hàng lại* (lõi) | theo **từng kho** | cơ chế tự sinh Yêu cầu mặt hàng của lõi |
 | `Item.custom_ton_kho_toi_thieu` — *Tồn kho tối thiểu* | **một số cho cả mặt hàng** | PM-FEAT-00030 (Phần V) |
 
+📌 **Anh Thắng đã dùng bảng thứ hai rồi**: `Item Reorder` có đúng 1 bản ghi trên site — *Thành phẩm 1 · Kho thành phẩm · mức 0*, tạo 21/07. Nhật ký hoạt động của mặt hàng ghi *"Thắng added rows for Mức tồn kho tối thiểu theo kho"*. Nghĩa là nếu không chốt một chỗ, khách sẽ có **ba** nơi khai cùng một ý niệm — và bản ghi cũ kia đang để mức 0, đọc như "đã khai, mức 0" chứ không phải "chưa khai".
+
 ⛔ **Trường thứ ba giờ là thừa.** Nó ra đời cho Phần V (commit `e9e03b1`, phiên `cozy-dev-0c`) khi
 chưa ai nói tới "theo công ty". Chốt của anh Thắng 03/09 11:10 làm nó cùng nghĩa với trường mới
 nhưng thô hơn một bậc — và hai ô cùng tên gần giống nhau nằm trên cùng màn hình Mặt hàng thì khách
@@ -81,11 +83,33 @@ nhưng thô hơn một bậc — và hai ô cùng tên gần giống nhau nằm 
 **Patch này KHÔNG tự gỡ.** Trường thuộc commit của phiên khác và đang chờ Tuấn quyết (nó cũng chính
 là cột DDL lỡ nằm lại trên 8012 lúc 10:28). Ghi ra đây để người gỡ có sẵn căn cứ.
 
-## 5. Còn thiếu — nói rõ để không ai tưởng đã xong
+## 5. Đã kiểm trên giao diện (cổng 8012, 03/09)
 
-**a) Chưa kiểm bằng mắt trên giao diện.** `bench clear-cache` làm phiên trình duyệt đăng xuất giữa
-chừng nên chưa mở được màn hình Mặt hàng để nhìn cột mới. Cột lưới là **đúng chỗ đã hỏng một lần
-hôm nay** — chưa nhìn thì chưa được coi là xong.
+	tab Kế toán → bảng "Mặc định cho mặt hàng"
+	cột hiện ra:  STT · Công ty · Kho mặc định · Tồn Kho Khả Dụng Tối Thiểu · Bảng giá mặc định
+	gõ 500, bấm Lưu, mở lại đơn  →  vẫn là 500          ✅
+	dọn về 0                      →  0                   ✅
+
+⚠ **Lưới đang ĐÚNG SÁT TRẦN: tổng độ rộng = 11/11.**
+
+	khởi điểm 1 + Công ty 3 + Kho mặc định 3 + cột mới 2 + Bảng giá 2  =  11
+
+`grid.js::setup_visible_columns` bỏ cột khi tổng **> 11**, nên 11 vẫn lọt. Nhưng **thêm bất kỳ cột
+nào nữa vào bảng này là một cột bị bỏ ÂM THẦM** — không lỗi, không cảnh báo, chỉ là mất khỏi màn
+hình. Ai thêm cột sau đọc dòng này trước.
+
+### Số âm — hai lớp đều chặn, nhưng tôi suýt kết luận sai
+
+Thử trên giao diện: gõ `-5` rồi Lưu → **lưu được**, tưởng là không chặn. Kiểm lại thẳng ở máy chủ
+thì hoá ra **ô nhập tự kẹp về 0 trước khi gửi đi**, nên chưa bao giờ có số âm nào tới nơi. Đẩy
+thẳng `-5` bằng script thì máy chủ **chặn đúng**:
+
+	Item Default Row #1: Value cannot be negative for Tồn Kho Khả Dụng Tối Thiểu
+
+Bài học lặp lại lần thứ hai trong ngày: **"thao tác trên màn hình thành công" không chứng minh được
+lớp máy chủ có chạy hay không** — phải đẩy dữ liệu bằng đường khác mới biết.
+
+## 6. Còn thiếu — nói rõ để không ai tưởng đã xong
 
 **b) Chưa có đường khai hàng loạt.** Bảng đúng rồi nhưng **0/62.055 dòng có kho**, và khai tay
 62.055 mặt hàng là không làm nổi. Anh Thắng chưa nói khai bằng cách nào. Ba đường:
@@ -98,10 +122,13 @@ hôm nay** — chưa nhìn thì chưa được coi là xong.
 **c) Chưa ai dùng cột tồn tối thiểu.** Đầu bài của anh Thắng nói *"sau này sẽ áp dụng cho..."* — nên
 tính năng này chỉ dựng **chỗ khai**. Bên tiêu thụ là Phần V và tính năng ghi nhận hàng lỗi (chưa có).
 
-**d) Chưa nạp fixtures.** Phải chạy `bench --site hkled.com export-fixtures --app mbwnext_hkled` để
-trường sống trên site mới. Chưa chạy vì còn chờ (a).
+**d) ✅ Fixtures đã nạp.** `export-fixtures` chạy xong: 31 → **35 trường**. Ngoài trường mới, nó gom
+được luôn **3 trường trước đó bị sót khỏi fixtures** — `Sales Order.custom_ghim_ton_kha_dung`,
+`Sales Order Item.custom_so_luong_giu_cho` (PM-FEAT-00023) và `Item.custom_ton_kho_toi_thieu`. Ba
+trường đó trước nay chỉ được tạo bằng patch; site mới cài app vẫn có (patch chạy), nhưng thiếu
+fixtures thì mọi chỉnh sửa thuộc tính về sau đều không theo sang site khác.
 
-## 6. Liên quan
+## 7. Liên quan
 
 - `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md` (PM-FEAT-00023) — nơi `_kho_mac_dinh()` đọc
   bảng này; mục *"Kho trên phiếu mua — anh Thắng chốt CÁCH A"*.
