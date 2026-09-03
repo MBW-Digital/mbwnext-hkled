@@ -248,30 +248,46 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 
 	ve_tomtat(kq) {
 		const ky = kq.cac_ky || [];
-		const tong = (kq.dong || []).reduce((a, d) => a + d.con_phai_mua, 0);
-		let mo_ta =
-			kq.kieu === "1"
-				? __("Kiểu 1 · {0} kỳ · {1} → {2}", [ky.length, ky[0] && ky[0].tu, ky.length && ky[ky.length - 1].den])
-				: __("Kiểu 2 · một khoảng {0} → {1}", [ky[0] && ky[0].tu, ky[0] && ky[0].den]);
-		if (kq.khoang_tham_chieu) {
-			mo_ta += " · " + __("lấy lượng bán {0} → {1}", kq.khoang_tham_chieu);
-		}
-		this.$nd
-			.find(".hkled-nc-tomtat")
-			.removeAttr("hidden")
-			.html(
-				`<span>${mo_ta}</span>` +
-					`<span class="hkled-nc-so">${__("{0} vật tư cần mua", [(kq.dong || []).length])}` +
-					` · ${__("tổng còn phải mua")} <b>${this.so(tong)}</b></span>`
-			);
+		const dong = kq.dong || [];
+		const tong = dong.reduce((a, d) => a + d.con_phai_mua, 0);
+		const khoang = ky.length ? `${ky[0].tu} → ${ky[ky.length - 1].den}` : "";
+
+		// Ba con số người dùng cần đọc TRƯỚC khi soi bảng. Trước đây chúng nằm trong một dòng chữ
+		// mảnh chạy ngang, tức là thứ quan trọng nhất lại là thứ khó thấy nhất.
+		const o = (nhan, gia_tri, phu) => `
+			<div class="hkled-nc-the">
+				<div class="nhan">${nhan}</div>
+				<div class="gt">${gia_tri}</div>
+				${phu ? `<div class="phu">${phu}</div>` : ""}
+			</div>`;
+
+		let h = o(__("Vật tư cần mua"), dong.length, kq.kieu === "1" ? __("Theo đơn hàng") : __("Theo lượng bán trước"));
+		h += o(__("Tổng còn phải mua"), this.so(tong), "");
+		h += o(
+			kq.kieu === "1" ? __("{0} kỳ", [ky.length]) : __("Một khoảng"),
+			`<span class="nho">${khoang}</span>`,
+			kq.khoang_tham_chieu ? __("đối chiếu {0} → {1}", kq.khoang_tham_chieu) : ""
+		);
+		this.$nd.find(".hkled-nc-tomtat").removeAttr("hidden").html(h);
 	}
 
 	ve_canhbao(ds) {
 		if (!ds.length) return;
-		this.$nd
-			.find(".hkled-nc-canhbao")
-			.removeAttr("hidden")
-			.html(ds.map((c) => `<div class="d">${c}</div>`).join(""));
+		// Gom vào MỘT khối có đầu đề đếm số, thay vì ba dải vàng xếp chồng chiếm nhiều đất hơn cả
+		// bảng dữ liệu. Cảnh báo vẫn phải đọc được — nên mở sẵn, chỉ là không còn hét.
+		const $k = this.$nd.find(".hkled-nc-canhbao").removeAttr("hidden").empty();
+		const $dau = $(`
+			<button class="hkled-nc-cb-dau" type="button">
+				<span class="dau-cham">!</span>
+				<span>${__("{0} điều cần biết về kết quả này", [ds.length])}</span>
+				<span class="mui">▾</span>
+			</button>`).appendTo($k);
+		const $than = $('<div class="hkled-nc-cb-than"></div>').appendTo($k);
+		ds.forEach((c) => $than.append(`<div class="d">${c}</div>`));
+		$dau.on("click", () => {
+			$k.toggleClass("gap");
+			$dau.find(".mui").text($k.hasClass("gap") ? "▸" : "▾");
+		});
 	}
 
 	ve_bang(kq) {
@@ -289,9 +305,15 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 			<th rowspan="2">${__("Mã")}</th><th rowspan="2">${__("Tên")}</th><th rowspan="2">${__("ĐVT")}</th>
 			<th rowspan="2" class="s">${__("Tồn khả dụng")}</th>
 			<th rowspan="2" class="s">${__("Tối thiểu")}</th>`;
-		ky.forEach((k) => (dau += `<th colspan="2" class="ky">${__("Kỳ")} ${k.chi_so}<br><span>${k.tu}</span></th>`));
+		ky.forEach(
+			(k, i) =>
+				(dau += `<th colspan="2" class="ky${i % 2 ? " le" : ""}">${__("Kỳ")} ${k.chi_so}<br><span>${k.tu}</span></th>`)
+		);
 		dau += `<th rowspan="2" class="s tong">${__("Cần mua")}</th></tr><tr>`;
-		ky.forEach(() => (dau += `<th class="s">${__("Nhu cầu")}</th><th class="s">${__("Cần mua")}</th>`));
+		ky.forEach(
+			(k, i) =>
+				(dau += `<th class="s${i % 2 ? " le" : ""}">${__("Nhu cầu")}</th><th class="s${i % 2 ? " le" : ""}">${__("Cần mua")}</th>`)
+		);
 		dau += "</tr>";
 
 		let than = "";
@@ -304,9 +326,14 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 			than += d.da_khai_toi_thieu
 				? `<td class="s">${this.so(d.ton_toi_thieu)}</td>`
 				: `<td class="s chua-khai" title="${__("Chưa khai Tồn Kho Khả Dụng Tối Thiểu cho công ty này")}">${__("chưa khai")}</td>`;
-			d.ky.forEach((k) => {
-				than += `<td class="s mo">${k.nhu_cau ? this.so(k.nhu_cau) : ""}</td>`;
-				than += `<td class="s${k.can_mua ? " can" : ""}">${k.can_mua ? this.so(k.can_mua) : ""}</td>`;
+			// Ô trống để hẳn dấu gạch mờ chứ không bỏ trắng: bảng nhiều kỳ mà toàn ô trắng thì
+			// không phân biệt được "kỳ này không cần gì" với "cột bị lệch".
+			d.ky.forEach((k, i) => {
+				const le = i % 2 ? " le" : "";
+				than += `<td class="s mo${le}">${k.nhu_cau ? this.so(k.nhu_cau) : '<span class="trong">–</span>'}</td>`;
+				than += `<td class="s${le}${k.can_mua ? " can" : ""}">${
+					k.can_mua ? this.so(k.can_mua) : '<span class="trong">–</span>'
+				}</td>`;
 			});
 			// Mục 8 của đầu bài: "120 (70)". Trước ngoặc là phần phải mua nếu chưa đặt gì; trong
 			// ngoặc là phần CÒN phải mua sau khi trừ hàng đang về. Bằng nhau thì bỏ ngoặc cho đỡ rối.

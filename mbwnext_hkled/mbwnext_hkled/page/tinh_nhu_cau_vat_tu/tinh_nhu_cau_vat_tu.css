@@ -68,40 +68,108 @@
 	color: var(--text-muted);
 }
 
-/* ── Tóm tắt + cảnh báo ─────────────────────────────────────────────────── */
+/* ── Tóm tắt: dải thẻ số liệu ───────────────────────────────────────────── */
 
 .hkled-nc-tomtat {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: space-between;
-	gap: 8px;
-	margin: 16px 0 10px;
-	font-size: var(--text-sm);
+	gap: 10px;
+	margin: 18px 0 12px;
+}
+
+.hkled-nc-the {
+	flex: 1 1 190px;
+	padding: 12px 14px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--card-bg, var(--fg-color));
+}
+
+.hkled-nc-the .nhan {
+	font-size: var(--text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
 	color: var(--text-muted);
 }
 
-.hkled-nc-tomtat .hkled-nc-so {
-	color: var(--text-color);
+/* Con số là thứ đọc trước tiên, nên nó phải to hơn hẳn phần còn lại của trang. */
+.hkled-nc-the .gt {
+	margin-top: 3px;
+	font-size: 22px;
+	line-height: 1.2;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
 }
+
+.hkled-nc-the .gt .nho {
+	font-size: var(--text-md);
+	font-weight: 500;
+}
+
+.hkled-nc-the .phu {
+	margin-top: 2px;
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+}
+
+/* ── Cảnh báo: một khối gập được ─────────────────────────────────────────── */
 
 .hkled-nc-canhbao {
-	margin: 10px 0 4px;
+	margin: 0 0 14px;
+	border: 1px solid var(--yellow-300, var(--border-color));
+	border-radius: 8px;
+	overflow: hidden;
 }
 
-.hkled-nc-canhbao .d {
-	padding: 8px 12px;
-	margin-bottom: 6px;
-	border-left: 3px solid var(--yellow-500);
+.hkled-nc-cb-dau {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 9px 12px;
+	border: 0;
 	background: var(--bg-yellow, var(--control-bg));
-	border-radius: 0 4px 4px 0;
 	font-size: var(--text-sm);
+	font-weight: 500;
+	color: var(--text-color);
+	text-align: left;
+	cursor: pointer;
+}
+
+.hkled-nc-cb-dau .dau-cham {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 17px;
+	height: 17px;
+	border-radius: 50%;
+	background: var(--yellow-500);
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	flex: none;
+}
+
+.hkled-nc-cb-dau .mui {
+	margin-left: auto;
+	color: var(--text-muted);
+}
+
+.hkled-nc-cb-than .d {
+	padding: 8px 12px 8px 37px;
+	border-top: 1px solid var(--border-color);
+	font-size: var(--text-sm);
+	color: var(--text-muted);
 	/* Danh sách số đơn có thể rất dài — cho xuống dòng thay vì tràn ngang. */
 	overflow-wrap: anywhere;
 }
 
+.hkled-nc-canhbao.gap .hkled-nc-cb-than {
+	display: none;
+}
+
 .hkled-nc-canhbao .d.nang {
-	border-left-color: var(--red-500);
-	background: var(--bg-red, var(--control-bg));
+	border-left: 3px solid var(--red-500);
 }
 
 /* ── Bảng ───────────────────────────────────────────────────────────────── */
@@ -109,7 +177,9 @@
 /* Nhiều kỳ thì bảng rộng hơn màn hình. Cuộn ngang TRONG khung này, không để cả trang trôi ngang. */
 .hkled-nc-khung {
 	overflow-x: auto;
-	margin-top: 8px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--card-bg, var(--fg-color));
 }
 
 .hkled-nc-t {
@@ -121,7 +191,7 @@
 
 .hkled-nc-t th,
 .hkled-nc-t td {
-	padding: 6px 10px;
+	padding: 9px 12px;
 	border-bottom: 1px solid var(--border-color);
 	text-align: left;
 }
@@ -141,6 +211,17 @@
 .hkled-nc-t th.ky {
 	text-align: center;
 	border-left: 1px solid var(--border-color);
+}
+
+/* Xen màu theo CỤM KỲ, không phải theo hàng: bảng này đọc theo chiều ngang — "mặt hàng này ở kỳ
+   nào thiếu" — nên ranh giới cần thấy là ranh giới giữa các kỳ. Kẻ sọc theo hàng sẽ cắt ngang
+   đúng mạch đọc đó. */
+.hkled-nc-t .le {
+	background: var(--subtle-accent, rgba(128, 128, 128, 0.045));
+}
+
+.hkled-nc-t thead th.le {
+	background: var(--subtle-accent, rgba(128, 128, 128, 0.07));
 }
 
 .hkled-nc-t th.ky span {
@@ -171,8 +252,15 @@
 	color: var(--text-muted);
 }
 
+/* Cần mua là cột người dùng phải HÀNH ĐỘNG. Nhu cầu chỉ là số nền để đối chiếu. */
 .hkled-nc-t td.can {
 	font-weight: 600;
+	color: var(--text-color);
+}
+
+/* Ô không có số: dấu gạch mờ, để phân biệt "kỳ này không cần gì" với "cột bị lệch". */
+.hkled-nc-t .trong {
+	color: var(--text-light);
 }
 
 .hkled-nc-t td.am {
@@ -180,8 +268,9 @@
 }
 
 .hkled-nc-t .tong {
-	border-left: 1px solid var(--border-color);
+	border-left: 2px solid var(--border-color);
 	font-weight: 600;
+	font-size: var(--text-md);
 }
 
 .hkled-nc-t .tong .con {
@@ -198,7 +287,7 @@
 
 .hkled-nc-chugiai,
 .hkled-nc-trong {
-	margin-top: 10px;
+	margin-top: 8px;
 	font-size: var(--text-sm);
 	color: var(--text-muted);
 }
