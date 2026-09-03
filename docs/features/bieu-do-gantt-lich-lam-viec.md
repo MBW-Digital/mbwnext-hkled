@@ -1,5 +1,8 @@
 # Biểu Đồ Gantt quản lý Lịch làm việc
 
+> **PM-FEAT-00009 · Phần III · Xem tình hình làm việc của nhân sự**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED
 **Người cung cấp thông tin:** anh Thắng (`thangdo@mbw.vn`) — người tạo PM Feature
 **Người trực tiếp thao tác đã trao đổi:** ❌ CHƯA — xem mục "Còn thiếu để đủ điều kiện sang DEV"
