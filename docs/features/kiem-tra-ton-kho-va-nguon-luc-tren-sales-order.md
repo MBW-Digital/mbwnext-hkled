@@ -1,5 +1,8 @@
 # Kiểm tra tồn kho và nguồn lực trên Đơn Bán
 
+> **PM-FEAT-00023 · Phần IV · Kiểm tra tồn kho và nguồn lực trên Đơn bán hàng**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED
 **Người cung cấp thông tin:** Thắng (thangdo@mbw.vn) — thuật lại lời khách
 **Người trực tiếp thao tác đã trao đổi:** ❌ **chưa** — xem "Còn thiếu ở khâu khảo sát"

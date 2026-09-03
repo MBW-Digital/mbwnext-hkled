@@ -1,5 +1,8 @@
 # Chặn xuất kho quá tồn khả dụng
 
+> **PM-FEAT-00034 · Phần IV.1 · Chặn xuất kho quá tồn khả dụng**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED
 **Người cung cấp thông tin:** Thắng (thangdo@mbw.vn) — thuật lại lời khách
 **Người trực tiếp thao tác đã trao đổi:** ❌ **chưa** — người chịu ảnh hưởng là **thủ kho**

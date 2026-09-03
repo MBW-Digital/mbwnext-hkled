@@ -1,5 +1,8 @@
 # Phân bổ hàng vào phần ghim của Sales Order khi hàng mua đã về
 
+> **PM-FEAT-00036 · Phần IV.2 · Phân bổ hàng về vào phần đã ghim của Đơn bán hàng**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED
 **Người cung cấp thông tin:** anh Thắng (MBW) — viết đầu bài trên PM 31/08/2026 12:02
 **Ngày dựng file:** 2026-09-03
