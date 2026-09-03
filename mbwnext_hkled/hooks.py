@@ -307,7 +307,44 @@ doc_events = {
 	},
 	"Stock Entry": {
 		# GAP-7: sinh serial theo mã đơn bán khi Finish, thay cho series mặc định.
-		"before_submit": "mbwnext_hkled.controllers.python_hook.stock_entry.set_serial_no_on_manufacture",
+		# PM-FEAT-00034: chặn xuất quá tồn khả dụng — xem khối 8 chứng từ ngay dưới.
+		"before_submit": [
+			"mbwnext_hkled.controllers.python_hook.stock_entry.set_serial_no_on_manufacture",
+			"mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+		],
+	},
+	# ══ PM-FEAT-00034 · Chặn xuất kho quá tồn khả dụng ══
+	#
+	# ĐỦ 8 CHỨNG TỪ có thể làm giảm tồn (đầu bài §1.1). Bản đầu của đầu bài định hook 3 cái ➜
+	# thủng 6, và kiểu thủng đó chỉ lộ ra SAU KHI kho đã xuất lọt. Thêm chứng từ mới vào lõi
+	# thì phải thêm vào đây; `chan_xuat_kho` THROW nếu bị gọi cho chứng từ chưa có bộ đọc, cố ý
+	# ồn ào thay vì lặng lẽ cho qua.
+	#
+	# `Stock Entry` đã khai ở khối trên vì nó còn hook khác — đừng khai lại thành hai chỗ.
+	"Delivery Note": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	"Sales Invoice": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	"Purchase Receipt": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	"Purchase Invoice": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	"Stock Reconciliation": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	"Subcontracting Receipt": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	"Asset Capitalization": {
+		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+	},
+	# Yêu Cầu Mặt Hàng KHÔNG sinh Stock Ledger Entry ➜ chỉ CẢNH BÁO, không chặn (đầu bài §4).
+	"Material Request": {
+		"validate": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.canh_bao_yeu_cau_mat_hang",
 	},
 	"Employee": {
 		# C1: `mandatory_depends_on` của Frappe CHỈ chạy phía client — lưu bằng script/API
