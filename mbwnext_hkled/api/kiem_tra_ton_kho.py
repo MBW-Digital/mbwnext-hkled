@@ -181,7 +181,15 @@ def ghim_boi_don_khac(tru_don=None):
 			"docstatus": 1,
 			"custom_ghim_ton_kha_dung": 1,
 			"status": ["not in", ["Closed", "Completed", "Cancelled"]],
-			**({"name": ["!=", tru_don]} if tru_don else {}),
+			# `tru_don` nhận cả MỘT tên lẫn DANH SÁCH tên: PM-FEAT-00034 phải miễn trừ mọi
+			# Đơn Bán mà chứng từ xuất kho đang thực hiện, không chỉ một.
+			**(
+				{"name": ["not in", list(tru_don)]}
+				if isinstance(tru_don, (list, tuple, set))
+				else {"name": ["!=", tru_don]}
+				if tru_don
+				else {}
+			),
 		},
 		pluck="name",
 	)
