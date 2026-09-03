@@ -506,6 +506,26 @@ def tao_yeu_cau_mua_hang(sales_order):
 	if not kho_nhan:
 		kho_nhan = frappe.db.get_single_value("Stock Settings", "default_warehouse")
 
+	# Mã không tra được trong danh mục -> BỎ QUA có cảnh báo, đừng để lọt vào phiếu.
+	# Không có `stock_uom` thì `uom` rỗng, mà đó là trường BẮT BUỘC của Material Request Item:
+	# phiếu vỡ lúc lưu với thông báo về đơn vị tính, người dùng không nối được về mã nào gây ra.
+	# Ca kiểm này do phiên cozy-dev-0c nêu ra; code tôi trước đó thiếu.
+	thieu_don_vi = sorted(m for m in can_mua if not don_vi.get(m))
+	if thieu_don_vi:
+		canh_bao.append(
+			f"{len(thieu_don_vi)} mã không có trong danh mục hoặc thiếu đơn vị tính, "
+			f"đã bỏ khỏi phiếu: " + ", ".join(thieu_don_vi[:8])
+			+ ("…" if len(thieu_don_vi) > 8 else "")
+		)
+		for m in thieu_don_vi:
+			can_mua.pop(m, None)
+	if not can_mua:
+		return {
+			"co_phieu": False,
+			"canh_bao": canh_bao,
+			"thong_bao": "Không dựng được phiếu: mọi mã cần mua đều không tra được trong danh mục.",
+		}
+
 	mr = frappe.new_doc("Material Request")
 	mr.material_request_type = "Purchase"
 	mr.company = don.company
