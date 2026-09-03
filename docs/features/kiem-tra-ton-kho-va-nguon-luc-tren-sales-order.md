@@ -187,6 +187,21 @@ Ai đo tồn khả dụng bằng cách cộng `Stock Reservation Entry.reserved_
 
 ## 3. Tập kho
 
+> 🔒 **CHỐT LẠI 03/09/2026 15:33 — đừng lật lần nữa.** Anh Thắng dùng chữ *"tồn khả dụng nên cộng
+> trên TẤT CẢ kho"* lúc 11:25, chữ "tất cả" đọc ra được hai nghĩa nên tôi hỏi lại kèm tên đúng 4
+> kho đang bị loại. Anh trả lời: *"«Tất cả» = tất cả kho trừ 2 nhóm trên — tức giữ nguyên như đang
+> chạy em nhé."*
+>
+> Đây là **định nghĩa gốc mà 4 tính năng dựa vào** (Phần IV, IV.1, IV.2 và Phần V). Ai thấy chữ
+> "tất cả kho" ở tài liệu khác thì đọc kèm dòng này, đừng bỏ luật loại trừ.
+>
+> ⚠ Lý do phải hỏi dù gần như chắc: bỏ loại trừ là **tính hàng ở Kho hàng lỗi/trả thành hàng bán
+> được** — hệ thống báo đủ, sale không đi mua phần thật sự thiếu.
+>
+> 📌 Hỏi lúc đó **không tốn gì**: đo cùng ngày, 4 kho bị loại đang **trống hoàn toàn** (0 mặt hàng
+> có tồn), nên hai cách cho ra con số y hệt. Chốt luật trước khi có hàng lỗi phát sinh thì sau này
+> không ai phải sửa lại.
+
 Tồn (cả thực tế lẫn khả dụng) **loại trừ** kho con của hai nhóm:
 
 - `Nhóm kho lỗi - HKL`
