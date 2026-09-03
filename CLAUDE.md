@@ -97,7 +97,7 @@ mbwnext_hkled/
 | Doctype | Loại | Vai trò |
 |---|---|---|
 | **BOM Component** | Master data | Danh mục tên thành phần BOM. **Tên bản ghi phải khớp CHÍNH XÁC khoá `COMPONENT_MAP` trong Server Script** — sai một dấu là không tra được công thức |
-| **BOM Component Table** | Child table | Khai báo thành phần cần có trong 1 BOM Template — 3 kiểu: `Cố Định` (item+qty nhập tay), `Số Lượng Theo Công Thức` (item nhập tay, qty do Server Script), `Theo Rule` (cả item lẫn qty tự xác định) |
+| **BOM Component Table** | Child table | Khai báo thành phần cần có trong 1 BOM Template — **2 kiểu**: `Cố Định` (item+qty nhập tay), `Theo Rule` (cả item lẫn qty tự xác định). ⚠ Kiểu thứ ba `Số Lượng Theo Công Thức` **đã bỏ** (Thắng chốt 26/08), gỡ khỏi mã nguồn 27/08 sau khi migrate đưa 4 dòng cuối cùng về `Theo Rule` |
 | **BOM Rule** | Child table | Ánh xạ `(BOM Component, tổ hợp giá trị đặc tính) -> NVL`, điều kiện lưu ở `cond_attrs` dạng JSON `[{"name": "Nguồn", "values": [...]}]`. **Không** enumerate theo biến thể — ~9 dòng/template thay vì hàng nghìn |
 | **BOM Template** | Doctype chính | Gắn với 1 Item Template (`Has Variants=1`), 2 tab: Bảng Thành Phần BOM + Công Thức BOM. Chỉ 1 template được `Hoạt Động` / item cha |
 
@@ -210,9 +210,13 @@ sai mà không có gì báo.
 
 ⚠ **Dòng khai "Cố Định" nhưng số lượng lại có điều kiện.** *Ốc dây điện* được khách khai
 `Cố Định` mà SL là *"Kiểu đấu: Cầu đấu SL 0 | Kiểu đấu: Dây điện SL 1"* — mâu thuẫn: `Cố Định`
-lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đúng cho cả hai. Bộ nạp **tự nâng lên
-`Số Lượng Theo Công Thức`** và in dòng `↻` trong báo cáo. Không nâng thì dòng bị bỏ khỏi BOM
-một cách âm thầm.
+lấy thẳng ô Số Lượng, mà ô đó không điền được số nào đúng cho cả hai.
+
+Bộ nạp **từng tự nâng lên `Số Lượng Theo Công Thức`** — **đã bỏ 26/08**. Gốc rễ hoá ra là đọc
+nhầm bảng khách: chữ *"Theo rule"* của khách nghĩa là **số lượng** theo rule, còn `"Theo Rule"`
+của hệ thống nghĩa là **NVL** theo rule. Bốn dòng đó nay khai thẳng `Theo Rule`, và `bom_qty.py`
+vẫn ra đúng số vì `COMPONENT_MAP` được tra **trước** phần lấy số lượng từ dòng. Đừng dựng lại
+phép tự nâng kiểu — xem chú thích trong `data/nhap_bom_template.py`.
 
 **Vỏ VDP0X — 13/13 thành phần, 28/28 biến thể tạo được BOM (23/08).** Ba thành phần *Đế bắt
 nguồn*, *Ốc vít bắt đế, hộp*, *Hộp nguồn* trước đây bị chặn vì bảng tính theo **loại nguồn và

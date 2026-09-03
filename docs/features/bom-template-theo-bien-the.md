@@ -19,7 +19,7 @@ gồm 5 mục. Nội dung cần làm:
 |---|---|
 | 2.1 | ~~DocType mới `BOM Rule Group`~~ — **ĐÃ BỎ 07/08**, xem 2.1b |
 | 2.2 | ~~`BOM Template` thêm field `rule_group`~~ — **ĐÃ BỎ 07/08**, khoá tra công thức là Mặt Hàng Cha |
-| 2.3 | `BOM Component Table` thêm loại thứ 3 `Số Lượng Theo Công Thức` |
+| 2.3 | ~~`BOM Component Table` thêm loại thứ 3 `Số Lượng Theo Công Thức`~~ — **ĐÃ BỎ 27/08**, quay lại 2 loại như spec §5 ban đầu, xem 2.3 |
 | 2.4 | `BOM Rule` bỏ enumeration theo từng biến thể → chỉ 1 dòng / giá trị "Nguồn" |
 | 3 | Server Script `hkled_resolve_bom_qty` chứa toàn bộ công thức số lượng |
 | 5 | Cập nhật nút "Tạo Rule"; tích hợp vào flow "Tạo BOM tự động" |
@@ -139,9 +139,13 @@ Dòng nào không có giá trị điều kiện thì **không đoán**, để ng
 
 **Điểm lệch so với spec, có chủ ý:**
 
-- Spec §5 rút `component_type` còn 2 lựa chọn (Cố Định / Theo Rule). **Giữ nguyên 3 lựa chọn** vì
+- ~~Spec §5 rút `component_type` còn 2 lựa chọn (Cố Định / Theo Rule). **Giữ nguyên 3 lựa chọn** vì
   kiểu "Số Lượng Theo Công Thức" chính là kiểu dùng `COMPONENT_MAP` để tính số lượng — bỏ đi là
-  hỏng phần tính số lượng mà chính spec §8 dựa vào.
+  hỏng phần tính số lượng mà chính spec §8 dựa vào.~~
+  **ĐIỂM LỆCH NÀY ĐÃ ĐÓNG 27/08 — spec đúng, lập luận giữ 3 kiểu là sai.** Lo ngại "bỏ đi là hỏng
+  phần tính số lượng" không thành hiện thực: `Theo Rule` vẫn gọi đúng `COMPONENT_MAP`, kiểu thứ ba
+  chỉ khác ở chỗ mã NVL nhập tay thay vì tra rule. Chuyển 4 dòng còn dùng nó sang `Theo Rule` +
+  rule `mọi biến thể` giữ nguyên kết quả. Chốt của Thắng 26/08 (PM-TASK-00130).
 - Spec §6b seed 12 thành phần với tên khác (VD "Ốc vít module"). **Giữ 15 bản ghi hiện có** khớp
   chính xác `COMPONENT_MAP`; seed theo tên spec là vỡ mapping. Đã thêm `component_code` như spec
   khuyến nghị để về sau tra bằng mã ASCII thay vì tên có dấu.
@@ -199,9 +203,14 @@ Quyền: System Manager (full), Manufacturing Manager (không delete) — giốn
 
 Field đã gỡ khỏi DocType. Xem 2.1b.
 
-### 2.3 `BOM Component Table` — 3 loại thành phần
+### 2.3 `BOM Component Table` — ~~3 loại~~ **2 loại thành phần** (sửa 27/08)
 
-`component_type` options đổi thành `Cố Định\nSố Lượng Theo Công Thức\nTheo Rule`.
+> ⚠ **Mục này mô tả trạng thái 31/07, giữ lại để tra lịch sử.** Từ 27/08/2026 chỉ còn **hai** loại
+> `Cố Định` và `Theo Rule` — chốt của Thắng 26/08 trên PM-TASK-00130. Bảng ba dòng bên dưới còn
+> nguyên để hiểu vì sao từng có loại thứ ba; đừng đọc nó như trạng thái hiện tại.
+
+`component_type` options **trước đây** là `Cố Định\nSố Lượng Theo Công Thức\nTheo Rule`; nay là
+`Cố Định\nTheo Rule`.
 
 | Loại | Item | Qty | Ví dụ |
 |---|---|---|---|
@@ -212,7 +221,8 @@ Field đã gỡ khỏi DocType. Xem 2.1b.
 Field `item`: `depends_on` / `mandatory_depends_on` đổi từ `== "Cố Định"` thành **`!= "Theo Rule"`**.
 Field `qty` giữ nguyên `== "Cố Định"`. Nút `create_rule` giữ nguyên (chỉ hiện khi Theo Rule).
 
-Controller `bom_component_table.py` thêm nhánh `Số Lượng Theo Công Thức`: bắt buộc `item`, xoá `qty`.
+~~Controller `bom_component_table.py` thêm nhánh `Số Lượng Theo Công Thức`: bắt buộc `item`, xoá `qty`.~~
+Nhánh này **đã gỡ 27/08** cùng lúc với loại thành phần.
 
 ### 2.4 `BOM Rule` — bỏ enumeration theo biến thể
 

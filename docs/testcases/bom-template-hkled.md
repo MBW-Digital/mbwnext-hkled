@@ -104,7 +104,7 @@ Chốt của Thắng 18/08 trên PM-TASK-00110.
 | TC-MV-01 | Template module M30S050-A/B tạo được BOM | 40/40 mỗi template | Pass — trước 0/40 (báo *"chưa có bộ công thức"*) | Pass |
 | TC-MV-02 | Template module M50S050-A/B | 16/16 mỗi template | Pass | Pass |
 | TC-MV-03 | *Cầu đấu* / *Ốc dây điện* theo **Kiểu đấu** | `Cầu đấu` → 1 / 0 · `Dây điện` → 30 / 1 | Pass — biến thể `-CD-` ra `WPC-MDM…` ×1, không có ốc dây điện; biến thể `-DD-` ra `W-2x0.75-BK` ×30 + `OPG-M12-RM` ×1 | Pass |
-| TC-MV-04 | Dòng khai *Cố Định* mà SL có điều kiện | bộ nạp nâng lên *Số Lượng Theo Công Thức*, có in `↻` | Pass — nếu để nguyên thì dòng bị bỏ khỏi BOM âm thầm | Pass |
+| ~~TC-MV-04~~ | ~~Dòng khai *Cố Định* mà SL có điều kiện~~ | **KHÔNG CÒN ÁP DỤNG từ 27/08.** Cơ chế tự nâng kiểu đã gỡ 26/08 cùng lúc bỏ kiểu *Số Lượng Theo Công Thức*. Dòng như vậy nay khai thẳng *Theo Rule* trong `spec.json` | — | — |
 | TC-MV-05 | Vỏ VDP0X — 3 thành phần từng bị chặn | ~~chặn~~ → **tính được** sau khi khách bỏ phụ thuộc vào nguồn (23/08) | Pass — **28/28** biến thể tạo được BOM.
   ⚠ Số dòng NVL là **10–13 tuỳ biến thể**, KHÔNG phải 13 cho mọi biến thể — bản đầu của ca này ghi "đủ 13 dòng" là **SAI**, suy từ đúng một mẫu.
   Phân bố thật: 13 dòng ×14 · 12 dòng ×2 · 11 dòng ×10 · 10 dòng ×2.

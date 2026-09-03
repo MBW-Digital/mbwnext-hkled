@@ -61,7 +61,8 @@ nên chỉ cần **1 dòng / 1 giá trị `Nguồn`** (~9 dòng). Số lượng 
 1. **Field mới "Nhóm Công Thức"** (bắt buộc) ở cột phải, ngay dưới "Mặt Hàng Cha".
 2. **Tự điền Nhóm Công Thức** theo prefix mã khi chọn Mặt Hàng Cha — chỉ điền khi đang trống,
    người dùng sửa lại được. VD `DD11S200` → `D11_D15`, `DP01...` → `P01_P03`.
-3. **Bảng Thành Phần BOM** có thêm lựa chọn `Số Lượng Theo Công Thức` ở cột "Kiểu Thành Phần";
+3. ~~**Bảng Thành Phần BOM** có thêm lựa chọn `Số Lượng Theo Công Thức` ở cột "Kiểu Thành Phần";~~
+   **ĐÃ BỎ 27/08** — cột "Kiểu Thành Phần" chỉ còn `Cố Định` và `Theo Rule`;
    với lựa chọn này thì **hiện** cột "Mặt Hàng" (bắt buộc) và **ẩn** cột "Số Lượng".
 4. Tab **Công Thức Thành Phần**: bảng BOM Rule giờ 3 cột — Thành Phần BOM · Giá Trị Điều Kiện (Nguồn) ·
    Nguyên Vật Liệu (đã bỏ cột "Mặt Hàng Sản Xuất" và "Số Lượng").

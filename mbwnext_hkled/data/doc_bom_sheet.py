@@ -161,8 +161,26 @@ def _doc_sheet(ten_sheet, rows):
 			continue
 
 		if trong_bang_tp and c1:
-			kieu = {"cố định": "Cố Định", "theo rule": "Theo Rule",
-				"số lượng theo công thức": "Số Lượng Theo Công Thức"}.get(_o(row, 2).lower())
+			kieu_tho = _o(row, 2).lower()
+			# ⚠ "Số Lượng Theo Công Thức" ĐÃ BỎ 27/08/2026 (chốt của Thắng 26/08 trên
+			# PM-TASK-00130: chỉ còn hai kiểu Cố Định và Theo Rule). Giá trị đó không còn
+			# trong ô chọn của DocType nữa.
+			#
+			# Vẫn phải NHẬN DIỆN chữ đó chứ không xoá khỏi bảng tra: bỏ khoá đi thì `.get`
+			# trả None, dòng rơi khỏi `if kieu` và **biến mất không một lời** — thành phần
+			# đó vắng khỏi định mức mà báo cáo vẫn báo thành công. Đúng kiểu hỏng đắt nhất
+			# ở app này. Cũng không tự quy về `Theo Rule`: hai kiểu khác nghĩa (Theo Rule
+			# tự xác định CẢ mã NVL), đoán hộ là ra định mức sai mà không ai biết.
+			#
+			# `raise` ở đây rơi vào nhánh bắt lỗi theo từng sheet của `doc_file()`: sheet
+			# vào `loi`, các sheet khác vẫn đọc bình thường.
+			if kieu_tho == "số lượng theo công thức":
+				raise ValueError(
+					f"{ten_sheet}: thành phần {c1!r} (dòng {i + 1}) khai kiểu "
+					f"'Số Lượng Theo Công Thức' — kiểu này đã bỏ từ 27/08/2026, chỉ còn "
+					f"'Cố Định' và 'Theo Rule'. Hỏi HKLED sửa lại ô Kiểu trong file nguồn."
+				)
+			kieu = {"cố định": "Cố Định", "theo rule": "Theo Rule"}.get(kieu_tho)
 			if kieu:
 				# Ô SL nằm sau nhãn "SL" và có thể trải ra NHIỀU cột khi số lượng đổi theo
 				# đặc tính: "Kiểu đấu: Cầu đấu SL 1" | "Kiểu đấu: Dây diện SL 30". Giữ

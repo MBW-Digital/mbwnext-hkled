@@ -63,9 +63,8 @@ def get_active_template(item_code):
 def resolve_components(item_code, template_name, warnings=None):
 	"""Đọc BOM Template + BOM Rule để xác định danh sách NVL/số lượng cho item_code.
 
-	3 kiểu thành phần (mục 2.3 tài liệu thiết kế):
+	2 kiểu thành phần (Thắng chốt 26/08, bỏ kiểu "Số Lượng Theo Công Thức"):
 	- "Cố Định": item + qty nhập tay trên BOM Template.
-	- "Số Lượng Theo Công Thức": item nhập tay, qty do Server Script tính.
 	- "Theo Rule": cả item (tra BOM Rule theo giá trị "Nguồn" của biến thể) và qty do Server Script.
 	"""
 	template = frappe.get_cached_doc("BOM Template", template_name)
