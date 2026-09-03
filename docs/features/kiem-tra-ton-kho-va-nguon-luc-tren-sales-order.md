@@ -520,11 +520,62 @@ Ghi ở đây để người đọc mục 5b và mục 2 lần ra được phầ
 | Việc | Đi đâu | Vì sao tách |
 |---|---|---|
 | **Phân bổ hàng vào phần ghim khi hàng mua đã về** | **PM-FEAT-00036** · `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` · hạn 14/09 | Anh Thắng mở 02/09. Hệ quả trực tiếp của luật *chặn cứng ở tồn khả dụng*: đơn cần 6 chỉ giữ được 4, hai cái còn lại phải được ghim **tự động** khi hàng về, không thì sale phải nhớ quay lại bấm tay |
-| **Tạo Phiếu Yêu Cầu Mua Hàng từ popup** | anh Thắng tách task riêng (31/08) | Khách yêu cầu 28/08. Cách tính đã chốt: `cần mua = đang thiếu − phiếu YCM đang chờ − đơn mua chưa về`, **không huỷ phiếu cũ, không chồng phiếu**. Lõi ERPNext đã làm sẵn phép trừ này cho mặt hàng trên đơn (`sales_order.py::get_requested_item_qty`); phần **Bảng 2 (NVL) phải tự tính** vì NVL không nằm trên đơn |
+| **Tạo Phiếu Yêu Cầu Mua Hàng** — ⚠ **quay lại tính năng này 03/09** | **PM-TASK-00140**, hạn 07/09. Anh Thắng tách ra 31/08, Tuấn giao phiên khác, rồi giao lại cho tôi vì nó dùng chung `kiem_tra()`. Code nằm trong `api/kiem_tra_ton_kho.py`, xem mục 12b | Khách yêu cầu 28/08. Cách tính đã chốt: `cần mua = đang thiếu − phiếu YCM đang chờ − đơn mua chưa về`, **không huỷ phiếu cũ, không chồng phiếu**. Lõi ERPNext đã làm sẵn phép trừ này cho mặt hàng trên đơn (`sales_order.py::get_requested_item_qty`); phần **Bảng 2 (NVL) phải tự tính** vì NVL không nằm trên đơn |
 
 ⚠ **Không có chức năng nhường hàng giữa hai đơn** — khách chốt 31/08 chọn *"A chỉ cần nhả ra, ai
 lấy thì lấy"*. Nghĩa là phần A nhả ra vào **kho chung**, không đến đích danh B; hai bên tự gọi
 điện cho nhau. Đừng dựng lại chức năng này nếu không có yêu cầu mới.
+
+## 12b. Tạo Yêu Cầu Mặt Hàng từ phần thiếu (PM-TASK-00140)
+
+`tinh_can_mua()` + `tao_yeu_cau_mua_hang()` trong `api/kiem_tra_ton_kho.py`.
+
+**Chỉ lấy mặt hàng *Mua hàng*** (hoặc trống — coi như Mua hàng), theo đúng mô tả task. Mặt hàng
+*Sản xuất/Gia công* trên đơn **không** vào phiếu: phần thiếu của chúng đã được bóc thành nguyên
+vật liệu ở Bảng 2 rồi, đưa cả hai vào là mua cả thành phẩm lẫn vật tư làm ra nó.
+
+### ⚠ KHÔNG cộng thẳng `thieu` của Bảng 1 với `thieu` của Bảng 2
+
+Hai bảng **cùng trừ vào một lượng tồn**. Mã vừa bán trên đơn vừa là thành phần của mã khác sẽ
+được tồn "che" hai lần, ra số thiếu **ÍT hơn thực tế** → mua hụt.
+
+	X: cần 10 ở Bảng 1 + 6 ở Bảng 2, tồn khả dụng 4
+	  cộng mù cột `thiếu`   →  (10−4) + (6−4) = 8   ❌ hụt 4
+	  gom nhu cầu rồi trừ 1 lần → (10+6) − 4  = 12  ✅
+
+Nên `tinh_can_mua` gom **nhu cầu** theo mã trước, rồi mới trừ tồn một lần. Đo 03/09: chỉ 3 mã
+trên site vừa bán vừa là thành phần, cả 3 là dữ liệu thử — chưa hỏng thật, nhưng đừng để tới lúc
+hỏng mới sửa.
+
+### Trừ phần đã có người lo
+
+	cần mua = nhu cầu − tồn khả dụng − Yêu Cầu Mặt Hàng đang chờ − Đơn mua chưa về
+
+Không trừ thì bấm nút hai lần là đặt mua hai lần. Đây là chỗ đã hứa với anh Thắng 28/08.
+
+⚠ Phần **Đơn mua chưa về** ở đây **không lọc ngày**, khác với cột *Ngày hàng về* (mục 8.2) vốn
+chỉ hiện đơn có hạn trong tương lai. Hàng về muộn vẫn là hàng đã đặt; đặt thêm là mua thừa.
+
+### Ba cái bẫy đã vấp khi dựng phiếu, đều chỉ lộ lúc LƯU
+
+1. **`schedule_date` không được nhỏ hơn `transaction_date`** —
+   `buying_controller.validate_schedule_date` throw. Đo 03/09: **8/8 đơn trên site có ngày giao
+   trong quá khứ**, nên gần như đơn nào cũng vỡ nếu không kẹp về hôm nay.
+2. **`Material Request Item.warehouse` là bắt buộc với hàng tồn kho** —
+   `buying/utils.py::validate_stock_item_warehouse` throw. Lấy theo thứ tự: kho của Đơn Bán →
+   kho trên dòng hàng → mặc định hệ thống. **Không gõ cứng tên kho**, tên mang hậu tố công ty.
+3. **Phiếu để NHÁP, không `insert()` từ server.** Trả tài liệu chưa lưu cho client mở ra dạng
+   form mới. Bấm nút mà đẻ ngay chứng từ là ngược luật đã ghi ở `CLAUDE.md`, và người bấm nhầm
+   sẽ để lại phiếu rác.
+
+### Đã đo trên 8012 (03/09)
+
+Dựng một Đơn Bán thiếu hàng **trong giao dịch rồi `rollback`** — cách duy nhất chạy được nhánh
+"có phiếu" vì mọi đơn thật trên site đều đủ tồn:
+
+	đơn 100 vỏ VDP0X   →  13 dòng, lưu được, gắn đúng `sales_order`
+	đơn ngày giao 24/08 (quá khứ)  →  phiếu lấy ngày hôm nay, `ngay_bi_kep = true`
+	sau rollback       →  0 rò rỉ, không còn Đơn Bán lẫn phiếu thử nào
 
 ## 12. Việc kế tiếp
 

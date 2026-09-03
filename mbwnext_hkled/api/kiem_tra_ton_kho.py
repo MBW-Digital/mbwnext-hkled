@@ -128,9 +128,20 @@ def boc_dinh_muc(nhu_cau, da_tham=None, canh_bao=None):
 	}
 	bom_cua = _bom_mac_dinh([m for m in ma if pp.get(m) in ("Sản xuất", "Gia công")])
 
+	# Mặt hàng bị coi là lá NHƯNG lại có định mức — dấu hiệu khách quên khai Phương pháp bổ sung.
+	# Đo 03/09: 487 mã đang để trống trường này (335 NULL + 152 chuỗi rỗng). Hiện chỉ 3 mã vừa
+	# trống vừa có định mức, và cả 3 là dữ liệu thử. Nhưng nếu một thành phẩm thật rơi vào đó thì
+	# hệ thống sẽ đi MUA CHÍNH NÓ thay vì mua nguyên vật liệu — sai hoàn toàn mà không báo gì.
+	bom_cua_la = _bom_mac_dinh([m for m in ma if pp.get(m) not in ("Sản xuất", "Gia công")])
+
 	for m in ma:
 		sl = flt(nhu_cau[m])
 		if pp.get(m) not in ("Sản xuất", "Gia công"):
+			if m in bom_cua_la:
+				canh_bao.append(
+					f"{m}: Phương pháp bổ sung đang là {pp.get(m) or 'trống'} nên coi như phải mua, "
+					f"nhưng mặt hàng này CÓ định mức ({bom_cua_la[m]}) — kiểm lại xem có phải hàng sản xuất"
+				)
 			ket[m] = ket.get(m, 0) + sl          # Mua hàng, hoặc trống -> là lá
 			continue
 		if m in da_tham:
@@ -335,4 +346,203 @@ def kiem_tra(sales_order):
 		"bang1": bang1,
 		"bang2": bang2,
 		"canh_bao": canh_bao,
+	}
+
+
+def _da_co_nguoi_lo(ma_hang):
+	"""{mã: số lượng đã có người lo} = Yêu Cầu Mặt Hàng đang chờ + Đơn mua chưa về.
+
+	⚠ Không trừ phần này thì bấm nút hai lần là đặt mua hai lần. Đây là chỗ tôi đã hứa với anh
+	  Thắng 28/08: *"cần mua = đang thiếu − phiếu yêu cầu đang chờ − đơn mua chưa về"*.
+	"""
+	if not ma_hang:
+		return {}
+	ket = {}
+
+	# Yêu Cầu Mặt Hàng đã duyệt, phần chưa được đặt mua
+	for r in frappe.db.sql(
+		"""
+		select mri.item_code, sum(mri.stock_qty - mri.ordered_qty) as con
+		from `tabMaterial Request Item` mri
+		join `tabMaterial Request` mr on mr.name = mri.parent
+		where mr.docstatus = 1 and mr.material_request_type = 'Purchase'
+		  and mr.status not in ('Stopped', 'Cancelled')
+		  and mri.item_code in %(ma)s and (mri.stock_qty - mri.ordered_qty) > 0
+		group by mri.item_code
+		""",
+		{"ma": tuple(ma_hang)},
+		as_dict=True,
+	):
+		ket[r["item_code"]] = ket.get(r["item_code"], 0) + flt(r["con"])
+
+	# Đơn mua đã duyệt, phần chưa nhận — không lọc ngày ở đây: hàng về muộn vẫn là hàng đã đặt,
+	# đặt thêm là mua thừa. Khác với mục 8.2 (cột *Ngày hàng về*) vốn chỉ hiện ngày trong tương lai.
+	for r in frappe.db.sql(
+		"""
+		select poi.item_code, sum(poi.stock_qty - poi.received_qty) as con
+		from `tabPurchase Order Item` poi
+		join `tabPurchase Order` po on po.name = poi.parent
+		where po.docstatus = 1 and po.status not in ('Closed', 'Completed', 'Cancelled')
+		  and poi.item_code in %(ma)s and (poi.stock_qty - poi.received_qty) > 0
+		group by poi.item_code
+		""",
+		{"ma": tuple(ma_hang)},
+		as_dict=True,
+	):
+		ket[r["item_code"]] = ket.get(r["item_code"], 0) + flt(r["con"])
+
+	return ket
+
+
+def tinh_can_mua(sales_order):
+	"""{mã: số lượng cần mua} + cảnh báo. Dùng chung cho nút *Tạo Yêu Cầu Mặt Hàng*.
+
+	⚠ **KHÔNG cộng thẳng `thieu` của Bảng 1 với `thieu` của Bảng 2.** Hai bảng cùng trừ vào một
+	  lượng tồn: mã vừa bán trên đơn vừa là thành phần của mã khác sẽ được tồn "che" hai lần, ra
+	  số thiếu ÍT hơn thực tế. Ở đây gom **nhu cầu** theo mã trước, rồi mới trừ tồn MỘT LẦN.
+
+	⚠ Chỉ lấy mặt hàng *Mua hàng* (hoặc trống — coi như Mua hàng), theo đúng mô tả PM-TASK-00140.
+	  Mặt hàng *Sản xuất/Gia công* trên đơn không vào phiếu: phần thiếu của chúng đã được bóc
+	  thành nguyên vật liệu ở Bảng 2 rồi, đưa cả hai vào là mua cả thành phẩm lẫn vật tư làm ra nó.
+	"""
+	kq = kiem_tra(sales_order)
+	canh_bao = list(kq["canh_bao"])
+
+	ma_b1 = [d["ma"] for d in kq["bang1"]]
+	pp = {
+		r["name"]: (r.get("custom_replenishment_method") or "").strip()
+		for r in frappe.get_all(
+			"Item", filters={"name": ["in", ma_b1]} if ma_b1 else {"name": ""},
+			fields=["name", "custom_replenishment_method"],
+		)
+	}
+
+	nhu_cau = {}
+	for d in kq["bang1"]:
+		if pp.get(d["ma"]) in ("Sản xuất", "Gia công"):
+			continue                                   # đã bóc thành NVL ở Bảng 2
+		nhu_cau[d["ma"]] = nhu_cau.get(d["ma"], 0) + flt(d["can"])
+	for d in kq["bang2"]:
+		nhu_cau[d["ma"]] = nhu_cau.get(d["ma"], 0) + flt(d["can"])
+
+	if not nhu_cau:
+		return {}, canh_bao, kq
+
+	kho = _kho_hop_le(frappe.db.get_value("Sales Order", sales_order, "company"))
+	ton = _ton_thuc_te(set(nhu_cau), kho)
+	ghim, _ = ghim_boi_don_khac(tru_don=sales_order)
+	da_lo = _da_co_nguoi_lo(set(nhu_cau))
+
+	can_mua = {}
+	for ma, can in nhu_cau.items():
+		kha_dung = flt(ton.get(ma, 0)) - flt(ghim.get(ma, 0))
+		con_thieu = can - kha_dung - flt(da_lo.get(ma, 0))
+		if con_thieu > 0:
+			can_mua[ma] = con_thieu
+
+	bo_qua = sorted(set(nhu_cau) - set(can_mua))
+	if bo_qua:
+		canh_bao.append(
+			f"{len(bo_qua)} mã không đưa vào phiếu vì đã đủ tồn hoặc đã có phiếu/đơn mua lo: "
+			+ ", ".join(bo_qua[:8]) + ("…" if len(bo_qua) > 8 else "")
+		)
+	return can_mua, canh_bao, kq
+
+
+@frappe.whitelist()
+def tao_yeu_cau_mua_hang(sales_order):
+	"""Dựng sẵn một Yêu Cầu Mặt Hàng từ phần còn thiếu (PM-TASK-00140).
+
+	Trả về tài liệu **CHƯA LƯU** để client mở ra dạng form mới. Cố ý không `insert()`:
+
+	- Bấm nút mà đẻ ngay chứng từ trong cơ sở dữ liệu là ngược với luật đã ghi ở `CLAUDE.md` —
+	  chứng từ thật phải qua một cú bấm rõ ràng, có nhìn thấy nội dung trước.
+	- Người dùng bấm rồi đổi ý thì không để lại phiếu nháp rác; không phải đi dọn.
+
+	⚠ **Phải kẹp `schedule_date` về hôm nay nếu ngày giao đã lùi quá khứ.**
+	  `buying_controller.validate_schedule_date` **throw** khi `schedule_date < transaction_date`.
+	  Đo 03/09: **8/8 đơn mẫu trên site đều có ngày giao trong quá khứ** — không kẹp thì gần như
+	  đơn nào cũng vỡ ngay lúc lưu, và lỗi hiện ra là "Row #1: Reqd by Date cannot be before
+	  Transaction Date", người dùng không nối được về nút vừa bấm.
+	"""
+	from frappe.utils import getdate, nowdate
+
+	can_mua, canh_bao, kq = tinh_can_mua(sales_order)
+	if not can_mua:
+		return {
+			"co_phieu": False,
+			"canh_bao": canh_bao,
+			"thong_bao": "Không có mặt hàng nào cần mua thêm — đơn này đủ tồn, "
+			"hoặc phần thiếu đã có phiếu yêu cầu / đơn mua lo rồi.",
+		}
+
+	don = frappe.get_doc("Sales Order", sales_order)
+	hom_nay = nowdate()
+	ngay_can = don.delivery_date
+	if not ngay_can or getdate(ngay_can) < getdate(hom_nay):
+		ngay_can = hom_nay
+
+	don_vi = {
+		r["name"]: r["stock_uom"]
+		for r in frappe.get_all(
+			"Item", filters={"name": ["in", list(can_mua)]}, fields=["name", "stock_uom"]
+		)
+	}
+
+	# Kho nhận hàng — `Material Request Item.warehouse` là BẮT BUỘC với hàng tồn kho
+	# (`buying/utils.py::validate_stock_item_warehouse` throw). Không đặt thì phiếu vỡ ngay lúc
+	# lưu với thông báo "Warehouse is mandatory for stock Item", người dùng không nối được về
+	# nút vừa bấm.
+	#
+	# ⚠ Không gõ cứng tên kho ("Kho nguyên vật liệu - HKL"): tên mang hậu tố công ty và sẽ khác
+	#   khi lên site khác. Lấy theo thứ tự: kho của Đơn Bán → kho trên dòng hàng → mặc định của
+	#   hệ thống. Người dùng vẫn sửa được trên phiếu nháp trước khi lưu.
+	kho_nhan = don.get("set_warehouse")
+	if not kho_nhan:
+		for d in don.items:
+			if d.warehouse:
+				kho_nhan = d.warehouse
+				break
+	if not kho_nhan:
+		kho_nhan = frappe.db.get_single_value("Stock Settings", "default_warehouse")
+
+	mr = frappe.new_doc("Material Request")
+	mr.material_request_type = "Purchase"
+	mr.company = don.company
+	mr.transaction_date = hom_nay
+	mr.schedule_date = ngay_can
+	mr.set_warehouse = kho_nhan
+	for ma, sl in sorted(can_mua.items()):
+		mr.append("items", {
+			"item_code": ma,
+			"qty": sl,
+			"uom": don_vi.get(ma),
+			"stock_uom": don_vi.get(ma),
+			"conversion_factor": 1,
+			"schedule_date": ngay_can,
+			"warehouse": kho_nhan,
+			# Gắn về Đơn Bán: truy ngược được, và là cách rẻ nhất để biết đơn này đã tạo phiếu chưa.
+			"sales_order": don.name,
+		})
+
+	# Đã có phiếu nào cho chính đơn này chưa — chỉ CẢNH BÁO, không chặn: người dùng có thể cố ý
+	# tạo phiếu thứ hai cho phần mới phát sinh. Phần trùng đã bị trừ ở `_da_co_nguoi_lo`.
+	phieu_cu = frappe.get_all(
+		"Material Request Item",
+		filters={"sales_order": don.name, "docstatus": ["<", 2]},
+		fields=["parent"], group_by="parent", pluck="parent",
+	)
+	if phieu_cu:
+		canh_bao.append(
+			"Đơn này đã có phiếu yêu cầu mặt hàng: " + ", ".join(phieu_cu[:5])
+			+ ". Phần đã nằm trong các phiếu đó không được tính lại."
+		)
+
+	return {
+		"co_phieu": True,
+		"phieu": mr.as_dict(),
+		"so_dong": len(mr.items),
+		"canh_bao": canh_bao,
+		"ngay_bi_kep": bool(don.delivery_date and getdate(don.delivery_date) < getdate(hom_nay)),
+		"kho_nhan": kho_nhan,
 	}
