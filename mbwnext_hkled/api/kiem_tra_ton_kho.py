@@ -482,12 +482,14 @@ def tao_yeu_cau_mua_hang(sales_order):
 	if not ngay_can or getdate(ngay_can) < getdate(hom_nay):
 		ngay_can = hom_nay
 
-	don_vi = {
-		r["name"]: r["stock_uom"]
+	mat_hang = {
+		r["name"]: r
 		for r in frappe.get_all(
-			"Item", filters={"name": ["in", list(can_mua)]}, fields=["name", "stock_uom"]
+			"Item", filters={"name": ["in", list(can_mua)]},
+			fields=["name", "stock_uom", "is_stock_item"],
 		)
 	}
+	don_vi = {m: r["stock_uom"] for m, r in mat_hang.items()}
 
 	# Kho nhận hàng — `Material Request Item.warehouse` là BẮT BUỘC với hàng tồn kho
 	# (`buying/utils.py::validate_stock_item_warehouse` throw). Không đặt thì phiếu vỡ ngay lúc
@@ -497,6 +499,9 @@ def tao_yeu_cau_mua_hang(sales_order):
 	# ⚠ Không gõ cứng tên kho ("Kho nguyên vật liệu - HKL"): tên mang hậu tố công ty và sẽ khác
 	#   khi lên site khác. Lấy theo thứ tự: kho của Đơn Bán → kho trên dòng hàng → mặc định của
 	#   hệ thống. Người dùng vẫn sửa được trên phiếu nháp trước khi lưu.
+	#
+	# ⚠ Cố ý KHÔNG đặt `mr.set_warehouse` ở đầu phiếu: đặt thì giá trị đó lan xuống MỌI dòng,
+	#   kể cả dòng dịch vụ. Gán theo từng dòng mới tách được hàng tồn kho với dịch vụ.
 	kho_nhan = don.get("set_warehouse")
 	if not kho_nhan:
 		for d in don.items:
@@ -531,7 +536,6 @@ def tao_yeu_cau_mua_hang(sales_order):
 	mr.company = don.company
 	mr.transaction_date = hom_nay
 	mr.schedule_date = ngay_can
-	mr.set_warehouse = kho_nhan
 	for ma, sl in sorted(can_mua.items()):
 		mr.append("items", {
 			"item_code": ma,
@@ -540,7 +544,11 @@ def tao_yeu_cau_mua_hang(sales_order):
 			"stock_uom": don_vi.get(ma),
 			"conversion_factor": 1,
 			"schedule_date": ngay_can,
-			"warehouse": kho_nhan,
+			# Chỉ gán kho cho HÀNG TỒN KHO. `dịch vụ gia công` (is_stock_item = 0, đang dùng
+			# thật ở PO-26-00001/00002) lưu được nếu có kho, ERPNext không chặn — nhưng một
+			# dòng dịch vụ mang tên kho là dữ liệu vô nghĩa, và Phần V còn sinh thêm dòng
+			# "dịch vụ gia công" nữa (chốt của Thắng 24/08 trên PM-FEAT-00030).
+			"warehouse": kho_nhan if mat_hang.get(ma, {}).get("is_stock_item") else None,
 			# Gắn về Đơn Bán: truy ngược được, và là cách rẻ nhất để biết đơn này đã tạo phiếu chưa.
 			"sales_order": don.name,
 		})
