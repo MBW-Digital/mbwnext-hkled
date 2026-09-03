@@ -201,27 +201,14 @@ def _dong_bom(ten_bom):
 def _thanh_phan_theo_template(ma, bo_nho):
 	"""[{item_code, qty}] cho MỘT đơn vị, tra qua BOM Template. `None` nếu mã không có Template.
 
-	⚠ Có bộ nhớ đệm là **bắt buộc**, không phải tối ưu cho vui. `resolve_qty_by_formula` chạy một
-	Server Script cho **từng thành phần của từng biến thể** — đo trên 8012: 0,0225 s/thành phần,
-	tức 0,4 s cho mỗi mặt hàng thành phẩm. Quy mô Thắng chốt là 250–350 dòng mỗi kỳ (mục 6.2), nên
-	không đệm thì một lần bấm Tính toán mất khoảng **2 phút** — đo thật, 300 mã chạy quá 120 s.
+	⚠ Đệm này KHÔNG phải tối ưu cho vui. `safe_exec` của Frappe **biên dịch lại toàn bộ Server
+	Script ở mỗi lần gọi**, mà script định mức của HKLED dài ~500 dòng. Đệm theo `(mã, template)`
+	sống trong MỘT lần gọi `tinh_nhu_cau`: cùng một bán thành phẩm xuất hiện dưới nhiều thành phẩm,
+	và cả cây được nổ lại ở từng kỳ.
 
-	Đệm theo `(mã, template)`, sống trong MỘT lần gọi `tinh_nhu_cau`: cùng một bán thành phẩm xuất
-	hiện dưới nhiều thành phẩm, và cả cây được nổ lại ở từng kỳ. Đo được: 40 mã từ 15,6 s xuống
-	5,9 s.
-
-	⚠ **Đệm này KHÔNG gỡ được trần hiệu năng.** Mỗi biến thể vẫn phải chạy Server Script riêng, nên
-	chi phí tuyến tính theo SỐ BIẾN THỂ KHÁC NHAU: đo 03/09 trên 8012 là **~0,15 s/biến thể**, tức
-	300 biến thể ≈ **44 giây**. Đã thử thêm một tầng đệm sống xuyên request (Redis, khoá gắn dấu
-	vân tay của BOM Template + BOM Rule + Server Script) và **bỏ đi**: nó không rút được lần bấm
-	ĐẦU — mà đó mới là lần người dùng phải chờ — trong khi mở thêm đường trả số cũ nếu dấu vân tay
-	sót nguồn nào.
-
-	➜ Chỗ phải sửa nằm ở `resolve_qty_by_formula` của `api/bom.py`: `run_script` **biên dịch lại
-	Server Script cho từng thành phần từng biến thể**. Đo bằng cProfile trên 60 mã: 2,6 s ở
-	`builtins.compile` + 10,4 s đi bộ cây AST, trên tổng 17,9 s. Gọi Server Script MỘT lần cho cả
-	lô thành phần sẽ rút được phần lớn — và rút cho cả Phần I. Nhưng `api/bom.py` dùng chung với
-	Phần I nên **không tự sửa**; đã nêu để chốt.
+	Trần hiệu năng còn lại đã được gỡ ở `api/bom.py::resolve_qty_batch` (03/09): hỏi Server Script
+	MỘT lần cho cả lô thành phần của một biến thể, thay vì một lần mỗi thành phần. Đo trên 8012:
+	300 biến thể từ **43,9 s xuống 12,8 s**, định mức ra y hệt (0/60 biến thể lệch).
 	"""
 	template = get_active_template(ma)
 	if not template:
