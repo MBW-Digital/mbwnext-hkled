@@ -1,5 +1,8 @@
 # Ghim tồn khả dụng — toàn cảnh hai tính năng
 
+> **Toàn cảnh mảng ghim — PM-FEAT-00023 · 00034 · 00036 · 00037 (Phần IV, IV.1, IV.2)**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED · **Cập nhật:** 25/08/2026
 **Phạm vi:** `PM-FEAT-00023` (Phần IV) và `PM-FEAT-00034`
 

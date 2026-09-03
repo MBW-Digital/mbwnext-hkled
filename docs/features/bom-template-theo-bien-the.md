@@ -1,5 +1,8 @@
 # HKLED — BOM Template theo Biến Thể (Giai đoạn 1, Phần I bản nâng cấp)
 
+> **PM-FEAT-00007 · Phần I · Sinh BOM tự động theo biến thể**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 - **App**: `mbwnext_hkled` (tầng 4 — riêng khách HKLED)
 - **Site dev**: `hkled.com` (bench `mbwnext_project`, dev server cổng 8047)
 - **Nguồn yêu cầu**: PM `PM-PRJ-00003` › Tài liệu › Tài Liệu Giai Đoạn 1 › `BOM_Template_Design_HKLED` (`PM-DOC-00046`)

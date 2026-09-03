@@ -818,14 +818,42 @@ Nguồn yêu cầu trên app PM: dự án `PM-PRJ-00003` (HKLed) › Tài liệu
 - `PM-DOC-00043` — Danh sách thành phẩm (MBW).xlsx (dữ liệu gốc của công thức số lượng)
 
 Tài liệu 4 giai đoạn nằm TRONG app này (`apps/mbwnext_hkled/docs/` — quy ước mới của PM Feature,
-không còn đặt ở gốc bench):
-Mỗi tính năng dùng **một tên gốc chung cho cả 4 thư mục** để tra chéo được:
+không còn đặt ở gốc bench). Mỗi tính năng dùng **một tên gốc chung cho cả 4 thư mục**.
 
-| Tên gốc | PM Feature | features | mockups | testcases | huong-dan |
+### ⚠ Nối repo với PM bằng MÃ `PM-FEAT-xxxxx`, KHÔNG bằng tên (chốt 03/09/2026)
+
+Hai bên **cố ý đặt tên khác nhau**, vì hai bên phục vụ hai người đọc khác nhau:
+
+| | Đặt tên kiểu gì | Vì sao |
+|---|---|---|
+| **Trên PM** | tiếng Việt đọc được — `Phần IV · Kiểm tra tồn kho và nguồn lực trên Đơn bán hàng` | Thắng và khách mở cây tài liệu ra là hiểu ngay thuộc mảng nào |
+| **Trong repo** | slug ASCII — `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order` | tên file, không dấu, không khoảng trắng |
+
+➜ **Tra chéo bằng mã `PM-FEAT-xxxxx`**, đừng tra bằng tên. Lý do: tên còn đổi tiếp, mã thì không.
+Ngày 03/09 cả 8 tính năng đổi tên một lượt (Tuấn chốt gắn số Phần vào tên) — nếu lúc đó quy ước
+đang là "tên hai bên phải khớp" thì phải đổi luôn 6 file trong repo, và lần đổi sau lại đổi nữa.
+
+⚠ **Đừng "sửa cho khớp".** Thấy tên thư mục PM khác tên file repo là **đúng thiết kế**, không phải
+lỗi. Mỗi file trong `docs/features/` nên ghi mã `PM-FEAT-xxxxx` ở dòng đầu để tra ngược.
+
+⚠ Trước 03/09 tên thư mục PM sinh tự động từ tên tính năng bằng `normalize_slug` của app PM — hàm
+đó **nuốt chữ `đ`** (`unicodedata.normalize("NFKD")` không tách được `đ`/`Đ` vì chúng là ký tự
+riêng chứ không phải nguyên âm mang dấu, nên bộ lọc ASCII xoá sạch). Đã đẻ ra
+`bieu-o-gant-…`, `…hang-mua-a-ve`, `bang-kho-mac-inh-…`. Nay tên thư mục PM là tiếng Việt đọc được
+nên không qua hàm đó nữa, nhưng **trường `slug` của PM Feature vẫn hỏng** — đừng dùng nó làm
+đường dẫn cho tới khi app PM sửa.
+
+| Tên gốc trong repo | PM Feature | features | mockups | testcases | huong-dan |
 |---|---|---|---|---|---|
 | `bom-template-theo-bien-the` | PM-FEAT-00007 | ✔ | ✔ (.md) | ✔ A–H | — |
 | `bac-tho-lich-san-xuat` | PM-FEAT-00008 | ✔ | ✔ (.html) | ✔ 61 ca | ✔ cấu hình + vận hành + `anh/` |
 | `bieu-do-gantt-lich-lam-viec` | PM-FEAT-00009 | ✔ | ✔ (.html) | ✔ 31 ca | ✔ vận hành + `anh/` |
+| `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order` | PM-FEAT-00023 | ✔ | ✔ (.html) | — | — |
+| `chan-xuat-kho-qua-ton-kha-dung` | PM-FEAT-00034 | ✔ | ✔ (.html) | — | — |
+| `phan-v-tinh-toan-nhu-cau-vat-tu-can-mua-theo-ky` | PM-FEAT-00030 | ✔ | — | — | — |
+| `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` | PM-FEAT-00036 | ✔ | — | — | — |
+| `khai-kho-mac-dinh-va-ton-toi-thieu-theo-cong-ty` | PM-FEAT-00037 | ✔ | — | — | — |
+
 
 Test case của các PM Task rời (không thuộc feature nào) đặt theo nhóm việc:
 `ghi-chu-san-xuat-va-ke-hoach-tu-don-ban.md` (PM-TASK-00046/47/49/50),

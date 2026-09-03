@@ -298,7 +298,12 @@ doc_events = {
 	"Sales Order": {
 		# PM-TASK-00046: Ghi Chú Sản Xuất của đơn chảy xuống dòng hàng còn trống. Phải có ở server
 		# vì client script không chạy khi tạo đơn bằng API / Data Import.
-		"validate": "mbwnext_hkled.controllers.python_hook.sales_order.fill_item_production_note",
+		# PM-FEAT-00023: Số Lượng Giữ Chỗ không được vượt tồn khả dụng. Cùng lý do trên, và nặng
+		# hơn: con số này bị TRỪ khỏi tồn khả dụng của mọi đơn khác, sai một dòng là sai cả site.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.sales_order.fill_item_production_note",
+			"mbwnext_hkled.controllers.python_hook.sales_order.chan_giu_cho_vuot_ton",
+		],
 	},
 	"Stock Entry": {
 		# GAP-7: sinh serial theo mã đơn bán khi Finish, thay cho series mặc định.

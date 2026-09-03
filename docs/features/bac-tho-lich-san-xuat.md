@@ -1,5 +1,8 @@
 # Bậc Thợ & Lịch Sản Xuất — hoàn thiện theo tài liệu Giai đoạn 1 (Phần II + III + IV)
 
+> **PM-FEAT-00008 · Phần II–III · Tính lịch sản xuất theo bậc thợ**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED (công ty sản xuất đèn LED)
 **PM Project:** PM-PRJ-00003
 **Nguồn yêu cầu:** PM-DOC-00044 — "Bản sao của TÀI LIỆU NGHIỆP VỤ NÂNG CẤP GIAI ĐOẠN 1 HKLED.docx"

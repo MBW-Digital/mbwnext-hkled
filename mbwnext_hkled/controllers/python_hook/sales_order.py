@@ -1,13 +1,20 @@
 # Copyright (c) 2026, MBWD and contributors
 # For license information, please see license.txt
 
-"""Ghi Chú Sản Xuất của đơn chảy xuống từng dòng hàng (PM-TASK-00046).
+"""Hai việc chạy ở `Sales Order.validate`:
 
-Vì sao phải chặn thêm ở server dù client script đã làm:
+- `fill_item_production_note` — Ghi Chú Sản Xuất của đơn chảy xuống từng dòng hàng (PM-TASK-00046)
+- `chan_giu_cho_vuot_ton` — chặn Số Lượng Giữ Chỗ vượt tồn khả dụng (PM-FEAT-00023)
+
+Vì sao cả hai phải có ở server dù client script đã làm:
 client script chỉ chạy khi người dùng thao tác trên giao diện. Đơn tạo bằng API, bằng Data Import
 hay bằng script đều lọt — đúng bài học C1 ở `python_hook/employee.py` (`mandatory_depends_on` của
 Frappe cũng chỉ chạy phía client).
 """
+
+import frappe
+from frappe import _
+from frappe.utils import flt
 
 
 def fill_item_production_note(doc, method=None):
@@ -30,3 +37,82 @@ def fill_item_production_note(doc, method=None):
 	for row in doc.get("items") or []:
 		if not (row.get("custom_note") or "").strip():
 			row.custom_note = ghi_chu
+
+
+def chan_giu_cho_vuot_ton(doc, method=None):
+	"""Không cho *Số Lượng Giữ Chỗ* vượt tồn khả dụng (anh Thắng chốt 02/09 12:40).
+
+	Vì sao phải có ở server: cùng bài học C1 ở `python_hook/employee.py` — giao diện có chặn thì
+	đơn tạo bằng API / Data Import / script vẫn lọt. Mà con số này KHÔNG chỉ nằm trên đơn của
+	mình: `api.kiem_tra_ton_kho.ghim_boi_don_khac` đọc thẳng nó rồi TRỪ khỏi tồn khả dụng của mọi
+	đơn khác. Một dòng ghim 99 trên tồn 31 làm các đơn còn lại thấy thiếu ảo 68 cái và đi mua
+	hàng không cần mua.
+
+	⚠ **Chỉ chặn khi người dùng TĂNG số.** Tồn có thể tụt sau khi đơn đã lưu (đơn khác ghim thêm,
+	  hàng xuất đi), lúc đó giá trị cũ tự nhiên vượt trần. Chặn cứng theo trần hiện tại sẽ khoá
+	  luôn những sửa đổi chẳng liên quan gì tới ghim — đúng cái bẫy `validate_schedule_date` của
+	  lõi đã giăng ở Yêu Cầu Mặt Hàng (8/8 đơn trên site có ngày giao quá khứ).
+
+	⚠ Chỉ chạy khi ô *Ghim Tồn Khả Dụng* đang tích. Bỏ tích thì con số vẫn nằm đó nhưng không
+	  đơn nào bị trừ theo — đúng như mô tả của trường.
+	"""
+	if doc.doctype != "Sales Order" or not doc.get("custom_ghim_ton_kha_dung"):
+		return
+
+	dong = [r for r in (doc.get("items") or []) if flt(r.get("custom_so_luong_giu_cho")) > 0]
+	if not dong:
+		return
+
+	from mbwnext_hkled.api.kiem_tra_ton_kho import _kho_hop_le, _ton_thuc_te, ghim_boi_don_khac
+
+	cu = {}
+	if not doc.is_new():
+		cu = dict(
+			frappe.get_all(
+				"Sales Order Item",
+				filters={"parent": doc.name},
+				fields=["name", "custom_so_luong_giu_cho"],
+				as_list=True,
+			)
+		)
+
+	ma_hang = {r.item_code for r in dong}
+	kho = _kho_hop_le(doc.company)
+	ton = _ton_thuc_te(ma_hang, kho)
+	# ⚠ KHÔNG đặt tên biến bỏ đi là `_` ở đây: `_` đang là hàm dịch của Frappe, gán đè lên
+	#   nó thì `_("...")` phía dưới nổ `'list' object is not callable` — mà chỗ nổ lại nằm
+	#   trong nhánh CHẶN, nên nhìn từ ngoài vẫn thấy "đã chặn", chỉ sai câu thông báo.
+	ghim_khac, _canh_bao = ghim_boi_don_khac(tru_don=doc.name)
+
+	# Nhiều dòng cùng một mã thì ăn chung MỘT lượng tồn — phải cộng dồn theo mã, không xét
+	# từng dòng độc lập. Xét riêng lẻ thì đơn 3 dòng x 20 cái trên tồn 20 sẽ lọt cả ba.
+	da_dung = {}
+	for row in dong:
+		moi = flt(row.custom_so_luong_giu_cho)
+		if moi <= flt(cu.get(row.name, 0)):
+			# Không tăng: giữ nguyên phần người dùng không đụng tới, nhưng vẫn tính vào
+			# lượng đã dùng để dòng TĂNG ở sau không mượn lại chỗ này.
+			da_dung[row.item_code] = da_dung.get(row.item_code, 0) + moi
+			continue
+
+		kha_dung = flt(ton.get(row.item_code, 0)) - flt(ghim_khac.get(row.item_code, 0))
+		con_lai = kha_dung - da_dung.get(row.item_code, 0)
+		tran = min(flt(row.qty), con_lai)
+
+		if moi > tran:
+			frappe.throw(
+				_(
+					"Dòng {0} — {1}: chỉ giữ chỗ được tối đa <b>{2}</b>, không được {3}.<br><br>"
+					"Tồn khả dụng còn {4} (đã trừ phần các đơn khác đang giữ), đơn này cần {5}."
+				).format(
+					row.idx,
+					row.item_code,
+					frappe.format_value(max(0.0, tran), {"fieldtype": "Float"}),
+					frappe.format_value(moi, {"fieldtype": "Float"}),
+					frappe.format_value(max(0.0, con_lai), {"fieldtype": "Float"}),
+					frappe.format_value(flt(row.qty), {"fieldtype": "Float"}),
+				),
+				title=_("Giữ chỗ vượt tồn khả dụng"),
+			)
+
+		da_dung[row.item_code] = da_dung.get(row.item_code, 0) + moi

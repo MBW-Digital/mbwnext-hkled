@@ -1,5 +1,8 @@
 # Kiểm tra tồn kho và nguồn lực trên Đơn Bán
 
+> **PM-FEAT-00023 · Phần IV · Kiểm tra tồn kho và nguồn lực trên Đơn bán hàng**
+> Tên trên PM khác tên file này — nối hai bên bằng MÃ, không bằng tên. Xem `CLAUDE.md`.
+
 **Khách hàng:** HKLED
 **Người cung cấp thông tin:** Thắng (thangdo@mbw.vn) — thuật lại lời khách
 **Người trực tiếp thao tác đã trao đổi:** ❌ **chưa** — xem "Còn thiếu ở khâu khảo sát"
@@ -116,9 +119,26 @@ và BOM Template, cả hai đều là thứ riêng của HKLED. Không đụng a
 
 | DocType | Field | Kiểu | Ghi chú |
 |---|---|---|---|
-| Sales Order | `custom_ghim_ton_kha_dung` | Check | Tích = giữ chỗ tồn cho đơn này |
+| Sales Order | `custom_ghim_ton_kha_dung` | Check | Công tắc chung cho cả đơn |
+| Sales Order Item | `custom_so_luong_giu_cho` | Float | Số lượng đơn này thực sự giữ, **theo từng dòng** |
 
-Chỉ **một** field mới. `custom_reserved_qty` **không** tạo cột trên `Bin` — tính động lúc bấm
+> ✅ **ĐỔI 02/09 — THÊM Ô SỐ LƯỢNG, GIỮ CẢ Ô TÍCH** (anh Thắng chốt `12:32` và `12:40`).
+>
+> Bản đầu chỉ có ô tích. Không đủ: khách nêu tình huống A nhường một phần hàng cho B
+> (phản hồi 27/08), mà ô tích thì **chỉ nhả được cả đơn**, không nhả một phần — A định
+> nhường 4 cái *item 1* nhưng mất luôn 2 cái *item 2* vì bỏ tích là nhả sạch.
+>
+> Ba luật đã chốt:
+>
+> 1. **Ô tích ở cấp ĐƠN, ô số lượng ở TỪNG DÒNG.** Tích một cái là hệ thống điền mức tối đa
+>    cho mọi dòng — đơn 20 dòng không phải gõ 20 ô.
+> 2. **Bỏ tích KHÔNG xoá số đã nhập**, chỉ làm mờ và ngừng áp dụng. Tích lại thì số cũ còn
+>    nguyên. Sale sửa tay 20 dòng rồi lỡ bỏ tích mà mất sạch thì không có đường lấy lại.
+> 3. **Sửa tay KHÔNG được vượt tồn khả dụng** — anh Thắng chốt 12:40, chặn cứng ở mức tối đa.
+>
+> ⚠ Luật 3 đảo lại đề xuất ban đầu của tôi (cho gõ vượt + chữ đỏ). Lý do tôi phản đối là
+> *"phần thiếu biến mất khỏi màn hình"*; anh Thắng gỡ đúng chỗ đó bằng cách cho phần thiếu
+> ra thành một cột riêng — xem mục 5b. Lo ngại được giải, không phải bị bỏ qua. `custom_reserved_qty` **không** tạo cột trên `Bin` — tính động lúc bấm
 nút. Đây là ràng buộc đã chốt: *không đụng Stock Balance / Stock Ledger / Bin*.
 
 > ✅ **ĐÃ CHỐT 25/08 — GIỮ `custom_ghim_ton_kha_dung`.** PM-FEAT-00034 chốt **tự làm**
@@ -179,6 +199,20 @@ lên site khác.
 ⚠ `MBWNext System Setting` có sẵn `warehouse_error` / `bad_stock_warehouse` nhưng **đang để
 trống**. Đừng đọc hai trường đó — hiện không mang giá trị nào.
 
+**Đo trên `hkled.com` 03/09** — 9 kho lá, loại 4, còn **5** kho được tính tồn:
+
+	Kho Tổng
+	├── Kho Sản xuất
+	│   ├── Kho thành phẩm · Kho nguyên vật liệu · Kho bán thành phẩm    ✅ tính
+	│   └── Kho ký gửi · Kho khuyến mãi/hàng mẫu                          ✅ tính
+	├── Nhóm kho lỗi        → Kho hàng lỗi/trả · Kho hàng lỗi cần sửa chữa   ❌ loại
+	└── Nhóm kho trung chuyển → Kho trung chuyển · **Kho đang sản xuất**     ❌ loại
+
+⚠ **`Kho đang sản xuất` bị loại**, và đây là chỗ dễ bị báo nhầm là lỗi. Nó nằm dưới *Nhóm kho
+trung chuyển* nên rơi đúng vào luật đã chốt. Về nghiệp vụ cũng đúng: vật tư đã xuất cho sản xuất
+thì không còn rảnh để bán cho đơn khác. Nhưng người dùng nhìn tên kho sẽ tưởng là hàng đang có.
+Nếu về sau khách muốn tính kho này thì đó là **đổi luật**, phải chốt lại, không phải sửa lỗi.
+
 ## 4. Thuật toán — 4 bước, đúng thứ tự
 
 Thứ tự này là **quy tắc nghiệp vụ đã chốt** (Notes mục 4), không phải chuyện tối ưu:
@@ -186,7 +220,7 @@ Thứ tự này là **quy tắc nghiệp vụ đã chốt** (Notes mục 4), kh�
 **Bước 1 — Gom nhu cầu mặt hàng trên đơn.** Cộng dồn theo `item_code` (một đơn có thể có cùng
 mặt hàng ở nhiều dòng).
 
-**Bước 2 — Trừ tồn cho mặt hàng trên đơn.** `thiếu = cần − tồn_khả_dụng`. Ra **Bảng 1**.
+**Bước 2 — Trừ tồn cho mặt hàng trên đơn.** `thiếu = cần − tồn_khả_dụng` (xem 5b). Ra **Bảng 1**.
 
 **Bước 3 — Bóc BOM cho phần CÒN THIẾU.** Chỉ bóc `thiếu`, không bóc cả `cần` — bóc cả thì mua
 thừa đúng bằng phần đang có trong kho.
@@ -207,30 +241,101 @@ BOM. Trừ sớm thì cùng một lượng tồn bị đếm nhiều lần cho n
 tồn_khả_dụng(mặt hàng) = tồn_thực_tế − ghim_bởi_đơn_khác
 
 tồn_thực_tế       = Σ Bin.actual_qty trên tập kho hợp lệ (mục 3)
-ghim_bởi_đơn_khác = Σ (qty − delivered_qty) của mọi Sales Order thoả:
-                      · docstatus = 1, status không thuộc (Closed, Completed, Cancelled)
-                      · custom_ghim_ton_kha_dung = 1
-                      · name ≠ đơn đang kiểm            ← R3, anh Thắng chốt 5.3
+ghim_bởi_đơn_khác = Σ custom_so_luong_giu_cho của mọi dòng Sales Order Item thoả:
+                      · đơn cha docstatus = 1, status không thuộc (Closed, Completed, Cancelled)
+                      · đơn cha custom_ghim_ton_kha_dung = 1
+                      · đơn cha name ≠ đơn đang kiểm    ← R3, anh Thắng chốt 5.3
 ```
+
+> ⚠ **ĐỔI 03/09 — đọc trường lưu sẵn, KHÔNG suy từ `qty − delivered_qty` nữa.** Từ khi ghim là
+> một con số (mục 2), phần đơn khác giữ chỗ chính là giá trị họ đã nhập, không phải toàn bộ phần
+> chưa giao của họ. Đơn giữ 1 trên dòng 5 cái thì chỉ chiếm 1.
+>
+> Kèm theo: phần **đã giao** không còn phải trừ ở đây. Giao hàng làm `Bin.actual_qty` giảm thật,
+> nên nếu vẫn trừ `delivered_qty` một lần nữa là **trừ hai lần**.
 
 Dòng cuối là **bắt buộc**, anh Thắng nhắc lại 24/08 (`ptmjq2t3nj`): *"check box Ghim tồn khả dụng
 phải không ảnh hưởng đến số tồn khả dụng ở bảng 1 của chính đơn đó"*. Thiếu nó thì đơn vừa tích
 ghim tự trừ số lượng của chính mình và báo thiếu nhiều gấp đôi.
 
 **Ghim lan xuống NVL** (anh Thắng bổ sung 24/08): với đơn đã ghim, mặt hàng *Sản xuất/Gia công*
-thì **NVL bóc từ BOM mặc định cũng bị ghim theo**. Nghĩa là `ghim_bởi_đơn_khác` phải chạy chính
+thì **NVL bóc từ BOM mặc định cũng bị ghim theo**.
+
+> 🔴 **SỬA 02/09 — CHỈ BÓC PHẦN CHƯA SẢN XUẤT. Lỗi đếm hai lần, do khách chỉ ra.**
+>
+> Khách hỏi (27/08): *"sản xuất xong 5 sản phẩm rồi thì có chuyển từ ghim NVL sang ghim thành
+> phẩm không?"* Theo bản viết trước thì **không chuyển, mà ghim cả hai** — và đó là lỗi:
+>
+> `delivered_qty` chỉ giảm khi **giao cho khách**, không giảm khi **sản xuất xong**. Nên sau khi
+> sản xuất: NVL đã tiêu hao vào thành phẩm (`Bin.actual_qty` đã giảm thật), mà công thức vẫn bóc
+> BOM ra ghim tiếp → **cùng một lượng vật tư bị trừ hai lần**, đơn khác thấy *thiếu ảo*.
+>
+> ```
+> lượng bóc BOM = qty − delivered_qty − đã_sản_xuất
+> đã_sản_xuất   = Σ produced_qty của Work Order gắn với đơn đó, cho mặt hàng đó
+> ```
+>
+> Phần đã sản xuất xong thì chuyển sang **ghim thành phẩm**, đúng như khách hình dung. Nghĩa là `ghim_bởi_đơn_khác` phải chạy chính
 bước 3–4 ở trên cho từng đơn đã ghim, không chỉ cộng dòng trên đơn.
 
 ⚠ Đây là chỗ **tốn nhất** của cả tính năng: mỗi lần bấm nút phải bóc BOM cho *mọi đơn đang ghim*,
 không riêng đơn hiện tại. Xem mục 9.
 
+## 5b. Công thức cột *Thiếu* — GIỮ NGUYÊN `cần − tồn_khả_dụng` (chốt 02/09 13:15)
+
+```
+thiếu = cần − tồn_khả_dụng          ← KHÔNG phụ thuộc số lượng giữ chỗ
+```
+
+Mục này ghi lại **một đề xuất của tôi đã bị bác, và vì sao bác là đúng** — để không ai
+mở lại.
+
+**Tôi đề xuất** đổi thành `cần − số_lượng_giữ_chỗ` khi đơn có tích ghim, lấy ca sau làm
+lý do: đơn A cần 5, tồn khả dụng 5, A tự hạ giữ chỗ xuống 1 để nhường cho B → công thức
+cũ ra `thiếu 0` trong khi A chỉ giữ 1; rồi con số **tự nhảy** lên 4 ngay khi B ghim, dù
+không ai đụng vào đơn A.
+
+**Anh Thắng bác, và lý do quyết định là ở chỗ cột này dùng để làm gì:**
+
+> *"khi sales tạo đơn, họ thấy mặt hàng bị thiếu là họ tự tạo yêu cầu mặt hàng theo số
+> đó rồi, không cần quan tâm họ ghim bao nhiêu"*
+
+Cột *Thiếu* là **đầu vào để lập Yêu Cầu Mặt Hàng**, không phải thước đo "tôi đã giữ chắc
+bao nhiêu". Với công thức của tôi, A giữ chỗ 1 trên tồn 5 sẽ ra `thiếu 4` → sale lập đơn
+mua 4 cái **trong khi 4 cái đó đang nằm trong kho, chưa ai lấy**. Đó là **mua thừa**, và
+là lỗi đắt hơn hẳn lỗi tôi định chặn.
+
+Còn chuyện "con số tự nhảy": nó nhảy vì **thế giới thật vừa đổi** — B đã lấy hàng. Trước
+lúc B lấy, 4 cái đó vẫn dùng được cho A thật. Con số cũ không sai, nó phản ánh đúng hiện
+trạng chứ không phản ánh *ý định* của A.
+
+⚠ Hệ quả phải chấp nhận, ghi rõ để người sau không tưởng là lỗi: trên cùng một dòng có
+thể thấy `cần 5 · giữ chỗ 1 · thiếu 0`. Đọc đúng là: **1 cái đã giữ chắc, 4 cái còn
+trong kho nhưng chưa ai giữ**. Số lượng đã lập Yêu Cầu Mặt Hàng **không đổi theo** phần
+ghim về sau — anh Thắng chốt: *"sau này dù họ có ghim thêm do người khác nhả ra thì số
+lượng yêu cầu mặt hàng vẫn vậy"*.
+
 ## 6. Ba bảng + dòng kết luận
 
 **Bảng 1 — mặt hàng trên đơn.** Cột: Mặt hàng · ĐVT · Cần · **Tồn thực tế** · Tồn khả dụng ·
-Thiếu · Bổ sung bằng.
+**Giữ chỗ** · Thiếu · Bổ sung bằng. Cột *Giữ chỗ* là ô nhập (mục 2); *Thiếu* **không** phụ thuộc nó — xem 5b.
 
 **Bảng 2 — cần mua sau khi bóc BOM.** Cột: Nguyên vật liệu · ĐVT · Cần · **Tồn thực tế** ·
-Tồn khả dụng · Thiếu · **Ngày hàng về (dự kiến)** · Nguồn nhu cầu. Cột *Nguồn nhu cầu* giữ nguyên
+Tồn khả dụng · Thiếu · **Ngày hàng về (dự kiến)** · **SL về** · Nguồn nhu cầu.
+
+> ✅ **BỔ SUNG 02/09 theo phản hồi của khách 27/08.** Hai cột/khối mới:
+>
+> **Cột `SL về`** — khách hỏi *"ngoài ngày dự kiến hàng về thì hiển thị thêm số lượng hàng về"*,
+> anh Thắng xác nhận lấy theo **đúng đơn mua đã dùng để ra ngày** (mục 8.2), tức
+> `poi.qty − poi.received_qty` của chính dòng đó.
+> ⚠ Đặt **cạnh** cột *Thiếu*, không thay nó: số về **có thể nhỏ hơn** phần thiếu (thiếu 100 mà
+> đơn về sớm nhất chỉ có 30). Chỉ thấy *"20/9 có hàng"* mà không thấy về bao nhiêu thì sale
+> nhận đơn rồi vẫn thiếu.
+>
+> **Khối "đơn nào đang ghim" cho Bảng 2** — khách hỏi *"trên Bảng 2 vẫn chưa thấy, do mockup
+> chưa làm thôi hay gặp khó khăn gì"*. Trả lời: **thiếu ở mockup, không phải khó.** Nhưng hiện
+> **khác Bảng 1**: đơn kia *không có dòng NVL đó trên đơn* — NVL bị ghim là do **bóc BOM của
+> đơn kia** (mục 5). Nên số lượng hiện ở đây là lượng NVL bóc ra, không phải số lượng trên đơn. Cột *Nguồn nhu cầu* giữ nguyên
 tên Thành Phần BOM (`Bộ vỏ đèn`, `Nguồn`…) vì **dòng kết luận gộp lấy tên khâu từ đúng cột này**.
 Cột *Ngày hàng về* tính theo mục 8.2.
 
@@ -409,6 +514,229 @@ sai thì **dừng việc của kho**.
 
 Mục treo **10.1** (26/39 lệnh sản xuất không lần ra Đơn Bán) theo sang PM-FEAT-00034, vì nó chỉ
 ảnh hưởng luật chặn.
+
+## 11b. Hai việc đã tách sang tính năng khác (02/09)
+
+Ghi ở đây để người đọc mục 5b và mục 2 lần ra được phần còn lại, vì cả hai **dùng chung con số
+`custom_so_luong_giu_cho`** — đọc một mình một tính năng sẽ không hiểu vì sao lại có bước phân bổ.
+
+| Việc | Đi đâu | Vì sao tách |
+|---|---|---|
+| **Phân bổ hàng vào phần ghim khi hàng mua đã về** | **PM-FEAT-00036** · `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` · hạn 14/09 | Anh Thắng mở 02/09. Hệ quả trực tiếp của luật *chặn cứng ở tồn khả dụng*: đơn cần 6 chỉ giữ được 4, hai cái còn lại phải được ghim **tự động** khi hàng về, không thì sale phải nhớ quay lại bấm tay |
+| **Tạo Phiếu Yêu Cầu Mua Hàng** — ⚠ **quay lại tính năng này 03/09** | **PM-TASK-00140**, hạn 07/09. Anh Thắng tách ra 31/08, Tuấn giao phiên khác, rồi giao lại cho tôi vì nó dùng chung `kiem_tra()`. Code nằm trong `api/kiem_tra_ton_kho.py`, xem mục 12b | Khách yêu cầu 28/08. Cách tính đã chốt: `cần mua = đang thiếu − phiếu YCM đang chờ − đơn mua chưa về`, **không huỷ phiếu cũ, không chồng phiếu**. Lõi ERPNext đã làm sẵn phép trừ này cho mặt hàng trên đơn (`sales_order.py::get_requested_item_qty`); phần **Bảng 2 (NVL) phải tự tính** vì NVL không nằm trên đơn |
+
+⚠ **Không có chức năng nhường hàng giữa hai đơn** — khách chốt 31/08 chọn *"A chỉ cần nhả ra, ai
+lấy thì lấy"*. Nghĩa là phần A nhả ra vào **kho chung**, không đến đích danh B; hai bên tự gọi
+điện cho nhau. Đừng dựng lại chức năng này nếu không có yêu cầu mới.
+
+## 12b. Tạo Yêu Cầu Mặt Hàng từ phần thiếu (PM-TASK-00140)
+
+`tinh_can_mua()` + `tao_yeu_cau_mua_hang()` trong `api/kiem_tra_ton_kho.py`.
+
+**Chỉ lấy mặt hàng *Mua hàng*** (hoặc trống — coi như Mua hàng), theo đúng mô tả task. Mặt hàng
+*Sản xuất/Gia công* trên đơn **không** vào phiếu: phần thiếu của chúng đã được bóc thành nguyên
+vật liệu ở Bảng 2 rồi, đưa cả hai vào là mua cả thành phẩm lẫn vật tư làm ra nó.
+
+### ⚠ KHÔNG cộng thẳng `thieu` của Bảng 1 với `thieu` của Bảng 2
+
+Hai bảng **cùng trừ vào một lượng tồn**. Mã vừa bán trên đơn vừa là thành phần của mã khác sẽ
+được tồn "che" hai lần, ra số thiếu **ÍT hơn thực tế** → mua hụt.
+
+	X: cần 10 ở Bảng 1 + 6 ở Bảng 2, tồn khả dụng 4
+	  cộng mù cột `thiếu`   →  (10−4) + (6−4) = 8   ❌ hụt 4
+	  gom nhu cầu rồi trừ 1 lần → (10+6) − 4  = 12  ✅
+
+Nên `tinh_can_mua` gom **nhu cầu** theo mã trước, rồi mới trừ tồn một lần. Đo 03/09: chỉ 3 mã
+trên site vừa bán vừa là thành phần, cả 3 là dữ liệu thử — chưa hỏng thật, nhưng đừng để tới lúc
+hỏng mới sửa.
+
+### Trừ phần đã có người lo
+
+	cần mua = nhu cầu − tồn khả dụng − Yêu Cầu Mặt Hàng đang chờ − Đơn mua chưa về
+
+Không trừ thì bấm nút hai lần là đặt mua hai lần. Đây là chỗ đã hứa với anh Thắng 28/08.
+
+⚠ Phần **Đơn mua chưa về** ở đây **không lọc ngày**, khác với cột *Ngày hàng về* (mục 8.2) vốn
+chỉ hiện đơn có hạn trong tương lai. Hàng về muộn vẫn là hàng đã đặt; đặt thêm là mua thừa.
+
+### Ba cái bẫy đã vấp khi dựng phiếu, đều chỉ lộ lúc LƯU
+
+1. **`schedule_date` không được nhỏ hơn `transaction_date`** —
+   `buying_controller.validate_schedule_date` throw. Đo 03/09: **8/8 đơn trên site có ngày giao
+   trong quá khứ**, nên gần như đơn nào cũng vỡ nếu không kẹp về hôm nay.
+2. **`Material Request Item.warehouse` là bắt buộc với hàng tồn kho** —
+   `buying/utils.py::validate_stock_item_warehouse` throw. Lấy theo thứ tự: kho của Đơn Bán →
+   kho trên dòng hàng → mặc định hệ thống. **Không gõ cứng tên kho**, tên mang hậu tố công ty.
+3. **Phiếu để NHÁP, không `insert()` từ server.** Trả tài liệu chưa lưu cho client mở ra dạng
+   form mới. Bấm nút mà đẻ ngay chứng từ là ngược luật đã ghi ở `CLAUDE.md`, và người bấm nhầm
+   sẽ để lại phiếu rác.
+
+### Đã đo trên 8012 (03/09)
+
+Dựng một Đơn Bán thiếu hàng **trong giao dịch rồi `rollback`** — cách duy nhất chạy được nhánh
+"có phiếu" vì mọi đơn thật trên site đều đủ tồn:
+
+	đơn 100 vỏ VDP0X   →  13 dòng, lưu được, gắn đúng `sales_order`
+	đơn ngày giao 24/08 (quá khứ)  →  phiếu lấy ngày hôm nay, `ngay_bi_kep = true`
+	sau rollback       →  0 rò rỉ, không còn Đơn Bán lẫn phiếu thử nào
+
+## 12c. Ba thứ chỉ lộ ra khi mở giao diện (03/09 chiều)
+
+Cả ba đều **chạy đúng** dưới `bench execute` — không lệnh nào báo sai. Chúng chỉ lộ khi ngồi bấm
+thật trên cổng 8012.
+
+### 1. Ô tích nằm trong mục GẬP, người bán hàng không thấy
+
+`custom_ghim_ton_kha_dung` neo sau `custom_note`, mà `custom_note` nằm trong mục **Thông Tin Sản
+Xuất** — mục này mặc định **gập lại**. Mở đơn ra không có ô tích nào cả; phải bấm bung một mục tên
+"Thông Tin Sản Xuất" thì nhân viên bán hàng mới thấy, và họ không có lý do gì để bấm vào đó.
+
+➜ Neo lại sau `set_warehouse` (*Chọn kho xuất*), mục **Mật Hàng**, **không gập được**, nằm ngay
+trên lưới hàng hoá mà nó điều khiển. `add_sales_order_ghim_fields.py` có thêm bước `_nan_vi_tri()`
+sửa cả những site đã chạy bản patch cũ — `_create` bỏ qua trường đã tồn tại nên không tự sửa được.
+
+**Bài học chung:** `insert_after` quyết định trường rơi vào MỤC nào, và mục có thể đang gập.
+Chọn neo phải nhìn cả mục chứ không chỉ nhìn trường đứng cạnh.
+
+### 2. Cột Giữ Chỗ LUÔN hiện, `depends_on` không giấu được cột lưới
+
+`custom_so_luong_giu_cho` khai `depends_on: eval:parent.custom_ghim_ton_kha_dung`. Điều đó đúng
+với ô nhập trong form chi tiết dòng, **không đúng với cột trên lưới**: `grid.js::setup_visible_columns`
+dựng cột từ `user_defined_columns` (`__UserSettings.GridView`) và không hề đọc `depends_on`.
+
+Đã thử `grid.toggle_display("custom_so_luong_giu_cho", false)` trên cổng 8012: **không ăn**. Nó đặt
+`hidden` lên docfield toàn cục, còn `setup_user_defined_columns()` lấy docfield bằng
+`frappe.meta.get_docfield(doctype, fieldname)` rồi tự gán `in_list_view = 1` đè lên; thêm nữa
+`setup_visible_columns()` **thoát sớm** nếu `visible_columns` đã dựng.
+
+➜ **Chấp nhận cột luôn hiện**, giá trị 0 khi đơn không ghim. Không đi ép cột ẩn động: phải viết
+lại `user_defined_columns` lúc chạy, tức ghi vào cài đặt lưới dùng chung của người dùng — đắt và
+dễ hỏng hơn nhiều so với một chữ số 0.
+
+⚠ Chỗ này tôi **đã báo sai cho anh Thắng** ("cột chỉ hiện khi tích ô") trước khi mở giao diện ra
+xem. Đã đính chính trên PM.
+
+### 3. "Không cho nhập vượt tồn khả dụng" chưa hề được thực thi
+
+Anh Thắng chốt 02/09 12:40, mockup bản 7 đã diễn cảnh gõ 99 tự về 15. Nhưng trong mã nguồn
+**không có chỗ nào chặn**: `dien_muc_toi_da` chỉ kẹp lúc TỰ ĐIỀN, người dùng gõ tay sau đó thì
+không ai kiểm. Gõ 99 trên tồn 31, bấm Lưu — lưu được.
+
+Nguy ở chỗ con số này **không chỉ nằm trên đơn của mình**: `ghim_boi_don_khac` đọc thẳng nó rồi
+trừ khỏi tồn khả dụng của **mọi đơn khác**. Một dòng ghim 99 trên tồn 31 làm các đơn còn lại thấy
+thiếu ảo 68 cái và đi mua hàng không cần mua.
+
+➜ Chặn ở **hai lớp**:
+
+| Lớp | Ở đâu | Làm gì |
+|---|---|---|
+| Giao diện | `sales_order.js::kep_giu_cho` | gõ quá thì kéo về trần ngay, báo đỏ tại chỗ |
+| Máy chủ | `python_hook/sales_order.py::chan_giu_cho_vuot_ton` | chặn thật, kể cả đường API / Data Import |
+
+Hai điểm tinh trong hàm máy chủ:
+
+- **Chỉ chặn khi người dùng TĂNG số.** Tồn tụt sau khi đơn đã lưu là chuyện bình thường; chặn cứng
+  theo trần hiện tại sẽ khoá luôn những sửa đổi chẳng liên quan gì tới ghim — đúng cái bẫy
+  `validate_schedule_date` của lõi đã giăng ở Yêu Cầu Mặt Hàng.
+- **Cộng dồn theo mã, không xét từng dòng.** Nhiều dòng cùng một mã ăn chung một lượng tồn; xét
+  riêng lẻ thì đơn 3 dòng × 20 trên tồn 20 lọt cả ba.
+
+⚠ Bẫy đã vấp ngay khi viết: `ghim_khac, _ = ghim_boi_don_khac(...)` — `_` là **hàm dịch của
+Frappe**, gán đè lên nó thì `_("...")` ở câu thông báo nổ `'list' object is not callable`. Chỗ nổ
+nằm **trong nhánh chặn**, nên nhìn từ ngoài vẫn thấy "đã chặn thành công", chỉ sai câu thông báo.
+Không có test in ra nguyên văn câu lỗi thì không ai phát hiện.
+
+### Đã đo lại sau khi sửa (cổng 8012, 03/09)
+
+	ô tích:  mục "Mật Hàng", không gập      → mở đơn là thấy ngay
+	gõ 99 trên lưới (tồn 31, cần 20)        → tự về 20, báo đỏ
+	lưu 99 bằng API                          → CHẶN, câu thông báo đúng chữ
+	lưu 20 / lưu 0 / bỏ tích rồi lưu 99      → cho qua (đúng)
+	giả lập tồn tụt còn 5, cũ 5 → mới 5 / 4  → cho qua (không tăng thì không khoá)
+	                            cũ 5 → mới 6  → CHẶN
+	2 dòng cùng mã, 3+3 trên tồn 5           → CHẶN ở dòng thứ hai
+
+### 4. Anh Thắng bấm thật và tìm ra 2 lỗi nữa (03/09 10:32)
+
+Anh dựng `SO-26-00009` và báo hai chuyện. Cả hai đều đúng, và cả hai đều **do chính tôi tự chặn**.
+
+**a) Tích ghim trên đơn MỚI thì không có gì xảy ra.** Nguyên văn: *"lúc mới tạo phiếu anh chọn sản
+phẩm xong tích ghim thì không thấy nó tính"*. Trong `sales_order.js` tôi viết
+`if (!frm.doc.custom_ghim_ton_kha_dung || frm.is_new()) return;` — tự tay bỏ qua đơn chưa lưu, và
+**không nói một lời nào** về việc đó. Nút *Kiểm Tra Tồn Kho* cũng bị gác sau `if (!frm.is_new())`.
+
+Lý do lúc viết: `kiem_tra` nhận **tên đơn** rồi `frappe.get_doc` — đơn chưa lưu có tên
+`new-sales-order-…` không tồn tại trong cơ sở dữ liệu. Nhưng cách xử lý đúng là **cho API nhận cả
+tài liệu chưa lưu**, chứ không phải tắt tính năng đi trong im lặng.
+
+➜ `kiem_tra(sales_order=None, doc=None)` + `_lay_don()`: client gửi nguyên `frm.doc` khi
+`frm.is_new()`. `_gom_nhu_cau` giờ nhận **danh sách dòng** thay vì tên đơn — đơn chưa lưu không có
+dòng nào trong cơ sở dữ liệu để mà truy vấn. Tên đơn trả về là `None` để `ghim_boi_don_khac` không
+đi loại trừ một cái tên không tồn tại.
+
+⚠ Nút *Tạo Yêu Cầu Mặt Hàng* **vẫn phải tắt** khi đơn chưa lưu — phiếu bắt buộc trỏ ngược về số Đơn
+Bán, mà số đó chỉ có sau khi Lưu. Popup ghi rõ lý do thay vì để nút xám không giải thích.
+
+**b) "Bán thành phẩm 1 giữ chỗ được 1 mà tồn đang 0."** — Đây **không phải lỗi**, và câu trả lời
+nằm ở chỗ khác chứ không ở phép tính:
+
+	Bán thành phẩm 1
+	  Kho bán thành phẩm - HKL   actual_qty = 1   ← tồn thật nằm ở đây
+	  Kho thành phẩm - HKL       actual_qty = 0   ← kho ghi trên DÒNG HÀNG, anh nhìn ô này
+
+Tồn khả dụng cộng trên **cả 5 kho hợp lệ** (mục 3), không theo kho ghi trên dòng hàng. Anh nhìn
+thấy 0 vì dòng hàng đang trỏ *Kho thành phẩm*.
+
+➜ **Đã hỏi lại anh Thắng**: giữ cách cộng toàn kho (giữ chỗ được, nhưng lúc giao phải chuyển kho),
+hay chỉ tính kho trên dòng hàng. Chưa tự đổi — đây là đổi định nghĩa "tồn khả dụng" của cả tính năng.
+
+**c) Lỗi thứ ba tự lộ khi thử lại (2 dòng cùng mã).** `dien_muc_toi_da` tính từng dòng độc lập nên
+đơn 2 dòng × 5 cái trên tồn 1 được điền **1 + 1**, rồi lớp kẹp mới dọn về **0 + 1** kèm một dòng
+báo **ĐỎ**. Con số cuối đúng, nhưng người dùng chỉ tích một ô mà tưởng mình vừa làm hỏng gì đó —
+và dòng nào về 0 thì tuỳ thứ tự callback, không đoán trước được.
+
+➜ Chia theo thứ tự dòng và **trừ dần** (`con_lai[mã]`), thêm cờ `frm.__hkled_dang_dien` để lớp kẹp
+không chen vào giữa lượt tự điền. Đo lại: 2 dòng × 5 trên tồn 1 → **1 và 0**, một dòng báo xanh,
+không có báo đỏ nào.
+
+### Kho trên phiếu mua — anh Thắng chốt CÁCH A (03/09 11:12)
+
+Câu hỏi: phiếu Yêu Cầu Mặt Hàng sinh từ Bảng 2 cho **13 dòng vật tư về "Kho thành phẩm"** vì đó là
+kho của Đơn Bán — sai về nghiệp vụ. Anh Thắng chốt **cách A**: khách khai kho mặc định cho mặt hàng,
+hệ thống lấy theo đó. Anh mở luôn **PM-FEAT-00037** *"Bảng Kho mặc định và tồn kho tối thiểu của
+từng mặt hàng"* để chứa phần khai.
+
+Thứ tự ưu tiên mới trong `tao_yeu_cau_mua_hang`:
+
+	kho mặc định CỦA MẶT HÀNG (Item Default, theo công ty)
+	  → kho của Đơn Bán → kho trên dòng hàng → mặc định hệ thống
+
+📌 **Lõi ERPNext đã có sẵn bảng này** — `Item.item_defaults` (child `Item Default`), mỗi dòng một
+công ty, đã có cột `company` + `default_warehouse`. Trên site **đã có đủ 62.055 dòng**, chỉ là cột
+kho đang trống (0/62.055). Nên PM-FEAT-00037 **không cần dựng bảng mới**: thêm đúng một cột *Tồn kho
+khả dụng tối thiểu* vào bảng có sẵn là đủ. Đã báo anh Thắng.
+
+⚠ Lõi còn một bảng nữa dễ nhầm: `Item.reorder_levels` (child `Item Reorder`) có
+`warehouse_reorder_level` — cũng là "tồn tối thiểu" nhưng **theo KHO**, không theo công ty. Trên
+site mới có 1 bản ghi. Chốt dùng bảng nào là việc của PM-FEAT-00037, đừng khai vào cả hai.
+
+**Đo sau khi sửa (03/09, dựng đơn trong giao dịch rồi hoàn tác):**
+
+	chưa khai kho mặc định  → 13/13 dòng vào "Kho thành phẩm"   (y như cũ, đúng: chưa có gì để lấy)
+	khai 3 mã vật tư        → 3 mã đó vào "Kho nguyên vật liệu", 10 mã còn lại giữ kho Đơn Bán
+	sau hoàn tác            → 0/62.055 Item Default có kho, 0 phiếu, 0 đơn rò rỉ
+
+Tức là **hôm nay đổi thứ tự này chưa ra kết quả khác**; nó chỉ có tác dụng sau khi khách khai.
+Viết trước để lúc khai xong là chạy đúng ngay.
+
+### Còn một câu hỏi ĐANG CHỜ ANH THẮNG
+
+Phiếu Yêu Cầu Mặt Hàng sinh từ Bảng 2 đang cho **13 dòng vật tư về "Kho thành phẩm"**, vì đó là
+kho của Đơn Bán. Đo trên site: **0 / 62.055** bản ghi *Item Default* có khai kho mặc định, và
+`Stock Settings.default_warehouse` cũng trống — nên hôm nay kho của Đơn Bán là **nguồn duy nhất**
+có thể lấy, không phải lỗi lập trình. Nhưng vật tư về kho thành phẩm thì sai về nghiệp vụ.
+**Chưa tự đổi** — đổi thứ tự ưu tiên là đổi hành vi anh Thắng chưa duyệt, và hôm nay đổi cũng
+không ra kết quả khác vì không mặt hàng nào khai kho.
 
 ## 12. Việc kế tiếp
 
