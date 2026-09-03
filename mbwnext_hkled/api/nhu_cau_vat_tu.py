@@ -43,7 +43,12 @@ from frappe import _
 from frappe.utils import add_days, add_months, flt, get_datetime, getdate, nowdate
 
 from mbwnext_hkled.api.bom import get_active_template, resolve_components
-from mbwnext_hkled.api.kiem_tra_ton_kho import _kho_hop_le, _ton_thuc_te, ghim_boi_don_khac
+from mbwnext_hkled.api.kiem_tra_ton_kho import (
+	_kha_dung,
+	_kho_hop_le,
+	_ton_thuc_te,
+	ghim_boi_don_khac,
+)
 
 # ── Hằng số ───────────────────────────────────────────────────────────────────
 
@@ -574,8 +579,16 @@ def tinh_nhu_cau(
 		ten_hang[r["name"]] = r
 
 	dong = []
+	ghim_vuot_ton = {}
 	for m in ma_hang:
-		ton_dau = flt(ton.get(m, 0.0)) - flt(giu_cho.get(m, 0.0))
+		# ⚠ KHÔNG trừ thẳng `tồn − ghim`: phần giữ chỗ có thể LỚN HƠN số đang có trong kho, và số
+		# âm đó đi vào `_tinh_mot_ma` làm lượng cần mua phồng lên — mua thừa đúng bằng phần thiếu
+		# của đơn khác. Anh Thắng bắt lỗi này ở Phần IV ngày 03/09 16:34; Phần V là bản chép thứ
+		# bảy của cùng phép trừ. Dùng chung `_kha_dung` để cả app chỉ còn MỘT định nghĩa.
+		# Ca thật trên 8012: `NVL 3` tồn 7, `SO-26-00011` ghim 9 -> thô ra −2, kẹp về 0.
+		ton_dau, _hieu_luc, ghim_vuot = _kha_dung(ton.get(m, 0.0), giu_cho.get(m, 0.0))
+		if ghim_vuot > 0:
+			ghim_vuot_ton[m] = ghim_vuot
 		po_ky = po.get(m) or [0.0] * so_ky_that
 		theo_ky = _tinh_mot_ma(ton_dau, toi_thieu.get(m, 0.0), nhu_cau_nvl[m], po_ky)
 		khong_po = _tinh_mot_ma(
@@ -604,6 +617,17 @@ def tinh_nhu_cau(
 		})
 
 	dong.sort(key=lambda d: (-flt(d["con_phai_mua"]), d["ma"]))
+
+	# Nói ra chỗ con số bị kẹp, thay vì lặng lẽ đổi kết quả. Ghim vượt tồn là dấu hiệu dữ liệu
+	# đang lệch — người dùng cần biết để đi tìm nguyên nhân, không phải chỉ nhận một con số đẹp.
+	if ghim_vuot_ton:
+		chi_tiet = []
+		for m in sorted(ghim_vuot_ton):
+			chi_tiet.append("%s (%s)" % (m, round(ghim_vuot_ton[m], 4)))
+		canh_bao.append(
+			_("{0} mặt hàng đang bị ghim NHIỀU HƠN số có trong kho; phần vượt đã bỏ qua để không"
+			  " sinh nhu cầu mua ảo: {1}").format(len(ghim_vuot_ton), ", ".join(chi_tiet))
+		)
 
 	return {
 		"kieu": kieu,
