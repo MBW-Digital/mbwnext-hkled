@@ -521,8 +521,8 @@
 			<b>6 module</b> M30S050, <b>12 ốc</b>, nguồn <b>NHKP-300E</b>.
 		</p>
 		<p class="doc-meta">
-			<b>Bấm thử được:</b> <b>ô Giữ chỗ</b> ở Bảng 1 (sửa số, cột <i>Thiếu</i> đổi theo ngay;
-			gõ quá tồn thì bị chặn và báo tại chỗ), ô tick <b>Ghim Tồn Khả Dụng</b> (bỏ tick thì số
+			<b>Bấm thử được:</b> <b>ô Giữ chỗ</b> ở Bảng 1 (sửa số tự do; gõ quá tồn thì bị chặn và
+			báo tại chỗ), ô tick <b>Ghim Tồn Khả Dụng</b> (bỏ tick thì số
 			<b>mờ đi chứ không mất</b>), nút <b>Kiểm Tra Tồn Kho</b>, nút <b>18 đang ghim</b> ở Bảng 1
 			và <b>8 đang ghim</b> ở Bảng 2, nút <b>Hiện cảnh báo thiếu định mức</b> ở Bảng 3, nút
 			<b>Hẹn lại ngày giao</b> ở mục D (3 trạng thái).
@@ -533,8 +533,14 @@
 			<b>1) Ghim giờ là một CON SỐ, không còn là ô tích có/không.</b> Khách nêu tình huống anh A
 			nhường một phần hàng cho anh B; ô tích chỉ nhả được <b>cả đơn</b> nên A định nhường 4 cái
 			mặt hàng này lại mất luôn 2 cái mặt hàng kia. Nay: tick ở cấp đơn để điền nhanh mức tối đa
-			cho mọi dòng, rồi sửa từng dòng. <b>Không cho gõ vượt tồn</b> (anh Thắng chốt), phần chênh
-			ra cột <i>Thiếu</i>. Bỏ tick là <b>tạm ngừng</b>, số vẫn nằm đó.
+			cho mọi dòng, rồi sửa từng dòng. <b>Không cho gõ vượt tồn</b> (anh Thắng chốt). Bỏ tick là
+			<b>tạm ngừng</b>, số vẫn nằm đó.
+			<br>
+			<b>1b) Cột Thiếu KHÔNG đổi theo ô Giữ chỗ</b> — anh Thắng chốt 02/09. Nó vẫn là
+			<i>cần − tồn khả dụng</i>, vì đây là con số sale dùng để <b>lập Yêu Cầu Mặt Hàng</b>: giữ
+			chỗ 1 trên tồn 5 mà tính thiếu 4 thì đi mua 4 cái đang nằm sẵn trong kho. Nên một dòng có
+			thể hiện <i>cần 5 · giữ chỗ 1 · thiếu 0</i> — đọc là <b>1 cái đã giữ chắc, 4 cái còn trong
+			kho nhưng chưa ai giữ</b>.
 			<br>
 			<b>2) Bảng 2 thêm cột SL về.</b> Khách hỏi ngoài ngày về thì về bao nhiêu. Đặt cạnh cột
 			<i>Thiếu</i> chứ không thay: vỏ đèn thiếu 21 mà đơn mua sớm nhất chỉ có 10.
@@ -1228,8 +1234,11 @@
 			if (Number(o.value) > tran) o.value = tran;   // hạ tồn thì số đang giữ phải theo
 			document.getElementById(d.max).textContent = on ? "tối đa " + tran : "tạm ngừng";
 			document.getElementById(d.max).className = "gc-max";
-			// thiếu: có tick thì trừ theo phần MÌNH GIỮ, không tick thì trừ theo tồn khả dụng
-			var thieu = on ? d.can - Number(o.value) : d.can - d.kdKhong;
+			/* Thiếu = cần − TỒN KHẢ DỤNG, KHÔNG trừ theo số đang giữ chỗ.
+			   Anh Thắng chốt 02/09 13:15, và bác đúng đề xuất trước đó của tôi: cột này là
+			   đầu vào để lập Yêu Cầu Mặt Hàng. Giữ chỗ 1 trên tồn 5 mà tính thiếu 4 thì sale
+			   lập đơn mua 4 cái đang nằm sẵn trong kho — mua thừa. */
+			var thieu = d.can - (on ? d.kdCo : d.kdKhong);
 			document.getElementById(d.thieu).textContent = Math.max(0, thieu);
 		}
 
@@ -1242,19 +1251,13 @@
 					var nhan = document.getElementById(d.max);
 					nhan.className = "gc-max gc-cap";
 					nhan.textContent = "chỉ còn " + tran;
-					return veThieu(d);
+					return;
 				}
 				document.getElementById(d.max).className = "gc-max";
 				document.getElementById(d.max).textContent = "tối đa " + tran;
-				veThieu(d);
 			});
 		});
 
-		function veThieu(d) {
-			var o = document.getElementById(d.gc);
-			document.getElementById(d.thieu).textContent =
-				Math.max(0, d.can - Number(o.value));
-		}
 
 		var tick = document.getElementById("tick-ghim");
 		tick.addEventListener("click", function () {

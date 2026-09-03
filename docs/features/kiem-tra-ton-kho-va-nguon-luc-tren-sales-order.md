@@ -203,7 +203,7 @@ Thứ tự này là **quy tắc nghiệp vụ đã chốt** (Notes mục 4), kh�
 **Bước 1 — Gom nhu cầu mặt hàng trên đơn.** Cộng dồn theo `item_code` (một đơn có thể có cùng
 mặt hàng ở nhiều dòng).
 
-**Bước 2 — Trừ tồn cho mặt hàng trên đơn.** `thiếu` tính theo mục **5b**. Ra **Bảng 1**.
+**Bước 2 — Trừ tồn cho mặt hàng trên đơn.** `thiếu = cần − tồn_khả_dụng` (xem 5b). Ra **Bảng 1**.
 
 **Bước 3 — Bóc BOM cho phần CÒN THIẾU.** Chỉ bóc `thiếu`, không bóc cả `cần` — bóc cả thì mua
 thừa đúng bằng phần đang có trong kho.
@@ -257,35 +257,44 @@ bước 3–4 ở trên cho từng đơn đã ghim, không chỉ cộng dòng tr
 ⚠ Đây là chỗ **tốn nhất** của cả tính năng: mỗi lần bấm nút phải bóc BOM cho *mọi đơn đang ghim*,
 không riêng đơn hiện tại. Xem mục 9.
 
-## 5b. Công thức cột *Thiếu* — đổi 02/09
+## 5b. Công thức cột *Thiếu* — GIỮ NGUYÊN `cần − tồn_khả_dụng` (chốt 02/09 13:15)
 
 ```
-thiếu = cần − phần_mình_chắc_chắn_có
-
-đơn CÓ tích ghim     → phần_mình_chắc_chắn_có = custom_so_luong_giu_cho của dòng
-đơn KHÔNG tích ghim  → phần_mình_chắc_chắn_có = tồn_khả_dụng
+thiếu = cần − tồn_khả_dụng          ← KHÔNG phụ thuộc số lượng giữ chỗ
 ```
 
-⚠ **Vì sao không giữ `cần − tồn_khả_dụng` cho mọi trường hợp.** Từ khi giữ chỗ là một con số
-chứ không còn là ô tích, công thức cũ hỏng ở đúng ca mà tính năng này sinh ra để phục vụ:
+Mục này ghi lại **một đề xuất của tôi đã bị bác, và vì sao bác là đúng** — để không ai
+mở lại.
 
-	đơn A cần 5 · tồn khả dụng 5 · A tự hạ giữ chỗ xuống 1 (nhường cho B)
-	  công thức cũ:  thiếu = 5 − 5 = 0    → màn hình báo đơn A ĐỦ HÀNG
-	  thực tế:       A chỉ giữ 1
+**Tôi đề xuất** đổi thành `cần − số_lượng_giữ_chỗ` khi đơn có tích ghim, lấy ca sau làm
+lý do: đơn A cần 5, tồn khả dụng 5, A tự hạ giữ chỗ xuống 1 để nhường cho B → công thức
+cũ ra `thiếu 0` trong khi A chỉ giữ 1; rồi con số **tự nhảy** lên 4 ngay khi B ghim, dù
+không ai đụng vào đơn A.
 
-Tệ hơn con số sai là **con số tự nhảy**: ngay khi B ghim 4 cái đó, đơn A nhảy từ `thiếu 0` lên
-`thiếu 4` trong khi **không ai đụng vào đơn A**. Sale mở đơn buổi sáng thấy đủ, chiều mở lại
-thấy thiếu, không có gì giải thích.
+**Anh Thắng bác, và lý do quyết định là ở chỗ cột này dùng để làm gì:**
 
-Công thức mới cho ra `thiếu 4` ngay từ đầu và **đứng yên** dù B có ghim hay không.
+> *"khi sales tạo đơn, họ thấy mặt hàng bị thiếu là họ tự tạo yêu cầu mặt hàng theo số
+> đó rồi, không cần quan tâm họ ghim bao nhiêu"*
 
-Với ca của anh Thắng (cần 6, tồn 4, giữ 4) cả hai công thức đều ra **2** — nên đây là mở rộng,
-không phải đảo ngược.
+Cột *Thiếu* là **đầu vào để lập Yêu Cầu Mặt Hàng**, không phải thước đo "tôi đã giữ chắc
+bao nhiêu". Với công thức của tôi, A giữ chỗ 1 trên tồn 5 sẽ ra `thiếu 4` → sale lập đơn
+mua 4 cái **trong khi 4 cái đó đang nằm trong kho, chưa ai lấy**. Đó là **mua thừa**, và
+là lỗi đắt hơn hẳn lỗi tôi định chặn.
+
+Còn chuyện "con số tự nhảy": nó nhảy vì **thế giới thật vừa đổi** — B đã lấy hàng. Trước
+lúc B lấy, 4 cái đó vẫn dùng được cho A thật. Con số cũ không sai, nó phản ánh đúng hiện
+trạng chứ không phản ánh *ý định* của A.
+
+⚠ Hệ quả phải chấp nhận, ghi rõ để người sau không tưởng là lỗi: trên cùng một dòng có
+thể thấy `cần 5 · giữ chỗ 1 · thiếu 0`. Đọc đúng là: **1 cái đã giữ chắc, 4 cái còn
+trong kho nhưng chưa ai giữ**. Số lượng đã lập Yêu Cầu Mặt Hàng **không đổi theo** phần
+ghim về sau — anh Thắng chốt: *"sau này dù họ có ghim thêm do người khác nhả ra thì số
+lượng yêu cầu mặt hàng vẫn vậy"*.
 
 ## 6. Ba bảng + dòng kết luận
 
 **Bảng 1 — mặt hàng trên đơn.** Cột: Mặt hàng · ĐVT · Cần · **Tồn thực tế** · Tồn khả dụng ·
-**Giữ chỗ** · Thiếu · Bổ sung bằng. Cột *Giữ chỗ* là ô nhập (mục 2); *Thiếu* theo mục 5b.
+**Giữ chỗ** · Thiếu · Bổ sung bằng. Cột *Giữ chỗ* là ô nhập (mục 2); *Thiếu* **không** phụ thuộc nó — xem 5b.
 
 **Bảng 2 — cần mua sau khi bóc BOM.** Cột: Nguyên vật liệu · ĐVT · Cần · **Tồn thực tế** ·
 Tồn khả dụng · Thiếu · **Ngày hàng về (dự kiến)** · **SL về** · Nguồn nhu cầu.
