@@ -33,3 +33,4 @@ mbwnext_hkled.patches.import_thanh_pham
 mbwnext_hkled.patches.import_bom_template
 mbwnext_hkled.patches.reset_bom_rule_grid_view
 mbwnext_hkled.patches.sua_cha_bien_the_lech
+mbwnext_hkled.patches.dat_don_vi_tinh_mac_dinh
