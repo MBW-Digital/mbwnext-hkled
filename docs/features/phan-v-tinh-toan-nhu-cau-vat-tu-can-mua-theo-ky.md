@@ -161,7 +161,7 @@ Tài liệu gốc có checklist "chốt trước khi code". Đây là kết qu�
 
 | # | Mục | Hiện trạng đo được |
 |---|---|---|
-| 1 | Trường *Tồn kho tối thiểu* trên Mặt hàng | ❌ **CHƯA CÓ**. Phải tạo Custom Field mới. ERPNext chỉ có `Item Reorder` — theo **từng kho**, không dùng được vì tài liệu cần **một con số duy nhất/mặt hàng** |
+| 1 | Trường *Tồn kho tối thiểu* | ✅ **ĐÃ CÓ** — `Item Default.custom_ton_kho_kha_dung_toi_thieu` (Float), HkLed2 thêm ở PM-FEAT-00037. ⚠ Anh Thắng chốt 03/09: lưu **theo từng công ty** trong bảng *Mặc định của mặt hàng*, **không** phải một ô phẳng trên Mặt hàng. ERPNext lõi chỉ có `Item Reorder` theo **từng kho** nên không dùng được |
 | 2 | Hai nhóm kho loại trừ | ✅ `Nhóm kho lỗi - HKL` và `Nhóm kho trung chuyển - HKL` **đã có**, đúng tên tài liệu |
 | 3 | Cây kho đã xếp đúng chưa | ⚠ Lỗi: `Kho hàng lỗi cần sửa chữa`, `Kho hàng lỗi/trả`. Trung chuyển: `Kho đang sản xuất`, `Kho trung chuyển`. **Nhưng `Kho ký gửi` và `Kho khuyến mãi/hàng mẫu` đang treo thẳng dưới `Kho Tổng`** → sẽ được tính vào tồn khả dụng. Xem câu hỏi Q1 |
 | 4 | Chuẩn tồn hiện tại | Lấy `Bin.actual_qty`, loại kho lá của 2 nhóm trên |
@@ -240,7 +240,7 @@ cả bảng.
 | | Chặn gì | Ai gỡ |
 |---|---|---|
 | 🔜 | **Cơ chế Ghim của Phần IV chưa xong.** Phần V dùng lại định nghĩa tồn khả dụng + phần giữ chỗ. Ô `custom_ghim_ton_kha_dung` đã có nhưng logic giữ chỗ đang được HkLed2 viết trong `api/kiem_tra_ton_kho.py`. Mọi chỗ đánh 🔜 trong file này phải chốt lại sau khi Phần IV xong | HkLed2 · PM-FEAT-00023 |
-| ❌ | **Trường Tồn kho tối thiểu chưa tồn tại.** Không có nó thì không tính được dòng nào | Cần patch tạo Custom Field |
+| ✅ | ~~Trường Tồn kho tối thiểu chưa tồn tại~~ — **đã gỡ chặn 03/09**: có ở `Item Default`, theo từng công ty (PM-FEAT-00037) | HkLed2 · xong |
 | ❓ | Câu hỏi Q1–Q3 bên dưới | Thắng |
 
 ### Câu hỏi cần Thắng chốt
@@ -258,7 +258,10 @@ cả bảng.
 
 ## 10. Thứ tự làm
 
-1. Patch tạo Custom Field *Tồn kho tối thiểu* trên Mặt hàng.
+1. ~~Patch tạo Custom Field *Tồn kho tối thiểu*~~ — **xong** (PM-FEAT-00037).
+   ⚠ Hệ quả cho engine: mức tối thiểu **không còn là một số duy nhất mỗi mặt hàng**. Phải đọc
+   đúng dòng *Mặc định của mặt hàng* khớp **công ty** của kỳ đang tính; mặt hàng không có dòng
+   cho công ty đó thì coi như mức tối thiểu = 0, chứ đừng lấy bừa dòng đầu tiên.
 2. Engine tính (`api/nhu_cau_vat_tu.py`) — **chỉ đọc**: gom nhu cầu → nổ định mức theo thứ tự 4.2 →
    trừ tồn theo 3.1 + kéo tồn theo 3.2 → áp ranh giới chống trừ trùng 3.3.
 3. Màn hình tab Tính toán.
