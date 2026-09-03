@@ -294,6 +294,69 @@ function bang_2(dong) {
 		</table>`;
 }
 
+// Bảng 3 — nguồn lực nhân sự.
+//
+// ⚠ Bảng này KHÔNG được phép nói "Đủ" khi chưa đo được. Đầu bài đã ghi rõ đây là rủi ro R2:
+//   *"Bảng 3 sẽ ra gần 0 phút và luôn kết luận Đủ — sai mà không có gì báo."* Đo trên site
+//   03/09 thì CẢ HAI VẾ đều rỗng (lịch làm việc chỉ tới 31/08; 59.743/59.746 mặt hàng chưa
+//   khai Thời Gian Sản Xuất), nên 0 so 0 sẽ ra "đủ" ở mọi đơn. Máy chủ trả về trạng thái
+//   `chua_tinh_duoc` riêng, và ở đây phải hiện nó ra bằng MÀU KHÁC + nói rõ thiếu cái gì.
+const NHAN_KET_LUAN = {
+	du: ["Đủ nhân lực", "green"],
+	khong_du: ["KHÔNG đủ nhân lực", "red"],
+	chua_tinh_duoc: ["Chưa tính được", "orange"],
+	khong_ap_dung: ["Không áp dụng", "gray"],
+};
+
+function phut(v) {
+	const n = flt(v);
+	if (!n) return "0";
+	// Phút trần rất khó hình dung ở mức hàng nghìn — kèm số giờ cho dễ đọc, không thay thế.
+	return n >= 60 ? `${so(n)} <span class="text-muted">(≈ ${so(n / 60)} giờ)</span>` : so(n);
+}
+
+function bang_3(b3) {
+	if (!b3) return "";
+	const [nhan, mau] = NHAN_KET_LUAN[b3.ket_luan] || NHAN_KET_LUAN.chua_tinh_duoc;
+
+	const ly_do = (b3.ly_do || []).length
+		? `<div class="small text-muted" style="margin-top:6px">
+				${b3.ly_do.map((x) => `• ${frappe.utils.escape_html(x)}`).join("<br>")}
+			</div>`
+		: "";
+
+	const thieu = (b3.thieu_dinh_muc || []).length
+		? `<div class="small" style="margin-top:6px">
+				<b style="color:var(--orange-500)">Chưa khai Thời Gian Sản Xuất
+				(${b3.thieu_dinh_muc.length} mặt hàng):</b>
+				${b3.thieu_dinh_muc.slice(0, 12).map((m) => frappe.utils.escape_html(m)).join(" · ")}
+				${b3.thieu_dinh_muc.length > 12 ? "…" : ""}
+			</div>`
+		: "";
+
+	return `
+		<h6 style="margin-top:16px">Bảng 3 · Nguồn lực nhân sự</h6>
+		<p class="text-muted small" style="margin-bottom:6px">
+			Tính từ <b>${b3.tu_ngay}</b> đến <b>${b3.den_ngay}</b> (ngày giao của đơn),
+			trên ${b3.so_nhan_su_co_lich} nhân sự có lịch làm việc.
+			Đơn vị là <b>phút chuẩn</b> — đã nhân Năng Lực của từng người.
+		</p>
+		<table class="table table-bordered table-sm small" style="margin-bottom:0">
+			<thead><tr>
+				<th>Tổng theo lịch</th><th>Đã phân bổ</th><th>Còn lại</th>
+				<th>Đơn này cần</th><th>Kết luận</th>
+			</tr></thead>
+			<tbody><tr>
+				<td>${phut(b3.tong_theo_lich)}</td>
+				<td>${phut(b3.da_phan_bo)}</td>
+				<td>${phut(b3.con_lai)}</td>
+				<td>${phut(b3.don_can)}</td>
+				<td><b style="color:var(--${mau}-500)">${nhan}</b></td>
+			</tr></tbody>
+		</table>
+		${ly_do}${thieu}`;
+}
+
 function khoi_canh_bao(canh_bao) {
 	if (!canh_bao || !canh_bao.length) return "";
 	const li = canh_bao.map((c) => `<div>• ${frappe.utils.escape_html(c)}</div>`).join("");
@@ -304,10 +367,30 @@ function khoi_canh_bao(canh_bao) {
 function ve_popup(frm, kq) {
 	const thieu_b1 = (kq.bang1 || []).filter((d) => flt(d.thieu) > 0).length;
 	const thieu_b2 = (kq.bang2 || []).filter((d) => flt(d.thieu) > 0).length;
-	const ket_luan = thieu_b1 || thieu_b2
-		? `<div class="alert alert-danger small"><b>Đơn này đang thiếu hàng.</b>
-			${thieu_b1} mặt hàng trên đơn và ${thieu_b2} loại vật tư chưa đủ tồn.</div>`
-		: `<div class="alert alert-success small"><b>Đơn này đủ hàng.</b></div>`;
+	// Dòng kết luận gộp (mục 6 đầu bài): trạng thái vật tư CỘNG trạng thái nhân lực, một câu.
+	// "Không áp dụng" thì im — đơn không có hàng sản xuất mà nói về nhân lực là gây nhiễu.
+	const b3 = kq.bang3 || {};
+	const cau_nhan_luc = {
+		du: " Nhân lực đủ.",
+		khong_du: " <b>Nhân lực KHÔNG đủ.</b>",
+		chua_tinh_duoc: " <b>Nhân lực chưa tính được</b> — xem Bảng 3.",
+	}[b3.ket_luan] || "";
+
+	// Chỉ kể vế nào THẬT SỰ thiếu. Bản đầu luôn in cả hai vế nên ra câu "1 mặt hàng trên đơn và
+	// 0 loại vật tư chưa đủ tồn" — đọc như thể số 0 cũng là một vấn đề.
+	const ve = [];
+	if (thieu_b1) ve.push(`${thieu_b1} mặt hàng trên đơn`);
+	if (thieu_b2) ve.push(`${thieu_b2} loại vật tư`);
+	const vat_tu = ve.length
+		? `<b>Đơn này đang thiếu hàng.</b> ${ve.join(" và ")} chưa đủ tồn.`
+		: "<b>Đơn này đủ hàng.</b>";
+	// Nhân lực chưa đo được hoặc không đủ thì KHÔNG được để nền xanh: người đọc lướt chỉ nhìn màu.
+	const nen = thieu_b1 || thieu_b2 || b3.ket_luan === "khong_du"
+		? "alert-danger"
+		: b3.ket_luan === "chua_tinh_duoc"
+		? "alert-warning"
+		: "alert-success";
+	const ket_luan = `<div class="alert ${nen} small">${vat_tu}${cau_nhan_luc}</div>`;
 
 	const d = new frappe.ui.Dialog({
 		title: frm.is_new()
@@ -328,6 +411,7 @@ function ve_popup(frm, kq) {
 		ket_luan +
 			bang_1(kq.bang1 || []) +
 			bang_2(kq.bang2 || []) +
+			bang_3(kq.bang3) +
 			khoi_canh_bao(kq.canh_bao) +
 			(frm.is_new()
 				? `<p class="text-muted small" style="margin-top:8px">

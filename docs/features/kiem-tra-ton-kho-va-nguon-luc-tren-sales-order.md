@@ -738,6 +738,78 @@ có thể lấy, không phải lỗi lập trình. Nhưng vật tư về kho th�
 **Chưa tự đổi** — đổi thứ tự ưu tiên là đổi hành vi anh Thắng chưa duyệt, và hôm nay đổi cũng
 không ra kết quả khác vì không mặt hàng nào khai kho.
 
+## 12d. Bảng 3 — nguồn lực nhân sự (làm 03/09)
+
+`nguon_luc_nhan_su()` trong `api/kiem_tra_ton_kho.py`, hiện trong popup dưới Bảng 2.
+
+### Đơn vị là PHÚT CHUẨN, không phải phút đồng hồ
+
+Mục 8.1 định nghĩa khối lượng = `Σ(số lượng × Thời Gian Sản Xuất)`. Engine Phần III tiêu thụ khối
+lượng đó với tốc độ `Σ(Năng Lực/100)`. Nên muốn so hai vế thì **Năng Lực phải nhân vào phía CUNG**:
+
+	một người 90% ngồi 100 phút chỉ làm xong 90 phút chuẩn
+
+Không nhân là so phút đồng hồ với phút chuẩn — hai đơn vị khác nhau, và sai **về phía báo đủ**.
+
+	Tổng theo lịch = Σ (phút Employee Schedule trong kỳ × Năng Lực)
+	Đã phân bổ     = Σ (phút Employee Allocation CHỒNG LÊN kỳ × Năng Lực)
+	Còn lại        = Tổng − Đã phân bổ
+	Đơn này cần    = Σ (số lượng × Thời Gian Sản Xuất) của mặt hàng Sản xuất/Gia công
+
+Kỳ tính = **hôm nay → ngày giao của đơn**. Ngày giao đã qua thì kẹp về hôm nay và **nói ra**,
+cùng cách với ngày trên Yêu Cầu Mặt Hàng.
+
+### ⚠ R2 nặng hơn dự đoán: CẢ HAI VẾ đều rỗng
+
+Đầu bài cảnh báo *"Bảng 3 sẽ ra gần 0 phút và luôn kết luận Đủ"*. Đo 03/09 thì tệ hơn — không
+phải một vế rỗng mà **cả hai**:
+
+	Employee Schedule   149 dòng / 3 người, nhưng chỉ tới 31/08  →  từ hôm nay: 0 dòng
+	Employee Allocation còn hiệu lực trong tương lai:            0
+	Mặt hàng Sản xuất/Gia công CHƯA khai Thời Gian Sản Xuất:     59.743 / 59.746
+
+**0 so với 0 thì mọi phép so sánh đều ra "đủ".** Nên hàm trả về **bốn** trạng thái, không phải hai:
+
+| Trạng thái | Khi nào | Hiện ra sao |
+|---|---|---|
+| `du` | đo được cả hai vế, còn lại ≥ cần | xanh |
+| `khong_du` | đo được cả hai vế, còn lại < cần | đỏ |
+| `chua_tinh_duoc` | **một trong hai vế chưa có dữ liệu** | cam + nói rõ thiếu gì |
+| `khong_ap_dung` | đơn không có mặt hàng Sản xuất/Gia công | xám |
+
+⚠ Chỗ dễ làm sai: khi **không ai có lịch**, đừng kết luận "không đủ". Không có lịch nghĩa là
+**chưa ai xếp lịch**, không phải "hết người". Nói "không đủ" là đem một phỏng đoán ra trình bày
+như sự thật — sale sẽ đi hẹn lại ngày giao với khách vì một con số không có thật.
+
+Danh sách mặt hàng thiếu *Thời Gian Sản Xuất* hiện ngay dưới bảng (anh Thắng chốt 5.2) — đây là
+cách duy nhất khiến R2 không im lặng.
+
+⚠ Khi đo được một phần (`đơn này cần` > 0 nhưng vẫn còn mã chưa khai), kết luận **vẫn tính**
+nhưng kèm câu *"thực tế sẽ CAO HƠN"*. Im lặng ở đây là báo đủ trong khi thiếu.
+
+### Dòng kết luận gộp
+
+Gộp trạng thái vật tư + nhân lực thành một câu (mục 6). Hai chi tiết cố ý:
+
+- **Chỉ kể vế nào thật sự thiếu.** Bản đầu luôn in cả hai vế nên ra câu *"1 mặt hàng trên đơn và
+  0 loại vật tư chưa đủ tồn"* — đọc như thể số 0 cũng là một vấn đề.
+- **Nhân lực chưa đo được hoặc không đủ thì KHÔNG để nền xanh.** Người đọc lướt chỉ nhìn màu.
+
+### Đã đo trên cổng 8012 (03/09)
+
+	SO-26-00009 (không có lịch)      → 0/0/0 · cần 85 · CHƯA TÍNH ĐƯỢC, nêu lý do        ✅
+	SO-26-00004 (hàng SX, ngày quá hạn) → cần 200 (= 20 × 10 phút), kẹp ngày về hôm nay  ✅
+	SO-26-00002 (không có hàng SX)   → KHÔNG ÁP DỤNG                                      ✅
+	đơn chưa lưu, 100 vỏ VDP0X       → CHƯA TÍNH ĐƯỢC + nêu đúng mã thiếu định mức        ✅
+	dựng lịch 3 người × 1 ngày 8-17h → 1.566 phút chuẩn (540+540+540×0,9) · ĐỦ NHÂN LỰC   ✅
+	thêm 1 phân bổ 08:20-09:00       → đã phân bổ 40, còn lại giảm đúng 40                ✅
+	dọn xong                          → Employee Schedule về đúng 149 dòng, 0 rò rỉ       ✅
+
+⚠ Bẫy đã vấp khi dựng dữ liệu thử: `Employee Schedule.start_time/end_time` là **trường chỉ đọc**,
+hệ thống tự dựng từ `date` + `start`/`end`. Gán thẳng `start_time` thì bị ghi đè, khoảng thời gian
+co về gần 0 và `Tổng theo lịch` ra `0,00015` phút. **Số vô lý là dấu hiệu dữ liệu thử sai, không
+phải công thức sai** — đừng sửa công thức cho khớp số vô lý.
+
 ## 12. Việc kế tiếp
 
 1. ✅ **Anh Thắng duyệt mockup 24/08** (`ssvcj7q0rq`: *"được rồi đó em"*). Bản 5 thêm ngày gợi ý
