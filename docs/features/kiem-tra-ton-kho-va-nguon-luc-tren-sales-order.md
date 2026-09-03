@@ -653,6 +653,49 @@ Không có test in ra nguyên văn câu lỗi thì không ai phát hiện.
 	                            cũ 5 → mới 6  → CHẶN
 	2 dòng cùng mã, 3+3 trên tồn 5           → CHẶN ở dòng thứ hai
 
+### 4. Anh Thắng bấm thật và tìm ra 2 lỗi nữa (03/09 10:32)
+
+Anh dựng `SO-26-00009` và báo hai chuyện. Cả hai đều đúng, và cả hai đều **do chính tôi tự chặn**.
+
+**a) Tích ghim trên đơn MỚI thì không có gì xảy ra.** Nguyên văn: *"lúc mới tạo phiếu anh chọn sản
+phẩm xong tích ghim thì không thấy nó tính"*. Trong `sales_order.js` tôi viết
+`if (!frm.doc.custom_ghim_ton_kha_dung || frm.is_new()) return;` — tự tay bỏ qua đơn chưa lưu, và
+**không nói một lời nào** về việc đó. Nút *Kiểm Tra Tồn Kho* cũng bị gác sau `if (!frm.is_new())`.
+
+Lý do lúc viết: `kiem_tra` nhận **tên đơn** rồi `frappe.get_doc` — đơn chưa lưu có tên
+`new-sales-order-…` không tồn tại trong cơ sở dữ liệu. Nhưng cách xử lý đúng là **cho API nhận cả
+tài liệu chưa lưu**, chứ không phải tắt tính năng đi trong im lặng.
+
+➜ `kiem_tra(sales_order=None, doc=None)` + `_lay_don()`: client gửi nguyên `frm.doc` khi
+`frm.is_new()`. `_gom_nhu_cau` giờ nhận **danh sách dòng** thay vì tên đơn — đơn chưa lưu không có
+dòng nào trong cơ sở dữ liệu để mà truy vấn. Tên đơn trả về là `None` để `ghim_boi_don_khac` không
+đi loại trừ một cái tên không tồn tại.
+
+⚠ Nút *Tạo Yêu Cầu Mặt Hàng* **vẫn phải tắt** khi đơn chưa lưu — phiếu bắt buộc trỏ ngược về số Đơn
+Bán, mà số đó chỉ có sau khi Lưu. Popup ghi rõ lý do thay vì để nút xám không giải thích.
+
+**b) "Bán thành phẩm 1 giữ chỗ được 1 mà tồn đang 0."** — Đây **không phải lỗi**, và câu trả lời
+nằm ở chỗ khác chứ không ở phép tính:
+
+	Bán thành phẩm 1
+	  Kho bán thành phẩm - HKL   actual_qty = 1   ← tồn thật nằm ở đây
+	  Kho thành phẩm - HKL       actual_qty = 0   ← kho ghi trên DÒNG HÀNG, anh nhìn ô này
+
+Tồn khả dụng cộng trên **cả 5 kho hợp lệ** (mục 3), không theo kho ghi trên dòng hàng. Anh nhìn
+thấy 0 vì dòng hàng đang trỏ *Kho thành phẩm*.
+
+➜ **Đã hỏi lại anh Thắng**: giữ cách cộng toàn kho (giữ chỗ được, nhưng lúc giao phải chuyển kho),
+hay chỉ tính kho trên dòng hàng. Chưa tự đổi — đây là đổi định nghĩa "tồn khả dụng" của cả tính năng.
+
+**c) Lỗi thứ ba tự lộ khi thử lại (2 dòng cùng mã).** `dien_muc_toi_da` tính từng dòng độc lập nên
+đơn 2 dòng × 5 cái trên tồn 1 được điền **1 + 1**, rồi lớp kẹp mới dọn về **0 + 1** kèm một dòng
+báo **ĐỎ**. Con số cuối đúng, nhưng người dùng chỉ tích một ô mà tưởng mình vừa làm hỏng gì đó —
+và dòng nào về 0 thì tuỳ thứ tự callback, không đoán trước được.
+
+➜ Chia theo thứ tự dòng và **trừ dần** (`con_lai[mã]`), thêm cờ `frm.__hkled_dang_dien` để lớp kẹp
+không chen vào giữa lượt tự điền. Đo lại: 2 dòng × 5 trên tồn 1 → **1 và 0**, một dòng báo xanh,
+không có báo đỏ nào.
+
 ### Còn một câu hỏi ĐANG CHỜ ANH THẮNG
 
 Phiếu Yêu Cầu Mặt Hàng sinh từ Bảng 2 đang cho **13 dòng vật tư về "Kho thành phẩm"**, vì đó là

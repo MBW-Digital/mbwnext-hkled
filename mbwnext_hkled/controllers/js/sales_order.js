@@ -13,12 +13,10 @@ frappe.ui.form.on("Sales Order", {
 			frm.__hkled_ghi_chu_cu = frm.doc.custom_note || "";
 		}
 
-		// PM-FEAT-00023 — nút này KHÔNG chờ đơn duyệt. Sale cần biết đủ hàng hay không TRƯỚC
-		// khi duyệt; bắt duyệt rồi mới cho xem là ngược thứ tự công việc. Chỉ cần đơn đã lưu,
-		// vì API đọc dòng hàng từ cơ sở dữ liệu chứ không từ form.
-		if (!frm.is_new()) {
-			frm.add_custom_button(__("Kiểm Tra Tồn Kho"), () => mo_kiem_tra(frm));
-		}
+		// PM-FEAT-00023 — nút này KHÔNG chờ đơn duyệt, và cũng KHÔNG chờ đơn lưu. Sale cần biết
+		// đủ hàng hay không TRƯỚC khi chốt đơn với khách; bắt lưu rồi mới cho xem là ngược thứ
+		// tự công việc. Đơn chưa lưu thì `tham_so_don` gửi nguyên tài liệu sang máy chủ.
+		frm.add_custom_button(__("Kiểm Tra Tồn Kho"), () => mo_kiem_tra(frm));
 
 		// PM-TASK-00047 — chỉ hiện khi đơn ĐÃ DUYỆT: `Production Plan.get_so_items()` lọc
 		// `Sales Order Item.docstatus == 1`, nên tạo từ đơn nháp sẽ ra kế hoạch rỗng.
@@ -45,9 +43,14 @@ frappe.ui.form.on("Sales Order", {
 	   và nhập vào ô số lượng ghim, người dùng có thể sửa tay".
 
 	   ⚠ BỎ tích thì KHÔNG xoá số đã nhập (luật 2). Sale sửa tay 20 dòng rồi lỡ bỏ tích mà mất
-	     sạch thì không có đường lấy lại — bỏ tích chỉ là TẠM NGỪNG áp dụng. */
+	     sạch thì không có đường lấy lại — bỏ tích chỉ là TẠM NGỪNG áp dụng.
+
+	   ⚠ Bản đầu có thêm `|| frm.is_new()` ở đây và người dùng tích ô trên đơn mới thì KHÔNG có
+	     gì xảy ra, cũng không có lời nào báo tại sao. Anh Thắng đụng ngay 03/09 10:32:
+	     *"lúc mới tạo phiếu anh chọn sản phẩm xong tích ghim thì không thấy nó tính"*. Đã bỏ
+	     chốt chặn đó — `kiem_tra` giờ nhận cả tài liệu chưa lưu. */
 	custom_ghim_ton_kha_dung(frm) {
-		if (!frm.doc.custom_ghim_ton_kha_dung || frm.is_new()) return;
+		if (!frm.doc.custom_ghim_ton_kha_dung) return;
 		dien_muc_toi_da(frm);
 	},
 });
@@ -106,10 +109,19 @@ function lan_toa_ghi_chu(frm) {
 
 const NHAN_NUT_PHIEU = "Tạo Yêu Cầu Mặt Hàng";
 
+// Đơn CHƯA LƯU LẦN NÀO thì `frm.doc.name` đang là `new-sales-order-…` — một cái tên không có
+// trong cơ sở dữ liệu. Gửi tên đó sang là máy chủ ném lỗi và người dùng chỉ thấy ô số không
+// nhúc nhích (anh Thắng báo 03/09 10:32). Lúc đó gửi nguyên tài liệu đi.
+function tham_so_don(frm) {
+	return frm.is_new() ? { doc: frm.doc } : { sales_order: frm.doc.name };
+}
+
 // Trần của một dòng = ít hơn giữa "đơn cần" và "kho còn", trừ tiếp phần các dòng KHÁC cùng mã
 // trên chính đơn này đã giữ. Không trừ phần đó thì đơn 3 dòng cùng một mã sẽ giữ gấp ba.
 function kep_giu_cho(frm, row) {
-	if (!row || !frm.doc.custom_ghim_ton_kha_dung) return;
+	// Đang trong lượt tự điền thì đừng chen vào: `dien_muc_toi_da` đã chia đúng phần rồi, kẹp
+	// thêm ở đây chỉ làm bắn báo đỏ giữa một thao tác hoàn toàn bình thường.
+	if (!row || !frm.doc.custom_ghim_ton_kha_dung || frm.__hkled_dang_dien) return;
 	const moi = flt(row.custom_so_luong_giu_cho);
 	if (moi <= 0) return;
 
@@ -138,7 +150,7 @@ function kep_giu_cho(frm, row) {
 	// Chưa có số trong tay thì hỏi server một lần rồi nhớ lại, đừng hỏi mỗi lần gõ phím.
 	frappe.call({
 		method: "mbwnext_hkled.api.kiem_tra_ton_kho.kiem_tra",
-		args: { sales_order: frm.doc.name },
+		args: tham_so_don(frm),
 		callback(r) {
 			if (!r.message) return;
 			const kd = nho_kha_dung(frm, r.message);
@@ -158,23 +170,35 @@ function nho_kha_dung(frm, du_lieu) {
 function dien_muc_toi_da(frm) {
 	frappe.call({
 		method: "mbwnext_hkled.api.kiem_tra_ton_kho.kiem_tra",
-		args: { sales_order: frm.doc.name },
+		args: tham_so_don(frm),
 		freeze: true,
 		freeze_message: __("Đang tính mức giữ chỗ tối đa…"),
 		callback(r) {
 			if (!r.message) return;
 			const kha_dung = nho_kha_dung(frm, r.message);
+
+			// Chia theo thứ tự dòng và TRỪ DẦN. Nhiều dòng cùng một mã ăn chung một lượng tồn:
+			// bản đầu tính từng dòng độc lập nên đơn 2 dòng × 5 cái trên tồn 1 được điền 1 + 1,
+			// rồi lớp kẹp mới dọn về 0 + 1 kèm một dòng báo ĐỎ — người dùng chỉ tích một ô mà
+			// tưởng mình vừa làm hỏng cái gì. Con số cuối vẫn đúng, nhưng đường đi thì sai.
+			const con_lai = {};
+			frm.__hkled_dang_dien = true;
 			let da_dien = 0;
 			(frm.doc.items || []).forEach((row) => {
-				// Tối đa = ít hơn giữa "đơn cần" và "kho còn". Không cho vượt tồn — anh Thắng
-				// chốt 02/09 12:40; phần chênh hiện ở cột Thiếu chứ không mất đi.
-				const tran = Math.min(flt(row.qty), flt(kha_dung[row.item_code] || 0));
-				const dat = Math.max(0, tran);
+				if (!(row.item_code in con_lai)) {
+					con_lai[row.item_code] = flt(kha_dung[row.item_code] || 0);
+				}
+				// Tối đa = ít hơn giữa "đơn cần" và "phần kho còn lại sau các dòng trước".
+				// Không cho vượt tồn — anh Thắng chốt 02/09 12:40; phần chênh hiện ở cột Thiếu
+				// chứ không mất đi.
+				const dat = Math.max(0, Math.min(flt(row.qty), con_lai[row.item_code]));
+				con_lai[row.item_code] -= dat;
 				if (flt(row.custom_so_luong_giu_cho) !== dat) {
 					frappe.model.set_value(row.doctype, row.name, "custom_so_luong_giu_cho", dat);
 					da_dien += 1;
 				}
 			});
+			frm.__hkled_dang_dien = false;
 			frappe.show_alert({
 				message: da_dien
 					? __("Đã điền mức giữ chỗ tối đa cho {0} dòng. Sửa lại được ngay trên lưới.", [da_dien])
@@ -188,7 +212,7 @@ function dien_muc_toi_da(frm) {
 function mo_kiem_tra(frm) {
 	frappe.call({
 		method: "mbwnext_hkled.api.kiem_tra_ton_kho.kiem_tra",
-		args: { sales_order: frm.doc.name },
+		args: tham_so_don(frm),
 		freeze: true,
 		freeze_message: __("Đang kiểm tra tồn kho…"),
 		callback(r) {
@@ -286,19 +310,31 @@ function ve_popup(frm, kq) {
 		: `<div class="alert alert-success small"><b>Đơn này đủ hàng.</b></div>`;
 
 	const d = new frappe.ui.Dialog({
-		title: __("Kiểm tra tồn kho — {0}", [frm.doc.name]),
+		title: frm.is_new()
+			? __("Kiểm tra tồn kho — đơn chưa lưu")
+			: __("Kiểm tra tồn kho — {0}", [frm.doc.name]),
 		size: "extra-large",
 		fields: [{ fieldtype: "HTML", fieldname: "noi_dung" }],
-		primary_action_label: __(NHAN_NUT_PHIEU),
-		primary_action() {
-			tao_phieu(frm, d);
-		},
+		// Đơn chưa lưu thì KHÔNG cho tạo phiếu: phiếu phải trỏ ngược về số Đơn Bán, mà số đó
+		// chưa tồn tại. Xem tồn thì vẫn xem được — đó mới là việc sale cần trước khi chốt đơn.
+		primary_action_label: frm.is_new() ? undefined : __(NHAN_NUT_PHIEU),
+		primary_action: frm.is_new()
+			? undefined
+			: () => {
+					tao_phieu(frm, d);
+			  },
 	});
 	d.fields_dict.noi_dung.$wrapper.html(
 		ket_luan +
 			bang_1(kq.bang1 || []) +
 			bang_2(kq.bang2 || []) +
 			khoi_canh_bao(kq.canh_bao) +
+			(frm.is_new()
+				? `<p class="text-muted small" style="margin-top:8px">
+						Đơn <b>chưa lưu</b> nên chưa tạo được Yêu Cầu Mặt Hàng — phiếu phải trỏ về số
+						đơn, mà số đó chỉ có sau khi bấm Lưu. Phần xem tồn thì đã tính đủ.
+					</p>`
+				: "") +
 			`<p class="text-muted small" style="margin-top:8px">
 				Kết quả <b>chỉ để tham khảo</b>: không ghim vào đơn, không sinh chứng từ.
 				Muốn đổi phần giữ chỗ thì sửa cột <b>Số Lượng Giữ Chỗ</b> ngay trên lưới hàng hoá.

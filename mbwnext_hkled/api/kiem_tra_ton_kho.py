@@ -34,6 +34,7 @@ nằm ở đơn hiện tại mà ở chỗ phải bóc định mức cho **mọi
 """
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 
 
@@ -244,14 +245,46 @@ def _con_mot_cap(nhu_cau, canh_bao):
 	return con
 
 
-def _gom_nhu_cau(don):
-	"""Bước 1 — {mã: số lượng cần} trên đơn, cộng dồn vì một đơn có thể lặp mặt hàng."""
+def _gom_nhu_cau(dong):
+	"""Bước 1 — {mã: số lượng cần} trên đơn, cộng dồn vì một đơn có thể lặp mặt hàng.
+
+	Nhận thẳng DANH SÁCH DÒNG chứ không nhận tên đơn: đơn chưa lưu thì không có dòng nào trong
+	cơ sở dữ liệu để mà truy vấn. Xem `_lay_don`.
+	"""
 	nhu_cau = {}
-	for d in frappe.get_all(
-		"Sales Order Item", filters={"parent": don}, fields=["item_code", "qty"]
-	):
-		nhu_cau[d["item_code"]] = nhu_cau.get(d["item_code"], 0) + flt(d["qty"])
+	for d in dong or []:
+		ma = d.get("item_code")
+		if not ma:
+			continue
+		nhu_cau[ma] = nhu_cau.get(ma, 0) + flt(d.get("qty"))
 	return nhu_cau
+
+
+def _lay_don(sales_order=None, doc=None):
+	"""Trả về (đơn, tên đơn thật hoặc None).
+
+	⚠ Nút *Kiểm Tra Tồn Kho* và ô tích *Ghim* phải chạy được cả khi đơn **CHƯA LƯU LẦN NÀO**.
+	  Anh Thắng báo 03/09 10:32: *"lúc mới tạo phiếu anh chọn sản phẩm xong tích ghim thì không
+	  thấy nó tính"*. Nguyên nhân: client gửi `frm.doc.name` mà tên đó đang là `new-sales-order-…`
+	  — một cái tên chưa có trong cơ sở dữ liệu, `frappe.get_doc` ném lỗi và người dùng chỉ thấy
+	  ô số không nhúc nhích. Đúng kiểu **hỏng im lặng** mà cả tính năng này sinh ra để chặn.
+
+	  Nên khi đơn chưa lưu, client gửi nguyên tài liệu sang; ở đây dựng lại tài liệu trong bộ nhớ.
+	  Tên đơn trả về là **None** để `ghim_boi_don_khac` không đi trừ một cái tên không tồn tại.
+	"""
+	if doc:
+		don = frappe.get_doc(frappe.parse_json(doc) if isinstance(doc, str) else doc)
+		if don.doctype != "Sales Order":
+			frappe.throw(_("Chỉ dùng được cho Đơn Bán Hàng."))
+		# Chưa lưu thì chưa có gì để kiểm quyền trên bản ghi — kiểm quyền ở mức DocType.
+		if not frappe.has_permission("Sales Order", "read"):
+			frappe.throw(_("Không có quyền đọc Đơn Bán Hàng."), frappe.PermissionError)
+		ten = don.name if don.name and frappe.db.exists("Sales Order", don.name) else None
+		return don, ten
+
+	don = frappe.get_doc("Sales Order", sales_order)
+	don.check_permission("read")
+	return don, don.name
 
 
 def _ngay_hang_ve(ma_hang):
@@ -287,18 +320,17 @@ def _ngay_hang_ve(ma_hang):
 
 
 @frappe.whitelist()
-def kiem_tra(sales_order):
+def kiem_tra(sales_order=None, doc=None):
 	"""Điểm vào của nút *Kiểm Tra Tồn Kho*. Trả về dữ liệu cho Bảng 1 và Bảng 2.
 
 	⚠ **Chỉ ĐỌC.** Không ghim vào đơn, không sinh Yêu Cầu Mặt Hàng hay Lệnh sản xuất, không
 	  đụng Stock Ledger — chốt 19/08, và là lý do hàm này không gọi `auto_create_bom`.
 	"""
-	don = frappe.get_doc("Sales Order", sales_order)
-	don.check_permission("read")
+	don, ten = _lay_don(sales_order, doc)
 
 	kho = _kho_hop_le(don.company)
-	nhu_cau = _gom_nhu_cau(don.name)
-	ghim, canh_bao = ghim_boi_don_khac(tru_don=don.name)
+	nhu_cau = _gom_nhu_cau(don.get("items"))
+	ghim, canh_bao = ghim_boi_don_khac(tru_don=ten)
 
 	# Một query Bin cho TẤT CẢ mã liên quan. Bóc định mức trước để biết đủ tập mã, rồi mới hỏi
 	# tồn một lần — hỏi trong vòng lặp là bẫy N+1 kinh điển.
@@ -430,7 +462,9 @@ def tinh_can_mua(sales_order):
 
 	kho = _kho_hop_le(frappe.db.get_value("Sales Order", sales_order, "company"))
 	ton = _ton_thuc_te(set(nhu_cau), kho)
-	ghim, _ = ghim_boi_don_khac(tru_don=sales_order)
+	# ⚠ KHÔNG đặt tên `_`: module này đã import `_` là hàm dịch của Frappe. Gán đè lên nó thì
+	#   `_("...")` ở chỗ khác nổ `'list' object is not callable`.
+	ghim, _cb = ghim_boi_don_khac(tru_don=sales_order)
 	da_lo = _da_co_nguoi_lo(set(nhu_cau))
 
 	can_mua = {}
