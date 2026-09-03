@@ -26,13 +26,16 @@ nằm ở tab Lập kế hoạch (bước 4), phải qua một cú bấm rõ rà
 
 ## Vì sao dùng lại hàm của `kiem_tra_ton_kho`
 
-Phần IV đã giải đúng ba bài toán mà Phần V cần y hệt: kho nào được tính tồn, tồn thực tế gom một
-query, và **ghim lan xuống NVL mà không đếm hai lần**. Cái thứ ba từng sai một lần ở Phần IV
-(đơn giữ 20 thì hệ thống hiểu 40) nên chép lại là gần như chắc chắn sai lại — import thẳng.
+Phần IV đã giải đúng ba bài toán mà Phần V cần y hệt: kho nào được tính tồn (`_kho_hop_le`), tồn
+thực tế gom một query (`_ton_thuc_te`), và **ghim lan xuống NVL mà không đếm hai lần**
+(`ghim_boi_don_khac`). Cái thứ ba từng sai một lần ở Phần IV — đơn giữ 20 thì hệ thống hiểu 40 —
+nên chép lại là gần như chắc chắn sai lại.
 
-⚠ `_con_mot_cap` là hàm private của module kia. Import có phần thô, nhưng đổi lại không nhân đôi
-đúng đoạn logic đã có tiền sử sai. Nếu Phần IV đổi chữ ký hàm đó thì chỗ này gãy ngay lúc import,
-tức là gãy ồn ào — chấp nhận được hơn là gãy im lặng ra số sai.
+Riêng phần miễn trừ đơn thì dùng đúng tham số `tru_don` có sẵn, chứ không tự trừ ra ở ngoài: giữ
+cho toàn bộ nhánh "ghim lan xuống nguyên vật liệu" chỉ có MỘT bản duy nhất trong cả app.
+
+⚠ Đổi lại là Phần V phụ thuộc chữ ký ba hàm đó. Đổi chữ ký thì chỗ này gãy ngay lúc import — gãy
+ồn ào, chấp nhận được hơn nhiều so với hai bản logic lệch nhau âm thầm ra hai con số khác nhau.
 """
 
 import frappe
@@ -40,12 +43,7 @@ from frappe import _
 from frappe.utils import add_days, add_months, flt, get_datetime, getdate, nowdate
 
 from mbwnext_hkled.api.bom import get_active_template, resolve_components
-from mbwnext_hkled.api.kiem_tra_ton_kho import (
-	_con_mot_cap,
-	_kho_hop_le,
-	_ton_thuc_te,
-	ghim_boi_don_khac,
-)
+from mbwnext_hkled.api.kiem_tra_ton_kho import _kho_hop_le, _ton_thuc_te, ghim_boi_don_khac
 
 # ── Hằng số ───────────────────────────────────────────────────────────────────
 
@@ -434,47 +432,12 @@ def _ghim_ngoai_ky(don_trong_ky):
 
 	> Mỗi đơn bán chỉ được tính đúng MỘT vế.
 
-	Cách làm: gọi `ghim_boi_don_khac` của Phần IV để lấy phần ghim của **mọi** đơn, rồi gọi lại
-	lần nữa trên riêng nhóm đơn trong kỳ và trừ đi. Chạy hai lần thay vì tự lọc để **phần ghim lan
-	xuống NVL** vẫn do đúng một hàm lo — đó là đoạn từng đếm hai lần ở Phần IV, không nên có bản
-	thứ hai.
+	Miễn trừ bằng chính tham số `tru_don` của Phần IV — nó nhận cả một tên lẫn một DANH SÁCH tên
+	(HkLed2 mở rộng cho PM-FEAT-00034). Nhờ vậy toàn bộ phần **ghim lan xuống nguyên vật liệu**
+	vẫn do đúng một hàm lo. Bản đầu của hàm này tự dựng lại nhánh đó rồi trừ ra — chạy đúng, nhưng
+	là bản thứ hai của đoạn logic từng đếm hai lần ở Phần IV, tức là chỗ chờ sẵn để lệch về sau.
 	"""
-	tat_ca, canh_bao = ghim_boi_don_khac()
-	if not don_trong_ky or not tat_ca:
-		return tat_ca, canh_bao
-
-	trong_ky = _ghim_cua_don(don_trong_ky, canh_bao)
-	ngoai = {}
-	for m, sl in tat_ca.items():
-		con = flt(sl) - flt(trong_ky.get(m, 0.0))
-		if con > 0:
-			ngoai[m] = con
-	return ngoai, canh_bao
-
-
-def _ghim_cua_don(ten_don, canh_bao):
-	"""{mã: SL giữ chỗ} của riêng một nhóm đơn, đã lan xuống NVL — cùng luật với Phần IV.
-
-	⚠ Đọc thẳng `custom_so_luong_giu_cho`, KHÔNG suy từ `qty − delivered_qty`: từ 03/09 ghim là
-	  con số người dùng nhập, đơn giữ 1 trên dòng 5 cái thì chỉ chiếm 1.
-	⚠ Nổ một cấp TRƯỚC rồi mới đệ quy (`_con_mot_cap`), không nổ thẳng cả `truc_tiep` — nổ thẳng
-	  thì mã mua ngoài bị cộng hai lần, đúng lỗi Phần IV đã mắc.
-	"""
-	dong = frappe.get_all(
-		"Sales Order Item",
-		filters={"parent": ["in", list(ten_don)], "custom_so_luong_giu_cho": [">", 0]},
-		fields=["item_code", "custom_so_luong_giu_cho as giu"],
-	)
-	truc_tiep = {}
-	for d in dong:
-		truc_tiep[d["item_code"]] = truc_tiep.get(d["item_code"], 0.0) + flt(d["giu"])
-	if not truc_tiep:
-		return {}
-
-	tong = dict(no_dinh_muc(_con_mot_cap(truc_tiep, canh_bao), canh_bao))
-	for m, sl in truc_tiep.items():
-		tong[m] = tong.get(m, 0.0) + sl
-	return tong
+	return ghim_boi_don_khac(tru_don=list(don_trong_ky) if don_trong_ky else None)
 
 
 # ── Trừ tồn + kéo tồn qua kỳ (đầu bài mục 3.1 và 3.2) ─────────────────────────
