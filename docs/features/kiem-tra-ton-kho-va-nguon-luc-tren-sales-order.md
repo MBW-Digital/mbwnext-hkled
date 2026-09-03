@@ -696,6 +696,36 @@ và dòng nào về 0 thì tuỳ thứ tự callback, không đoán trước đ�
 không chen vào giữa lượt tự điền. Đo lại: 2 dòng × 5 trên tồn 1 → **1 và 0**, một dòng báo xanh,
 không có báo đỏ nào.
 
+### Kho trên phiếu mua — anh Thắng chốt CÁCH A (03/09 11:12)
+
+Câu hỏi: phiếu Yêu Cầu Mặt Hàng sinh từ Bảng 2 cho **13 dòng vật tư về "Kho thành phẩm"** vì đó là
+kho của Đơn Bán — sai về nghiệp vụ. Anh Thắng chốt **cách A**: khách khai kho mặc định cho mặt hàng,
+hệ thống lấy theo đó. Anh mở luôn **PM-FEAT-00037** *"Bảng Kho mặc định và tồn kho tối thiểu của
+từng mặt hàng"* để chứa phần khai.
+
+Thứ tự ưu tiên mới trong `tao_yeu_cau_mua_hang`:
+
+	kho mặc định CỦA MẶT HÀNG (Item Default, theo công ty)
+	  → kho của Đơn Bán → kho trên dòng hàng → mặc định hệ thống
+
+📌 **Lõi ERPNext đã có sẵn bảng này** — `Item.item_defaults` (child `Item Default`), mỗi dòng một
+công ty, đã có cột `company` + `default_warehouse`. Trên site **đã có đủ 62.055 dòng**, chỉ là cột
+kho đang trống (0/62.055). Nên PM-FEAT-00037 **không cần dựng bảng mới**: thêm đúng một cột *Tồn kho
+khả dụng tối thiểu* vào bảng có sẵn là đủ. Đã báo anh Thắng.
+
+⚠ Lõi còn một bảng nữa dễ nhầm: `Item.reorder_levels` (child `Item Reorder`) có
+`warehouse_reorder_level` — cũng là "tồn tối thiểu" nhưng **theo KHO**, không theo công ty. Trên
+site mới có 1 bản ghi. Chốt dùng bảng nào là việc của PM-FEAT-00037, đừng khai vào cả hai.
+
+**Đo sau khi sửa (03/09, dựng đơn trong giao dịch rồi hoàn tác):**
+
+	chưa khai kho mặc định  → 13/13 dòng vào "Kho thành phẩm"   (y như cũ, đúng: chưa có gì để lấy)
+	khai 3 mã vật tư        → 3 mã đó vào "Kho nguyên vật liệu", 10 mã còn lại giữ kho Đơn Bán
+	sau hoàn tác            → 0/62.055 Item Default có kho, 0 phiếu, 0 đơn rò rỉ
+
+Tức là **hôm nay đổi thứ tự này chưa ra kết quả khác**; nó chỉ có tác dụng sau khi khách khai.
+Viết trước để lúc khai xong là chạy đúng ngay.
+
 ### Còn một câu hỏi ĐANG CHỜ ANH THẮNG
 
 Phiếu Yêu Cầu Mặt Hàng sinh từ Bảng 2 đang cho **13 dòng vật tư về "Kho thành phẩm"**, vì đó là

@@ -245,6 +245,29 @@ def _con_mot_cap(nhu_cau, canh_bao):
 	return con
 
 
+def _kho_mac_dinh(ma_hang, company):
+	"""{mã: kho mặc định của mặt hàng đó ở công ty này} — bảng con `Item Default` của lõi.
+
+	Lõi ERPNext **đã có sẵn** bảng này (`Item.item_defaults`, mỗi dòng một công ty), nên không
+	dựng bảng mới: trên site đã có đủ 62.055 dòng, chỉ là cột kho đang trống. Việc khai kho là
+	**PM-FEAT-00037**.
+
+	Một query cho toàn bộ mã, không hỏi trong vòng lặp.
+	"""
+	if not ma_hang:
+		return {}
+	rows = frappe.get_all(
+		"Item Default",
+		filters={
+			"parent": ["in", list(ma_hang)],
+			"company": company,
+			"default_warehouse": ["is", "set"],
+		},
+		fields=["parent", "default_warehouse"],
+	)
+	return {r["parent"]: r["default_warehouse"] for r in rows}
+
+
 def _gom_nhu_cau(dong):
 	"""Bước 1 — {mã: số lượng cần} trên đơn, cộng dồn vì một đơn có thể lặp mặt hàng.
 
@@ -531,19 +554,34 @@ def tao_yeu_cau_mua_hang(sales_order):
 	# nút vừa bấm.
 	#
 	# ⚠ Không gõ cứng tên kho ("Kho nguyên vật liệu - HKL"): tên mang hậu tố công ty và sẽ khác
-	#   khi lên site khác. Lấy theo thứ tự: kho của Đơn Bán → kho trên dòng hàng → mặc định của
-	#   hệ thống. Người dùng vẫn sửa được trên phiếu nháp trước khi lưu.
+	#   khi lên site khác.
+	#
+	# Thứ tự ưu tiên — anh Thắng chốt **cách A** ngày 03/09 11:12:
+	#
+	#     kho mặc định CỦA CHÍNH MẶT HÀNG (Item Default, theo công ty)
+	#       → kho của Đơn Bán  → kho trên dòng hàng  → mặc định hệ thống
+	#
+	# Vì sao mặt hàng phải thắng đơn: phiếu này chủ yếu mua **vật tư** bóc ra từ định mức, mà kho
+	# của Đơn Bán là **kho thành phẩm** — vật tư về kho thành phẩm là sai nghiệp vụ. Đo 03/09:
+	# phiếu 13 dòng vật tư đều rơi vào "Kho thành phẩm" đúng vì lý do đó.
+	#
+	# ⚠ Hôm nay đổi thứ tự này **chưa ra kết quả khác**: 0/62.055 bản ghi `Item Default` có khai
+	#   `default_warehouse`. Nó chỉ có tác dụng sau khi khách khai kho — phần khai nằm ở
+	#   **PM-FEAT-00037** (bảng Kho mặc định + tồn kho tối thiểu). Viết trước để lúc khách khai
+	#   xong là chạy đúng ngay, không phải nhớ quay lại sửa.
 	#
 	# ⚠ Cố ý KHÔNG đặt `mr.set_warehouse` ở đầu phiếu: đặt thì giá trị đó lan xuống MỌI dòng,
 	#   kể cả dòng dịch vụ. Gán theo từng dòng mới tách được hàng tồn kho với dịch vụ.
-	kho_nhan = don.get("set_warehouse")
-	if not kho_nhan:
+	kho_du_phong = don.get("set_warehouse")
+	if not kho_du_phong:
 		for d in don.items:
 			if d.warehouse:
-				kho_nhan = d.warehouse
+				kho_du_phong = d.warehouse
 				break
-	if not kho_nhan:
-		kho_nhan = frappe.db.get_single_value("Stock Settings", "default_warehouse")
+	if not kho_du_phong:
+		kho_du_phong = frappe.db.get_single_value("Stock Settings", "default_warehouse")
+
+	kho_theo_mat_hang = _kho_mac_dinh(set(can_mua), don.company)
 
 	# Mã không tra được trong danh mục -> BỎ QUA có cảnh báo, đừng để lọt vào phiếu.
 	# Không có `stock_uom` thì `uom` rỗng, mà đó là trường BẮT BUỘC của Material Request Item:
@@ -582,7 +620,9 @@ def tao_yeu_cau_mua_hang(sales_order):
 			# thật ở PO-26-00001/00002) lưu được nếu có kho, ERPNext không chặn — nhưng một
 			# dòng dịch vụ mang tên kho là dữ liệu vô nghĩa, và Phần V còn sinh thêm dòng
 			# "dịch vụ gia công" nữa (chốt của Thắng 24/08 trên PM-FEAT-00030).
-			"warehouse": kho_nhan if mat_hang.get(ma, {}).get("is_stock_item") else None,
+			"warehouse": (kho_theo_mat_hang.get(ma) or kho_du_phong)
+			if mat_hang.get(ma, {}).get("is_stock_item")
+			else None,
 			# Gắn về Đơn Bán: truy ngược được, và là cách rẻ nhất để biết đơn này đã tạo phiếu chưa.
 			"sales_order": don.name,
 		})
@@ -606,5 +646,8 @@ def tao_yeu_cau_mua_hang(sales_order):
 		"so_dong": len(mr.items),
 		"canh_bao": canh_bao,
 		"ngay_bi_kep": bool(don.delivery_date and getdate(don.delivery_date) < getdate(hom_nay)),
-		"kho_nhan": kho_nhan,
+		# Từ 03/09 kho lấy theo TỪNG MẶT HÀNG (cách A), nên không còn "một cái kho" cho cả phiếu.
+		# Trả về danh sách kho thực tế đã dùng để nơi gọi vẫn nói được với người dùng.
+		"kho_nhan": sorted({r.warehouse for r in mr.items if r.warehouse}),
+		"kho_du_phong": kho_du_phong,
 	}
