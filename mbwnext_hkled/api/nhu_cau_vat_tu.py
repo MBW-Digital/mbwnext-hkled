@@ -343,10 +343,32 @@ def _nhu_cau_kieu_1(cac_ky, canh_bao):
 			trong_ky[d["name"]] = i
 
 	if thieu_moc:
-		canh_bao.append(
-			_("{0} đơn bán đã duyệt bị bỏ qua vì trống Thời Gian Bắt Đầu — không xếp được vào kỳ nào: {1}")
-			.format(len(thieu_moc), ", ".join(sorted(thieu_moc)))
+		# Tách riêng đơn ĐANG GHIM mà trống mốc thời gian. Đây là ca dễ bị đọc nhầm thành lỗi nhất:
+		# đơn đó bị TRỪ ở vế Tồn (vì đang giữ chỗ) nhưng KHÔNG BAO GIỜ được cộng ở vế Nhu cầu (vì
+		# không xếp được vào kỳ nào). Nhìn từ màn hình thì thành ra "tự nhiên thiếu hàng mà không
+		# thấy đơn nào cần". Đúng luật — hàng đang bị giữ thật — nhưng phải nói ra, không thì người
+		# đọc đi tìm một lỗi không tồn tại.
+		dang_ghim = set(
+			frappe.get_all(
+				"Sales Order",
+				filters={"name": ["in", thieu_moc], "custom_ghim_ton_kha_dung": 1},
+				pluck="name",
+			)
 		)
+		khong_ghim = sorted(set(thieu_moc) - dang_ghim)
+		if khong_ghim:
+			canh_bao.append(
+				_("{0} đơn bán đã duyệt bị bỏ qua vì trống Thời Gian Bắt Đầu — không xếp được vào kỳ nào: {1}")
+				.format(len(khong_ghim), ", ".join(khong_ghim))
+			)
+		if dang_ghim:
+			canh_bao.append(
+				_("{0} đơn ĐANG GHIM nhưng trống Thời Gian Bắt Đầu: {1}. Phần hàng các đơn này giữ"
+				  " VẪN bị trừ khỏi tồn khả dụng ở mọi kỳ, nhưng nhu cầu của chúng KHÔNG được tính"
+				  " vào kỳ nào — nên bảng có thể báo thiếu mà không thấy đơn tương ứng. Điền Thời"
+				  " Gian Bắt Đầu cho các đơn này là hết.")
+				.format(len(dang_ghim), ", ".join(sorted(dang_ghim)))
+			)
 
 	if not trong_ky:
 		return {}, []
