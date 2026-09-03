@@ -26,7 +26,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Kiểu Thành Phần",
-   "options": "Cố Định\nSố Lượng Theo Công Thức\nTheo Rule",
+   "options": "Cố Định\nTheo Rule",
    "reqd": 1
   },
   {
@@ -34,7 +34,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:doc.component_type!=\"Số Lượng Theo Công Thức\"",
    "description": "Với kiểu Theo Rule: để 0 — số lượng lấy từ công thức. Chỉ điền khi thành phần chưa có công thức, và khi đó hệ thống sẽ báo lên màn hình là đang dùng số nhập tay.",
    "fieldname": "qty",
    "fieldtype": "Int",
