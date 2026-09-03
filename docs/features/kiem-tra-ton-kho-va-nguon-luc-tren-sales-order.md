@@ -196,6 +196,20 @@ lên site khác.
 ⚠ `MBWNext System Setting` có sẵn `warehouse_error` / `bad_stock_warehouse` nhưng **đang để
 trống**. Đừng đọc hai trường đó — hiện không mang giá trị nào.
 
+**Đo trên `hkled.com` 03/09** — 9 kho lá, loại 4, còn **5** kho được tính tồn:
+
+	Kho Tổng
+	├── Kho Sản xuất
+	│   ├── Kho thành phẩm · Kho nguyên vật liệu · Kho bán thành phẩm    ✅ tính
+	│   └── Kho ký gửi · Kho khuyến mãi/hàng mẫu                          ✅ tính
+	├── Nhóm kho lỗi        → Kho hàng lỗi/trả · Kho hàng lỗi cần sửa chữa   ❌ loại
+	└── Nhóm kho trung chuyển → Kho trung chuyển · **Kho đang sản xuất**     ❌ loại
+
+⚠ **`Kho đang sản xuất` bị loại**, và đây là chỗ dễ bị báo nhầm là lỗi. Nó nằm dưới *Nhóm kho
+trung chuyển* nên rơi đúng vào luật đã chốt. Về nghiệp vụ cũng đúng: vật tư đã xuất cho sản xuất
+thì không còn rảnh để bán cho đơn khác. Nhưng người dùng nhìn tên kho sẽ tưởng là hàng đang có.
+Nếu về sau khách muốn tính kho này thì đó là **đổi luật**, phải chốt lại, không phải sửa lỗi.
+
 ## 4. Thuật toán — 4 bước, đúng thứ tự
 
 Thứ tự này là **quy tắc nghiệp vụ đã chốt** (Notes mục 4), không phải chuyện tối ưu:
@@ -224,11 +238,18 @@ BOM. Trừ sớm thì cùng một lượng tồn bị đếm nhiều lần cho n
 tồn_khả_dụng(mặt hàng) = tồn_thực_tế − ghim_bởi_đơn_khác
 
 tồn_thực_tế       = Σ Bin.actual_qty trên tập kho hợp lệ (mục 3)
-ghim_bởi_đơn_khác = Σ (qty − delivered_qty) của mọi Sales Order thoả:
-                      · docstatus = 1, status không thuộc (Closed, Completed, Cancelled)
-                      · custom_ghim_ton_kha_dung = 1
-                      · name ≠ đơn đang kiểm            ← R3, anh Thắng chốt 5.3
+ghim_bởi_đơn_khác = Σ custom_so_luong_giu_cho của mọi dòng Sales Order Item thoả:
+                      · đơn cha docstatus = 1, status không thuộc (Closed, Completed, Cancelled)
+                      · đơn cha custom_ghim_ton_kha_dung = 1
+                      · đơn cha name ≠ đơn đang kiểm    ← R3, anh Thắng chốt 5.3
 ```
+
+> ⚠ **ĐỔI 03/09 — đọc trường lưu sẵn, KHÔNG suy từ `qty − delivered_qty` nữa.** Từ khi ghim là
+> một con số (mục 2), phần đơn khác giữ chỗ chính là giá trị họ đã nhập, không phải toàn bộ phần
+> chưa giao của họ. Đơn giữ 1 trên dòng 5 cái thì chỉ chiếm 1.
+>
+> Kèm theo: phần **đã giao** không còn phải trừ ở đây. Giao hàng làm `Bin.actual_qty` giảm thật,
+> nên nếu vẫn trừ `delivered_qty` một lần nữa là **trừ hai lần**.
 
 Dòng cuối là **bắt buộc**, anh Thắng nhắc lại 24/08 (`ptmjq2t3nj`): *"check box Ghim tồn khả dụng
 phải không ảnh hưởng đến số tồn khả dụng ở bảng 1 của chính đơn đó"*. Thiếu nó thì đơn vừa tích
