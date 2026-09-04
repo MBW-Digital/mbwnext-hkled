@@ -1,0 +1,31 @@
+{
+ "content": null,
+ "creation": "2026-09-03 16:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-09-03 16:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "MBWNext HKLed",
+ "name": "tinh-nhu-cau-vat-tu",
+ "owner": "Administrator",
+ "page_name": "Tính nhu cầu vật tư cần mua theo kỳ",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Manufacturing Manager"
+  },
+  {
+   "role": "Purchase Manager"
+  },
+  {
+   "role": "Purchase User"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "title": "Tính nhu cầu vật tư cần mua theo kỳ"
+}

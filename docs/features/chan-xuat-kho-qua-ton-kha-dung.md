@@ -427,3 +427,78 @@ theo phần mình vừa khảo sát.
 
 
 > Hạn 05/09/2026 để **tạm** cho đủ trường bắt buộc của PM — chưa phải hạn khách chốt.
+
+---
+
+## 9. Đã code (03/09/2026)
+
+`controllers/python_hook/chan_xuat_kho.py` — **một hàm, tám cửa**.
+
+### Vì sao không hook một chỗ duy nhất
+
+Lõi chặn ở `stock_ledger.make_sl_entries`, nút cổ chai thật sự. Nhưng hook vào đó là đụng lõi.
+Nên chặn ở `before_submit` của **từng** chứng từ mà **dùng chung một hàm** — đúng ràng buộc §4.
+
+⚠ **Chứng từ được khai trong `hooks.py` mà chưa có bộ đọc thì THROW**, không lặng lẽ cho qua.
+Thà chặn nhầm một chứng từ hiếm còn hơn để nó lọt — kiểu thủng này chỉ lộ ra *sau khi kho đã
+xuất*.
+
+### Tám bộ đọc "chứng từ này rút những gì ra"
+
+| Chứng từ | Rút khi nào | Lấy ở đâu |
+|---|---|---|
+| Phiếu xuất kho | luôn | `s_warehouse`, **trừ lại** phần vào `t_warehouse` |
+| Phiếu xuất kho hàng bán | luôn (trừ bản trả hàng) | `warehouse` + `stock_qty` |
+| Hoá đơn bán hàng | chỉ khi tích *Cập nhật tồn kho* | như trên |
+| Phiếu nhập mua | **chỉ bản trả hàng** | như trên |
+| Hoá đơn mua hàng | chỉ khi *Cập nhật tồn kho* **và** là bản trả hàng | như trên |
+| Kiểm kê | chỉ dòng **điều chỉnh giảm** | `current_qty − qty` |
+| Nhận hàng gia công | tiêu hao NVL | `supplied_items.consumed_qty`, kho ở **đầu phiếu** |
+| Hình thành tài sản | tiêu hao vật tư | `stock_items` |
+
+⚠ **Chuyển kho nội bộ phải trừ lại phần nhập vào.** Chuyển giữa hai kho hợp lệ thì tổng tồn khả
+dụng **không đổi** — không trừ lại là chặn oan mọi phiếu chuyển kho.
+
+⚠ Chỉ tính kho **trong tập kho hợp lệ**. Rút hàng từ kho lỗi/trung chuyển không ăn vào phần ai
+đang giữ, vì tồn ở đó vốn đã không nằm trong *tồn khả dụng*.
+
+### Miễn trừ đơn của chính nó — bỏ bước này là khoá cửa từ bên trong
+
+Cơ chế lõi tự miễn trừ chứng từ sinh ra từ đơn đang giữ chỗ; đường B phải **tự làm lấy**. Không
+có nó thì đơn ghim 3 cái sẽ **tự chặn chính phiếu xuất của mình**.
+
+Lấy từ `against_sales_order` / `sales_order` trên dòng chứng từ. `ghim_boi_don_khac()` được mở
+rộng để nhận **danh sách** tên đơn, không chỉ một.
+
+### Câu chặn không nêu tên đơn
+
+Anh Thắng chốt 25/08 15:47: *"em chỉ cần báo là tồn đang không đủ thôi nhé"*. Nêu tên đơn là để
+lộ đơn của khách này sang mắt người đang thao tác đơn khác.
+
+### Yêu Cầu Mặt Hàng: cảnh báo, không chặn
+
+Không sinh Stock Ledger Entry ➜ chặn ở đó là chặn một *dự định*. Chỉ cảnh báo khi loại phiếu là
+*Material Issue* và số xin vượt tồn khả dụng.
+
+### Đã đo trên cổng 8012 (03/09, dựng trong giao dịch rồi hoàn tác)
+
+Bối cảnh: `Thành phẩm 1` tồn 27 (Kho thành phẩm) + 4 (Kho bán thành phẩm) = **31**, `SO-26-00011`
+của anh Thắng đang ghim **3**. Dựng thêm một đơn ghim **20** ➜ tồn khả dụng còn **8**.
+
+	hook đã nạp đủ 8 chứng từ                        ✅
+	xuất 27 khi khả dụng 8   → CHẶN, đúng câu chữ    ✅  (lõi cho qua vì kho đó có 27)
+	xuất 8 đúng mức khả dụng → QUA                   ✅
+	phiếu giao 20 CÓ gắn Đơn Bán → QUA (miễn trừ)    ✅
+	cùng phiếu đó BỎ gắn đơn     → CHẶN              ✅  ← cặp đối chứng của miễn trừ
+	sau hoàn tác: 17 Phiếu xuất kho, 0 Phiếu giao, đơn ghim về đúng 1  ✅
+
+⚠ **Ba ca đầu tôi thử đều bị lõi ERPNext chặn TRƯỚC** (nó kiểm theo *từng kho*), nên không chạm
+tới hàm này. Muốn thử được phải dựng ca **qua được lõi mà vẫn vượt pool**: rút đúng bằng tồn của
+một kho, trong khi phần ghim làm pool tụt xuống dưới mức đó. Ai viết test hồi quy đọc dòng này
+trước, nếu không sẽ tưởng đã kiểm mà thật ra chưa.
+
+### ⚠ Còn thiếu: 6/8 chứng từ chưa có trên site để thử thật
+
+Đo 03/09: `Stock Entry` 17 · `Purchase Receipt` 1 · **sáu loại còn lại: 0 bản ghi**. Bộ đọc viết
+theo tên trường đọc từ meta của chính site, nhưng **chưa chạy thật** cái nào. Trước khi nghiệm
+thu cần nhờ anh Thắng dựng ít nhất một chứng từ mỗi loại có dùng.

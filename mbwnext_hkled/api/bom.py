@@ -3,6 +3,8 @@
 
 """Tạo BOM tự động dựa trên BOM Template + BOM Rule (PHẦN I tài liệu nghiệp vụ HKLED)."""
 
+import json
+
 import frappe
 from frappe import _
 from frappe.utils import flt
@@ -11,15 +13,8 @@ from frappe.utils.safe_exec import is_safe_exec_enabled, run_script
 from mbwnext_hkled.server_scripts.bom_qty import SCRIPT_NAME as QTY_SCRIPT
 
 
-def resolve_qty_by_formula(item_code, component_name, item_template, template_name):
-	"""Gọi Server Script `hkled_resolve_bom_qty` để lấy số lượng (và NVL nếu là "Theo Rule").
-
-	Công thức nằm ở Server Script chứ không ở đây là quyết định kiến trúc trong tài liệu
-	thiết kế: HKLED phải sửa được công thức ngay, không cần build/deploy lại app.
-
-	Khoá tra công thức là `item_template` (Mặt Hàng Cha) — chốt của TungDA 07/08. Trước đây
-	là field `rule_group` người dùng tự chọn; field đó đã bỏ, Server Script tự suy.
-	"""
+def _kiem_server_script():
+	"""Hai điều kiện phải có trước khi gọi Server Script."""
 	if not is_safe_exec_enabled():
 		frappe.throw(
 			_(
@@ -33,6 +28,18 @@ def resolve_qty_by_formula(item_code, component_name, item_template, template_na
 				frappe.bold(QTY_SCRIPT)
 			)
 		)
+
+
+def resolve_qty_by_formula(item_code, component_name, item_template, template_name):
+	"""Gọi Server Script `hkled_resolve_bom_qty` để lấy số lượng (và NVL nếu là "Theo Rule").
+
+	Công thức nằm ở Server Script chứ không ở đây là quyết định kiến trúc trong tài liệu
+	thiết kế: HKLED phải sửa được công thức ngay, không cần build/deploy lại app.
+
+	Khoá tra công thức là `item_template` (Mặt Hàng Cha) — chốt của TungDA 07/08. Trước đây
+	là field `rule_group` người dùng tự chọn; field đó đã bỏ, Server Script tự suy.
+	"""
+	_kiem_server_script()
 
 	flags = run_script(
 		QTY_SCRIPT,
@@ -49,6 +56,50 @@ def resolve_qty_by_formula(item_code, component_name, item_template, template_na
 			)
 		)
 	return result
+
+
+def resolve_qty_batch(item_code, component_names, item_template, template_name):
+	"""Như `resolve_qty_by_formula` nhưng tính CẢ LÔ thành phần của một biến thể trong MỘT lần gọi.
+
+	Trả về ``{tên thành phần: kết quả}``.
+
+	## Vì sao phải gọi theo lô
+
+	`safe_exec` của Frappe **biên dịch lại toàn bộ Server Script ở MỖI lần gọi** — `compile_restricted`
+	nằm thẳng trong thân `safe_exec`, không có đệm nào ở tầng đó. Script `hkled_resolve_bom_qty` dài
+	~500 dòng nên mỗi lần gọi tốn ~22 ms; đo bằng cProfile trên 60 mặt hàng: **2,6 s ở
+	`builtins.compile` + 10,4 s đi cây AST, trên tổng 17,9 s**.
+
+	Bản cũ gọi MỘT LẦN CHO MỖI THÀNH PHẦN, nên số lần biên dịch = *số biến thể × số thành phần*.
+	Gọi theo lô đưa nó về *số biến thể*.
+
+	Đã thử hai hướng khác và loại cả hai, ghi lại để đừng ai làm lại:
+
+	- **Đệm theo bộ đặc tính của biến thể** — đo 03/09 trên 300 biến thể: theo đủ đặc tính ra 300 bộ
+	  khác nhau (không gộp được gì); theo riêng 6 đặc tính công thức thì gộp còn 10, nhưng **không
+	  dùng được** vì `find_rule_item` tra NVL theo `cond_attrs`, mà điều kiện rule đụng tới 13 đặc
+	  tính. Hai biến thể trùng 6 đặc tính vẫn ra NVL khác nhau — khoá theo 6 là trả nhầm mã, im lặng.
+	- **Đệm code đã biên dịch**, bằng cách dựng lại phần thực thi sandbox trong app. Nhanh nhất,
+	  nhưng chép ruột `safe_exec`, gãy khi nâng cấp Frappe và động vào đúng lớp bảo mật.
+	"""
+	_kiem_server_script()
+
+	flags = run_script(
+		QTY_SCRIPT,
+		item_code=item_code,
+		component_names=json.dumps(list(component_names)),
+		item_template=item_template,
+		bom_template=template_name,
+	)
+	ket = (flags or {}).get("results") or {}
+	thieu = [c for c in component_names if c not in ket]
+	if thieu:
+		frappe.throw(
+			_("Server Script {0} không trả về số lượng cho Thành Phần BOM {1}").format(
+				frappe.bold(QTY_SCRIPT), frappe.bold(", ".join(thieu))
+			)
+		)
+	return ket
 
 
 def get_active_template(item_code):
@@ -72,14 +123,21 @@ def resolve_components(item_code, template_name, warnings=None):
 	if warnings is None:
 		warnings = []
 
+	# Gom TẤT CẢ thành phần "Theo Rule" rồi hỏi Server Script MỘT lần — xem `resolve_qty_batch`.
+	# Bản cũ hỏi từng thành phần một, mà mỗi lần hỏi là một lần biên dịch lại cả script.
+	can_tinh = [r.bom_component for r in template.bom_component_table if r.component_type != "Cố Định"]
+	da_tinh = (
+		resolve_qty_batch(item_code, can_tinh, template.item_template, template_name)
+		if can_tinh
+		else {}
+	)
+
 	for row in template.bom_component_table:
 		if row.component_type == "Cố Định":
 			components.append({"item_code": row.item, "qty": row.qty})
 			continue
 
-		resolved = resolve_qty_by_formula(
-			item_code, row.bom_component, template.item_template, template_name
-		)
+		resolved = da_tinh[row.bom_component]
 		if resolved.get("qty_defaulted"):
 			warnings.append(row.bom_component)
 		qty = flt(resolved.get("qty"))
