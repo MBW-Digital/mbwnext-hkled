@@ -71,6 +71,15 @@ Bấm **Gửi**, rồi **Đồng ý** ở hộp xác nhận.
 - Hàng đã có người giữ → hiện hộp đỏ **Xuất quá tồn khả dụng**, phiếu **vẫn ở bản nháp**,
   kho **không bị trừ**. Xem mục 5.
 
+Hộp lỗi trông như sau — nó cho biết **mã hàng nào**, **bạn xuất bao nhiêu** và **còn được
+bao nhiêu**:
+
+![Hộp lỗi khi xuất quá tồn khả dụng](anh/chan-xuat-kho-02-hop-loi-can.png)
+
+Toàn màn hình lúc bị chặn — phiếu vẫn nguyên ở **BẢN NHÁP** phía sau hộp lỗi:
+
+![Phiếu vẫn ở bản nháp sau khi bị chặn](anh/chan-xuat-kho-01-hop-loi.jpg)
+
 ---
 
 ## 4. Kiểm tra kết quả
@@ -81,6 +90,15 @@ thông báo xanh *"Delivery Note has been submitted successfully"*.
 Muốn biết trước một mặt hàng còn xuất được bao nhiêu, **đừng đoán**: mở Đơn hàng
 bán bất kỳ, bấm **Kiểm Tra Tồn Kho**, xem cột **Tồn khả dụng** ở Bảng 1. Đó chính
 là con số tính năng này dùng để chặn.
+
+Ở ví dụ dưới, kho còn **31** chiếc *Thành phẩm 1* nhưng **Tồn khả dụng = 0**, vì cả 31
+chiếc đã bị các đơn khác ghim. Bấm vào chữ **31 đang ghim** để xem đơn nào đang giữ:
+
+![Cột Tồn khả dụng ở Bảng 1](anh/chan-xuat-kho-04-bang-1-can.png)
+
+Toàn bộ màn hình Kiểm Tra Tồn Kho:
+
+![Màn hình Kiểm Tra Tồn Kho](anh/chan-xuat-kho-03-kiem-tra-ton-kho.jpg)
 
 ---
 
