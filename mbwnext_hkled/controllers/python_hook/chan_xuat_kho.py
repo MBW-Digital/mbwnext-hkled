@@ -36,7 +36,13 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
-from mbwnext_hkled.api.kiem_tra_ton_kho import _kho_hop_le, _ton_thuc_te, ghim_boi_don_khac
+from mbwnext_hkled.api.kiem_tra_ton_kho import (
+	_kha_dung,
+	_kho_hop_le,
+	_so,
+	_ton_thuc_te,
+	ghim_boi_don_khac,
+)
 
 
 # ══════════ Bộ đọc: chứng từ này rút những gì ra khỏi kho? ══════════
@@ -158,12 +164,48 @@ BO_DOC = {
 
 def _don_duoc_mien(doc):
 	"""Những Đơn Bán mà chứng từ này đang thực hiện — phần ghim của chúng không được tính là
-	"người khác giữ", nếu không đơn tự chặn phiếu xuất của chính mình."""
+	"người khác giữ", nếu không đơn tự chặn phiếu xuất của chính mình.
+
+	## ⚠ Hai đường, không phải một
+
+	Bản đầu chỉ đọc bảng con. Quét meta cả 8 chứng từ (04/09) cho thấy **chỉ 3 chứng từ** có cột
+	trỏ về Đơn Bán ở bảng con:
+
+	    Delivery Note Item.against_sales_order · Sales Invoice Item.sales_order
+	    Purchase Receipt Item.sales_order      · Material Request Item.sales_order
+
+	**Chứng từ kho nội bộ thì không có cột nào** — nó nối về Đơn Bán qua **đầu phiếu**:
+	`Stock Entry.work_order` ➜ `Work Order.sales_order`. Thiếu nhánh này thì hàm trả về **tập
+	rỗng cho MỌI chứng từ kho nội bộ** — không phải sót một ca hiếm, mà là **không bao giờ miễn
+	trừ được cái nào**.
+
+	Hậu quả đúng bằng cái docstring đầu file cảnh báo: đơn ghim vật tư để sản xuất, rồi chính nó
+	**chặn phiếu xuất vật tư đi sản xuất của mình** — cái khoá cửa từ bên trong. Mà đó là đường
+	rút tồn *chính* của một nhà máy: site đang có 13 Lệnh sản xuất sinh từ Đơn Bán và 15 Chứng từ
+	kho nội bộ trỏ về Lệnh sản xuất.
+
+	Bộ test không bắt được vì cả ba đơn ghim `SO-26-00014/15/16` **chưa đơn nào có Lệnh sản xuất**
+	— nền test thiếu đúng tổ hợp này. Đã thêm `TC-EDGE-15`.
+
+	## Bốn chứng từ KHÔNG có đường nào về Đơn Bán
+
+	`Purchase Invoice` · `Stock Reconciliation` · `Subcontracting Receipt` · `Asset Capitalization`
+	— quét meta không thấy cột nào, kể cả gián tiếp. Với chúng, miễn trừ là **bất khả thi bằng dữ
+	liệu hiện có**, không phải "chưa làm". Ghi vào mục hạn chế đã biết của đặc tả thay vì để im.
+	"""
 	don = set()
 	for d in doc.get("items") or []:
 		for truong in ("against_sales_order", "sales_order"):
 			if d.get(truong):
 				don.add(d.get(truong))
+
+	# Đường thứ hai: đầu phiếu ➜ Lệnh sản xuất ➜ Đơn Bán (Chứng từ kho nội bộ, Yêu Cầu Mặt Hàng).
+	lsx = doc.get("work_order")
+	if lsx:
+		don_lsx = frappe.db.get_value("Work Order", lsx, "sales_order")
+		if don_lsx:
+			don.add(don_lsx)
+
 	return don
 
 
@@ -190,9 +232,13 @@ def chan_xuat_qua_ton_kha_dung(doc, method=None):
 	ghim, _cb = ghim_boi_don_khac(tru_don=_don_duoc_mien(doc) or None)
 	ton = _ton_thuc_te(set(xuat), list(kho_ok))
 
+	# ⚠ Dùng CHUNG `_kha_dung` với Phần IV — đầu bài §4 ràng buộc "không viết công thức thứ hai",
+	#   và tính năng này đã từng có tới SÁU bản chép của cùng một phép trừ.
+	#   Riêng chỗ này hành vi không đổi: ghim vượt tồn thì `kha_dung` cũ ra âm, mới ra 0, mà
+	#   `sl` luôn > 0 nên cả hai đều chặn. Đổi để về sau sửa luật giữ chỗ chỉ phải sửa một hàm.
 	loi = []
 	for ma, sl in sorted(xuat.items()):
-		kha_dung = flt(ton.get(ma, 0)) - flt(ghim.get(ma, 0))
+		kha_dung, _hl, _vuot = _kha_dung(ton.get(ma, 0), ghim.get(ma, 0))
 		if sl > kha_dung:
 			loi.append((ma, sl, kha_dung))
 
@@ -205,8 +251,8 @@ def chan_xuat_qua_ton_kha_dung(doc, method=None):
 	dong = "<br>".join(
 		_("• {0}: xuất {1}, tồn khả dụng còn {2}").format(
 			ma,
-			frappe.format_value(sl, {"fieldtype": "Float"}),
-			frappe.format_value(max(0.0, kd), {"fieldtype": "Float"}),
+			_so(sl),
+			_so(max(0.0, kd)),
 		)
 		for ma, sl, kd in loi
 	)
@@ -237,12 +283,15 @@ def canh_bao_yeu_cau_mat_hang(doc, method=None):
 	if not xin:
 		return
 
-	ghim, _cb = ghim_boi_don_khac()
+	# ⚠ Phải truyền `tru_don` y như hàm chặn. `Material Request Item` CÓ cột `sales_order` và đầu
+	#   phiếu CÓ `work_order`, nên bỏ trống là cảnh báo nổ oan ngay trên phiếu của chính đơn đã
+	#   ghim — người dùng đọc "xin nhiều hơn tồn khả dụng" cho phần vật tư mình vừa tự giữ.
+	ghim, _cb = ghim_boi_don_khac(tru_don=_don_duoc_mien(doc) or None)
 	ton = _ton_thuc_te(set(xin), list(kho_ok))
 
 	vuot = [
 		ma for ma, sl in sorted(xin.items())
-		if sl > flt(ton.get(ma, 0)) - flt(ghim.get(ma, 0))
+		if sl > _kha_dung(ton.get(ma, 0), ghim.get(ma, 0))[0]
 	]
 	if vuot:
 		frappe.msgprint(
