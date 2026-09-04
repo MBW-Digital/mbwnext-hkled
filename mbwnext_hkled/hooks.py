@@ -303,6 +303,17 @@ doc_events = {
 		"validate": [
 			"mbwnext_hkled.controllers.python_hook.sales_order.fill_item_production_note",
 			"mbwnext_hkled.controllers.python_hook.sales_order.chan_giu_cho_vuot_ton",
+			# PM-FEAT-00036: sổ cam kết vật tư. Phải đứng SAU `chan_giu_cho_vuot_ton` — nó cấp
+			# phát dựa trên số ghim thành phẩm, cấp phát trước khi số đó được kiểm là cấp theo
+			# con số có thể bị chặn ngay sau đó.
+			"mbwnext_hkled.controllers.python_hook.sales_order.dong_bo_ghim_vat_tu",
+		],
+		# 🔴 PM-FEAT-00036: từ 04/09 hai ô ghim mở khoá sau khi duyệt (anh Thắng chốt 15:59).
+		# Frappe **không chạy `validate`** trên đường update-after-submit, nên không treo lại ở
+		# đây thì lớp chặn giữ-chỗ-vượt-tồn thủng đúng ngay lúc vừa mở khoá.
+		"before_update_after_submit": [
+			"mbwnext_hkled.controllers.python_hook.sales_order.chan_giu_cho_vuot_ton",
+			"mbwnext_hkled.controllers.python_hook.sales_order.dong_bo_ghim_vat_tu",
 		],
 	},
 	"Stock Entry": {
