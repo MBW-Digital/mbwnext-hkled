@@ -11,9 +11,9 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 
 > ### ⚠ Đây là ĐỢT 1 — nút *Phân Bổ* CHƯA CÓ
 >
-> Đợt này chỉ dựng **chỗ chứa và luật cấp phát**. Nút *Phân bổ hàng về* và việc **nhả vật tư khi
-> sản xuất xong** chưa làm — xem mục 8.8 của đầu bài. Đừng đọc bảng dưới như đã nghiệm thu cả
-> tính năng.
+> Đợt này dựng **chỗ chứa · luật cấp phát · việc nhả vật tư khi sản xuất xong**. Còn thiếu đúng
+> một thứ: **nút *Phân bổ hàng về***. Xem mục 8.9 của đầu bài. Đừng đọc bảng dưới như đã nghiệm
+> thu cả tính năng.
 >
 > ### ⚠ Cách chạy vòng một — đọc trước khi tin cột KQ thực tế
 >
@@ -65,6 +65,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-05 | Bảng 1b/2b (`ghim_chi_tiet`) đọc từ sổ | Tổng chi tiết khớp `ghim_boi_don_khac` | 6 mã, tổng khớp, `kiem_bat_bien()` **sạch** | ✅ Pass |
 | TC-HAPPY-06 | Cột *định mức hiệu dụng* trên Bảng 2b | Là định mức thật, không phải phần được cấp | `BTP1`: 9/9 = **1**, không phải 1/9 = 0,111 (đã sửa trong lúc chạy — xem ghi chú dưới) | ✅ Pass |
 | TC-HAPPY-07 | **Trên giao diện thật:** mở `SO-26-00026`, bảng *Ghim Vật Tư* hiện ngay dưới lưới hàng hoá | Đủ 5 dòng, cột Việt hoá, không sửa tay được | Đủ 5 dòng · mọi ô `read_only` · không có nút *Thêm dòng* ở lưới. Bảng 2b của đơn khác hiện *"7 đang ghim"* với định mức **3,00** | ✅ Pass |
+| TC-HAPPY-08 | **Sản xuất xong 5 chiếc** cho đơn đang ghim | Ghim thành phẩm tăng, vật tư nhả theo | Ghim 31 → **36** · phải làm 9 → **4** · `NVL 1` 8 → 3 · `NVL 2` 16 → 6 · nhu cầu `NVL 3` 24 → 9. Quét bất biến sạch | ✅ Pass |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -102,6 +103,10 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-EDGE-10 | — | Đơn đã duyệt nhưng **chưa từng** ghim vật tư | Không sinh dòng rác | 0 dòng, không cảnh báo | ✅ Pass |
 | TC-EDGE-11 | #2 | Đơn **Huỷ** rồi amend, cả hai bản cùng tồn tại | Chỉ bản còn sống được tính | Chưa chạy — `SO-26-00026` đang gắn Kế hoạch sản xuất `KSX-26-00001` nên **không huỷ được**. Cần một đơn không có ràng buộc | ⏳ Chưa chạy |
 | TC-EDGE-12 | #5 | **Trên giao diện thật:** giảm ghim 31 → 20 rồi lưu | Bảng chạy lại ngay trên màn hình | `Phải Làm` 9 → **20**, `NVL 2` thành **32/38** (kẹp đúng ở tồn 32), `NVL 3` thành **7/57**. Trả về 31 thì bảng về đúng số cũ | ✅ Pass |
+| TC-EDGE-13 | #1 | **Huỷ** chứng từ sản xuất vừa duyệt | Kéo ngược phần ghim xuống, hàng đã bay khỏi kho | Ghim 36 → **31**, cả 5 dòng vật tư về đúng số cũ. Quét sạch | ✅ Pass |
+| TC-EDGE-14 | — | Sản xuất **nhiều hơn** phần đơn còn thiếu (20 trên 9) | Kẹp ở số lượng trên dòng, phần dư để tự do | Ghim → **40** (đúng trần), sổ vật tư còn **0 dòng** — hết phải sản xuất thì không giữ vật tư nào. Quét sạch | ✅ Pass |
+| TC-EDGE-15 | — | Lệnh sản xuất **không nối được về Đơn Bán** (làm để tồn kho) | Không chuyển gì | Ghim giữ nguyên 31. Đúng thiết kế — 17/33 lệnh trên site thuộc loại này | ✅ Pass |
+| TC-EDGE-16 | — | Chứng từ **Chuyển vật tư đi sản xuất** (chưa phải Manufacture) | Không chuyển gì — hàng chưa làm xong | Ghim giữ nguyên 31 | ✅ Pass |
 
 ## TC-PERM — phân quyền
 
@@ -131,6 +136,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-REGR-04 | Engine Phần V (`nhu_cau_vat_tu.tinh_nhu_cau`) | Vẫn chạy | 3 dòng vật tư, cảnh báo duy nhất là ca *thiếu Thời Gian Bắt Đầu* đã có từ trước | ✅ Pass |
 | TC-REGR-05 | `ghim_boi_don_khac` sau khi đổi nguồn | Trả cả thành phẩm lẫn vật tư, khớp sổ | `{Thành phẩm 1: 31, NVL1: 8, NVL2: 16, NVL3: 7, BTP1: 1, BTP2: 1}` — khớp | ✅ Pass |
 | TC-REGR-06 | **Trên giao diện thật:** lập Phiếu xuất kho 5 `NVL 3` rồi bấm **Gửi** | Bị chặn, hộp thoại đỏ nêu đúng số | *"Xuất quá tồn khả dụng — NVL 3: xuất 5, tồn khả dụng còn 0. Phần chênh đang được các Đơn Bán khác giữ chỗ."* Đã xoá bản nháp `KNB-26-00005`, tồn vẫn 7 | ✅ Pass |
+| TC-REGR-07 | `_don_duoc_mien` của PM-FEAT-00034 sau khi dùng chung hàm nối Lệnh sản xuất → Đơn Bán | Miễn trừ không đổi | `MFG-WO-2026-00005` (chỉ có Kế hoạch sản xuất) vẫn ra `{SO-26-00026}`, chứng từ vẫn cho qua | ✅ Pass |
 
 > ⚠ **Đổi hành vi có thật, phải nói với anh Thắng trước khi bật cho khách:** trước đợt này, phần
 > vật tư mà `ghim_boi_don_khac` trả về **luôn rỗng** (`_con_phai_lam` tính `ghim − tồn`, mà lớp
@@ -154,12 +160,14 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**36 ca · 32 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **4 ca chạy trên giao diện thật**.
+**42 ca · 38 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **4 ca chạy trên giao diện thật**.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-**Chưa có test cho phần chưa code:** nút *Phân Bổ*, và việc **nhả vật tư khi sản xuất xong**.
-Chừng nào chưa có cái thứ hai, vật tư đã ghim **không tự nhả** — phải nói rõ với anh Thắng trước
-khi bật cho khách dùng.
+**Chưa có test cho phần chưa code:** còn đúng **nút *Phân Bổ***.
+
+Việc *nhả vật tư khi sản xuất xong* đã làm và đã test (`TC-HAPPY-08`, `TC-EDGE-13` → `TC-EDGE-16`),
+nên lo ngại "giam hàng" tôi nêu với anh Thắng buổi tối đã được gỡ ở đường sản xuất. Đường còn lại
+là hàng **mua** về — chính là việc của nút Phân Bổ.

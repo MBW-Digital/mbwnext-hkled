@@ -301,6 +301,123 @@ def dong_bo(sales_order, ghi=True):
 	return {"don": sales_order, "so_dong": so_dong, "canh_bao": canh_bao}
 
 
+def don_ban_cua_lsx(lsx):
+	"""{Đơn Bán} mà một Lệnh sản xuất đang phục vụ — **hai chặng, không phải một**.
+
+	🔒 Anh Thắng mô tả 04/09 16:35: hàng làm để tồn kho thì không lên từ đơn bán; đơn nào thiếu
+	thì họ **tạo Kế hoạch sản xuất từ Đơn Bán** rồi mới tạo Lệnh sản xuất từ kế hoạch.
+
+	Đo 04/09 trên 33 lệnh đang mở: 13 có sẵn ô *Đơn Bán* · **3 chỉ tra được qua kế hoạch** · 17
+	không có đường nào (sản xuất để tồn kho — đúng ra không nối về đơn nào).
+
+	⚠ Đây là **một định nghĩa dùng chung** với `chan_xuat_kho._don_duoc_mien`. Hai chỗ hiểu khác
+	  nhau thì lớp chặn miễn trừ cho đơn này còn sổ ghim lại chuyển cho đơn kia.
+	"""
+	if not lsx:
+		return set()
+	truc, ke_hoach = frappe.db.get_value("Work Order", lsx, ["sales_order", "production_plan"]) or (None, None)
+	if truc:
+		return {truc}
+	if ke_hoach:
+		return {
+			r["sales_order"]
+			for r in frappe.get_all(
+				"Production Plan Sales Order",
+				filters={"parent": ke_hoach, "sales_order": ["is", "set"]},
+				fields=["sales_order"],
+			)
+		}
+	return set()
+
+
+def chuyen_ghim_sau_san_xuat(so_luong, lsx, nguoc=False):
+	"""Sản xuất xong ➜ **nhả vật tư, chuyển thành ghim thành phẩm**.
+
+	🔒 Anh Thắng chốt 04/09 16:21: *"cần 5A nhưng hiện tại chỉ còn 3A, lúc này chỉ ghim được 3A
+	➜ ghim nguyên vật liệu để sản xuất 2A ➜ sau khi sản xuất xong thì sẽ thành ghim 5A"*.
+
+	## Cơ chế: chỉ cần CỘNG phần ghim thành phẩm, vật tư tự nhả
+
+	Không có đoạn nào đi xoá dòng vật tư cả. Phần vật tư sinh ra từ
+	`cần − đã giao − đã ghim`; cộng vào phần ghim thành phẩm là số đó **tự tụt**, và
+	`dong_bo_doc` chạy theo trong cùng lần lưu sẽ cắt các dòng vật tư xuống đúng mức mới.
+
+	Được thế là nhờ vật tư là **dữ liệu suy ra từ một con số lưu**, không phải hai sổ song song.
+	Nếu nhả vật tư bằng một phép trừ riêng thì sẽ có hai đường cùng sửa một thứ — và chúng sẽ
+	lệch nhau, im lặng.
+
+	## Vì sao gắn vào `on_submit` chứ không chạy định kỳ
+
+	Lúc chứng từ sản xuất được duyệt, số thành phẩm vừa nhập kho là **hàng tự do trong khoảnh
+	khắc đó**. Chạy định kỳ thì có khe hở để đơn khác ghim mất, và đơn đã bỏ vật tư ra làm thì
+	trắng tay. Chạy trong cùng giao dịch thì không có khe.
+
+	## Trả về danh sách việc đã làm, để chỗ gọi in ra cho người thao tác thấy
+
+	`nguoc=True` là đường **huỷ** chứng từ sản xuất: hàng vừa nhập kho bay đi, nên phải kéo phần
+	ghim thành phẩm xuống, nếu không đơn giữ nhiều hơn số đang có (bất biến #1).
+	"""
+	viec = []
+	so_luong = flt(so_luong)
+	if so_luong <= 0 or not lsx:
+		return viec
+
+	ma = frappe.db.get_value("Work Order", lsx, "production_item")
+	if not ma:
+		return viec
+
+	ung_vien = don_ban_cua_lsx(lsx)
+	if not ung_vien:
+		# Sản xuất để tồn kho — không phục vụ đơn nào. Không phải thiếu sót, xem docstring
+		# `don_ban_cua_lsx`.
+		return viec
+
+	# Đơn nào trước: đúng thứ tự ưu tiên đã chốt, không phải thứ tự tra ra từ database.
+	con_lai = so_luong
+	for ten_don in don_theo_uu_tien():
+		if ten_don not in ung_vien or con_lai <= 0:
+			continue
+		doc = frappe.get_doc("Sales Order", ten_don)
+		doi = False
+		for row in doc.get("items") or []:
+			if row.item_code != ma or con_lai <= 0:
+				continue
+			ghim = flt(row.get("custom_so_luong_giu_cho"))
+			if nguoc:
+				# Huỷ: kéo xuống tối đa `so_luong`, nhưng không xuống dưới 0.
+				bot = min(ghim, con_lai)
+				if bot <= 0:
+					continue
+				row.custom_so_luong_giu_cho = ghim - bot
+				con_lai -= bot
+				viec.append(f"{ten_don} · {ma}: ghim {_so(ghim)} → {_so(ghim - bot)}")
+				doi = True
+				continue
+
+			# ⚠ Ba trần cùng lúc, thiếu cái nào cũng sai:
+			#   • phần đơn còn thiếu — ghim quá số cần là giữ hộ hàng cho không ai
+			#   • số vừa sản xuất còn lại — một lệnh chia cho nhiều đơn thì hết là hết
+			#   • tồn tự do — luật vàng, không lấy hàng người khác đang giữ
+			con_thieu = flt(row.qty) - flt(row.delivered_qty) - ghim
+			tu_do = flt(ton_tu_do([ma]).get(ma, 0))
+			them = max(0.0, min(con_lai, con_thieu, tu_do))
+			if them <= 0:
+				continue
+			row.custom_so_luong_giu_cho = ghim + them
+			con_lai -= them
+			viec.append(f"{ten_don} · {ma}: ghim {_so(ghim)} → {_so(ghim + them)}")
+			doi = True
+
+		if doi:
+			# `save()` kích `before_update_after_submit` ➜ `chan_giu_cho_vuot_ton` kiểm lại con
+			# số vừa cộng, rồi `dong_bo_ghim_vat_tu` cắt phần vật tư không còn cần. Cố ý KHÔNG
+			# đặt cờ `bo_qua_ghim_vat_tu`: chính hai hook đó làm nốt việc nhả vật tư.
+			doc.flags.ignore_version = True
+			doc.save(ignore_permissions=True)
+
+	return viec
+
+
 def kiem_bat_bien():
 	"""Quét toàn bộ sổ cam kết, khẳng định 5 điều — mục 8.7 của đầu bài.
 

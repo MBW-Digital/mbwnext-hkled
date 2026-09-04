@@ -286,7 +286,7 @@ test riêng.
 | Bỏ tích *Ghim tồn khả dụng* | rơi khỏi bộ lọc (`custom_ghim_ton_kha_dung = 0`) | **cấu trúc** |
 | Amend đơn | bản cũ `docstatus = 2` ➜ rơi khỏi bộ lọc | **cấu trúc** |
 | Giảm số ghim thành phẩm / xoá dòng hàng | tính lại nhu cầu, **cắt phần dư** ở dòng có `tu_ma` tương ứng | phải viết code |
-| Sản xuất xong | nhả vật tư theo tỉ lệ, ghim thêm thành phẩm | phải viết code — **chưa làm trong đợt này**, xem 8.8 |
+| Sản xuất xong | cộng phần ghim thành phẩm ➜ vật tư tự nhả theo | **đã làm 04/09 tối**, xem 8.8 |
 
 ⚠ Bỏ tích *không xoá* dòng trong bảng, đúng luật 2 của mục 2 đặc tả (*"bỏ tích không xoá số đã
 nhập"*). Nó chỉ ngừng có hiệu lực. Tích lại thì cam kết cũ còn nguyên — **nhưng** trong lúc bỏ
@@ -306,15 +306,43 @@ phép kiểm bất biến #1 và **cắt xuống** nếu không còn đủ hàng
 Mục 12e đòi *"mỗi lần chạy phải kèm một phép kiểm tổng thể"* — đây chính là nó. Rẻ (3 truy vấn),
 và bắt được cả đường hỏng chưa ai nghĩ ra.
 
-### 8.8 Đợt này KHÔNG làm gì
+### 8.8 Sản xuất xong ➜ nhả vật tư, chuyển thành ghim thành phẩm (làm 04/09 tối)
 
-Ghi ra để không ai tưởng đã xong:
+🔒 Anh Thắng chốt 04/09 16:21: *"cần 5A nhưng hiện tại chỉ còn 3A, lúc này chỉ ghim được 3A ➜
+ghim nguyên vật liệu để sản xuất 2A ➜ sau khi sản xuất xong thì sẽ thành ghim 5A"*.
 
-- **Nút Phân bổ** — làm sau khi bảng chạy đúng và có phép kiểm.
-- **Chuyển ghim khi sản xuất xong** (vướng 2/3/4 tôi nêu lúc 16:23, anh Thắng chưa gật từng cái).
-  Chừng nào chưa có, vật tư đã ghim **không tự nhả khi sản xuất xong** — phải nói rõ điều này với
-  anh Thắng trước khi bật cho khách dùng, vì nó là đúng loại "giam hàng" tôi đã cảnh báo.
+**Cơ chế chỉ có một dòng việc: cộng phần ghim thành phẩm. Vật tư tự nhả.**
+
+Không có đoạn code nào đi xoá dòng vật tư. Nhu cầu vật tư sinh ra từ `cần − đã giao − đã ghim`
+(8.5); cộng vào phần ghim thành phẩm là số đó tự tụt, và lần đồng bộ chạy trong **cùng lần lưu**
+cắt các dòng vật tư xuống mức mới. Đo thật: sản xuất 5 chiếc ➜ ghim 31 → 36, phải làm 9 → 4,
+`NVL 1` 8 → 3, `NVL 2` 16 → 6, nhu cầu `NVL 3` 24 → 9.
+
+➜ Ba vướng tôi nêu với anh Thắng lúc 16:23 **tự giải** nhờ cách này:
+
+| Vướng | Cách này trả lời |
+|---|---|
+| 2 — sản xuất **từng phần** | Không cần luật riêng: làm 5 trong 9 thì cộng 5, phần vật tư tụt theo đúng tỉ lệ |
+| 3 — **khe hở** lúc vừa sản xuất xong | Không có khe: chạy trong `on_submit`, cùng giao dịch với bút toán kho |
+| 4 — vật tư **thực tiêu hao** khác vật tư đã ghim | Không đối chiếu, đúng như đề nghị: phần ghim là hàm của *còn phải làm*, không của *đã tiêu hao* |
+
+**Ba trần khi cộng**, thiếu cái nào cũng sai: phần đơn còn thiếu · số vừa sản xuất còn lại (một
+lệnh có thể chia cho nhiều đơn) · **tồn tự do**.
+
+**Huỷ chứng từ sản xuất** thì kéo ngược phần ghim xuống — hàng đã bay khỏi kho, không kéo xuống
+là đơn giữ nhiều hơn số đang có (bất biến #1). Đo thật: huỷ xong mọi con số về đúng như trước.
+
+⚠ Lệnh sản xuất **không nối được về Đơn Bán** (17/33 lệnh, làm để tồn kho) thì không chuyển gì —
+đúng thiết kế, xem `api/ghim_vat_tu.don_ban_cua_lsx`.
+
+### 8.9 Vẫn CHƯA làm
+
+- **Nút Phân bổ** — việc còn lại cuối cùng của tính năng.
 - **Ghim vượt cấp cho bán thành phẩm mua ngoài** — 8.5 đổi hành vi, cần đo lại trên dữ liệu thật.
+- ⚠ **Bảng 2 và sổ ghim đang tính khác nhau** một chỗ, đã hỏi anh Thắng 04/09 tối
+  (`89cclg1akq`): cùng một đơn, Bảng 2 tính cần **27** `NVL 3` (9 thành phẩm × 3) còn sổ ghim
+  tính **24** (8 × 3), vì sổ trừ 1 bán thành phẩm đang có trong kho còn Bảng 2 thì không. Chốt
+  cách nào cũng phải sửa **một trong hai**, không để hai con số cùng hiện.
 
 ---
 

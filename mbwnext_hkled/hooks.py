@@ -323,6 +323,17 @@ doc_events = {
 			"mbwnext_hkled.controllers.python_hook.stock_entry.set_serial_no_on_manufacture",
 			"mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
 		],
+		# PM-FEAT-00036: sản xuất xong ➜ nhả vật tư, chuyển thành ghim thành phẩm.
+		#
+		# ⚠ `on_submit` chứ không phải `before_submit`: phải chờ bút toán kho ghi xong thì số
+		#   thành phẩm vừa làm ra mới là tồn thật để ghim. Hook của `doc_events` chạy SAU phương
+		#   thức của lõi, nên tới lượt hàm này thì kho đã cập nhật.
+		# ⚠ Và phải nằm trong CÙNG giao dịch: lúc đó hàng vừa nhập kho là hàng tự do, chạy định
+		#   kỳ thì có khe hở để đơn khác ghim mất.
+		"on_submit": "mbwnext_hkled.controllers.python_hook.stock_entry.chuyen_ghim_khi_san_xuat_xong",
+		# Huỷ chứng từ sản xuất thì hàng bay khỏi kho — phải kéo phần ghim xuống theo, nếu không
+		# đơn giữ nhiều hơn số đang có (bất biến #1 của mục 12e).
+		"on_cancel": "mbwnext_hkled.controllers.python_hook.stock_entry.chuyen_ghim_khi_san_xuat_xong",
 	},
 	# ══ PM-FEAT-00034 · Chặn xuất kho quá tồn khả dụng ══
 	#
