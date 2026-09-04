@@ -82,6 +82,57 @@ def _ton_thuc_te(ma_hang, kho):
 	return {r["item_code"]: flt(r["ton"]) for r in rows}
 
 
+def _so(x):
+	"""Số lượng cho người đọc, dùng chung cho mọi câu thông báo của Phần IV và IV.1.
+
+	`frappe.format_value(x, {"fieldtype": "Float"})` cho ra **3 chữ số thập phân** — câu chặn
+	hiện *"chỉ giữ chỗ được 0,000"*, đọc như số tiền chứ không như số cái đèn.
+
+	⚠ Nhưng ép cứng 0 chữ số cũng sai. UOM `Kg` · `m` · `Lít` trên site đều để
+	  `must_be_whole_number = 0`, tức số lẻ hợp lệ; ép 0 thì **2,5 hiện thành 3** — thay một câu
+	  khó đọc bằng một câu **sai**, mà lại sai trong đúng câu đang báo cho người dùng biết họ
+	  được giữ bao nhiêu. Hiện chưa mã nào lẻ (đã quét Bin/SO/BOM/PO ngày 04/09: 0 dòng), nên
+	  đây là phòng trước chứ không phải sửa lỗi đang có.
+
+	Nên: nguyên thì bỏ hẳn phần thập phân, lẻ thì giữ, chỉ cắt số 0 thừa ở đuôi.
+	Bản JS tương ứng là `so()` trong `controllers/js/sales_order.js` — sửa một bên thì sửa cả hai.
+	"""
+	x = flt(x)
+	if x == int(x):
+		return frappe.format_value(x, {"fieldtype": "Float", "precision": 0})
+	ra = frappe.format_value(x, {"fieldtype": "Float"})
+	return ra.rstrip("0").rstrip(".,") if ("." in ra or "," in ra) else ra
+
+
+def _kha_dung(ton, ghim_ma):
+	"""Tồn khả dụng của một mã. Trả về `(kha_dung, ghim_hieu_luc, ghim_vuot)`.
+
+	⚠ **Không ai giữ chỗ được nhiều hơn số đang có trong kho.** Ghim là đặt riêng ra một phần
+	  hàng CÓ THẬT; ghim 3 khi kho có 1 thì phần trừ được chỉ là 1.
+
+	  Trước 03/09 hàm gọi tính thẳng `kha_dung = ton - ghim`, cho ra số âm, rồi
+	  `thieu = can - kha_dung` cộng luôn phần âm đó vào đơn đang xem. Anh Thắng bắt được
+	  03/09 16:34 trên `Bán thành phẩm 2` (tồn 1, đơn khác ghim 3 → khả dụng −2): mọi đơn mở lên
+	  sau đều bị cộng thêm 2 vào số cần mua, và số sai đó đi thẳng vào phiếu Yêu Cầu Mặt Hàng.
+	  Đo trên `SO-26-00010`: `Bán thành phẩm 2` thiếu 173 thay vì 171.
+
+	⚠ **Kẹp ở đây KHÔNG phải là sửa gốc rễ.** Gốc rễ là vì sao ghim lại vượt tồn:
+	  `ghim_boi_don_khac` giữ chỗ cả thành phẩm LẪN nguyên vật liệu trong định mức của nó, kể cả
+	  khi thành phẩm đã có sẵn trong kho và không phải sản xuất thêm cái nào. Ca thật:
+	  `SO-26-00011` ghim 3 `Thành phẩm 1` trong khi kho đang có 31 — không cần sản xuất, nhưng
+	  hệ thống vẫn giữ 3 `Bán thành phẩm 2` cho nó, mà kho chỉ có 1.
+	  ➜ Sửa phần đó là **đổi cách hiểu nghiệp vụ**, phải hỏi anh Thắng. Hàm này chỉ đảm bảo phép
+	  trừ không sinh ra nhu cầu mua ảo trong lúc chờ.
+
+	⚠ Tồn ÂM thì giữ nguyên số âm, không kẹp về 0: đó là tồn kho thật sự lệch (hiện `hkled.com`
+	  không có bản ghi nào), phải mua bù thật chứ không phải hiệu ứng của ghim.
+	"""
+	ton = flt(ton)
+	ghim_ma = flt(ghim_ma)
+	hieu_luc = min(ghim_ma, max(0.0, ton))
+	return ton - hieu_luc, hieu_luc, ghim_ma - hieu_luc
+
+
 def _bom_mac_dinh(ma_hang):
 	"""{item_code: tên BOM mặc định} — một query cho cả tập, không hỏi từng mã."""
 	if not ma_hang:
@@ -213,7 +264,8 @@ def ghim_boi_don_khac(tru_don=None):
 	#   đó: đơn giữ 20 cái nguồn NHKP-250E thì hệ thống hiểu là 40, các đơn khác thấy thiếu ảo.
 	#   Cùng họ với lỗi trừ hai lần mà câu hỏi của khách chỉ ra hôm 27/08.
 	canh_bao = []
-	gian_tiep = boc_dinh_muc(_con_mot_cap(truc_tiep, canh_bao), canh_bao=canh_bao)
+	# Cách B (anh Thắng chốt 03/09 16:51): chỉ giữ vật tư cho phần CÒN PHẢI SẢN XUẤT.
+	gian_tiep = boc_dinh_muc(_con_mot_cap(_con_phai_lam(truc_tiep), canh_bao), canh_bao=canh_bao)
 
 	# Thành phẩm bị giữ trực tiếp VÀ nguyên vật liệu của nó đều bị giữ — hai thứ nằm ở hai kho
 	# khác nhau nên cộng cả hai là đúng. Chỉ có mã mua ngoài mới không được cộng lặp, và
@@ -222,6 +274,157 @@ def ghim_boi_don_khac(tru_don=None):
 	for m, sl in truc_tiep.items():
 		tong[m] = tong.get(m, 0) + sl
 	return tong, canh_bao
+
+
+def _con_phai_lam(truc_tiep):
+	"""{mã: số lượng còn PHẢI SẢN XUẤT} = phần ghim trừ đi thành phẩm đã có sẵn trong kho.
+
+	🔒 **Anh Thắng chốt 03/09 16:51: "Chọn cách B em nhé."**
+
+	Trước đó, đơn ghim thành phẩm thì hệ thống giữ luôn bộ vật tư để làm ra nó — **kể cả khi
+	thành phẩm đã nằm sẵn trong kho và không phải sản xuất thêm cái nào**. Ca thật đo được:
+	`SO-26-00011` ghim 3 `Thành phẩm 1` trong khi kho có 31; đơn đó lấy hàng từ kho là xong,
+	nhưng hệ thống vẫn giữ 3 bộ vật tư cho nó, trong khi `Bán thành phẩm 2` chỉ có 1 cái. Đó
+	chính là **gốc rễ của chuyện ghim vượt tồn** mà anh Thắng bắt được lúc 16:34.
+
+	Cách B: chỉ lan xuống vật tư cho phần **thật sự phải làm ra**.
+
+	⚠ Trừ tồn ở mức TỔNG, không trừ theo từng đơn: nhiều đơn cùng ghim một mã thì chúng chia
+	  nhau đúng một lượng tồn. Trừ từng đơn là mỗi đơn được "che" bởi cùng số hàng đó — cùng họ
+	  với lỗi trừ hai lần ở bước 4 của đầu bài.
+
+	🔴 **Cách B làm `tru_don` thành BẮT BUỘC, không còn là chuyện gọn gàng.**
+	  `max(0, tổng_ghim − tồn)` là phép **không tuyến tính**, nên KHÔNG được suy "phần đơn X giữ"
+	  bằng cách gọi hai lần rồi trừ ra. Ví dụ: tồn 10, đơn A ghim 8, đơn B ghim 8.
+	  Tổng giữ = `max(0, 16−10)` = **6**. Hỏi "B giữ bao nhiêu": đúng là `max(0, 8−10)` = **0**,
+	  còn trừ ra cho `6 − 0` = **6**. Lệch hẳn, và lệch âm thầm.
+	  ➜ Luôn truyền `tru_don` **ngay từ đầu** cho `ghim_boi_don_khac` / `ghim_chi_tiet`.
+	  (Phiên làm Phần V bản đầu đúng là cách trừ ra; đổi kịp trước khi cách B vào.)
+
+	⚠ `_kho_hop_le()` gọi **không kèm công ty** — cố ý, vì hàm này gom mọi đơn đang ghim chứ
+	  không riêng công ty nào, giống `ghim_boi_don_khac`. `hkled.com` hiện chỉ có **1 công ty**
+	  (`HKLED`, 5 kho hợp lệ, lọc hay không ra cùng kết quả). Ngày nào site có công ty thứ hai
+	  thì chỗ này cộng tồn của cả hai — phải xem lại cùng lúc với `ghim_boi_don_khac`, đừng sửa
+	  lẻ một chỗ.
+	"""
+	ma = [m for m, sl in truc_tiep.items() if flt(sl) > 0]
+	if not ma:
+		return {}
+	ton = _ton_thuc_te(ma, _kho_hop_le())
+	con = {}
+	for m in ma:
+		phai_lam = flt(truc_tiep[m]) - flt(ton.get(m, 0))
+		if phai_lam > 0:
+			con[m] = phai_lam
+	return con
+
+
+def ghim_chi_tiet(tru_don=None):
+	"""Ai đang giữ chỗ mã nào — dữ liệu cho Bảng 1b và Bảng 2b.
+
+	Trả về `({mã: [dòng, ...]}, canh_bao)`. Mỗi dòng:
+	`{don, nguoi, ngay, giu, tu_ma, tu_sl, dinh_muc}`. Dòng **không** có `tu_ma` là ghim
+	**trực tiếp** (đơn kia bán đúng mã đó — Bảng 1b); dòng **có** `tu_ma` là ghim **gián tiếp**
+	(mã này là vật tư trong định mức của thứ đơn kia bán — Bảng 2b).
+
+	⚠ **Cố ý KHÔNG gộp vào `ghim_boi_don_khac`.** Hàm kia chạy trong `before_submit` của 8 loại
+	  chứng từ kho (PM-FEAT-00034); nó phải rẻ. Hàm này bóc định mức **một lần cho mỗi cặp
+	  (đơn × mặt hàng)** thay vì một lần cho cả tập gộp, nên tốn hơn hẳn — chỉ đáng trả giá cho
+	  màn hình *Kiểm Tra Tồn Kho*, nơi người dùng chủ động bấm và chờ được.
+
+	⚠ Tổng của các dòng ở đây **phải khớp** `ghim_boi_don_khac`. Hai đường tính khác nhau nên
+	  chỗ gọi có kiểm lại và báo nếu lệch — bảng chi tiết không khớp con số đã trừ thì người đọc
+	  mất lòng tin vào cả màn hình, mà lệch kiểu đó thì im lặng chứ không nổ lỗi.
+	"""
+	don = frappe.get_all(
+		"Sales Order",
+		filters={
+			"docstatus": 1,
+			"custom_ghim_ton_kha_dung": 1,
+			"status": ["not in", ["Closed", "Completed", "Cancelled"]],
+			**(
+				{"name": ["not in", list(tru_don)]}
+				if isinstance(tru_don, (list, tuple, set))
+				else {"name": ["!=", tru_don]}
+				if tru_don
+				else {}
+			),
+		},
+		fields=["name", "custom_sales_person", "owner", "delivery_date"],
+	)
+	if not don:
+		return {}, []
+
+	# Anh Thắng chốt trong mockup bản 6: cột là *Người phụ trách*, KHÔNG hiện tên khách hàng.
+	# Người phụ trách lấy Nhân viên kinh doanh, chưa khai thì lấy người tạo đơn — để ô không bao
+	# giờ trống, người đọc còn biết hỏi ai.
+	ho_so = {
+		d["name"]: {
+			"nguoi": d.get("custom_sales_person") or d.get("owner") or "",
+			"ngay": d.get("delivery_date"),
+		}
+		for d in don
+	}
+
+	dong = frappe.get_all(
+		"Sales Order Item",
+		filters={"parent": ["in", list(ho_so)], "custom_so_luong_giu_cho": [">", 0]},
+		fields=["parent", "item_code", "custom_so_luong_giu_cho as giu"],
+	)
+
+	canh_bao = []
+	chi_tiet = {}
+
+	def them(ma, **kw):
+		chi_tiet.setdefault(ma, []).append(dict(kw))
+
+	dong = [d for d in dong if flt(d["giu"]) > 0]
+
+	# ── Chia thành phẩm có sẵn cho các đơn, rồi mới bóc phần còn phải làm (cách B) ──
+	#
+	# ⚠ Đường TỔNG (`ghim_boi_don_khac`) trừ tồn một lần ở mức tổng. Ở đây phải chia đúng lượng
+	#   tồn đó cho từng đơn, nếu không tổng của bảng chi tiết sẽ lệch con số đã trừ — và bảng
+	#   bung ra không khớp là người đọc mất lòng tin vào cả màn hình.
+	#
+	# Chia theo **ngày lấy hàng SỚM NHẤT trước**: đơn giao gần thì lấy hàng đang có, đơn giao xa
+	# thì còn kịp sản xuất. Đây là thứ tự tự nhiên của kho, không phải quy ước tuỳ tiện.
+	ton_tp = _ton_thuc_te({d["item_code"] for d in dong}, _kho_hop_le())
+	con_ton = {m: flt(sl) for m, sl in ton_tp.items()}
+	xep = sorted(dong, key=lambda d: (ho_so[d["parent"]]["ngay"] is None, ho_so[d["parent"]]["ngay"]))
+
+	for d in xep:
+		ten_don = d["parent"]
+		ma = d["item_code"]
+		giu = flt(d["giu"])
+		goc = ho_so[ten_don]
+
+		# Ghim TRỰC TIẾP vẫn là toàn bộ phần đơn kia giữ — cách B chỉ đổi phần lan xuống vật tư.
+		them(ma, don=ten_don, nguoi=goc["nguoi"], ngay=goc["ngay"], giu=giu,
+			tu_ma=None, tu_sl=None, dinh_muc=None)
+
+		lay_tu_kho = min(giu, max(0.0, con_ton.get(ma, 0.0)))
+		con_ton[ma] = con_ton.get(ma, 0.0) - lay_tu_kho
+		phai_lam = giu - lay_tu_kho
+		if phai_lam <= 0:
+			continue                       # đủ hàng sẵn, đơn này không giữ vật tư nào
+
+		# Bóc riêng TỪNG cặp (đơn × mặt hàng) để biết vật tư này bị đơn nào giữ, bóc ra từ mã
+		# nào. Bóc gộp như `ghim_boi_don_khac` thì tổng đúng nhưng mất hẳn đường truy về đơn.
+		la = boc_dinh_muc(_con_mot_cap({ma: phai_lam}, canh_bao), canh_bao=canh_bao)
+		for nvl, tong_nvl in la.items():
+			if flt(tong_nvl) <= 0:
+				continue
+			# `dinh_muc` là định mức HIỆU DỤNG qua nhiều tầng, không phải định mức một tầng:
+			# cây 3 tầng thì "6 × 2" nghĩa là 6 cái thành phẩm ăn hết 12 cái vật tư này.
+			# Mẫu số là `phai_lam` chứ không phải `giu`: phần lấy từ kho không ăn vật tư nào.
+			them(nvl, don=ten_don, nguoi=goc["nguoi"], ngay=goc["ngay"], giu=flt(tong_nvl),
+				tu_ma=ma, tu_sl=phai_lam, dinh_muc=flt(tong_nvl) / phai_lam)
+
+	# Đơn có ngày lấy hàng xa nhất lên trước: đó là đơn dễ thương lượng nhả hàng nhất, nên là
+	# thứ người bán cần nhìn đầu tiên (mockup bản 6).
+	for ma in chi_tiet:
+		chi_tiet[ma].sort(key=lambda r: (r["ngay"] is None, r["ngay"]), reverse=True)
+	return chi_tiet, canh_bao
 
 
 def _con_mot_cap(nhu_cau, canh_bao):
@@ -319,12 +522,40 @@ def _lay_don(sales_order=None, doc=None):
 
 
 def _ngay_hang_ve(ma_hang):
-	"""{mã: (ngày về sớm nhất, số lượng chưa nhận của ĐÚNG dòng đó)} — mục 8.2.
+	"""{mã: (ngày về sớm nhất, số lượng chưa nhận của ĐÚNG dòng đó, số ngày quá hạn)} — mục 8.2.
 
 	⚠ Số lượng phải lấy của **chính dòng đơn mua đã cho ra ngày**, không phải tổng mọi đơn mua.
 	  Khách hỏi 27/08 và anh Thắng xác nhận: *"lấy theo đơn mua sắm về nhất"*.
 	⚠ Không có dòng nào thoả thì trả None để nơi gọi ghi **"chưa có đơn mua"**. Cố ý không để
 	  trống: ô trống đọc như "về ngay", đúng kiểu sai im lặng mà cả tính năng này sinh ra để chặn.
+
+	## 🔴 Sửa 04/09 — bỏ `poi.schedule_date >= CURDATE()`
+
+	Điều kiện đó **vứt bỏ mọi đơn mua đã tới hẹn mà hàng chưa về**. Nó không phải "chỉ hiện đơn
+	gần nhất" — nó hiện đơn sớm nhất **trong số đơn còn hạn**, và giấu sạch phần quá hạn.
+
+	Đo trên site ngày 04/09, lượng bị giấu so với tổng đang trên đường về:
+
+	    NVL 3             giấu 7/9   (78%)   màn hình nói "về 2"
+	    NVL 2             giấu 3/8   (38%)   màn hình nói "về 5"
+	    Thành phẩm 1      giấu 6/6   (100%)  màn hình nói "CHƯA CÓ ĐƠN MUA"
+	    dịch vụ gia công  giấu 1/1   (100%)  màn hình nói "CHƯA CÓ ĐƠN MUA"
+
+	Hai dòng cuối là chỗ nặng nhất: câu dự phòng *"chưa có đơn mua"* — vốn được thêm vào để chống
+	sai im lặng — **trở thành một câu sai thẳng thừng**, vì đơn mua có thật, chỉ là đã trễ hẹn.
+
+	Đây là gốc thật của lời khách phản ánh 03/09 17:03 về `SO-26-00013`. Khách viết *"đơn mua gần
+	nhất chỉ 2 cái về vẫn chưa đủ, vậy là đang có đơn mua…"* — họ **biết** còn đơn khác; màn hình
+	mới là chỗ nói sai.
+
+	Chốt 27/08 của anh Thắng (*"lấy theo đơn mua sắm về nhất"*) **không hề loại đơn quá hạn** —
+	đơn quá hạn vẫn là đơn về sớm nhất. Nên đây là sửa lỗi, không phải đổi nghiệp vụ.
+
+	Đơn quá hạn còn là đơn **đáng chú ý nhất**: đó là đơn người lập kế hoạch phải đi giục. Giấu
+	nó đi là giấu đúng thứ cần hiện. Vì vậy trả thêm `tre` để giao diện ghi rõ "quá hạn N ngày".
+
+	⚠ Cột này **chỉ tính Đơn Mua Hàng đã duyệt**, không gồm Yêu Cầu Mặt Hàng — YCM chưa phải
+	  nguồn cung chắc chắn. Đã ghi vào tài liệu để không ai đọc nhầm cột này là "tất cả hàng sắp về".
 	"""
 	if not ma_hang:
 		return {}
@@ -337,16 +568,18 @@ def _ngay_hang_ve(ma_hang):
 		  and po.status not in ('Closed', 'Completed', 'Cancelled')
 		  and poi.item_code in %(ma)s
 		  and (poi.qty - poi.received_qty) > 0
-		  and poi.schedule_date >= CURDATE()
 		order by poi.item_code, poi.schedule_date
 		""",
 		{"ma": tuple(ma_hang)},
 		as_dict=True,
 	)
+	hom_nay = getdate()
 	ket = {}
 	for r in rows:
 		if r["item_code"] not in ket:      # đã order by schedule_date -> dòng đầu là sớm nhất
-			ket[r["item_code"]] = (r["schedule_date"], flt(r["con_lai"]))
+			ngay = getdate(r["schedule_date"]) if r["schedule_date"] else None
+			tre = (hom_nay - ngay).days if ngay and ngay < hom_nay else 0
+			ket[r["item_code"]] = (r["schedule_date"], flt(r["con_lai"]), tre)
 	return ket
 
 
@@ -536,24 +769,53 @@ def kiem_tra(sales_order=None, doc=None):
 	kho = _kho_hop_le(don.company)
 	nhu_cau = _gom_nhu_cau(don.get("items"))
 	ghim, canh_bao = ghim_boi_don_khac(tru_don=ten)
+	chi_tiet, cb_ct = ghim_chi_tiet(tru_don=ten)
+	canh_bao = list(canh_bao) + list(cb_ct)
 
 	# Một query Bin cho TẤT CẢ mã liên quan. Bóc định mức trước để biết đủ tập mã, rồi mới hỏi
 	# tồn một lần — hỏi trong vòng lặp là bẫy N+1 kinh điển.
+	# Bảng 1b / Bảng 2b — bung ra xem ĐƠN NÀO đang giữ. Mockup bản 6/7, anh Thắng hỏi lại 03/09.
+	lech_chi_tiet = []
+
+	def _chi_tiet(ma, da_tru):
+		ds = chi_tiet.get(ma) or []
+		if not ds:
+			return None
+		tong_ghim = sum(flt(r["giu"]) for r in ds)
+		# Lưới an toàn: bảng chi tiết và con số đã trừ đi hai đường tính khác nhau. Lệch thì
+		# nói ra, đừng để người đọc tự cộng tay rồi phát hiện.
+		if abs(tong_ghim - flt(ghim.get(ma, 0))) > 0.001:
+			lech_chi_tiet.append((ma, tong_ghim, flt(ghim.get(ma, 0))))
+		return {
+			"dong": ds[:5],                 # 5 đơn có ngày lấy hàng xa nhất
+			"con_lai": max(0, len(ds) - 5),
+			"tong_ghim": tong_ghim,
+			"da_tru": flt(da_tru),
+		}
+
 	thieu_b1 = {}
 	ton_b1 = _ton_thuc_te(set(nhu_cau) | set(ghim), kho)
+	# Mã mà đơn khác ghim nhiều hơn số đang có. Phải nói ra: sau khi kẹp, con số "Đơn khác giữ"
+	# trên màn hình lớn hơn phần thật sự bị trừ, và người test sẽ tưởng máy tính sai.
+	vuot_ton = []
 	bang1 = []
 	for ma, can in sorted(nhu_cau.items()):
 		ton = flt(ton_b1.get(ma, 0))
-		kha_dung = ton - flt(ghim.get(ma, 0))
+		kha_dung, ghim_hl, ghim_vuot = _kha_dung(ton, ghim.get(ma, 0))
 		thieu = max(0.0, can - kha_dung)
 		if thieu:
 			thieu_b1[ma] = thieu
+		if ghim_vuot:
+			vuot_ton.append((ma, flt(ghim.get(ma, 0)), ton, ghim_vuot))
 		bang1.append({
 			"ma": ma,
 			"can": can,
 			"ton_thuc_te": ton,
 			"ton_kha_dung": kha_dung,
 			"dang_ghim": flt(ghim.get(ma, 0)),
+			"ghim_hieu_luc": ghim_hl,
+			"ghim_vuot_ton": ghim_vuot,
+			"chi_tiet_ghim": _chi_tiet(ma, ghim_hl),
 			"thieu": thieu,
 		})
 
@@ -564,18 +826,46 @@ def kiem_tra(sales_order=None, doc=None):
 	bang2 = []
 	for ma, can in sorted(nvl.items()):
 		ton = flt(ton_b2.get(ma, 0))
-		kha_dung = ton - flt(ghim.get(ma, 0))
-		ngay, sl_ve = ve.get(ma, (None, None))
+		kha_dung, ghim_hl, ghim_vuot = _kha_dung(ton, ghim.get(ma, 0))
+		if ghim_vuot:
+			vuot_ton.append((ma, flt(ghim.get(ma, 0)), ton, ghim_vuot))
+		ngay, sl_ve, tre_ngay = ve.get(ma, (None, None, 0))
 		bang2.append({
 			"ma": ma,
 			"can": can,
 			"ton_thuc_te": ton,
 			"ton_kha_dung": kha_dung,
 			"dang_ghim": flt(ghim.get(ma, 0)),
+			"ghim_hieu_luc": ghim_hl,
+			"ghim_vuot_ton": ghim_vuot,
+			"chi_tiet_ghim": _chi_tiet(ma, ghim_hl),
 			"thieu": max(0.0, can - kha_dung),
 			"ngay_hang_ve": ngay,
 			"sl_ve": sl_ve,
+			"tre_ngay": tre_ngay,
 		})
+
+	# Cùng một mã có thể bị bóc định mức ở hai nhánh (nhánh ghim và nhánh Bảng 2) nên cảnh báo
+	# giống hệt nhau lặp lại. Người đọc thấy hai dòng y nguyên sẽ tưởng là hai lỗi khác nhau.
+	da_co = set()
+	gon = []
+	for c in canh_bao:
+		if c not in da_co:
+			da_co.add(c)
+			gon.append(c)
+	canh_bao = gon
+
+	for ma, tong_ct, tong_ghim in sorted(set(lech_chi_tiet)):
+		canh_bao.append(
+			f"{ma}: bảng chi tiết cộng ra {tong_ct:g} nhưng phần đang trừ là {tong_ghim:g} — "
+			f"báo đội kỹ thuật, đừng dựa vào bảng bung ra của mã này"
+		)
+
+	for ma, ghim_ma, ton_ma, vuot in sorted(set(vuot_ton)):
+		canh_bao.append(
+			f"{ma}: đơn khác đang ghim {ghim_ma:g} nhưng kho chỉ có {ton_ma:g} — chỉ trừ được {ton_ma:g}. "
+			f"Phần {vuot:g} còn lại KHÔNG cộng vào đơn này; cộng vào là hai đơn cùng mua một lượng hàng"
+		)
 
 	return {
 		"don": don.name,
@@ -587,61 +877,24 @@ def kiem_tra(sales_order=None, doc=None):
 	}
 
 
-def _da_co_nguoi_lo(ma_hang):
-	"""{mã: số lượng đã có người lo} = Yêu Cầu Mặt Hàng đang chờ + Đơn mua chưa về.
-
-	⚠ Không trừ phần này thì bấm nút hai lần là đặt mua hai lần. Đây là chỗ tôi đã hứa với anh
-	  Thắng 28/08: *"cần mua = đang thiếu − phiếu yêu cầu đang chờ − đơn mua chưa về"*.
-	"""
-	if not ma_hang:
-		return {}
-	ket = {}
-
-	# Yêu Cầu Mặt Hàng đã duyệt, phần chưa được đặt mua
-	for r in frappe.db.sql(
-		"""
-		select mri.item_code, sum(mri.stock_qty - mri.ordered_qty) as con
-		from `tabMaterial Request Item` mri
-		join `tabMaterial Request` mr on mr.name = mri.parent
-		where mr.docstatus = 1 and mr.material_request_type = 'Purchase'
-		  and mr.status not in ('Stopped', 'Cancelled')
-		  and mri.item_code in %(ma)s and (mri.stock_qty - mri.ordered_qty) > 0
-		group by mri.item_code
-		""",
-		{"ma": tuple(ma_hang)},
-		as_dict=True,
-	):
-		ket[r["item_code"]] = ket.get(r["item_code"], 0) + flt(r["con"])
-
-	# Đơn mua đã duyệt, phần chưa nhận — không lọc ngày ở đây: hàng về muộn vẫn là hàng đã đặt,
-	# đặt thêm là mua thừa. Khác với mục 8.2 (cột *Ngày hàng về*) vốn chỉ hiện ngày trong tương lai.
-	for r in frappe.db.sql(
-		"""
-		select poi.item_code, sum(poi.stock_qty - poi.received_qty) as con
-		from `tabPurchase Order Item` poi
-		join `tabPurchase Order` po on po.name = poi.parent
-		where po.docstatus = 1 and po.status not in ('Closed', 'Completed', 'Cancelled')
-		  and poi.item_code in %(ma)s and (poi.stock_qty - poi.received_qty) > 0
-		group by poi.item_code
-		""",
-		{"ma": tuple(ma_hang)},
-		as_dict=True,
-	):
-		ket[r["item_code"]] = ket.get(r["item_code"], 0) + flt(r["con"])
-
-	return ket
-
-
 def tinh_can_mua(sales_order):
 	"""{mã: số lượng cần mua} + cảnh báo. Dùng chung cho nút *Tạo Yêu Cầu Mặt Hàng*.
 
-	⚠ **KHÔNG cộng thẳng `thieu` của Bảng 1 với `thieu` của Bảng 2.** Hai bảng cùng trừ vào một
-	  lượng tồn: mã vừa bán trên đơn vừa là thành phần của mã khác sẽ được tồn "che" hai lần, ra
-	  số thiếu ÍT hơn thực tế. Ở đây gom **nhu cầu** theo mã trước, rồi mới trừ tồn MỘT LẦN.
+	🔒 **Anh Thắng chốt 03/09 16:51 — lấy THẲNG cột `Thiếu`, không trừ gì thêm:**
 
-	⚠ Chỉ lấy mặt hàng *Mua hàng* (hoặc trống — coi như Mua hàng), theo đúng mô tả PM-TASK-00140.
-	  Mặt hàng *Sản xuất/Gia công* trên đơn không vào phiếu: phần thiếu của chúng đã được bóc
-	  thành nguyên vật liệu ở Bảng 2 rồi, đưa cả hai vào là mua cả thành phẩm lẫn vật tư làm ra nó.
+	> *"em cứ cho tạo dựa theo số lượng ở cột thiếu em nhé, không cần phải tính trừ các đơn đã
+	> đặt mua đâu. Vì phần này anh đã thống nhất với khách là đơn nào thiếu bao nhiêu thì tự đặt
+	> yêu cầu mua bằng đó, rồi muốn xin người khác nhường ghim hay như nào thì tự xin sau"*
+
+	⚠ **Đây là ĐẢO NGƯỢC luật chốt ngày 28/08** (*"cần mua = đang thiếu − phiếu YCM đang chờ −
+	  đơn mua chưa về"*, PM-TASK-00140). Hàm `_da_co_nguoi_lo` dựng cho luật cũ đã bị gỡ.
+	  Hệ quả phải biết, anh Thắng đã cân nhắc và vẫn chọn: **bấm nút hai lần trên cùng một đơn
+	  sẽ ra hai phiếu cho cùng một phần thiếu.** Hệ thống không còn tự trừ phần đã có người lo;
+	  việc điều phối giữa các đơn là thoả thuận giữa người với nhau.
+
+	⚠ Chỉ lấy mặt hàng *Mua hàng* (hoặc trống — coi như Mua hàng). Mặt hàng *Sản xuất/Gia công*
+	  trên đơn không vào phiếu: phần thiếu của chúng đã được bóc thành nguyên vật liệu ở Bảng 2,
+	  đưa cả hai vào là mua cả thành phẩm lẫn vật tư làm ra nó.
 	"""
 	kq = kiem_tra(sales_order)
 	canh_bao = list(kq["canh_bao"])
@@ -655,37 +908,31 @@ def tinh_can_mua(sales_order):
 		)
 	}
 
-	nhu_cau = {}
+	can_mua = {}
+	o_b1 = set()
 	for d in kq["bang1"]:
 		if pp.get(d["ma"]) in ("Sản xuất", "Gia công"):
 			continue                                   # đã bóc thành NVL ở Bảng 2
-		nhu_cau[d["ma"]] = nhu_cau.get(d["ma"], 0) + flt(d["can"])
+		if flt(d["thieu"]) > 0:
+			can_mua[d["ma"]] = can_mua.get(d["ma"], 0) + flt(d["thieu"])
+			o_b1.add(d["ma"])
 	for d in kq["bang2"]:
-		nhu_cau[d["ma"]] = nhu_cau.get(d["ma"], 0) + flt(d["can"])
+		if flt(d["thieu"]) > 0:
+			can_mua[d["ma"]] = can_mua.get(d["ma"], 0) + flt(d["thieu"])
 
-	if not nhu_cau:
+	# Mã xuất hiện ở CẢ HAI bảng: vừa bán thẳng trên đơn, vừa là vật tư của mã khác. Hai dòng
+	# `Thiếu` của nó đều đã được cùng một lượng tồn che, nên cộng lại là đặt mua dôi ra đúng
+	# phần tồn đó. Luật mới của anh Thắng là cộng thẳng, nên chỗ này KHÔNG tự trừ — chỉ nói ra.
+	ca_hai = sorted(o_b1 & {d["ma"] for d in kq["bang2"] if flt(d["thieu"]) > 0})
+	if ca_hai:
+		canh_bao.append(
+			f"{', '.join(ca_hai)}: có ở cả Bảng 1 và Bảng 2 nên số cần mua là tổng hai dòng Thiếu — "
+			"phần tồn đang có đã được tính trừ ở cả hai, kiểm lại trước khi gửi phiếu"
+		)
+
+	if not can_mua:
 		return {}, canh_bao, kq
 
-	kho = _kho_hop_le(frappe.db.get_value("Sales Order", sales_order, "company"))
-	ton = _ton_thuc_te(set(nhu_cau), kho)
-	# ⚠ KHÔNG đặt tên `_`: module này đã import `_` là hàm dịch của Frappe. Gán đè lên nó thì
-	#   `_("...")` ở chỗ khác nổ `'list' object is not callable`.
-	ghim, _cb = ghim_boi_don_khac(tru_don=sales_order)
-	da_lo = _da_co_nguoi_lo(set(nhu_cau))
-
-	can_mua = {}
-	for ma, can in nhu_cau.items():
-		kha_dung = flt(ton.get(ma, 0)) - flt(ghim.get(ma, 0))
-		con_thieu = can - kha_dung - flt(da_lo.get(ma, 0))
-		if con_thieu > 0:
-			can_mua[ma] = con_thieu
-
-	bo_qua = sorted(set(nhu_cau) - set(can_mua))
-	if bo_qua:
-		canh_bao.append(
-			f"{len(bo_qua)} mã không đưa vào phiếu vì đã đủ tồn hoặc đã có phiếu/đơn mua lo: "
-			+ ", ".join(bo_qua[:8]) + ("…" if len(bo_qua) > 8 else "")
-		)
 	return can_mua, canh_bao, kq
 
 
@@ -711,8 +958,15 @@ def tao_yeu_cau_mua_hang(sales_order):
 		return {
 			"co_phieu": False,
 			"canh_bao": canh_bao,
-			"thong_bao": "Không có mặt hàng nào cần mua thêm — đơn này đủ tồn, "
-			"hoặc phần thiếu đã có phiếu yêu cầu / đơn mua lo rồi.",
+			# ⚠ Câu cũ còn vế *"hoặc phần thiếu đã có phiếu yêu cầu / đơn mua lo rồi"*. Từ
+			#   03/09 vế đó KHÔNG còn đúng: anh Thắng chốt lấy thẳng cột `Thiếu`, hệ thống
+			#   không trừ phần đã có người lo nữa (mục 6d của đầu bài). Để nguyên câu cũ là
+			#   nói dối người dùng — và chính câu đó đã làm khách hiểu nhầm hôm nay 17:03:
+			#   màn hình báo thiếu 21 mà nút lại bảo "đã có người lo", khách đi tìm đơn mua
+			#   nào phủ được 21 mà không thấy (thứ phủ nó là một Phiếu Yêu Cầu 60 cái đang
+			#   chờ, và phiếu yêu cầu thì không hiện ở bảng nào cả).
+			"thong_bao": "Không có mặt hàng nào cần mua thêm — mọi mặt hàng trên đơn "
+			"và vật tư bóc ra đều đủ tồn khả dụng.",
 		}
 
 	don = frappe.get_doc("Sales Order", sales_order)
@@ -809,8 +1063,11 @@ def tao_yeu_cau_mua_hang(sales_order):
 			"sales_order": don.name,
 		})
 
-	# Đã có phiếu nào cho chính đơn này chưa — chỉ CẢNH BÁO, không chặn: người dùng có thể cố ý
-	# tạo phiếu thứ hai cho phần mới phát sinh. Phần trùng đã bị trừ ở `_da_co_nguoi_lo`.
+	# Đã có phiếu nào cho chính đơn này chưa — chỉ CẢNH BÁO, không chặn.
+	#
+	# ⚠ Từ 03/09 cảnh báo này QUAN TRỌNG HƠN TRƯỚC. Anh Thắng chốt lấy thẳng cột `Thiếu`, nên
+	#   hệ thống KHÔNG còn tự trừ phần đã có phiếu/đơn mua lo. Bấm nút hai lần trên cùng một đơn
+	#   là ra hai phiếu cho cùng một phần thiếu, và chỉ dòng cảnh báo này nói cho người dùng biết.
 	phieu_cu = frappe.get_all(
 		"Material Request Item",
 		filters={"sales_order": don.name, "docstatus": ["<", 2]},

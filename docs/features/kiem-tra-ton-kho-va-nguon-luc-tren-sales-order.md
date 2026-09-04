@@ -364,6 +364,113 @@ gợi ý theo mục 8.3.
 **Dòng kết luận gộp** ở đầu popup: gom dòng thiếu của Bảng 2 theo *Nguồn nhu cầu*, cộng trạng
 thái nhân lực từ Bảng 3 → *"Đơn này vướng ở 3 khâu vật tư. Nhân lực đủ."*
 
+## 6b. Bảng 1b và Bảng 2b — bung ra xem ĐƠN NÀO đang giữ (làm 03/09)
+
+> 🔴 **Vì sao mục này sinh ra muộn — đọc trước khi sửa mockup lần sau.**
+> Hai bảng này đã có trong **mockup bản 6 (25/08)** và **bản 7**, nhưng **không ai kéo sang bản
+> đặc tả này**. Code đọc đặc tả nên bỏ sót cả hai; anh Thắng phát hiện thiếu ngày **03/09 16:30**,
+> tức 9 ngày sau khi chốt. Bài học ghi thẳng vào đây: **mockup đổi thì đặc tả phải đổi theo trong
+> cùng lượt**, vì mockup là thứ để chốt với khách, còn đặc tả mới là thứ để viết code.
+
+**Bảng 1b** bung ra từ **một dòng của Bảng 1** — cột *Đơn khác giữ* là chỗ bấm.
+**Bảng 2b** bung ra từ **một dòng của Bảng 2**, nút nằm ngay dưới mã vật tư (Bảng 2 không có cột
+*Đơn khác giữ* để đặt nút).
+
+| | Bảng 1b | Bảng 2b |
+|---|---|---|
+| Trả lời câu hỏi | ai đang giữ **chính mặt hàng này** | ai đang giữ **vật tư này**, qua định mức của thứ họ bán |
+| Cột | Mã đơn · Người phụ trách · Đang ghim · Ngày lấy hàng dự kiến | thêm **Bóc ra từ** — mã thành phẩm và định mức hiệu dụng |
+
+Ba luật đã chốt, **không** được đổi khi sửa code:
+
+1. **Không hiện tên khách hàng.** Chỉ *Người phụ trách* (Nhân viên kinh doanh, trống thì lấy người
+   tạo đơn). Anh Thắng chốt ở mockup bản 6.
+2. **Tối đa 5 đơn, ưu tiên ngày lấy hàng XA NHẤT** — đó là đơn dễ thương lượng nhả hàng nhất.
+   Còn dư thì ghi *"…và N đơn nữa"*, và **dòng Cộng vẫn tính đủ tất cả**, không chỉ 5 dòng hiện ra.
+3. **Dòng Cộng phải nói đúng phần ĐÃ TRỪ, không phải tổng ghim.** Hai số này lệch nhau khi đơn khác
+   ghim nhiều hơn số đang có trong kho — xem mục 6c. Lúc đó ghi rõ cả hai:
+   *"Cộng 9 — nhưng kho không đủ nên chỉ trừ 7 khỏi tồn khả dụng"*.
+
+⚠ Cột *Bóc ra từ* ghi **định mức hiệu dụng qua nhiều tầng**, không phải định mức một tầng: cây 3
+tầng thì *"3 × 3,00"* nghĩa là 3 cái thành phẩm ăn hết 9 cái vật tư này.
+
+⚠ Dữ liệu lấy bằng `frappe.get_all` nên **không áp User Permission** — người bị giới hạn phạm vi
+vẫn thấy mã đơn và người phụ trách của đơn họ không đọc được. Cố ý để khớp con số đã trừ (con số
+đó cũng tính trên toàn bộ đơn). **Đang chờ anh Thắng chốt** có cần giấu bớt không.
+
+## 6c. Tồn khả dụng KHÔNG được âm (sửa 03/09)
+
+> Anh Thắng bắt được **03/09 16:34**: *"tồn khả dụng sao âm được em nhỉ, như này thì nó dẫn đến
+> việc mua thừa"*.
+
+Luật: **không ai giữ chỗ được nhiều hơn số đang có trong kho.**
+
+```
+ghim_hiệu_lực = min(đơn_khác_ghim, max(0, tồn_thực_tế))
+tồn_khả_dụng  = tồn_thực_tế − ghim_hiệu_lực
+```
+
+Trước đó tính thẳng `tồn − ghim` nên ra số âm, rồi `thiếu = cần − tồn_khả_dụng` **cộng luôn phần
+âm vào đơn đang xem** → hai đơn cùng mua một lượng hàng. Đo trên `SO-26-00010`: `Bán thành phẩm 2`
+thiếu 173 thay vì 171.
+
+⚠ Phép tính này nằm ở **một hàm dùng chung `_kha_dung`** cho cả bốn chỗ: Bảng 1, Bảng 2,
+`tinh_can_mua` (số đi vào phiếu Yêu Cầu Mặt Hàng) và hook `chan_giu_cho_vuot_ton`. Trước đây bốn
+chỗ chép lại cùng một phép trừ — sửa ba chỗ quên một chỗ thì màn hình và phiếu lệch nhau mà không
+ai phát hiện.
+
+⚠ Tồn **âm thật** (Bin âm) thì giữ nguyên số âm, không kẹp về 0 — đó là tồn kho lệch thật, phải
+mua bù thật. Hiện `hkled.com` có 0 bản ghi Bin âm.
+
+### 🔒 Cách B — anh Thắng chốt 03/09 16:51
+
+> *"Chọn cách B em nhé."*
+
+Gốc rễ của chuyện ghim vượt tồn: phần ghim lan xuống vật tư giữ cả cho thành phẩm **đã có sẵn
+trong kho**. Ca thật: hai đơn ghim tổng 31 `Thành phẩm 1` trong khi kho có đúng 31 — không phải
+sản xuất cái nào, nhưng bản cũ vẫn giữ 31 bộ vật tư, mà `NVL 3` chỉ có 7.
+
+**Luật mới:** chỉ lan xuống vật tư cho phần **còn phải sản xuất**.
+
+```
+còn_phải_làm = max(0, tổng_ghim − tồn_thành_phẩm)
+vật_tư_bị_giữ = bóc_định_mức(còn_phải_làm)
+```
+
+⚠ Trừ tồn ở mức **TỔNG**, không trừ theo từng đơn — nhiều đơn cùng ghim một mã thì chúng chia
+nhau đúng một lượng tồn. Trừ từng đơn là mỗi đơn được "che" bởi cùng số hàng đó.
+
+⚠ Bảng 1b/2b phải **chia đúng lượng tồn đó cho từng đơn**, nếu không tổng bảng chi tiết lệch con
+số đã trừ. Thứ tự chia: **ngày lấy hàng SỚM NHẤT trước** — đơn giao gần lấy hàng đang có, đơn giao
+xa còn kịp sản xuất.
+
+📌 Phép kẹp ở trên (mục 6c) **vẫn giữ**: cách B làm ghim gián tiếp không còn vượt tồn, nhưng ghim
+**trực tiếp** vẫn có thể vượt nếu tồn tụt sau khi ghim (giao hàng, kiểm kê giảm). Kẹp là lưới an
+toàn, không phải bản vá tạm.
+
+## 6d. Nút Tạo Yêu Cầu Mặt Hàng — lấy thẳng cột Thiếu (đổi 03/09)
+
+> 🔒 **Anh Thắng chốt 03/09 16:51:** *"em cứ cho tạo dựa theo số lượng ở cột thiếu em nhé, không
+> cần phải tính trừ các đơn đã đặt mua đâu. Vì phần này anh đã thống nhất với khách là đơn nào
+> thiếu bao nhiêu thì tự đặt yêu cầu mua bằng đó, rồi muốn xin người khác nhường ghim hay như nào
+> thì tự xin sau"*
+
+**Đây là đảo ngược luật chốt 28/08** (`cần mua = đang thiếu − phiếu YCM đang chờ − đơn mua chưa
+về`, PM-TASK-00140). Hàm `_da_co_nguoi_lo` dựng cho luật cũ **đã gỡ khỏi code**.
+
+```
+cần_mua = Thiếu(Bảng 1, chỉ mã KHÔNG phải Sản xuất/Gia công) + Thiếu(Bảng 2)
+```
+
+⚠ **Hệ quả anh Thắng đã cân nhắc và vẫn chọn:** bấm nút hai lần trên cùng một đơn ra **hai phiếu
+cho cùng một phần thiếu**. Hệ thống không tự trừ nữa; điều phối giữa các đơn là thoả thuận giữa
+người với nhau. Chỗ duy nhất còn nhắc là dòng cảnh báo "đơn này đã có phiếu" trong
+`tao_yeu_cau_mua_hang` — **đừng gỡ nó đi**.
+
+⚠ Mã xuất hiện ở **cả hai bảng** (vừa bán thẳng, vừa là vật tư của mã khác) thì hai dòng `Thiếu`
+của nó đều đã được cùng một lượng tồn che, nên cộng lại là đặt mua dôi ra đúng phần tồn đó. Luật
+mới là cộng thẳng nên code **không tự trừ** — chỉ thêm một dòng cảnh báo nêu đích danh mã đó.
+
 ## 7. Danh sách đơn đang chiếm tồn (mục 7.2)
 
 Hiện khi tồn khả dụng không đủ. **"Chiếm tồn" = đơn đang tích *Ghim tồn khả dụng***.
@@ -824,6 +931,52 @@ Gộp trạng thái vật tư + nhân lực thành một câu (mục 6). Hai chi
 hệ thống tự dựng từ `date` + `start`/`end`. Gán thẳng `start_time` thì bị ghi đè, khoảng thời gian
 co về gần 0 và `Tổng theo lịch` ra `0,00015` phút. **Số vô lý là dấu hiệu dữ liệu thử sai, không
 phải công thức sai** — đừng sửa công thức cho khớp số vô lý.
+
+## 12e. 🔴 Bảng lưu phần ghim vật tư — BẤT BIẾN PHẢI GIỮ (viết TRƯỚC khi code)
+
+Anh Thắng chốt 04/09 11:04: **cần một bảng ghi lại số nguyên vật liệu đã ghim**. Mục này viết
+trước khi có dòng code nào, vì thay đổi này **đổi loại dữ liệu của cả tính năng** và loại lỗi
+đi kèm cũng đổi theo.
+
+### Vì sao nguy hơn mọi thứ đã làm
+
+Tới giờ mọi con số của tính năng đều **suy ra**: hỏi lại là tính lại từ đơn + định mức + tồn.
+Dữ liệu suy ra có một tính chất quý mà không ai để ý vì nó miễn phí — **nó tự dọn**. Đơn bị huỷ
+thì biến khỏi truy vấn; dòng hàng bị xoá thì không còn được cộng; định mức đổi thì lần sau ra số
+mới. Không cần ai nhớ đi dọn.
+
+**Bảng lưu thì không tự dọn.** Ghi vào rồi thì nó nằm đó tới khi có người xoá. Nên toàn bộ nhóm
+lỗi dưới đây **chưa từng tồn tại** trong tính năng này, và bộ 49 ca hiện có **không ca nào chạm
+tới** — vì trước đây chúng không thể xảy ra.
+
+### Bất biến — mỗi dòng là một ca test bắt buộc
+
+| # | Bất biến | Hỏng thì sao |
+|---|---|---|
+| 1 | Σ(ghim mọi đơn cho mã X) **≤ tồn thực tế** của X | Giữ nhiều hơn số đang có ➜ đúng con số âm anh Thắng bắt 03/09 16:34, quay lại bằng đường khác |
+| 2 | Tổng trong bảng **khớp** số `ghim_boi_don_khac` trừ ra | Màn hình và lớp chặn xuất kho nói hai chuyện khác nhau; lệch **im lặng**, không nổ lỗi |
+| 3 | Đơn **Huỷ / Đóng / Hoàn thành** ➜ phần ghim **biến khỏi bảng** | 🔴 **Nguy nhất.** Hàng bị một đơn đã chết giữ vĩnh viễn. Không ai phát hiện được bằng mắt vì màn hình chỉ hiện "đơn khác giữ" |
+| 4 | **Bỏ tích Ghim** ➜ nhả sạch | Người dùng bỏ ghim để nhường hàng, tưởng đã nhả, thực tế vẫn giữ |
+| 5 | **Xoá dòng hàng** khỏi đơn ➜ nhả phần vật tư của dòng đó | Vật tư mồ côi, không đơn nào dùng mà vẫn bị giữ |
+| 6 | **Sửa định mức / BOM** ➜ bảng phải nói rõ đang theo định mức nào | Ghim theo công thức cũ, sản xuất theo công thức mới ➜ thiếu vật tư mà bảng báo đủ |
+| 7 | **Huỷ rồi sửa lại đơn** (amend) ➜ bản mới kế thừa hay ghim lại từ đầu | Ghim nhân đôi: bản cũ chưa nhả, bản mới đã ghim. Cùng họ với `TC-EDGE-05` của Phần IV.1 |
+| 8 | Ghim lại **chỉ tăng hoặc giữ nguyên** (nếu anh Thắng chốt đường (i)) | Cam kết tự tụt vì một thao tác không liên quan |
+
+### Cách test phải khác trước
+
+Bảy trong tám dòng trên **không kiểm được bằng "gọi hàm, so kết quả"** — đó là cách toàn bộ 49 ca
+hiện nay đang làm. Chúng là **bất biến sau một CHUỖI thao tác**, nên phải test theo kịch bản:
+ghim ➜ đổi ➜ huỷ ➜ đo lại, rồi so với bất biến.
+
+➜ Mỗi lần chạy phải kèm một **phép kiểm tổng thể**: quét cả bảng, khẳng định 1 và 2 còn đúng.
+Rẻ, và nó bắt được cả những đường hỏng chưa ai nghĩ ra.
+
+### Chưa code được cho tới khi chốt xong Phần IV.2
+
+Bảng này **chính là chỗ** Phần IV.2 (Phân bổ hàng về) rót hàng vào — hai thứ là một thiết kế.
+Dựng bảng trước khi chốt 5 câu bên đó là dựng sai hình dạng rồi phải đập đi.
+
+---
 
 ## 12. Việc kế tiếp
 

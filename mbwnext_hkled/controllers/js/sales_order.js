@@ -136,7 +136,7 @@ function kep_giu_cho(frm, row) {
 		frappe.show_alert({
 			message: __("{0}: chỉ giữ chỗ được {1} — đã sửa lại giúp anh/chị.", [
 				row.item_code,
-				format_number(tran),
+				so(tran),
 			]),
 			indicator: "red",
 		});
@@ -223,8 +223,14 @@ function mo_kiem_tra(frm) {
 	});
 }
 
+// Số lượng cho người đọc. `format_number` trần cho ra 3 chữ số thập phân — "0,000" đọc như
+// số tiền, mà HKLED thì đếm cái đèn. Nhưng ép cứng 0 chữ số cũng sai: UOM Kg/m/Lít trên site
+// đều cho phép số lẻ, ép 0 là 2,5 hiện thành 3 — thay một câu khó đọc bằng một câu SAI.
+// Nên: nguyên thì bỏ hẳn phần thập phân, lẻ thì giữ nguyên phần lẻ, chỉ cắt số 0 thừa ở đuôi.
 function so(v) {
-	return format_number(flt(v), null, 0);
+	const n = flt(v);
+	if (Number.isInteger(n)) return format_number(n, null, 0);
+	return format_number(n, null, 3).replace(/0+$/, "").replace(/[.,]$/, "");
 }
 
 function o_thieu(v) {
@@ -235,18 +241,87 @@ function o_thieu(v) {
 		: `<span class="text-muted">0</span>`;
 }
 
+// Bảng 1b / Bảng 2b — bung ra xem ĐƠN NÀO đang giữ mã này.
+//
+// ⚠ Hai bảng này có trong mockup (1b bản 6, 2b bản 7) nhưng KHÔNG có trong bản đặc tả, nên
+//   vòng code đầu bỏ sót cả hai. Anh Thắng hỏi lại 03/09 16:30. Ghi lại đây để lần sau ai đọc
+//   file này cũng thấy: mockup đổi thì phải kéo sang đặc tả, code chỉ đọc đặc tả.
+//
+// ⚠ KHÔNG hiện tên khách hàng — anh Thắng chốt trong mockup bản 6. Chỉ người phụ trách.
+function nut_chi_tiet(ct, id, nhan) {
+	if (!ct || !ct.dong || !ct.dong.length) return nhan;
+	return `<button type="button" class="btn btn-link btn-xs hkled-ct"
+		data-mo="${id}" style="padding:0;text-decoration:underline">${nhan} <span class="hkled-mui">▸</span></button>`;
+}
+
+function hang_chi_tiet(ct, id, ma, la_gian_tiep) {
+	if (!ct || !ct.dong || !ct.dong.length) return "";
+	const co_boc = ct.dong.some((r) => r.tu_ma);
+	const cot = co_boc ? 5 : 4;
+	const rows = ct.dong
+		.map((r) => {
+			const boc = co_boc
+				? `<td>${
+						r.tu_ma
+							? `${frappe.utils.escape_html(r.tu_ma)} <span class="text-muted">· ${so(r.tu_sl)} × ${format_number(flt(r.dinh_muc), null, 2)}</span>`
+							: '<span class="text-muted">bán thẳng mã này</span>'
+				  }</td>`
+				: "";
+			return `<tr>
+				<td>${frappe.utils.escape_html(r.don)}</td>
+				<td>${frappe.utils.escape_html(r.nguoi || "—")}</td>
+				<td class="text-right">${so(r.giu)}</td>
+				${boc}
+				<td>${r.ngay ? frappe.datetime.str_to_user(r.ngay) : '<span class="text-muted">chưa có</span>'}</td>
+			</tr>`;
+		})
+		.join("");
+
+	// Dòng cộng phải nói đúng phần ĐÃ TRỪ, không phải tổng ghim. Hai số này lệch nhau khi đơn
+	// khác ghim nhiều hơn số đang có trong kho — đúng ca anh Thắng bắt được 03/09 16:34.
+	const lech = flt(ct.tong_ghim) - flt(ct.da_tru);
+	const cong = lech > 0.001
+		? `Cộng <b>${so(ct.tong_ghim)}</b> — nhưng kho không đủ nên chỉ trừ <b>${so(ct.da_tru)}</b> khỏi tồn khả dụng`
+		: `Cộng — đúng phần đã trừ khỏi tồn khả dụng: <b>${so(ct.da_tru)}</b>`;
+
+	const con_lai = ct.con_lai
+		? `<p class="text-muted small" style="margin:4px 0 0">…và ${ct.con_lai} đơn nữa không hiện ở đây; dòng Cộng đã tính đủ tất cả.</p>`
+		: "";
+
+	return `<tr class="hkled-ct-hang" id="${id}" style="display:none">
+		<td colspan="6" style="background:var(--fg-color, #fafafa)">
+			<div style="padding:4px 2px 2px">
+				<b>Bảng ${la_gian_tiep ? "2b" : "1b"} · Đơn đang ghim ${frappe.utils.escape_html(ma)}</b>
+				<span class="text-muted small"> · tối đa 5 đơn có ngày lấy hàng xa nhất · không hiện tên khách hàng</span>
+			</div>
+			<table class="table table-bordered small" style="margin-bottom:4px">
+				<thead><tr>
+					<th>Mã đơn</th><th>Người phụ trách</th><th class="text-right">Đang ghim</th>
+					${co_boc ? "<th>Bóc ra từ</th>" : ""}
+					<th>Ngày lấy hàng dự kiến</th>
+				</tr></thead>
+				<tbody>${rows}</tbody>
+				<tfoot><tr><td colspan="${cot}" class="text-muted small">${cong}</td></tr></tfoot>
+			</table>
+			${con_lai}
+		</td>
+	</tr>`;
+}
+
 function bang_1(dong) {
 	const rows = dong
-		.map(
-			(d) => `<tr>
+		.map((d, i) => {
+			const id = `hkled-ct-b1-${i}`;
+			const nhan = flt(d.dang_ghim) ? so(d.dang_ghim) + " đang ghim" : "—";
+			return `<tr>
 				<td>${frappe.utils.escape_html(d.ma)}</td>
 				<td class="text-right">${so(d.can)}</td>
 				<td class="text-right">${so(d.ton_thuc_te)}</td>
 				<td class="text-right">${so(d.ton_kha_dung)}</td>
-				<td class="text-right">${flt(d.dang_ghim) ? so(d.dang_ghim) + " đang ghim" : "—"}</td>
+				<td class="text-right">${nut_chi_tiet(d.chi_tiet_ghim, id, nhan)}</td>
 				<td class="text-right">${o_thieu(d.thieu)}</td>
-			</tr>`
-		)
+			</tr>${hang_chi_tiet(d.chi_tiet_ghim, id, d.ma, false)}`;
+		})
 		.join("");
 	return `<h5>Bảng 1 · Mặt hàng trên đơn</h5>
 		<p class="text-muted small">Cả hai cột tồn đều đã loại kho lỗi và kho trung chuyển.</p>
@@ -266,20 +341,34 @@ function bang_2(dong) {
 			<p class="text-muted">Không phải bóc định mức — mọi mặt hàng trên đơn đều đủ tồn.</p>`;
 	}
 	const rows = dong
-		.map((d) => {
+		.map((d, i) => {
 			// Ô trống ở cột ngày đọc như "về ngay". Ghi thẳng chữ, đừng để trống — đúng chỗ
 			// mục 8.2 của đầu bài đã dặn.
+			// ⚠ Đơn mua QUÁ HẠN phải hiện rõ, không lẫn vào đơn đúng hẹn. Trước 04/09 truy vấn
+			//   lọc `schedule_date >= CURDATE()` nên đơn trễ bị giấu sạch — có mã giấu 100% và
+			//   ô này ghi "chưa có đơn mua" trong khi đơn mua có thật. Đơn trễ chính là đơn
+			//   người lập kế hoạch phải đi giục, giấu nó là giấu đúng thứ cần hiện.
 			const ngay = d.ngay_hang_ve
 				? `${frappe.datetime.str_to_user(d.ngay_hang_ve)}<br><span class="text-muted small">về ${so(d.sl_ve)}</span>`
+					+ (d.tre_ngay > 0
+						? `<br><span class="text-danger small">quá hạn ${so(d.tre_ngay)} ngày</span>`
+						: '')
 				: '<span class="text-muted">chưa có đơn mua</span>';
+			// Bảng 2 không có cột "Đơn khác giữ" nên nút bung nằm ngay dưới mã vật tư —
+			// vẫn phải có, vì vật tư bị ghim GIÁN TIẾP là chỗ khó lần ra nhất.
+			const id = `hkled-ct-b2-${i}`;
+			const ct = d.chi_tiet_ghim;
+			const nut = ct && ct.dong && ct.dong.length
+				? `<br>${nut_chi_tiet(ct, id, so(ct.tong_ghim) + " đang ghim")}`
+				: "";
 			return `<tr>
-				<td>${frappe.utils.escape_html(d.ma)}</td>
+				<td>${frappe.utils.escape_html(d.ma)}${nut}</td>
 				<td class="text-right">${so(d.can)}</td>
 				<td class="text-right">${so(d.ton_thuc_te)}</td>
 				<td class="text-right">${so(d.ton_kha_dung)}</td>
 				<td class="text-right">${o_thieu(d.thieu)}</td>
 				<td>${ngay}</td>
-			</tr>`;
+			</tr>${hang_chi_tiet(ct, id, d.ma, true)}`;
 		})
 		.join("");
 	return `<h5>Bảng 2 · Cần mua sau khi bóc định mức</h5>
@@ -424,6 +513,17 @@ function ve_popup(frm, kq) {
 				Muốn đổi phần giữ chỗ thì sửa cột <b>Số Lượng Giữ Chỗ</b> ngay trên lưới hàng hoá.
 				Tính trên ${kq.so_kho_tinh_ton} kho.</p>`
 	);
+
+	// Bung/gập Bảng 1b · 2b. Gắn ủy quyền trên wrapper thay vì từng nút: nội dung được dựng
+	// bằng chuỗi HTML nên nút chưa tồn tại lúc gắn.
+	d.fields_dict.noi_dung.$wrapper.on("click", ".hkled-ct", function () {
+		const hang = document.getElementById($(this).data("mo"));
+		if (!hang) return;
+		const mo = hang.style.display === "none";
+		hang.style.display = mo ? "" : "none";
+		$(this).find(".hkled-mui").text(mo ? "▾" : "▸");
+	});
+
 	d.show();
 }
 

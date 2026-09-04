@@ -63,7 +63,13 @@ def chan_giu_cho_vuot_ton(doc, method=None):
 	if not dong:
 		return
 
-	from mbwnext_hkled.api.kiem_tra_ton_kho import _kho_hop_le, _ton_thuc_te, ghim_boi_don_khac
+	from mbwnext_hkled.api.kiem_tra_ton_kho import (
+		_kha_dung,
+		_kho_hop_le,
+		_so,
+		_ton_thuc_te,
+		ghim_boi_don_khac,
+	)
 
 	cu = {}
 	if not doc.is_new():
@@ -95,7 +101,15 @@ def chan_giu_cho_vuot_ton(doc, method=None):
 			da_dung[row.item_code] = da_dung.get(row.item_code, 0) + moi
 			continue
 
-		kha_dung = flt(ton.get(row.item_code, 0)) - flt(ghim_khac.get(row.item_code, 0))
+		# Dùng CHUNG `_kha_dung` với màn hình Kiểm Tra Tồn Kho — bốn chỗ trong tính năng này
+		# từng chép lại cùng một phép trừ, và lỗi anh Thắng bắt 03/09 16:34 là hậu quả trực tiếp.
+		#
+		# 📌 Nói cho đúng: riêng chỗ NÀY hành vi không đổi. `kha_dung` âm rồi cũng bị `max(0, …)`
+		#    che ở cả ngưỡng chặn lẫn câu thông báo, nên trước hay sau đều ra "tối đa 0" — mà 0
+		#    là đúng, vì hàng trong kho đã có đơn khác giữ hết. Đổi ở đây là để **không còn công
+		#    thức thứ tư**: lần sau ai sửa luật giữ chỗ chỉ phải sửa một hàm, không phải đi tìm
+		#    xem còn sót chỗ nào chép lại.
+		kha_dung, _hl, _vuot = _kha_dung(ton.get(row.item_code, 0), ghim_khac.get(row.item_code, 0))
 		con_lai = kha_dung - da_dung.get(row.item_code, 0)
 		tran = min(flt(row.qty), con_lai)
 
@@ -107,10 +121,10 @@ def chan_giu_cho_vuot_ton(doc, method=None):
 				).format(
 					row.idx,
 					row.item_code,
-					frappe.format_value(max(0.0, tran), {"fieldtype": "Float"}),
-					frappe.format_value(moi, {"fieldtype": "Float"}),
-					frappe.format_value(max(0.0, con_lai), {"fieldtype": "Float"}),
-					frappe.format_value(flt(row.qty), {"fieldtype": "Float"}),
+					_so(max(0.0, tran)),
+					_so(moi),
+					_so(max(0.0, con_lai)),
+					_so(flt(row.qty)),
 				),
 				title=_("Giữ chỗ vượt tồn khả dụng"),
 			)

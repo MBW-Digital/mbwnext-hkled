@@ -413,10 +413,13 @@ theo phần mình vừa khảo sát.
 **Hết câu chặn nghiệp vụ.** Toàn bộ câu hỏi đã có đáp ngày 25/08.
 
 1. ~~Anh Thắng trả lời 2 câu ở §5~~ · ~~4 câu về cách sinh BOM~~ · ~~độ phủ template~~ — **xong 25/08**.
-2. **Mockup bản 2** theo 3 chốt về chữ ở §5b — xong, chờ Thắng duyệt.
-3. Còn chặn về **hạ tầng**, không phải nghiệp vụ: `enable_stock_reservation` đang bật trên
-   `hkled.com` từ đợt thử nghiệm 25/08, chưa tắt. Không tắt thì hai sổ giữ chỗ chạy song song và
-   mọi số đo đều nhiễu — xem §1.3 và §2 của `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`.
+2. ~~**Mockup bản 2** theo 3 chốt về chữ ở §5b — chờ Thắng duyệt~~ — **anh Thắng đã duyệt
+   03/09 15:40** (báo qua Tuấn, ô `mockup_approved` đã tick), và xác nhận lại đủ 4 điểm lúc
+   15:41. Phần chặn code xong 15:46, tính năng đã sang *Chờ test* lúc 17:14.
+3. ~~Còn chặn về **hạ tầng**: `enable_stock_reservation` đang bật trên `hkled.com` từ đợt thử
+   nghiệm 25/08~~ — **đã tắt, kiểm lại 04/09**: `enable_stock_reservation` = 0, và bản ghi
+   `MAT-SRE-2026-00001` (26 cái `Thành phẩm 1`) nay ở trạng thái **Đã huỷ** (`docstatus` 2) nên
+   không cộng vào `Bin.reserved_stock` nữa. Hết chuyện hai sổ giữ chỗ chạy song song.
 4. Thứ tự code: **engine trước** (thuộc tính năng này), rồi hiển thị của Phần IV, rồi chặn xuất.
    Xem `ghim-ton-kha-dung-toan-canh.md`.
 5. Test case bắt buộc:
@@ -469,6 +472,33 @@ có nó thì đơn ghim 3 cái sẽ **tự chặn chính phiếu xuất của m�
 
 Lấy từ `against_sales_order` / `sales_order` trên dòng chứng từ. `ghim_boi_don_khac()` được mở
 rộng để nhận **danh sách** tên đơn, không chỉ một.
+
+#### 🔴 Sửa 04/09 — bản đầu chỉ đọc bảng con nên miễn trừ KHÔNG BAO GIỜ chạy trên Chứng từ kho nội bộ
+
+Quét meta cả 8 chứng từ mới thấy: **chỉ 4 bảng con** có cột trỏ về Đơn Bán —
+`Delivery Note Item.against_sales_order`, `Sales Invoice Item.sales_order`,
+`Purchase Receipt Item.sales_order`, `Material Request Item.sales_order`.
+
+**Chứng từ kho nội bộ không có cột nào ở bảng con.** Nó nối về Đơn Bán qua **đầu phiếu**:
+`Stock Entry.work_order` ➜ `Work Order.sales_order`. Thiếu nhánh này thì `_don_duoc_mien` trả
+**tập rỗng cho mọi Chứng từ kho nội bộ** — không phải sót một ca hiếm mà là không bao giờ miễn
+trừ được cái nào. Nghiệp vụ đảo ngược hẳn: ghim là để **đảm bảo** vật tư cho đơn, rồi chính nó
+chặn đơn đó lấy vật tư ra làm. Đúng cái "khoá cửa từ bên trong" mục này cảnh báo.
+
+Site đang có **13 Lệnh sản xuất sinh từ Đơn Bán** và **15 Chứng từ kho nội bộ** trỏ về Lệnh sản
+xuất, nên đây là đường rút tồn *chính*, không phải ngõ hẹp. Xem `TC-EDGE-15`.
+
+Cùng gốc, một chỗ nữa: `canh_bao_yeu_cau_mat_hang` gọi `ghim_boi_don_khac()` **không truyền
+`tru_don`**, dù `Material Request Item` có sẵn cột `sales_order` — cảnh báo nổ oan trên phiếu
+của chính đơn đã ghim. Xem `TC-EDGE-16`.
+
+#### ⚠ Bốn chứng từ KHÔNG miễn trừ được — hạn chế đã biết, không phải việc chưa làm
+
+`Purchase Invoice` · `Stock Reconciliation` · `Subcontracting Receipt` · `Asset Capitalization`
+— quét meta không có đường nào về Đơn Bán, kể cả gián tiếp qua Lệnh sản xuất. Với chúng, nếu
+chứng từ thực hiện chính đơn đang ghim thì **vẫn bị chặn oan**, và bằng dữ liệu hiện có thì
+không phân biệt được. Muốn xử lý phải thêm trường liên kết — cần anh Thắng chốt có đáng không.
+Ba trong bốn chứng từ này hiếm dùng ở HKLED; `Stock Reconciliation` (kiểm kê) thì đáng hỏi.
 
 ### Câu chặn không nêu tên đơn
 
