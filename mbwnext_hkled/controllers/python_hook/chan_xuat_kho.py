@@ -174,8 +174,12 @@ def _don_duoc_mien(doc):
 	    Delivery Note Item.against_sales_order · Sales Invoice Item.sales_order
 	    Purchase Receipt Item.sales_order      · Material Request Item.sales_order
 
-	**Chứng từ kho nội bộ thì không có cột nào** — nó nối về Đơn Bán qua **đầu phiếu**:
-	`Stock Entry.work_order` ➜ `Work Order.sales_order`. Thiếu nhánh này thì hàm trả về **tập
+	**Chứng từ kho nội bộ thì không có cột nào** — nó nối về Đơn Bán qua **đầu phiếu**, và có
+	**HAI chặng**, không phải một:
+
+	    Stock Entry.work_order ➜ Work Order.sales_order                        (13/33 lệnh)
+	    Stock Entry.work_order ➜ Work Order.production_plan
+	                           ➜ Production Plan Sales Order.sales_order        (thêm 3/33) Thiếu nhánh này thì hàm trả về **tập
 	rỗng cho MỌI chứng từ kho nội bộ** — không phải sót một ca hiếm, mà là **không bao giờ miễn
 	trừ được cái nào**.
 
@@ -202,9 +206,24 @@ def _don_duoc_mien(doc):
 	# Đường thứ hai: đầu phiếu ➜ Lệnh sản xuất ➜ Đơn Bán (Chứng từ kho nội bộ, Yêu Cầu Mặt Hàng).
 	lsx = doc.get("work_order")
 	if lsx:
-		don_lsx = frappe.db.get_value("Work Order", lsx, "sales_order")
-		if don_lsx:
-			don.add(don_lsx)
+		truc, ke_hoach = frappe.db.get_value("Work Order", lsx, ["sales_order", "production_plan"]) or (None, None)
+		if truc:
+			don.add(truc)
+		elif ke_hoach:
+			# ⚠ Chặng thứ hai — KHÔNG bỏ được. Anh Thắng mô tả 04/09 16:35: hàng làm cho đơn thì
+			#   bên khách tạo **Kế hoạch sản xuất từ Đơn Bán**, rồi mới tạo Lệnh sản xuất từ kế
+			#   hoạch. Lệnh sinh theo đường đó **không phải lúc nào cũng** mang sẵn `sales_order`.
+			#   Đo 04/09 trên 33 lệnh đang mở: 13 có sẵn ô Đơn Bán · **3 chỉ tra được qua kế
+			#   hoạch** · 17 không có đường nào (đó là sản xuất để tồn kho, không cần miễn trừ).
+			#   Bỏ chặng này là 3 lệnh kia bị chặn oan khi lấy chính vật tư đơn của mình đã ghim.
+			don.update(
+				r["sales_order"]
+				for r in frappe.get_all(
+					"Production Plan Sales Order",
+					filters={"parent": ke_hoach, "sales_order": ["is", "set"]},
+					fields=["sales_order"],
+				)
+			)
 
 	return don
 
