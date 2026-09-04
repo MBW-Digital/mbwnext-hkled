@@ -24,7 +24,10 @@
 ## 2. Việc phải làm rút xuống còn ĐÚNG MỘT CỘT
 
 Lõi ERPNext **đã có sẵn đúng cái bảng này**: `Item.item_defaults` (bảng con `Item Default`), tên
-hiển thị **Mặc định của mặt hàng**, nằm trong tab *Tồn kho* của mỗi mặt hàng.
+hiển thị **Mặc định của mặt hàng**, nằm trong tab **Kế toán** (*Accounting*) của mỗi mặt hàng.
+
+> ⚠ **Sửa 04/09:** bản đầu ghi *"tab Tồn kho"* — **sai**. Kiểm bằng meta: `item_defaults` nằm
+> dưới `Tab Break` mang nhãn `Accounting`. Người test đi theo bản cũ sẽ không tìm thấy bảng.
 
 | Anh Thắng cần | Lõi đã có? |
 |---|---|
@@ -90,13 +93,17 @@ là cột DDL lỡ nằm lại trên 8012 lúc 10:28). Ghi ra đây để ngư�
 	gõ 500, bấm Lưu, mở lại đơn  →  vẫn là 500          ✅
 	dọn về 0                      →  0                   ✅
 
-⚠ **Lưới đang ĐÚNG SÁT TRẦN: tổng độ rộng = 11/11.**
+⚠ **Lưới đang ở 9/11 — còn thêm được ĐÚNG MỘT cột.**
 
-	khởi điểm 1 + Công ty 3 + Kho mặc định 3 + cột mới 2 + Bảng giá 2  =  11
+	khởi điểm 1 + Công ty 2 + Kho mặc định 2 + cột mới 2 + Bảng giá 2  =  9
 
-`grid.js::setup_visible_columns` bỏ cột khi tổng **> 11**, nên 11 vẫn lọt. Nhưng **thêm bất kỳ cột
-nào nữa vào bảng này là một cột bị bỏ ÂM THẦM** — không lỗi, không cảnh báo, chỉ là mất khỏi màn
-hình. Ai thêm cột sau đọc dòng này trước.
+> ⚠ **Sửa 04/09:** bản đầu ghi *"sát trần 11/11"*, tính Link rộng 3. **Sai.**
+> `grid.js::update_default_colsize` chỉ cho **Small Text = 3, Check = 1, còn lại = 2** — Link cũng
+> là 2. Đã đo lại theo đúng luật đó: tổng là **9**.
+
+`setup_visible_columns` bỏ cột khi tổng **> 11** (`return false`, không lỗi, không cảnh báo). Nên
+thêm **một** cột rộng 2 nữa vẫn lọt (9+2 = 11); **cột thứ hai mới là cột bị bỏ ÂM THẦM**. Ai thêm
+cột sau đọc dòng này trước — và đừng tin con số cũ.
 
 ### Số âm — hai lớp đều chặn, nhưng tôi suýt kết luận sai
 
@@ -119,10 +126,12 @@ lớp máy chủ có chạy hay không** — phải đẩy dữ liệu bằng đ
   khớp cách khách nghĩ, nhưng cần khách chốt bảng ánh xạ nhóm → kho.
 - **Khai tay** — chỉ khả thi nếu khách chỉ cần vài trăm mặt hàng quan trọng.
 
-**c) Chưa ai dùng cột tồn tối thiểu.** Đầu bài của anh Thắng nói *"sau này sẽ áp dụng cho..."* — nên
-tính năng này chỉ dựng **chỗ khai**. Bên tiêu thụ là Phần V và tính năng ghi nhận hàng lỗi (chưa có).
+**c) ~~Chưa ai dùng cột tồn tối thiểu.~~ ✅ Sửa 04/09 — Phần V ĐÃ dùng rồi.**
+`api/nhu_cau_vat_tu.py:134` đọc `custom_ton_kho_kha_dung_toi_thieu as toi_thieu`, lọc đúng theo
+`company`. Nên cột này **đã có bên tiêu thụ thật**, không còn là chỗ khai để dành. Tính năng ghi
+nhận hàng lỗi thì vẫn chưa có.
 
-**d) ✅ Fixtures đã nạp.** `export-fixtures` chạy xong: 31 → **35 trường**. Ngoài trường mới, nó gom
+**d) ✅ Fixtures đã nạp.** `export-fixtures` chạy xong: 31 → **34 trường** (đếm lại 04/09; bản đầu ghi 35 là đếm thừa 1). Ngoài trường mới, nó gom
 được luôn **3 trường trước đó bị sót khỏi fixtures** — `Sales Order.custom_ghim_ton_kha_dung`,
 `Sales Order Item.custom_so_luong_giu_cho` (PM-FEAT-00023) và `Item.custom_ton_kho_toi_thieu`. Ba
 trường đó trước nay chỉ được tạo bằng patch; site mới cài app vẫn có (patch chạy), nhưng thiếu
