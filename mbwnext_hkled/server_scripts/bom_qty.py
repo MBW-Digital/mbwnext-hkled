@@ -560,12 +560,87 @@ def resolve_formula_group(item_template):
 			return group
 	return None
 
+def tinh_mot_thanh_phan(component_name, attrs, rule_group, item_code, item_template,
+		bom_template_name):
+	"""Tính {item?, qty, ...} cho MỘT thành phần. Tách ra khỏi thân module để gọi được nhiều lần.
+
+	Trước đây khối này nằm thẳng ở cấp module, nên mỗi thành phần phải gọi Server Script một lần
+	— mà `safe_exec` của Frappe BIÊN DỊCH LẠI cả script ~500 dòng ở mỗi lần gọi. Đo bằng cProfile
+	trên 60 mặt hàng: 2,6 s ở `compile` + 10,4 s đi cây AST trên tổng 17,9 s.
+	"""
+	result = {}
+
+	component_type = frappe.db.get_value("BOM Component Table",
+		{"parent": bom_template_name, "bom_component": component_name}, "component_type")
+
+	# "Theo Rule" -> NVL do rule quyết định. Áp dụng cho MỌI thành phần Theo Rule chứ không
+	# riêng "Nguồn" như bản cũ (spec §8). Số lượng vẫn do COMPONENT_MAP tính như thường.
+	if component_type == "Theo Rule":
+		matched = find_rule_item(bom_template_name, component_name, attrs)
+		if not matched:
+			frappe.throw(
+				f"Chưa thiết lập NVL cho thành phần {component_name} với biến thể {item_code}."
+				f" Thêm rule phủ biến thể này trong BOM Template {bom_template_name}.")
+
+		# Khách khai "Không sử dụng" cho tổ hợp này -> số lượng 0, và BỎ QUA khối tính bên dưới.
+		# `resolve_components` đã có sẵn nhánh bỏ dòng khi qty <= 0 nên dòng tự rụng khỏi BOM.
+		# Phải chặn TRƯỚC khối tính số lượng: chạy tiếp thì công thức của thành phần đó vẫn ra
+		# số dương và dòng lại chui vào BOM.
+		# Thân Server Script chạy ở CẤP MODULE, không phải trong hàm — không dùng `return` được
+		# (SyntaxError), nên thoát sớm bằng cờ.
+		khong_dung = 1 if matched.khong_su_dung else 0
+		if not khong_dung:
+			result["item"] = matched.item
+	else:
+		khong_dung = 0
+
+	if khong_dung:
+		qty = 0
+		result["khong_su_dung"] = 1
+	elif component_name == "Nguồn":
+		if rule_group in MODULE_GROUPS:
+			qty = calc_nguon_qty_module_group(attrs, rule_group)
+		elif rule_group in CHIP_GROUPS:
+			qty = calc_nguon_qty_chip_group(attrs, rule_group)
+		else:
+			frappe.throw(
+				f"Bộ công thức {rule_group} (suy từ mặt hàng cha {item_template})"
+				f" chưa được xếp vào MODULE_GROUPS hay CHIP_GROUPS")
+	else:
+		fn = COMPONENT_MAP.get(component_name)
+		if fn:
+			qty = fn(attrs, rule_group)
+		elif component_type == "Theo Rule":
+			# Thành phần Theo Rule chỉ đổi NVL theo biến thể, số lượng không theo công thức
+			# (VD Bộ vỏ đèn). Lấy số lượng khai ngay trên dòng thành phần.
+			qty = frappe.utils.flt(frappe.db.get_value("BOM Component Table",
+				{"parent": bom_template_name, "bom_component": component_name}, "qty"))
+			if qty <= 0:
+				# Chưa khai Số Lượng thì tạm tính 1 để người dùng không bị chặn giữa chừng,
+				# NHƯNG đánh dấu lại để báo lên giao diện. Không im lặng: số lượng đoán mà
+				# không ai biết thì BOM sai âm thầm.
+				qty = 1
+				result["qty_defaulted"] = 1
+		else:
+			frappe.throw(f"Chưa có công thức cho thành phần: {component_name}")
+
+	result["qty"] = round_qty(qty)
+	return result
+
+
 item_code = frappe.form_dict.get("item_code")
 component_name = frappe.form_dict.get("component_name")
+# Chế độ LÔ: cả danh sách thành phần của cùng một biến thể trong MỘT lần gọi. Giữ luôn tham số
+# `component_name` cũ để đường gọi lẻ (HTTP, code cũ) không phải sửa gì.
+component_names = frappe.form_dict.get("component_names")
 item_template = frappe.form_dict.get("item_template")
 bom_template_name = frappe.form_dict.get("bom_template")  # cần khi component = Nguồn
 
-if not (item_code and component_name and item_template):
+danh_sach = json.loads(component_names) if component_names else []
+if component_name and component_name not in danh_sach:
+	danh_sach.append(component_name)
+
+if not (item_code and danh_sach and item_template):
 	frappe.throw("Thiếu tham số item_code / component_name / item_template")
 
 rule_group = resolve_formula_group(item_template)
@@ -575,13 +650,15 @@ if not rule_group:
 		f" Khai thêm vào FORMULA_GROUP_BY_TEMPLATE trong Server Script"
 		f" hkled_resolve_bom_qty, hoặc xác nhận với HKLED công thức áp dụng cho mã này.")
 
+# Ba việc dưới đây phụ thuộc BIẾN THỂ chứ không phụ thuộc thành phần, nên làm MỘT lần cho cả lô
+# thay vì lặp lại ở từng thành phần như bản cũ.
 attrs = get_variant_attrs(item_code)
 
 # Chặn tính sai âm thầm: thiếu đặc tính Công suất thì mọi công thức đều ra số vô nghĩa.
 if not attrs.get("Công suất"):
 	frappe.throw(
 		f"Mặt hàng {item_code} chưa khai báo đặc tính Công suất"
-		f" — không thể tính số lượng {component_name}")
+		f" — không thể tính số lượng {danh_sach[0]}")
 
 power_value = frappe.utils.flt(attrs.get("Công suất"))
 
@@ -591,67 +668,16 @@ if rule_group == "P01_P03" and power_value > 50 and not attrs.get("Kiểu lắp"
 		f"Mặt hàng {item_code} ({power_value}W) chưa khai báo đặc tính Kiểu lắp"
 		f" — nhóm P01_P03 cần Dọc/Ngang")
 
-result = {}
-
-component_type = frappe.db.get_value("BOM Component Table",
-	{"parent": bom_template_name, "bom_component": component_name}, "component_type")
-
-# "Theo Rule" -> NVL do rule quyết định. Áp dụng cho MỌI thành phần Theo Rule chứ không
-# riêng "Nguồn" như bản cũ (spec §8). Số lượng vẫn do COMPONENT_MAP tính như thường.
-if component_type == "Theo Rule":
-	matched = find_rule_item(bom_template_name, component_name, attrs)
-	if not matched:
-		frappe.throw(
-			f"Chưa thiết lập NVL cho thành phần {component_name} với biến thể {item_code}."
-			f" Thêm rule phủ biến thể này trong BOM Template {bom_template_name}.")
-
-	# Khách khai "Không sử dụng" cho tổ hợp này -> số lượng 0, và BỎ QUA khối tính bên dưới.
-	# `resolve_components` đã có sẵn nhánh bỏ dòng khi qty <= 0 nên dòng tự rụng khỏi BOM.
-	# Phải chặn TRƯỚC khối tính số lượng: chạy tiếp thì công thức của thành phần đó vẫn ra
-	# số dương và dòng lại chui vào BOM.
-	# Thân Server Script chạy ở CẤP MODULE, không phải trong hàm — không dùng `return` được
-	# (SyntaxError), nên thoát sớm bằng cờ.
-	khong_dung = 1 if matched.khong_su_dung else 0
-	if not khong_dung:
-		result["item"] = matched.item
-else:
-	khong_dung = 0
-
-if khong_dung:
-	qty = 0
-	result["khong_su_dung"] = 1
-elif component_name == "Nguồn":
-	if rule_group in MODULE_GROUPS:
-		qty = calc_nguon_qty_module_group(attrs, rule_group)
-	elif rule_group in CHIP_GROUPS:
-		qty = calc_nguon_qty_chip_group(attrs, rule_group)
-	else:
-		frappe.throw(
-			f"Bộ công thức {rule_group} (suy từ mặt hàng cha {item_template})"
-			f" chưa được xếp vào MODULE_GROUPS hay CHIP_GROUPS")
-else:
-	fn = COMPONENT_MAP.get(component_name)
-	if fn:
-		qty = fn(attrs, rule_group)
-	elif component_type == "Theo Rule":
-		# Thành phần Theo Rule chỉ đổi NVL theo biến thể, số lượng không theo công thức
-		# (VD Bộ vỏ đèn). Lấy số lượng khai ngay trên dòng thành phần.
-		qty = frappe.utils.flt(frappe.db.get_value("BOM Component Table",
-			{"parent": bom_template_name, "bom_component": component_name}, "qty"))
-		if qty <= 0:
-			# Chưa khai Số Lượng thì tạm tính 1 để người dùng không bị chặn giữa chừng,
-			# NHƯNG đánh dấu lại để báo lên giao diện. Không im lặng: số lượng đoán mà
-			# không ai biết thì BOM sai âm thầm.
-			qty = 1
-			result["qty_defaulted"] = 1
-	else:
-		frappe.throw(f"Chưa có công thức cho thành phần: {component_name}")
-
-result["qty"] = round_qty(qty)
+ket_qua_lo = {}
+for ten_thanh_phan in danh_sach:
+	ket_qua_lo[ten_thanh_phan] = tinh_mot_thanh_phan(
+		ten_thanh_phan, attrs, rule_group, item_code, item_template, bom_template_name)
 
 # Trả kết quả qua frappe.flags — dùng được cho CẢ 2 đường gọi:
 #   HTTP  /api/method/hkled_resolve_bom_qty  (handler trả flags khi flags khác {})
 #   Python frappe.utils.safe_exec.run_script("hkled_resolve_bom_qty", ...)
 # Không dùng frappe.response: biến này không luôn có trong sandbox (background job, console).
-frappe.flags.result = result
+frappe.flags.results = ket_qua_lo
+if component_name:
+	frappe.flags.result = ket_qua_lo[component_name]
 '''
