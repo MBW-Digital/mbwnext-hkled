@@ -30,6 +30,27 @@ Mockup đã duyệt: bản 7 (Bảng 1b bản 6, Bảng 2b bản 7)
 > nữa là dòng nhắc trong bảng *"Hạn chế đã biết"* cuối file. Đếm máy móc theo dòng bắt đầu bằng
 > `| TC-` nên cộng cả dòng nhắc. Số ca thật là **43**; số Pass (40) và số ca còn treo (3) **không đổi**.
 
+> ## 🔴 ĐỌC TRƯỚC KHI CHẠY LẠI BỘ NÀY — nền test đã đổi lúc 04/09 14:01
+>
+> Ô **Thời Gian Bắt Đầu** (`Sales Order.custom_start_time`) đã thành **bắt buộc** trên cổng 8012
+> (phiên `cozy-dev-0c` chạy `sync_fixtures`, theo chốt của anh Thắng 03/09 15:59).
+>
+> **Hệ quả:** mọi ca **lưu lại** một Đơn Bán cũ sẽ chết ở `_validate_mandatory`, **không phải ở
+> logic ghim**. Đây là chỗ dễ đọc nhầm thành hồi quy của Phần IV nhất — thấy đơn không lưu được
+> thì kiểm ô này trước khi nghi bản vá.
+>
+> Đo lúc **14:03**, sáu đơn mà bộ test này tham chiếu đều **không lưu lại được**:
+> `SO-26-00013` · `SO-26-00014` · `SO-26-00015` · `SO-26-00016` · `SO-26-00022` · `SO-26-00024`.
+> Điền ô *Thời Gian Bắt Đầu* là chạy lại được ngay.
+>
+> **Ca bị ảnh hưởng:** `TC-VALID-01a`, `TC-VALID-01b`, `TC-REGR-03`, `TC-REGR-04`.
+> **Ca KHÔNG ảnh hưởng:** mọi ca dựng chứng từ bằng `frappe.new_doc` rồi gọi thẳng hàm — `reqd`
+> chỉ nổ lúc `save()`. Đã kiểm lại sau khi áp: `ghim_boi_don_khac`, Bảng 2 và Bảng 3 ra **y hệt**
+> số cũ, lớp chặn xuất kho vẫn chặn đúng.
+>
+> Lùi lại được sạch nếu cần: bỏ tích *"là Trường bắt buộc"* trên Custom Field
+> `Sales Order-custom_start_time`. Không có DDL, không đụng dữ liệu.
+
 ---
 
 ## Điều kiện chuẩn bị
@@ -147,7 +168,7 @@ Bản đồ va chạm (`grep -rn '"Sales Order"' apps/*/*/hooks.py` + thứ tự
 | TC-REGR-01 | `validate` của app kế toán vẫn chạy sau app HKLED | Dựng Đơn Bán **không lưu** với `sales_voucher_type = "Bán Hàng Hóa Xuất Khẩu"`, 1 dòng thuế + `item_tax_template`, rồi gọi 3 hook `validate` **đúng thứ tự thật** (`fill_item_production_note` → `chan_giu_cho_vuot_ton` → `clear_taxes_for_export`). Chạy lại y hệt với `"Bán Hàng Hóa Trong Nước"` làm đối chứng | Đơn xuất khẩu: xoá hết dòng thuế, `item_tax_template = None`, tổng thuế 0. Đơn trong nước: giữ nguyên | Pass — **04/09**: xuất khẩu **1 dòng thuế → 0**, template → `None`, tổng **10 → 0**. Trong nước **không đổi** (1 dòng, template còn, tổng 10). Hai hook HKLED chạy trước **không cản** hook kế toán | Pass |
 | TC-REGR-02 | 5 app cùng nạp `sales_order.js` không đè nhau | Mở form Đơn bán hàng | Form mở bình thường, nút của các app khác còn đủ | Pass — form mở được, nút *Lấy dữ liệu từ*, *Hành động* còn nguyên | Pass |
 | TC-REGR-03 | `throw` mới không chặn đơn vốn hợp lệ | Lưu `SO-26-00016` **không tích Ghim** | Không bị chặn — hook thoát sớm khi không có dòng giữ chỗ | Pass — lưu nhiều lượt trên giao diện và qua `save()`, không lần nào bị chặn | Pass |
-| TC-REGR-04 | Không đụng luồng duyệt đơn của lõi | **Duyệt 6 đơn** liên tiếp (SO-26-00017…00022) | Duyệt được, `on_submit` của các app khác vẫn chạy bình thường | Pass — cả 6 đơn duyệt trót lọt. Kiểm thêm: **không** sinh Hoá đơn hay Phiếu xuất kho ngoài ý muốn (cấu hình tự sinh đang tắt). Đã xoá cả 6 sau khi đo | Pass |
+| TC-REGR-04 | Không đụng luồng duyệt đơn của lõi | **Duyệt 6 đơn** liên tiếp (SO-26-00017…00022) | Duyệt được, `on_submit` của các app khác vẫn chạy bình thường | Pass — cả 6 đơn duyệt trót lọt. Kiểm thêm: **không** sinh Hoá đơn hay Phiếu xuất kho ngoài ý muốn (cấu hình tự sinh đang tắt). Đã xoá cả 6 sau khi đo | ⚠ **Không chạy lại được như viết** — đo 04/09 14:03: `SO-26-00017`…`SO-26-00021` **không còn tồn tại** trên site, chỉ còn `SO-26-00022` (mà đơn này giờ cũng không lưu lại được, xem cảnh báo đầu file). Kết quả Pass ghi ngày 03/09 vẫn đúng tại thời điểm đó; muốn chạy lại phải dựng 6 đơn mới | Pass (03/09) |
 
 ## TC-ISO — cách ly app khách
 
