@@ -175,7 +175,13 @@ def _po_chua_ve(ma_hang, cac_ky):
 		else:
 			i = _ky_cua(ngay, cac_ky)
 			if i is None:
-				continue                            # về sau kỳ cuối, hoặc không có ngày -> bỏ
+				# Hai ca khác hẳn nhau, hiện cùng bị bỏ:
+				#   • về SAU kỳ cuối -> bỏ là đúng, nó không giúp gì cho khoảng đang tính;
+				#   • KHÔNG CÓ NGÀY  -> đó là lỗ hổng dữ liệu, đáng nói ra chứ không đáng bỏ lặng.
+				# Ca thứ hai hiện KHÔNG tới được: `Purchase Order Item.schedule_date` là `reqd = 1`,
+				# và đo 04/09 có 0 dòng thiếu cả hai ngày. Ngày nào ai bỏ `reqd` thì tách nhánh này
+				# ra và cho vào khối cảnh báo — đừng để nó im lặng.
+				continue
 		trong.setdefault(d["item_code"], [0.0] * len(cac_ky))
 		trong[d["item_code"]][i] += con_lai
 	return trong

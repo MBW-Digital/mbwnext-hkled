@@ -258,6 +258,7 @@ cả bảng.
 |---|---|---|
 | 🔜 | **Cơ chế Ghim của Phần IV chưa xong.** Phần V dùng lại định nghĩa tồn khả dụng + phần giữ chỗ. Ô `custom_ghim_ton_kha_dung` đã có nhưng logic giữ chỗ đang được HkLed2 viết trong `api/kiem_tra_ton_kho.py`. Mọi chỗ đánh 🔜 trong file này phải chốt lại sau khi Phần IV xong | HkLed2 · PM-FEAT-00023 |
 | ✅ | ~~Trường Tồn kho tối thiểu chưa tồn tại~~ — **đã gỡ chặn 03/09**: có ở `Item Default`, theo từng công ty (PM-FEAT-00037) | HkLed2 · xong |
+| 🔗 | **Phần V PHỤ THUỘC PM-FEAT-00037.** Engine đọc thẳng `Item Default.custom_ton_kho_kha_dung_toi_thieu` (`api/nhu_cau_vat_tu.py:134`). Tính năng đó hỏng hay đổi cột thì Phần V ra số sai **mà không báo gì** — mọi mức tối thiểu tụt về 0, tức không mặt hàng nào cần mua đệm. Đo 04/09: **6 / 62.055** dòng đã khai. | theo dõi cùng 00037 |
 | ✅ | ~~Câu hỏi Q1–Q3~~ — **Thắng chốt 03/09 15:59**, ghi lại bên dưới | xong |
 
 ### Q1–Q3 — Thắng đã chốt 03/09 15:59
