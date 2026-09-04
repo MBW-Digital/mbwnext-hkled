@@ -168,40 +168,57 @@ Tài liệu gốc có checklist "chốt trước khi code". Đây là kết qu�
 | 5 | Ô *Ghim Tồn Khả Dụng* trên đơn bán | ✅ `custom_ghim_ton_kha_dung` (Check) **đã có** — HkLed2 vừa thêm cho Phần IV. Hiện **0 đơn** đã tích |
 | 6 | Cách lấy *PO chưa về* + ngày nhận | `Purchase Order Item`: SL chưa nhận + ngày dự kiến nhận, dùng để xếp kỳ |
 | 7 | Nguồn nhu cầu Kiểu 1 duy nhất | Chốt: đơn bán nổ định mức. **Không** cộng thêm từ Lệnh sản xuất |
-| 8 | Đơn bán dùng trường nào để xếp kỳ | ✅ `custom_start_time` *Thời Gian Bắt Đầu* (Datetime) **đã có**. ⚠ **Nhưng 9/16 đơn đã duyệt đang để TRỐNG ô này** — xem 6.1 |
+| 8 | Đơn bán dùng trường nào để xếp kỳ | ✅ `custom_start_time` *Thời Gian Bắt Đầu* (Datetime) **đã có**, và **đã đặt bắt buộc** theo chốt Q2 của Thắng 03/09. ⚠ **Nhưng 12/19 đơn đã duyệt vẫn để TRỐNG** (bắt buộc chỉ chặn lần lưu sau) — xem 6.1 |
 | 9 | Kiểu 2: nguồn lượng bán | Đơn bán, bỏ nháp/huỷ. ⚠ Site có **0 Phiếu giao hàng và 0 Hoá đơn bán** — xem 6.2 |
 | 10 | Gợi ý nhà cung cấp: 3 nguồn dữ liệu | ⚠ Gần như trắng — xem 6.3 |
 | 11 | Tab Lập kế hoạch gộp tổng các kỳ | Chốt: gộp tổng, **một dòng/vật tư** |
 
-### 6.1. 🔴 9/16 đơn bán đã duyệt không có *Thời Gian Bắt Đầu*
+### 6.1. 🔴 12/19 đơn bán đã duyệt không có *Thời Gian Bắt Đầu*
 
 Kiểu 1 xếp đơn vào kỳ **theo chính ô này**. Đơn để trống sẽ **không rơi vào kỳ nào** — bị bỏ lặng
 lẽ khỏi mọi con số nhu cầu, không có gì báo.
 
 ➜ Bắt buộc: mặt hàng của đơn để trống ô này phải hiện thành **một dòng cảnh báo có nêu đích danh
-số đơn**, không được im lặng bỏ qua. Cân nhắc đề nghị Thắng đặt ô này thành bắt buộc trên đơn bán.
+số đơn**, không được im lặng bỏ qua.
+
+Thắng chốt 03/09: **đặt ô này thành bắt buộc** trên đơn bán (Q2). Đã làm — nhưng **việc đó không cứu
+được đơn cũ**: bắt buộc chỉ chặn lần lưu tiếp theo, nên 12 đơn đã duyệt vẫn trống cho tới khi có
+người điền tay. Cảnh báo trong Kiểu 1 vì thế **vẫn phải giữ**, không phải chỗ tạm.
 
 ### 6.2. Kiểu 2 nặng hơn Kiểu 1 về dữ liệu
 
-Kiểu 2 tính theo lượng bán kỳ trước, mà site đang có **0 Phiếu giao hàng · 0 Hoá đơn bán · 21 đơn
-bán (16 đã duyệt)**, và toàn bộ là dữ liệu đội mình dựng để thử — khách chưa phát sinh giao dịch
+Kiểu 2 tính theo lượng bán kỳ trước, mà site đang có **0 Phiếu giao hàng · 0 Hoá đơn bán · 28 đơn
+bán (19 đã duyệt · 7 nháp · 2 đã huỷ — số đo 04/09)**, và toàn bộ là dữ liệu đội mình dựng để thử — khách chưa phát sinh giao dịch
 thật nào. Kiểu 1 còn có đơn để bấu víu, Kiểu 2 thì không.
 
 Thắng chốt 02/09: **nghiệm thu chạy trên dữ liệu tự dựng**, quy mô thật là **hơn 2.000 đơn/năm,
 mỗi đơn 1–2 dòng sản phẩm** (≈ 170 đơn/tháng, 250–350 dòng mỗi kỳ). Bộ dữ liệu thử phải dựng
 sát quy mô đó, đừng thử trên bảng 5 dòng rồi tưởng chạy tốt.
 
-### 6.3. Gợi ý nhà cung cấp — hai trong ba tiêu chí chưa có dữ liệu
+### 6.3. Gợi ý nhà cung cấp — nguồn đã chốt, dữ liệu vẫn chưa có
+
+Nguồn của tiêu chí **chất lượng** do Thắng chốt 03/09: **không phải** `Quality Inspection`, **cũng
+không phải** luồng KCS của `mbwnext_advanced_buying`. Khách kiểm chất lượng khi hàng về bằng cách
+điền thẳng vào **bảng mặt hàng của Phiếu Nhập Kho Hàng Mua** — hai ô có sẵn của ERPNext:
+
+| Ô | Trường | Nhãn gốc |
+|---|---|---|
+| Số lượng chấp nhận | `Purchase Receipt Item.qty` | *Accepted Quantity* |
+| Số lượng từ chối | `Purchase Receipt Item.rejected_qty` | *Rejected Quantity* |
+
+Tức tỉ lệ đạt theo NCC = `sum(qty) / sum(received_qty)` trên các phiếu nhập **đã duyệt**. Không phải
+thêm trường nào, không phải bật phân hệ nào.
+
+Số đo trên site ngày **04/09**:
 
 | Tiêu chí | Nguồn | Đo được |
 |---|---|---|
-| Giá tốt nhất | Đơn giá gần nhất theo NCC | 6 đơn mua · 10 Item Price · 2 nhà cung cấp — **chạy được, ít** |
-| Tiến độ nhanh nhất | Khoảng cách ngày đặt → ngày nhận | **1/6 đơn mua có phiếu nhập** — gần như không tính được |
-| Chất lượng tốt nhất | Tỉ lệ đạt theo NCC | **0 bản ghi** ở cả `Quality Inspection`, `Goods Receipt` và `KCS Quantity` |
+| Giá tốt nhất | Đơn giá gần nhất theo NCC | 4 đơn mua đã duyệt · 8 dòng · 5 Item Price · 2 NCC — **chạy được, ít** |
+| Tiến độ nhanh nhất | Khoảng cách ngày đặt → ngày nhận | **0 dòng phiếu nhập đã duyệt trỏ về đơn mua** — chưa tính được |
+| Chất lượng tốt nhất | `qty` / `received_qty` theo NCC | **0 phiếu nhập đã duyệt**. Có 3 phiếu còn ở nháp (7 dòng · nhận 29 · chấp nhận 27 · từ chối 2) — đủ thấy khách dùng đúng hai ô này, nhưng chưa duyệt nên chưa đếm |
 
-⚠ Tài liệu ghi nguồn chất lượng là `Quality Inspection`, nhưng nền MBWNext dùng **luồng KCS của
-`mbwnext_advanced_buying`** (`Goods Receipt` → `KCS Quantity`). Cả hai đều rỗng. Chốt nguồn nào thì
-cũng phải xử lý gọn khi thiếu dữ liệu: ghi **"chưa đủ dữ liệu"**, **không đoán**, không ép chọn.
+⚠ Nguồn đã rõ nhưng **cả hai tiêu chí tiến độ và chất lượng vẫn về 0** vì site chưa có phiếu nhập nào
+được duyệt. Chỗ thiếu dữ liệu ghi thẳng **"chưa đủ dữ liệu"** — **không đoán**, không ép chọn.
 
 ---
 
@@ -241,18 +258,28 @@ cả bảng.
 |---|---|---|
 | 🔜 | **Cơ chế Ghim của Phần IV chưa xong.** Phần V dùng lại định nghĩa tồn khả dụng + phần giữ chỗ. Ô `custom_ghim_ton_kha_dung` đã có nhưng logic giữ chỗ đang được HkLed2 viết trong `api/kiem_tra_ton_kho.py`. Mọi chỗ đánh 🔜 trong file này phải chốt lại sau khi Phần IV xong | HkLed2 · PM-FEAT-00023 |
 | ✅ | ~~Trường Tồn kho tối thiểu chưa tồn tại~~ — **đã gỡ chặn 03/09**: có ở `Item Default`, theo từng công ty (PM-FEAT-00037) | HkLed2 · xong |
-| ❓ | Câu hỏi Q1–Q3 bên dưới | Thắng |
+| ✅ | ~~Câu hỏi Q1–Q3~~ — **Thắng chốt 03/09 15:59**, ghi lại bên dưới | xong |
 
-### Câu hỏi cần Thắng chốt
+### Q1–Q3 — Thắng đã chốt 03/09 15:59
 
-- **Q1.** `Kho ký gửi` và `Kho khuyến mãi/hàng mẫu` đang treo thẳng dưới `Kho Tổng`, tức **được tính
-  vào tồn khả dụng**. Hàng ký gửi có phải hàng dùng được không? Nếu không thì chuyển vào `Nhóm kho
-  trung chuyển` — anh đã chốt 25/08 là "kho nào không tính vào pool thì chuyển vào 2 nhóm đó".
-- **Q2.** Ô *Thời Gian Bắt Đầu* trên đơn bán có nên đặt thành **bắt buộc** không? Hiện 9/16 đơn đã
-  duyệt để trống, mà Kiểu 1 xếp kỳ theo đúng ô đó.
-- **Q3.** Tiêu chí **chất lượng** trong gợi ý nhà cung cấp lấy từ `Quality Inspection` hay từ luồng
-  KCS của `mbwnext_advanced_buying`? Cả hai đang 0 bản ghi, nên chọn nguồn nào cũng phải chấp nhận
-  hiện "chưa đủ dữ liệu" trong thời gian đầu.
+- **Q1. Kho ký gửi / Kho khuyến mãi–hàng mẫu có tính vào tồn khả dụng không?**
+  → **Có.** *"2 kho đó em cứ để đó nhé, được tính là hàng dùng được."*
+  Đã đo lại 04/09: cả hai treo thẳng dưới `Kho Tổng`, `_kho_hop_le()` trả về đủ 5 kho gồm cả hai.
+  **Không phải sửa gì** — chỉ ghi lại để sau này không ai "dọn dẹp" chúng vào nhóm loại trừ.
+
+- **Q2. Ô *Thời Gian Bắt Đầu* trên đơn bán có bắt buộc không?** → **Bắt buộc.** *"em để bắt buộc nhé."*
+  `Sales Order-custom_start_time` đã đặt `reqd = 1` trong fixtures.
+  ⚠ **Đơn cũ không tự có giá trị.** Đo 04/09: **12 đơn đã duyệt** và **4 đơn nháp** đang để trống.
+  Bắt buộc chỉ chặn lần lưu sau, nên: 4 đơn nháp sẽ **không lưu được** cho tới khi điền; 12 đơn đã
+  duyệt vẫn nguyên, nhưng **huỷ rồi sửa lại là kẹt**. Đây đúng cái bẫy đã gặp với
+  `custom_start_time` trên Lệnh sản xuất (xem `controllers/python_hook/work_order.py:240`) — khác ở
+  chỗ đơn bán **không có nguồn nào để lấy giá trị thay**, nên phải có người điền tay.
+  Kiểu 1 vẫn giữ cảnh báo nêu đích danh số đơn trống, vì 12 đơn cũ sẽ còn trống dài.
+
+- **Q3. Tiêu chí chất lượng lấy từ đâu?** → **Từ ô *Số lượng chấp nhận* / *Số lượng từ chối* trên
+  bảng mặt hàng Phiếu Nhập Kho Hàng Mua.** *"Bên họ kiểm tra chất lượng khi hàng về chỉ là điền số
+  lượng chấp nhận và số lượng từ chối ở bảng mặt hàng thôi."* Chi tiết ở mục 6.3.
+
 
 ---
 
