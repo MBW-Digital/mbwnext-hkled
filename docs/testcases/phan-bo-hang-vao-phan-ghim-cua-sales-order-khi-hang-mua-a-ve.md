@@ -22,6 +22,11 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 > tiên cho `SO-26-00026` đã **ghi thật** (`TC-HAPPY-01`), vì đó chính là hành vi tính năng phải
 > có kể từ khi bật.
 >
+> **✅ Bổ sung 04/09 tối — vòng hai đã chạy THẬT trên giao diện cổng 8012.** Bốn ca dưới đây
+> (`TC-HAPPY-07`, `TC-EDGE-12`, `TC-VALID-04`, `TC-REGR-06`) được bấm trên màn hình thật, không
+> qua console. Đã dọn: `SO-26-00026` trả về đúng ghim 31, Phiếu xuất kho thử nghiệm đã **xoá bản
+> nháp**, tồn `NVL 3` vẫn 7 — **0 bút toán kho**.
+>
 > Sau **mỗi** kịch bản đều chạy `kiem_bat_bien()` — phép quét toàn bảng mà mục 12e đòi hỏi. Cột
 > KQ thực tế ghi cả kết quả phép quét đó, không chỉ kết quả của thao tác.
 
@@ -59,6 +64,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-04 | Dừng ở hàng *Mua hàng* | `NVL 1/2/3` là lá, không bóc tiếp | Đúng — 5 dòng, không có cấp thứ tư | ✅ Pass |
 | TC-HAPPY-05 | Bảng 1b/2b (`ghim_chi_tiet`) đọc từ sổ | Tổng chi tiết khớp `ghim_boi_don_khac` | 6 mã, tổng khớp, `kiem_bat_bien()` **sạch** | ✅ Pass |
 | TC-HAPPY-06 | Cột *định mức hiệu dụng* trên Bảng 2b | Là định mức thật, không phải phần được cấp | `BTP1`: 9/9 = **1**, không phải 1/9 = 0,111 (đã sửa trong lúc chạy — xem ghi chú dưới) | ✅ Pass |
+| TC-HAPPY-07 | **Trên giao diện thật:** mở `SO-26-00026`, bảng *Ghim Vật Tư* hiện ngay dưới lưới hàng hoá | Đủ 5 dòng, cột Việt hoá, không sửa tay được | Đủ 5 dòng · mọi ô `read_only` · không có nút *Thêm dòng* ở lưới. Bảng 2b của đơn khác hiện *"7 đang ghim"* với định mức **3,00** | ✅ Pass |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -72,6 +78,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-VALID-01 | Sửa *Số Lượng Giữ Chỗ* lên 40 (tồn 31) trên đơn **ĐÃ DUYỆT** | Bị chặn, câu lỗi nêu đúng mức tối đa | *"Dòng 1 — Thành phẩm 1: chỉ giữ chỗ được tối đa **31**, không được 40"* | ✅ Pass |
 | TC-VALID-02 | Bảng ghim vật tư có sửa tay được không | Không — máy ghi, người chỉ đọc | `read_only = 1` ở cả trường bảng lẫn mọi cột con | ✅ Pass |
 | TC-VALID-03 | Mã *Sản xuất* chưa có định mức | Phải nói ra, không im lặng bỏ qua | `C28DX03S100-328-40C-280LED: chưa có định mức, phần còn phải sản xuất (40) không ghim được vật tư` — hiện dạng toast màu cam | ✅ Pass |
+| TC-VALID-04 | **Trên giao diện thật:** gõ 40 vào *Số Lượng Giữ Chỗ* (tồn 31) rồi lưu | Không lọt | Lớp giao diện **kẹp trước**: *"Thành phẩm 1: chỉ giữ chỗ được 31 — đã sửa lại giúp anh/chị"*, giá trị về 31 rồi mới lưu. Lớp server (TC-VALID-01) là lưới thứ hai cho đường API | ✅ Pass |
 
 > 🔴 **TC-VALID-01 là ca quan trọng nhất của đợt này.** Anh Thắng chốt mở khoá ô ghim trên đơn đã
 > duyệt. Frappe **không chạy `validate`** trên đường update-after-submit, nên nếu chỉ bật cờ
@@ -94,6 +101,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-EDGE-09 | #7 | Đơn còn **nháp** | Bảng phải rỗng — chưa duyệt thì chưa giữ chỗ của ai | 0 dòng | ✅ Pass |
 | TC-EDGE-10 | — | Đơn đã duyệt nhưng **chưa từng** ghim vật tư | Không sinh dòng rác | 0 dòng, không cảnh báo | ✅ Pass |
 | TC-EDGE-11 | #2 | Đơn **Huỷ** rồi amend, cả hai bản cùng tồn tại | Chỉ bản còn sống được tính | Chưa chạy — `SO-26-00026` đang gắn Kế hoạch sản xuất `KSX-26-00001` nên **không huỷ được**. Cần một đơn không có ràng buộc | ⏳ Chưa chạy |
+| TC-EDGE-12 | #5 | **Trên giao diện thật:** giảm ghim 31 → 20 rồi lưu | Bảng chạy lại ngay trên màn hình | `Phải Làm` 9 → **20**, `NVL 2` thành **32/38** (kẹp đúng ở tồn 32), `NVL 3` thành **7/57**. Trả về 31 thì bảng về đúng số cũ | ✅ Pass |
 
 ## TC-PERM — phân quyền
 
@@ -122,6 +130,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-REGR-03 | Màn hình *Kiểm Tra Tồn Kho* (Bảng 1·2·3) | Vẫn chạy, không cảnh báo lệch | 3 bảng ra đủ, `canh_bao = []` | ✅ Pass |
 | TC-REGR-04 | Engine Phần V (`nhu_cau_vat_tu.tinh_nhu_cau`) | Vẫn chạy | 3 dòng vật tư, cảnh báo duy nhất là ca *thiếu Thời Gian Bắt Đầu* đã có từ trước | ✅ Pass |
 | TC-REGR-05 | `ghim_boi_don_khac` sau khi đổi nguồn | Trả cả thành phẩm lẫn vật tư, khớp sổ | `{Thành phẩm 1: 31, NVL1: 8, NVL2: 16, NVL3: 7, BTP1: 1, BTP2: 1}` — khớp | ✅ Pass |
+| TC-REGR-06 | **Trên giao diện thật:** lập Phiếu xuất kho 5 `NVL 3` rồi bấm **Gửi** | Bị chặn, hộp thoại đỏ nêu đúng số | *"Xuất quá tồn khả dụng — NVL 3: xuất 5, tồn khả dụng còn 0. Phần chênh đang được các Đơn Bán khác giữ chỗ."* Đã xoá bản nháp `KNB-26-00005`, tồn vẫn 7 | ✅ Pass |
 
 > ⚠ **Đổi hành vi có thật, phải nói với anh Thắng trước khi bật cho khách:** trước đợt này, phần
 > vật tư mà `ghim_boi_don_khac` trả về **luôn rỗng** (`_con_phai_lam` tính `ghim − tồn`, mà lớp
@@ -145,7 +154,7 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**32 ca · 28 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.**
+**36 ca · 32 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **4 ca chạy trên giao diện thật**.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
