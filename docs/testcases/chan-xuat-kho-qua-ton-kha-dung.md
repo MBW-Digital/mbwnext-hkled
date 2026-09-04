@@ -27,7 +27,7 @@ Code: `controllers/python_hook/chan_xuat_kho.py`, cắm vào `before_submit` c�
 >
 > **✅ Bổ sung 04/09 (chiều) — phiên `cozy-dev-0c` đóng thêm hai ca.** `TC-REGR-02` (luật tồn kho
 > tối đa của app lõi) và `TC-PERM-01` (chặn không phụ thuộc vai trò) chạy bằng đúng kỹ thuật dựng
-> chứng từ không lưu ở trên — **0 bút toán kho**, tồn không đổi. Bảng hiện là **39 ca · 39 Pass · 0 chưa chạy** — bộ test này đã **chạy hết**.
+> chứng từ không lưu ở trên — **0 bút toán kho**, tồn không đổi. Bảng hiện là **41 ca · 41 Pass · 0 chưa chạy** — bộ test này đã **chạy hết**.
 > `TC-EDGE-05` (huỷ rồi sửa) và `TC-ISO-03` (`bench --site mbw.com migrate`) đóng nốt chiều 04/09 sau khi Tuấn cấp phép.
 > Đọc kèm ô cảnh báo dưới bảng TC-REGR về `custom_max_stock_qty = 0`.
 
@@ -99,6 +99,8 @@ Tồn Kho** trên `SO-26-00010` trước khi kết luận Fail.
 | TC-EDGE-15 | 🔴 **Đơn ghim KHÔNG được tự chặn phiếu xuất vật tư đi sản xuất của mình** | Chứng từ kho nội bộ `Material Transfer for Manufacture`, đầu phiếu gắn **Lệnh sản xuất** của chính đơn đã ghim, xuất `Bán thành phẩm 1` (khả dụng 0 vì chính đơn đó ghim) | Đi qua — miễn trừ phải nối được `Stock Entry.work_order` ➜ `Work Order.sales_order` | Pass **sau khi vá 04/09** — trước vá: **CHẶN** (`_don_duoc_mien` trả tập rỗng cho *mọi* Chứng từ kho nội bộ vì bảng con không có cột nào trỏ về Đơn Bán). Sau vá: **LỌT**. Đối chứng cùng lượt: cùng phiếu đó gắn Lệnh sản xuất của **đơn khác** → vẫn **CHẶN**, không gắn gì → vẫn **CHẶN** | Pass |
 | TC-EDGE-16 | Yêu Cầu Mặt Hàng của chính đơn đã ghim không bị cảnh báo oan | Yêu Cầu Mặt Hàng loại *Material Issue*, dòng có `sales_order` = đơn đã ghim, xin đúng phần mình đã giữ | Không nói gì — phần đó là của chính đơn này | Pass **sau khi vá 04/09** — trước vá: **1 cảnh báo** (`canh_bao_yeu_cau_mat_hang` gọi `ghim_boi_don_khac()` **không truyền `tru_don`**, dù `Material Request Item` có sẵn cột `sales_order`). Sau vá: **0 cảnh báo** | Pass |
 | TC-EDGE-17 | Số lượng trong câu chặn đọc được | Dựng phiếu xuất 5 `Bán thành phẩm 1` khi khả dụng 0, đọc nguyên văn câu chặn | *"xuất 5, tồn khả dụng còn 0"* — không có đuôi `,000` | Pass **sau khi vá 04/09** — trước vá 4 chỗ dùng `frappe.format_value(..., Float)` cho ra 3 chữ số thập phân. Nay cả 6 chỗ (2 ở đây + 4 ở hook Đơn Bán) dùng chung hàm `_so()` của `kiem_tra_ton_kho.py`, khớp đúng hàm `so()` bên JS | Pass |
+| TC-EDGE-18 | 🔴 **Miễn trừ đi được HAI chặng: Lệnh sản xuất ➜ Kế hoạch sản xuất ➜ Đơn Bán** | `MFG-WO-2026-00020` và `00021` (ô *Đơn Bán* **trống**, nhưng kế hoạch `MFG-PP-2026-00006` có `SAL-ORD-2026-00007-1`); `MFG-WO-2026-00018` qua `MFG-PP-2026-00005`. Dựng Chứng từ kho nội bộ gắn từng lệnh, gọi `_don_duoc_mien` | Tra ra đúng Đơn Bán qua kế hoạch | Pass **sau khi vá 04/09 16:39** — trước vá cả ba trả **tập rỗng**, tức bị chặn oan khi lấy chính vật tư đơn của mình đã ghim. Sau vá: `00020`/`00021` → `{SAL-ORD-2026-00007-1}`, `00018` → `{SAL-ORD-2026-00006}`. Anh Thắng mô tả quy trình 04/09 16:35: hàng làm cho đơn thì tạo **Kế hoạch sản xuất từ Đơn Bán** rồi mới tạo Lệnh sản xuất — nên chặng này là đường chính, không phải ngoại lệ | Pass |
+| TC-EDGE-19 | Sản xuất để tồn kho **KHÔNG** được miễn trừ | `MFG-WO-2026-00006`, `00001`, `00002` — không có cả `sales_order` lẫn `production_plan` | Trả tập rỗng; chứng từ vẫn bị kiểm như mọi chứng từ khác | Pass — cả ba trả **tập rỗng**. Đúng thiết kế: lệnh để tồn kho không phục vụ đơn nào nên **không được phép** lấy hàng đơn khác đang giữ. Đo 04/09: **17/33** lệnh thuộc loại này | Pass |
 
 ## TC-PERM — phân quyền
 
