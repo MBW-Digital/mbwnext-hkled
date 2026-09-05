@@ -1,0 +1,713 @@
+<meta charset="utf-8">
+<title>Mockup — Tính nhu cầu vật tư cần mua theo kỳ (HKLED)</title>
+
+<style>
+	:root {
+		--ground: #f2f4f6;
+		--surface: #ffffff;
+		--sunken: #f7f9fa;
+		--ink: #1c2b36;
+		--ink-soft: #5c6a75;
+		--ink-faint: #8b97a1;
+		--line: #dfe4e8;
+		--line-soft: #eaeef1;
+		--decided: #0f766e;
+		--decided-bg: #ecfdf9;
+		--ask: #b45309;
+		--ask-bg: #fdf6e7;
+		--danger: #b42318;
+		--danger-bg: #fdf2f1;
+		--new: #1d4ed8;
+		--new-bg: #eef3fe;
+		--btn: #202a33;
+		--btn-ink: #ffffff;
+
+		--serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--ground: #14181c;
+			--surface: #1c2126;
+			--sunken: #22282e;
+			--ink: #e4e8ec;
+			--ink-soft: #a4aeb7;
+			--ink-faint: #7b868f;
+			--line: #2f363d;
+			--line-soft: #262c32;
+			--decided: #2dd4bf;
+			--decided-bg: #14262a;
+			--ask: #f0b458;
+			--ask-bg: #2a2317;
+			--danger: #f4a5a0;
+			--danger-bg: #2a1a19;
+			--new: #93c5fd;
+			--new-bg: #172538;
+			--btn: #e4e8ec;
+			--btn-ink: #14181c;
+		}
+	}
+	:root[data-theme="dark"] {
+		--ground: #14181c; --surface: #1c2126; --sunken: #22282e;
+		--ink: #e4e8ec; --ink-soft: #a4aeb7; --ink-faint: #7b868f;
+		--line: #2f363d; --line-soft: #262c32;
+		--decided: #2dd4bf; --decided-bg: #14262a;
+		--ask: #f0b458; --ask-bg: #2a2317;
+		--danger: #f4a5a0; --danger-bg: #2a1a19;
+		--new: #93c5fd; --new-bg: #172538;
+		--btn: #e4e8ec; --btn-ink: #14181c;
+	}
+	:root[data-theme="light"] {
+		--ground: #f2f4f6; --surface: #ffffff; --sunken: #f7f9fa;
+		--ink: #1c2b36; --ink-soft: #5c6a75; --ink-faint: #8b97a1;
+		--line: #dfe4e8; --line-soft: #eaeef1;
+		--decided: #0f766e; --decided-bg: #ecfdf9;
+		--ask: #b45309; --ask-bg: #fdf6e7;
+		--danger: #b42318; --danger-bg: #fdf2f1;
+		--new: #1d4ed8; --new-bg: #eef3fe;
+		--btn: #202a33; --btn-ink: #ffffff;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		background: var(--ground);
+		color: var(--ink);
+		font: 15px/1.6 var(--sans);
+		-webkit-font-smoothing: antialiased;
+	}
+	.page {
+		max-width: 940px;
+		margin: 0 auto;
+		padding: 40px 20px 80px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	/* ---------- giọng tài liệu: serif ---------- */
+	.doc-title {
+		font: 400 30px/1.2 var(--serif);
+		text-wrap: balance;
+		margin: 0;
+		letter-spacing: -0.01em;
+	}
+	.doc-meta {
+		color: var(--ink-soft);
+		font-size: 13.5px;
+		margin: 6px 0 0;
+		max-width: 66ch;
+	}
+	.doc-meta code, .mono { font-family: var(--mono); font-size: 0.88em; }
+	h2 {
+		font: 400 21px/1.3 var(--serif);
+		margin: 44px 0 4px;
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+	h2 .gap {
+		font: 600 10.5px/1.7 var(--mono);
+		letter-spacing: 0.04em;
+		color: var(--new);
+		background: var(--new-bg);
+		border-radius: 3px;
+		padding: 1px 7px;
+	}
+	.lede {
+		color: var(--ink-soft);
+		font-size: 14px;
+		margin: 0 0 14px;
+		max-width: 66ch;
+	}
+
+	/* ---------- nav dính ---------- */
+	.nav {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		background: color-mix(in srgb, var(--ground) 88%, transparent);
+		backdrop-filter: blur(8px);
+		border-bottom: 1px solid var(--line);
+		margin: 28px -20px 0;
+		padding: 9px 20px;
+		display: flex;
+		gap: 4px;
+		flex-wrap: wrap;
+		font-size: 13px;
+	}
+	.nav a {
+		color: var(--ink-soft);
+		text-decoration: none;
+		padding: 4px 10px;
+		border-radius: 5px;
+	}
+	.nav a:hover, .nav a:focus-visible { background: var(--surface); color: var(--ink); }
+
+	/* ---------- khung giả lập ERPNext Desk ---------- */
+	.screen {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.screen-bar {
+		background: var(--sunken);
+		border-bottom: 1px solid var(--line);
+		padding: 7px 14px;
+		font: 500 11.5px/1.6 var(--mono);
+		color: var(--ink-faint);
+		letter-spacing: 0.03em;
+		display: flex;
+		justify-content: space-between;
+		gap: 10px;
+	}
+	.screen-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+
+	.dialog { max-width: 580px; }
+
+	.wo-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+	.wo-head h3 { font: 600 17px/1.3 var(--sans); margin: 2px 0 0; }
+	.crumb { font-size: 12px; color: var(--ink-faint); }
+	.actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- field ---------- */
+	.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+	.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+	.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+	.fld > .lbl {
+		font-size: 11.5px;
+		color: var(--ink-soft);
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.lbl .req { color: var(--danger); }
+	.lbl .fn { font: 10.5px/1.6 var(--mono); color: var(--ink-faint); }
+	.val {
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		background: var(--surface);
+		padding: 7px 10px;
+		font-size: 13.5px;
+		min-height: 34px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.val.ro { background: var(--sunken); color: var(--ink-soft); }
+	.val.num { justify-content: flex-end; font-variant-numeric: tabular-nums; }
+	.val.pick::after { content: "⌄"; margin-left: auto; color: var(--ink-faint); }
+	.val.locked { opacity: 0.45; }
+	select.val, input.val {
+		font: 13.5px var(--sans); color: inherit; width: 100%;
+		appearance: none;
+	}
+	input.val.num { text-align: right; }
+	/* bảng Sản Lượng chỉ có 2 cột — không để ô nhập kéo dài hết cột */
+	#prod-rows input.val { width: 96px; margin-left: auto; }
+	.fld.dim { opacity: 0.42; }
+
+	/* ---------- tick ---------- */
+	.tick {
+		width: 15px; height: 15px; flex: none;
+		border: 1px solid var(--ink-faint);
+		border-radius: 3px;
+		display: inline-grid;
+		place-items: center;
+		background: var(--surface);
+		cursor: pointer;
+		padding: 0;
+	}
+	.tick[aria-checked="true"] { background: var(--decided); border-color: var(--decided); }
+	.tick[aria-checked="true"]::after {
+		content: "✓"; color: var(--surface); font: 700 10px/1 var(--sans);
+	}
+	:root[data-theme="dark"] .tick[aria-checked="true"]::after,
+	.tick[aria-checked="true"]::after { color: var(--surface); }
+	.tick:focus-visible, .btn:focus-visible, .nav a:focus-visible, select:focus-visible, input:focus-visible {
+		outline: 2px solid var(--new); outline-offset: 2px;
+	}
+	.switch { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+
+	/* ---------- chọn thứ trong tuần ---------- */
+	.wd { display: flex; flex-wrap: wrap; gap: 6px; }
+	.wd label {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		padding: 6px 10px;
+		background: var(--surface);
+		cursor: pointer;
+		user-select: none;
+	}
+	.wd label:has(.tick[aria-checked="true"]) {
+		border-color: var(--decided);
+		background: var(--decided-bg);
+		color: var(--decided);
+	}
+
+	/* ---------- bảng ---------- */
+	.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+	table { width: 100%; border-collapse: collapse; font-size: 13px; }
+	th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+	tbody tr:last-child td { border-bottom: 0; }
+	th {
+		background: var(--sunken);
+		font: 600 10.5px/1.6 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-faint);
+		white-space: nowrap;
+	}
+	td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+	tr.sum td { font-weight: 600; background: var(--sunken); }
+	tr.off td { color: var(--ink-faint); }
+	td.ve { white-space: nowrap; }
+	td.ve.trong { color: var(--ink-faint); }
+	td.ve.chua { color: var(--ask); font-style: italic; }
+	.grid-tools { display: flex; gap: 7px; flex-wrap: wrap; }
+
+	/* ---------- nút ---------- */
+	.btn {
+		font: 500 13px/1.3 var(--sans);
+		padding: 7px 13px;
+		border-radius: 6px;
+		border: 1px solid var(--line);
+		background: var(--surface);
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.btn.primary { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
+	.btn.sm { padding: 5px 10px; font-size: 12px; }
+	.btn[hidden] { display: none; }
+
+	.state {
+		font: 600 10.5px/1.7 var(--sans);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding: 2px 9px;
+		border-radius: 20px;
+		background: var(--new-bg);
+		color: var(--new);
+	}
+
+	/* ---------- ghi chú: giọng serif, 2 màu ngữ nghĩa ---------- */
+	.note {
+		font: 14px/1.6 var(--serif);
+		border-left: 2px solid var(--decided);
+		background: var(--decided-bg);
+		padding: 11px 15px;
+		border-radius: 0 7px 7px 0;
+		margin: 12px 0 0;
+	}
+	.note.ask { border-left-color: var(--ask); background: var(--ask-bg); }
+	.note .tag {
+		font: 600 10.5px/1.6 var(--mono);
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		display: block;
+		margin-bottom: 3px;
+		color: var(--decided);
+	}
+	.note.ask .tag { color: var(--ask); }
+	.alert {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--danger-bg);
+		border-left: 2px solid var(--danger);
+		color: var(--danger);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.alert[hidden], .ok-msg[hidden] { display: none; }
+	.ok-msg {
+		font: 13.5px/1.55 var(--sans);
+		background: var(--decided-bg);
+		border-left: 2px solid var(--decided);
+		color: var(--decided);
+		padding: 10px 14px;
+		border-radius: 0 7px 7px 0;
+	}
+	.hint { font-size: 12.5px; color: var(--ink-faint); margin: 0; }
+	.live {
+		font: 500 12.5px/1.6 var(--mono);
+		color: var(--decided);
+	}
+
+	/* ---------- danh sách câu hỏi ---------- */
+	.qlist { display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 0; list-style: none; }
+	.qlist li {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-left: 2px solid var(--ask);
+		border-radius: 0 8px 8px 0;
+		padding: 13px 16px;
+		display: flex;
+		gap: 12px;
+	}
+	.qlist .qn {
+		font: 600 12px/1.5 var(--mono);
+		color: var(--ask);
+		flex: none;
+		padding-top: 2px;
+	}
+	.qlist p { margin: 0; font-size: 14px; }
+	.qlist p + p { margin-top: 5px; color: var(--ink-soft); font-size: 13px; }
+
+	.plainlist { margin: 0; padding-left: 22px; font-size: 14px; }
+	.plainlist li { margin: 6px 0; }
+
+	.foot {
+		margin-top: 46px;
+		padding-top: 16px;
+		border-top: 1px solid var(--line);
+		font: 13px/1.6 var(--serif);
+		color: var(--ink-soft);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		* { transition: none !important; animation: none !important; }
+	}
+</style>
+
+<style>
+	/* ---- riêng màn này ---- */
+	.cards { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 12px; }
+	.card {
+		flex: 1 1 190px; padding: 12px 14px;
+		border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
+	}
+	.card .lbl2 {
+		font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint);
+	}
+	.card .big { margin-top: 3px; font: 600 22px/1.2 var(--sans); font-variant-numeric: tabular-nums; }
+	.card .big .dv { font-size: 14px; font-weight: 500; color: var(--ink-faint); }
+	.card .sub { margin-top: 2px; font-size: 11px; color: var(--ink-faint); }
+
+	.warn { border: 1px solid var(--ask); border-radius: 8px; overflow: hidden; margin: 0 0 14px; }
+	.warn-head {
+		display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+		background: var(--ask-bg); font: 500 13px/1.3 var(--sans); color: var(--ink);
+	}
+	.warn-head .dot {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 17px; height: 17px; border-radius: 50%;
+		background: var(--ask); color: #fff; font: 700 11px/1 var(--sans); flex: none;
+	}
+	.warn-body .w {
+		padding: 8px 12px 8px 37px; border-top: 1px solid var(--line);
+		font-size: 12.5px; color: var(--ink-soft); overflow-wrap: anywhere;
+	}
+	.warn-body .w.hard { border-left: 3px solid var(--danger); }
+
+	.tw { overflow-x: auto; }
+	table.res { width: 100%; border-collapse: collapse; font-size: 12.5px; white-space: nowrap; }
+	table.res th, table.res td { padding: 8px 11px; border-bottom: 1px solid var(--line-soft); text-align: left; }
+	table.res thead th {
+		background: var(--sunken); font-size: 11px; font-weight: 600; color: var(--ink-soft);
+		text-transform: uppercase; letter-spacing: .02em;
+	}
+	table.res th.ky { text-align: center; border-left: 1px solid var(--line); }
+	table.res th.ky span { font-weight: 400; text-transform: none; letter-spacing: 0; }
+	table.res .le { background: var(--sunken); }
+	table.res .s { text-align: right; font-variant-numeric: tabular-nums; }
+	table.res td.mo { color: var(--ink-faint); }
+	table.res td.can { font-weight: 600; }
+	table.res .trong { color: var(--ink-faint); }
+	table.res td.chua { color: var(--ink-faint); font-style: italic; font-size: 11px; }
+	table.res .tong { border-left: 2px solid var(--line); font-weight: 600; font-size: 13.5px; }
+	table.res .tong .con { font-weight: 400; color: var(--ink-soft); }
+
+	.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--ink-soft); }
+</style>
+
+<div class="page">
+
+<h1 class="doc-title">Tính nhu cầu vật tư cần mua theo kỳ</h1>
+<p class="doc-meta">
+	Phần V · <code>PM-FEAT-00030</code> · bản 1 — 05/09/2026<br>
+	Màn hình thật: <code>http://dev.mbwnext.com:8012/app/tinh-nhu-cau-vat-tu</code><br>
+	Đầu bài: <code>docs/features/phan-v-tinh-toan-nhu-cau-vat-tu-can-mua-theo-ky.md</code>
+</p>
+
+<p class="note ask">
+	<b>Em xin nói thẳng một chuyện quy trình trước khi anh đọc.</b> Ba tính năng trước em vẽ mockup
+	rồi mới code. Riêng phần này em <b>làm ngược</b> — code trước, mockup sau. Nên phần
+	<b>A và B dưới đây là ảnh chụp lại thứ đã chạy</b> trên cổng 8012, em nhờ anh duyệt hồi tố;
+	còn <b>C và D là thứ chưa có dòng code nào</b>, em cần anh chốt <i>trước</i> khi bắt tay.
+	Anh Tuấn đã nhắc em chuyện thứ tự này, em nhận.
+</p>
+
+<div class="nav">
+	<a href="#a">A · Tab Tính toán</a>
+	<a href="#b">B · Bảng kết quả</a>
+	<a href="#c">C · Tab Lập kế hoạch</a>
+	<a href="#d">D · Gợi ý nhà cung cấp</a>
+	<a href="#e">E · Cần anh chốt</a>
+</div>
+
+<h2 id="a">A. Tab Tính toán — bộ lọc và ba thẻ số <span class="gap">đã chạy</span></h2>
+
+<p class="lede">
+	Người dùng chọn kiểu tính và khoảng kỳ, bấm <b>Tính toán</b>. Phép tính chạy nền nên bảng lớn
+	không làm treo màn hình; có thanh tiến độ báo đang nổ định mức tới kỳ mấy.
+</p>
+
+<div class="screen">
+	<div class="screen-bar"><span class="crumb">Tính nhu cầu vật tư cần mua theo kỳ</span></div>
+	<div class="screen-body">
+		<div class="grid3">
+			<div class="fld"><div class="lbl">Kiểu tính</div>
+				<div class="val pick">1 — Theo đơn hàng</div></div>
+			<div class="fld"><div class="lbl">Loại kỳ</div><div class="val pick">Tuần</div></div>
+			<div class="fld"><div class="lbl">Số kỳ</div><div class="val num">3</div></div>
+			<div class="fld"><div class="lbl">Bắt đầu từ ngày</div><div class="val">01-09-2026</div></div>
+			<div class="fld"><div class="lbl">&nbsp;</div><div class="actions"><span class="btn">Tính toán</span></div></div>
+		</div>
+
+		<div class="cards">
+			<div class="card">
+				<div class="lbl2">Vật tư cần mua</div>
+				<div class="big">2</div>
+				<div class="sub">Theo đơn hàng</div>
+			</div>
+			<div class="card">
+				<div class="lbl2">Tổng còn phải mua</div>
+				<div class="big">116</div>
+				<div class="sub"></div>
+			</div>
+			<div class="card">
+				<div class="lbl2">Kỳ tính</div>
+				<div class="big">3 <span class="dv">tuần</span></div>
+				<div class="sub">01-09-2026 → 21-09-2026</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<p class="note">
+	<b>Ba thẻ cùng một thứ bậc:</b> nhãn nhỏ trên — số lớn giữa — chú thích nhỏ dưới. Thẻ thứ ba
+	từng lấy <i>"3 kỳ"</i> làm nhãn và khoảng ngày làm giá trị, tức ngược thứ bậc so với hai thẻ kia;
+	đã sửa.
+</p>
+
+<h2 id="b">B. Bảng kết quả — mỗi kỳ hai cột <span class="gap">đã chạy</span></h2>
+
+<p class="lede">
+	Số thật đo trên cổng 8012 lúc <b>05/09 11:3x</b>. Bảng đọc theo <b>chiều ngang</b>: một mặt hàng
+	thiếu ở kỳ nào.
+</p>
+
+<div class="screen"><div class="screen-body">
+	<div class="warn">
+		<div class="warn-head"><span class="dot">!</span> 1 cảnh báo</div>
+		<div class="warn-body">
+			<div class="w hard">
+				<b>9 đơn bán đã duyệt bị bỏ qua vì trống <i>Thời Gian Bắt Đầu</i></b> — không xếp được
+				vào kỳ nào: SAL-ORD-2026-00001, SAL-ORD-2026-00009, SAL-ORD-2026-00012,
+				SAL-ORD-2026-00015, SAL-ORD-2026-00016, SAL-ORD-2026-00017, SO-26-00001,
+				SO-26-00003, SO-26-00006
+			</div>
+		</div>
+	</div>
+
+	<div class="tw">
+	<table class="res">
+		<thead>
+			<tr>
+				<th rowspan="2">Mã</th><th rowspan="2">Tên</th><th rowspan="2">ĐVT</th>
+				<th rowspan="2" class="s">Tồn khả dụng</th>
+				<th rowspan="2" class="s">Tối thiểu</th>
+				<th colspan="2" class="ky">Kỳ 1<br><span>01-09-2026</span></th>
+				<th colspan="2" class="ky le">Kỳ 2<br><span>08-09-2026</span></th>
+				<th colspan="2" class="ky">Kỳ 3<br><span>15-09-2026</span></th>
+				<th rowspan="2" class="s tong">Cần mua</th>
+			</tr>
+			<tr>
+				<th class="s">Nhu cầu</th><th class="s">Cần mua</th>
+				<th class="s le">Nhu cầu</th><th class="s le">Cần mua</th>
+				<th class="s">Nhu cầu</th><th class="s">Cần mua</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>NVL 3</td><td>NVL 3</td><td>Cái</td>
+				<td class="s">7</td><td class="s">10</td>
+				<td class="s mo">69</td><td class="s can">62</td>
+				<td class="s mo le"><span class="trong">–</span></td><td class="s le"><span class="trong">–</span></td>
+				<td class="s mo"><span class="trong">–</span></td><td class="s"><span class="trong">–</span></td>
+				<td class="s tong">72 <span class="con">(62)</span></td>
+			</tr>
+			<tr>
+				<td>NVL 2</td><td>NVL 2</td><td>Cái</td>
+				<td class="s">32</td><td class="s">40</td>
+				<td class="s mo">36</td><td class="s can">44</td>
+				<td class="s mo le"><span class="trong">–</span></td><td class="s le"><span class="trong">–</span></td>
+				<td class="s mo"><span class="trong">–</span></td><td class="s"><span class="trong">–</span></td>
+				<td class="s tong">44</td>
+			</tr>
+			<tr>
+				<td>NVL 9</td><td>NVL 9 <i>(ví dụ)</i></td><td>Cái</td>
+				<td class="s">5</td><td class="s chua">chưa khai</td>
+				<td class="s mo">12</td><td class="s can">7</td>
+				<td class="s mo le">8</td><td class="s can le">8</td>
+				<td class="s mo"><span class="trong">–</span></td><td class="s"><span class="trong">–</span></td>
+				<td class="s tong">15</td>
+			</tr>
+		</tbody>
+	</table>
+	</div>
+
+	<div class="legend">
+		<span><b>72 (62)</b> — số ngoài là phải mua nếu chưa đặt gì; số trong ngoặc là phần
+			<b>còn lại sau khi trừ đơn mua đang về</b></span>
+		<span><b>–</b> kỳ đó không cần gì (khác với ô để trắng do lệch cột)</span>
+		<span><i>chưa khai</i> khác hẳn <b>0</b></span>
+	</div>
+</div></div>
+
+<p class="note">
+	<b>Vì sao xen màu theo CỤM KỲ chứ không theo hàng:</b> bảng này đọc theo chiều ngang, nên ranh
+	giới cần thấy là ranh giới giữa các kỳ. Kẻ sọc theo hàng sẽ cắt ngang đúng mạch đọc đó.
+</p>
+
+<p class="note ask">
+	<b>Một chỗ em đã vấp và anh sẽ gặp lại khi test:</b> đổi <b>Số kỳ</b> thì cột <i>Tồn khả dụng</i>
+	<b>đổi theo</b>. Cùng <code>NVL 3</code>: 3 kỳ ra <b>0</b>, 12 kỳ ra <b>7</b>. Đây <b>không phải
+	lỗi</b> — kỳ rộng hơn thì nhiều đơn rơi <i>vào trong</i> kỳ hơn, mà đơn trong kỳ được miễn trừ
+	khỏi phần ghim để khỏi trừ trùng. Em ghi ra đây vì đo hai lần ra hai số thì ai cũng tưởng là lỗi.
+</p>
+
+<h2 id="c">C. Tab Lập kế hoạch <span class="gap">CHƯA LÀM — cần anh chốt trước</span></h2>
+
+<p class="lede">
+	Gộp tổng các kỳ thành <b>một dòng mỗi vật tư</b>, người dùng sửa số rồi bấm tạo đơn mua.
+	Phần gom dữ liệu đã có (<code>gop_lap_ke_hoach</code>); phần màn hình và tạo đơn <b>chưa có</b>.
+</p>
+
+<div class="screen">
+	<div class="screen-bar"><span class="crumb">Tính toán · <b>Lập kế hoạch</b></span></div>
+	<div class="screen-body">
+		<div class="tw">
+		<table class="res">
+			<thead><tr>
+				<th style="width:34px"></th><th>Mã</th><th>Tên</th><th>ĐVT</th>
+				<th class="s">Tồn khả dụng</th><th class="s">Tối thiểu</th>
+				<th class="s">Thiếu hụt</th><th class="s">Số lượng đặt</th><th>Nhà cung cấp</th>
+			</tr></thead>
+			<tbody>
+				<tr>
+					<td><span class="tick" aria-checked="true" role="checkbox"></span></td>
+					<td>NVL 3</td><td>NVL 3</td><td>Cái</td>
+					<td class="s">7</td><td class="s">10</td>
+					<td class="s mo">62</td>
+					<td class="s"><input class="val num" value="62" style="width:74px"></td>
+					<td><span class="val pick">— chọn —</span></td>
+				</tr>
+				<tr>
+					<td><span class="tick" aria-checked="true" role="checkbox"></span></td>
+					<td>NVL 2</td><td>NVL 2</td><td>Cái</td>
+					<td class="s">32</td><td class="s">40</td>
+					<td class="s mo">44</td>
+					<td class="s"><input class="val num" value="50" style="width:74px"></td>
+					<td><span class="val pick">— chọn —</span></td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
+		<div class="actions" style="margin-top:14px">
+			<span class="btn">Lập đơn hàng</span>
+		</div>
+	</div>
+</div>
+
+<p class="note">
+	<b>Cột <i>Số lượng đặt</i> sửa được, mặc định bằng <i>Thiếu hụt</i>.</b> Người dùng sửa để mua
+	tròn thùng, mua theo lô tối thiểu, hoặc cho về 0 để bỏ dòng. Bấm <i>Lập đơn hàng</i> thì dùng
+	<b>số người dùng chốt</b>, không dùng số thiếu hụt gốc. Cột <i>Thiếu hụt</i> để cạnh, chỉ đọc,
+	để đối chiếu.
+</p>
+
+<p class="note">
+	<b>Hàng gia công sinh nhiều dòng.</b> Anh chốt 20/08: mặt hàng A bổ sung bằng gia công, thiếu 10
+	thì tạo <b>1 dòng "dịch vụ gia công"</b> (Finished Good = A, SL 10) <b>+ n dòng NVL</b> từ định
+	mức của A — không phải một dòng.
+</p>
+
+<p class="note ask">
+	<b>Vòng lặp em phải hỏi:</b> đơn mua vừa tạo ở đây <b>trở thành "đơn mua đang về" của lần chạy
+	sau</b>. Không cộng vào thì lần sau lại báo thiếu và người dùng đặt mua trùng. Em sẽ cộng
+	<b>số lượng thật trên đơn mua đã tạo</b>, không phải số thiếu hụt gợi ý ban đầu — anh xác nhận
+	giúp em.
+</p>
+
+<h2 id="d">D. Gợi ý nhà cung cấp <span class="gap">CHƯA LÀM — làm cuối</span></h2>
+
+<p class="lede">
+	Rê chuột vào một dòng ở tab Lập kế hoạch thì hiện ba gợi ý theo ba tiêu chí. Ba tiêu chí có thể
+	trỏ về <b>ba nhà cung cấp khác nhau</b> — hiện cả ba, không tự ép chọn.
+</p>
+
+<div class="screen"><div class="screen-body">
+	<div class="tw">
+	<table class="res">
+		<thead><tr><th>Tiêu chí</th><th>Nhà cung cấp</th><th>Căn cứ</th><th>Trạng thái dữ liệu</th></tr></thead>
+		<tbody>
+			<tr><td>Giá tốt nhất</td><td>NCC A</td><td>đơn giá gần nhất 12.000đ</td><td>đủ dữ liệu</td></tr>
+			<tr><td>Giao nhanh nhất</td><td class="mo">—</td><td class="mo">khoảng cách ngày đặt → ngày nhận</td>
+				<td class="chua">chưa đủ dữ liệu</td></tr>
+			<tr><td>Chất lượng tốt nhất</td><td class="mo">—</td>
+				<td class="mo">số lượng chấp nhận ÷ số lượng nhận</td>
+				<td class="chua">chưa đủ dữ liệu</td></tr>
+		</tbody>
+	</table>
+	</div>
+</div></div>
+
+<p class="note ask">
+	<b>Hai trong ba tiêu chí sẽ hiện "chưa đủ dữ liệu" trong thời gian đầu</b> — em không đoán bừa.
+	Đo 05/09: <b>1 đơn mua</b> còn hàng chưa về, <b>0 phiếu nhập đã duyệt</b>. Tiêu chí <i>chất
+	lượng</i> lấy từ hai ô có sẵn trên bảng mặt hàng Phiếu Nhập Kho Hàng Mua — <i>Số lượng chấp
+	nhận</i> và <i>Số lượng từ chối</i> — đúng như anh chốt 03/09; <b>không phải</b> Kiểm tra chất
+	lượng, cũng không phải luồng KCS. Chỉ cần <b>duyệt phiếu nhập</b> là hai tiêu chí kia có số ngay.
+</p>
+
+<h2 id="e">E. Cần anh chốt</h2>
+
+<div class="tw">
+<table class="res">
+	<thead><tr><th style="width:52px">#</th><th>Câu hỏi</th><th>Vì sao cần chốt trước khi code</th></tr></thead>
+	<tbody>
+		<tr><td>1</td>
+			<td><b>Duyệt hồi tố mục A và B</b> — màn hình Tính toán đang chạy trên cổng 8012</td>
+			<td>Em code trước mockup, sai thứ tự. Anh xem màn hình thật rồi duyệt thì em mới
+				chuyển tính năng sang <i>Chờ test</i> được</td></tr>
+		<tr><td>2</td>
+			<td><b>Tab Lập kế hoạch bấm xong thì ra một đơn mua hay nhiều?</b> Gộp theo nhà cung cấp,
+				hay mỗi vật tư một đơn?</td>
+			<td>Đầu bài không nói. Chọn sai thì người mua phải gộp tay lại</td></tr>
+		<tr><td>3</td>
+			<td><b>Ngày cần hàng trên đơn mua lấy theo gì?</b> Ngày đầu kỳ thiếu, hay ngày giao của
+				đơn bán sớm nhất?</td>
+			<td>Gộp tổng các kỳ thành một dòng nên mất thông tin kỳ. Đặt sai ngày là hàng về trễ</td></tr>
+		<tr><td>4</td>
+			<td><b>Phần V có cần hạn mới không?</b> Hạn cũ <code>26/08</code> đã qua 10 ngày</td>
+			<td>Còn 2 trong 5 bước chưa làm; em cần biết đường xếp việc</td></tr>
+	</tbody>
+</table>
+</div>
+
+<p class="note">
+	<b>Đã chốt rồi, ghi lại để khỏi hỏi lại:</b> thứ tự nổ định mức <i>BOM → BOM Template → liệt kê</i>
+	(02/09) · nhiều kỳ chỉ áp cho Kiểu 1 (19/08) · hai kho ký gửi và khuyến mãi <b>vẫn tính là hàng
+	dùng được</b> (03/09) · ô <i>Thời Gian Bắt Đầu</i> đặt <b>bắt buộc</b> (03/09, đã áp 04/09) ·
+	nổ định mức <b>trừ bán thành phẩm đang có trong kho</b> (05/09).
+</p>
+
+</div>
