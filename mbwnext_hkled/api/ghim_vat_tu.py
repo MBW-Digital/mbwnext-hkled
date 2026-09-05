@@ -126,7 +126,7 @@ def ton_tu_do(ma_hang, tru_ghim_vat_tu_cua=None):
 	trả về thành tự do, vì sắp bị viết đè. Phần **thành phẩm** nó giữ thì KHÔNG trả về — số hàng
 	đó đã đặt riêng cho nó rồi, không được đem ra làm vật tư cho chính nó lần nữa.
 
-	⚠ `_kho_hop_le()` gọi **không kèm công ty**, cùng lý do đã ghi ở `_con_phai_lam`: hàm này gom
+	⚠ `_kho_hop_le()` gọi **không kèm công ty**: hàm này gom
 	  mọi đơn đang ghim chứ không riêng công ty nào. Site hiện có 1 công ty; ngày nào có công ty
 	  thứ hai thì sửa cùng lúc cả ba chỗ.
 	"""
@@ -155,8 +155,9 @@ def _phuong_phap(ma_hang):
 def _phai_san_xuat(doc):
 	"""{mã thành phẩm: số lượng đơn này còn phải LÀM RA} — đầu vào cấp 0 của phép bóc.
 
-	🔴 **Đây là chỗ dễ nhầm nhất của cả tính năng.** `_con_phai_lam()` bên `kiem_tra_ton_kho`
-	  cũng tên na ná nhưng tính `ghim − tồn`, tức *"phần đã ghim mà kho không có"*. Ở đây phải là
+	🔴 **Đây là chỗ dễ nhầm nhất của cả tính năng.** Từng có một hàm `_con_phai_lam()` bên
+	  `kiem_tra_ton_kho` tên na ná mà tính `ghim − tồn`, tức *"phần đã ghim mà kho không có"* —
+	  hàm đó **đã xoá 05/09** vì không còn ai gọi. Ở đây phải là
 	  `cần − đã giao − đã ghim`, tức *"phần chưa có chỗ dựa nào, buộc phải sản xuất"*.
 
 	  Khác nhau tới mức đảo ngược kết quả: `chan_giu_cho_vuot_ton` không cho ghim vượt tồn, nên

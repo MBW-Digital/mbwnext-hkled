@@ -537,9 +537,14 @@ function tao_phieu(frm, dialog) {
 			const kq = r.message;
 			if (!kq) return;
 			if (!kq.co_phieu) {
+				// ⚠ Phải hiện CẢ `canh_bao`, không chỉ `thong_bao` — nhánh này có ca
+				//   *"mọi mã cần mua đều không tra được trong danh mục"*, mà **mã nào**
+				//   thì nằm trong `canh_bao`. Bỏ đi là người dùng biết mình hỏng nhưng
+				//   không biết hỏng ở đâu. Cùng lỗi với nhánh tạo phiếu, rà ra 05/09.
 				frappe.msgprint({
 					title: __(NHAN_NUT_PHIEU),
-					message: frappe.utils.escape_html(kq.thong_bao),
+					message:
+						frappe.utils.escape_html(kq.thong_bao) + khoi_canh_bao(kq.canh_bao),
 					indicator: "blue",
 				});
 				return;
@@ -552,6 +557,23 @@ function tao_phieu(frm, dialog) {
 			if (kq.ngay_bi_kep) {
 				frappe.show_alert({
 					message: __("Ngày giao của đơn đã qua nên Ngày Cần lấy theo hôm nay."),
+					indicator: "orange",
+				});
+			}
+			// 🔴 THÊM 05/09 — anh Thắng báo 15:04: *"anh thử lại ấn nút lần thứ 2 chưa thấy
+			// cảnh báo gì"*. Anh ấy đúng nguyên văn: máy chủ VẪN trả `canh_bao`, nhưng nhánh
+			// này **vứt đi**. `khoi_canh_bao()` chỉ dùng trong hộp thoại Kiểm Tra Tồn Kho.
+			//
+			// Cảnh báo nặng nhất ở đây là *"đơn này đã có phiếu yêu cầu mặt hàng rồi"* — bỏ
+			// nó đi thì người dùng lập phiếu trùng mà không biết, tức mua trùng bằng tiền thật.
+			//
+			// Hiện SAU khi chuyển trang: hộp thoại nổi lên trên phiếu vừa dựng, người dùng đọc
+			// rồi mới quyết định bấm Lưu. Dùng `msgprint` chứ không `show_alert` — alert tự tắt
+			// sau vài giây, mà đây là thứ phải đọc.
+			if (kq.canh_bao && kq.canh_bao.length) {
+				frappe.msgprint({
+					title: __("Đọc trước khi lưu phiếu"),
+					message: khoi_canh_bao(kq.canh_bao),
 					indicator: "orange",
 				});
 			}
