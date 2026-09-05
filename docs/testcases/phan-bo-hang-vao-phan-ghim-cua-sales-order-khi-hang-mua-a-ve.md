@@ -122,6 +122,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-EDGE-18 | — | Hàng nhập vào **kho ngoài tập tính tồn** | Không chia được, và **phải nói ra** | Chưa chạy — site chưa có phiếu nhập vào `Kho trung chuyển`/`Kho đang sản xuất`. Code có nhánh riêng, hộp thoại có khối vàng | ⏳ Chưa chạy |
 | TC-EDGE-19 | #1 | **Huỷ phiếu nhập** sau khi đã phân bổ | Thu hồi **đúng đơn đã được chia**, đơn khác không bị đụng | Về 12 `NVL 3` ➜ phân bổ cho `SO-26-00028` ➜ huỷ phiếu ➜ tự cắt đúng 12 của chính đơn đó, `SO-26-00026` giữ nguyên 7. Quét sạch | ✅ Pass |
 | TC-EDGE-22 | #1 | **Trên giao diện thật:** cả vòng nhập ➜ Phân Bổ ➜ **Huỷ phiếu** | Câu thông báo thu hồi phải **hiện ra**, nêu đích danh đơn bị cắt | ✅ `PNK-26-00005` (3 `Bán thành phẩm 1`) ➜ Phân Bổ rót **4** cho `SO-26-00028` ➜ bấm **Cancel** ➜ hộp thoại *"Thu hồi phần đã phân bổ — SO-26-00028 · Bán thành phẩm 1: vật tư −4 (đã nhận từ phiếu này)"*. Site về nguyên trạng: tồn 6, `SO-26-00028` về 0, `SO-26-00026` **không bị đụng**, quét sạch | ✅ Pass |
+| TC-EDGE-23 | #1 | **Trên giao diện thật:** bấm nút **Phân Bổ**, đọc hộp thoại kết quả | Bảng *Đã chia* và khối *chưa bật Ghim* phải hiện đúng số máy chủ trả về | ✅ Chạy lại sau khi gộp `main` 05/09 15:4x trên `PNK-26-00003`: *Bán thành phẩm 1 · SO-26-00028 · ghim thêm **1** · Vật tư*, kèm khối xanh liệt kê `SAL-ORD-2026-00013`/`-00012` mỗi đơn thiếu 1. Ô *Đã Phân Bổ Cho* cập nhật ngay. Đã thu hồi sau đó, site về nguyên trạng | ✅ Pass |
+| TC-EDGE-24 | #1 | **Trên giao diện thật:** sửa ô *Đã Ghim* trên đơn **đã duyệt** rồi Ctrl+S (đúng lỗi anh Thắng báo 05/09) | Lưu được, `in_words` **không bị xoá**, ô *Giữ Nguyên* tự tích, phần dôi chảy sang dòng khác | ✅ `SO-26-00026` · `NVL 1` 4 → 3 ➜ *"submitted successfully"*, `in_words` giữ nguyên *"VND Hai Triệu Một Trăm Sáu Mươi Nghìn chẵn"*, *Giữ Nguyên* tự tích, `Bán thành phẩm 1` 5 → 6 và `NVL 2` 8 → 6. Đã trả số về sau khi đo | ✅ Pass |
 | TC-EDGE-20 | #2 | Nhật ký phân bổ ghi trên phiếu nhập | Có, và **cộng dồn** chứ không ghi đè | `custom_ghim_da_phan_bo` = `[{"ma":"NVL 3","don":"SO-26-00028","them":12.0,"loai":"Vật tư"}]` | ✅ Pass |
 | TC-EDGE-21 | #1 | **Ca thật đã xảy ra 05/09**: anh Thắng phân bổ 10 `NVL 3` rồi huỷ phiếu, lúc chưa có cơ chế thu hồi | Phép kiểm phải bắt được | Bắt đúng: `[#1] NVL 3: tổng ghim 17 > tồn thực tế 7`. Đã sửa dữ liệu thật bằng nhật ký hồi tố ➜ cắt đúng 10 của `SO-26-00028` | ✅ Pass |
 
@@ -240,7 +242,9 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**65 ca · 62 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 2 chưa chạy.** Trong đó **7 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
+**Đã chạy lại toàn bộ sau khi gộp vào `main` ngày 05/09 15:4x — xem mục cuối file.**
+
+**67 ca · 64 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 2 chưa chạy.** Trong đó **9 ca chạy trên giao diện thật** và **7 tài khoản khác nhau** cho phân quyền.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
@@ -255,9 +259,142 @@ tính tồn).
 **`TC-ISO-03` và `TC-ISO-04` đã đóng 05/09** sau khi Tuấn chạy `migrate` trên `mbw.com`.
 
 ⚠ **Dữ liệu để lại trên site sau vòng test này** (cố ý, để anh Thắng bấm lại được): phiếu nhập
-`PNK-26-00003` — 5 `Bán thành phẩm 1` vào *Kho bán thành phẩm*, **đã duyệt và đã phân bổ thật**.
-Sổ ghim của `SO-26-00026` hiện là `Bán thành phẩm 1` **6/9**, `NVL 1` 3/3, `NVL 2` 6/6, `NVL 3`
-7/24. Muốn trả site về trạng thái trước đó thì huỷ phiếu rồi mở đơn lưu lại một lần.
+`PNK-26-00003` — 5 `Bán thành phẩm 1` vào *Kho bán thành phẩm*, **đã duyệt**.
+
+🔴 **Đính chính 05/09 15:4x:** đoạn trên trước đây còn ghi phiếu này *"đã phân bổ thật"* và sổ ghim
+của `SO-26-00026` là `Bán thành phẩm 1` 6/9, `NVL 1` 3/3, `NVL 2` 6/6. **Đo lại thì không phải
+vậy**: ô *Đã Phân Bổ Cho* của phiếu trống, và sổ ghim là `Bán thành phẩm 1` **5/9**, `NVL 1`
+**4/4**, `NVL 2` **8/8**, `NVL 3` 7/24. Ai đó đã thu hồi lại giữa hai lần đo — có thể là vòng huỷ
+phiếu `PNK-26-00005` cuối ngày. Ghi chú kiểu này **hỏng lặng lẽ**: không có phép kiểm nào báo là
+nó đã sai. Người đọc sau phải đo lại chứ đừng tin số ở đây.
 
 Cả ba đường vào phần ghim nay đã khép: **người nhập tay** (ô Số Lượng Giữ Chỗ) · **sản xuất xong**
 (tự chuyển) · **hàng mua về** (nút Phân Bổ).
+
+---
+
+## Chạy lại sau khi gộp vào `main` — 05/09 15:4x
+
+Nền: `upstream/main` = `d03cf34`. Code trên cổng 8012 trùng khớp `main`.
+
+### 1. Sổ cam kết — 8 bất biến mục 12e
+
+| # | Nội dung | Kết quả |
+|---|---|---|
+| 1 | Tổng ghim ≤ tồn thực tế, từng mã | OK |
+| 2 | Không dòng ghim âm | OK |
+| 3 | Không ghim trên đơn đã huỷ / đã đóng / đã bỏ tích | OK |
+| 4 | Ghim ≤ định mức cần (`required_qty`) | OK |
+| 5 | Giữ chỗ thành phẩm ≤ số còn phải giao | OK |
+| 6 | Không dòng ghim mồ côi | OK |
+| 7 | `kiem_bat_bien()` | **0 lỗi** |
+| 8 | Tổng chi tiết == tổng đã trừ | Khớp cả 6 mã |
+
+### 2. Tính lại không ghi (`dong_bo_doc`, không `save`)
+
+`SO-26-00028` tính lại ra **y hệt** số đang lưu — ổn định.
+
+`SO-26-00026` **lệch 3 dòng**: `Bán thành phẩm 1` 5 → 6, `NVL 1` 4 → 3, `NVL 2` 8 → 6.
+**Không phải lỗi.** Sổ này *phụ thuộc đường đi* — đó là lý do nó được **lưu** chứ không **suy ra**
+(mục 8.1). Có 1 `Bán thành phẩm 1` tự do chưa ai giữ; tính từ đầu thì đơn lấy nốt, còn sổ hiện tại
+ghi lại đúng thứ tự việc đã xảy ra. Lệch về phía **giữ ít hơn mức có thể**, không vượt tồn — bất
+biến #1 vẫn nguyên.
+
+### 3. Chuyển ghim sau sản xuất — cả hai chiều (chạy rồi `rollback`)
+
+Dựng một Lệnh sản xuất `Thành phẩm 1` × 3 trỏ về `SO-26-00026`, giả lập 3 cái vừa nhập kho:
+
+- **Xuôi:** *"SO-26-00026 · Thành phẩm 1: ghim 31 → 34"*, và **vật tư tự nhả**: hai dòng
+  `NVL 1`/`NVL 2` **biến mất khỏi sổ**, `Bán thành phẩm 1` 5 → 6. Đúng cơ chế mục 8.4 — không có
+  phép trừ riêng nào cho vật tư.
+- **Ngược (huỷ):** *"ghim 34 → 31"*, vật tư quay lại. Bất biến sạch ở cả hai đầu.
+- Ca đối chứng: cùng lệnh nhưng **không có tồn tự do** ➜ trả về rỗng, **không ghim khống**. Ba
+  trần (đơn còn thiếu · số vừa làm · tồn tự do) đều ăn.
+- Sản xuất một mã **không nằm trên dòng đơn** (`Bán thành phẩm 1`) ➜ không chuyển gì. Đúng: phần
+  đó là ghim *vật tư*, không phải ghim *thành phẩm*.
+
+### 4. Phân bổ · bấm lại · thu hồi — vòng đầy đủ trên `PNK-26-00003`
+
+Chạy ở tầng máy chủ rồi `rollback`:
+
+| Bước | Kết quả |
+|---|---|
+| `phan_bo` | Chia **1** `Bán thành phẩm 1` cho `SO-26-00028`; nhật ký ghi vào ô *Đã Phân Bổ Cho* |
+| Bấm **lần hai** | `dong` rỗng, **sổ ghim không đổi một số nào** — không rót trùng |
+| `thu_hoi_phan_bo` | *"SO-26-00028 · Bán thành phẩm 1: vật tư −1 (đã nhận từ phiếu này)"* |
+| Sau thu hồi | Sổ về **đúng** trạng thái trước, `kiem_bat_bien()` sạch |
+
+**Rồi bấm thật nút Phân Bổ trên giao diện** (`TC-EDGE-23`): hộp thoại **"Phân bổ hàng về"** hiện
+bảng *Đã chia* — `Bán thành phẩm 1` · `SO-26-00028` · ghim thêm **1** · loại *Vật tư*, cùng khối
+xanh *"Đơn đang thiếu mã này nhưng **CHƯA bật Ghim Tồn Khả Dụng** — không được chia"* liệt kê
+`SAL-ORD-2026-00013` và `SAL-ORD-2026-00012`, mỗi đơn còn thiếu 1. Ô *Đã Phân Bổ Cho* trên phiếu
+cập nhật ngay. **Khớp từng số với kết quả đo ở tầng máy chủ.** Đã thu hồi và xoá nhật ký sau đó;
+site về đúng trạng thái đầu buổi.
+
+### 5. Sửa tay số ghim rồi Lưu — lỗi anh Thắng báo, bấm lại trên giao diện (`TC-EDGE-24`)
+
+Mở `SO-26-00026` **đã duyệt**, sửa ô *Đã Ghim* của `NVL 1` từ 4 xuống 3, Ctrl+S:
+
+- **Lưu được**, báo xanh *"Sales Order has been submitted successfully"* — **không** còn
+  *"Cannot Update After Submit — In Words (Company Currency)"*.
+- `in_words` và `base_in_words` **giữ nguyên** *"VND Hai Triệu Một Trăm Sáu Mươi Nghìn chẵn"*,
+  `grand_total` không đổi ⟵ chứng minh việc đổi tên `qty` ➜ `so_luong_ghim` vẫn đang chặn đúng cú
+  kích nhầm handler của `erpnext.TransactionController`.
+- Ô **Giữ Nguyên** của dòng đó **tự tích**, và phần dôi ra chảy đúng chỗ: `Bán thành phẩm 1`
+  5 → 6, `NVL 2` 8 → 6, cột *Phải Làm* tính lại theo.
+- Lưới hiện đủ 6 cột **Vật Tư · Từ Mặt Hàng · Phải Làm · Đã Ghim · Nhu Cầu · Giữ Nguyên**; đọc
+  meta thì **chỉ `so_luong_ghim` không read-only**, cả 7 trường đều `allow_on_submit`.
+
+Đã trả sổ về đúng số đầu buổi sau khi đo.
+
+### 6. Phân quyền — 7 tài khoản
+
+| Tài khoản | Vai trò | Thấy đơn | Nút Phân Bổ | Mở Kiểm Tra Tồn Kho |
+|---|---|---|---|---|
+| `Administrator` | tất cả | 2/2 | **Được** | Được |
+| `hkled@gmail.com` | tất cả trừ Administrator | 2/2 | **Được** | Được |
+| `test.thukho@hkled.test` | Stock User | 2/2 | **Được** | Được |
+| `test.mua@hkled.test` | Purchase + Stock User | 2/2 | **Được** | Được |
+| `test.mua.gioihan@hkled.test` | Purchase + Stock User, giới hạn KH `a` | **0/2** | **Chặn** | `PermissionError` |
+| `test.gioihan.sales@hkled.test` | Purchase + Sales User, giới hạn KH `a` | **0/2** | **Chặn** | `PermissionError` |
+| `test.gioihan.lenh@hkled.test` | Manufacturing User, giới hạn 1 LSX | lỗi quyền | **Chặn** | `PermissionError` |
+
+Câu chặn nguyên văn, đúng loại lỗi `PermissionError`:
+
+> *Nút Phân Bổ chia hàng cho **tất cả** Đơn Bán đang ghim theo thứ tự cần gấp, nên chỉ người xem
+> được toàn bộ đơn mới bấm được. Tài khoản của anh/chị đang xem được **0** trên **2** đơn đang ghim.*
+
+🔒 Bốn dòng đầu giữ đúng chốt của anh Thắng 05/09 11:09 — *thủ kho và nhân viên mua hàng được bấm*.
+Lỗ hổng đã vá ở `bd48da6` **không mở lại**: người bị giới hạn phạm vi vẫn không ghi được sang đơn
+họ không thấy.
+
+### 7. Va chạm với app khác (`TC-REGR`)
+
+Quét `doc_events` toàn bench, những chỗ `mbwnext_hkled` đứng cạnh app khác trên cùng DocType:
+
+| DocType | Cùng hook |
+|---|---|
+| `Delivery Note` | `advanced_stock` · `advanced_accounting` · `advanced_selling` |
+| `Sales Invoice` | `advanced_selling` · `advanced_accounting` · `advanced_stock` · `integration_dms_cozymiennam` · `pos_next` |
+| `Purchase Receipt` | `advanced_accounting` · **`advanced_stock` (cùng `before_submit`)** |
+| `Stock Entry` | **`advanced_stock` (cùng `before_submit`)** |
+| `Sales Order` | `advanced_accounting` · `advanced_selling` · `advanced_stock` · `localization` |
+| `Stock Reconciliation` | **`advanced_stock` (cùng `before_submit`)** |
+| `Material Request` | chỉ `mbwnext_hkled` |
+
+Thứ tự nạp (`sites/apps.txt`): `advanced_stock` **trước** `mbwnext_hkled`. Ba chỗ trùng
+`before_submit` đều là hàm **chỉ đọc rồi `throw`**, không ghi trường nào — không có chuyện app nạp
+sau ghi đè app nạp trước.
+
+⚠ Trong `apps.txt` còn dòng **`hkled_canh_bao`** — app tạm dựng 26/08 để đo điểm chặn
+`before_app_install`, docstring của chính nó ghi *"Xoá sau khi đo xong"*. Nó **không cài trên
+site nào**, chỉ khai `before_app_install`, không có `doc_events` — **không ảnh hưởng Phần IV**.
+Ghi ra đây để ai đó dọn, không phải việc của bộ test này.
+
+---
+
+**Tổng kết vòng chạy lại: không phát hiện hồi quy nào.** Ba lỗi anh Thắng từng bấm ra — cột trùng
+tên handler, câu chữ nói ngược, cảnh báo không hiện — **đều đã kiểm lại trên giao diện thật**, cả
+ba đúng. Hai ca `TC-EDGE-11` và `TC-EDGE-18` vẫn **chưa chạy được** vì thiếu dữ liệu (cần một đơn
+không vướng Kế hoạch sản xuất để huỷ + sửa đổi; cần một phiếu nhập vào kho ngoài tập tính tồn).
+`TC-PERM-02` vẫn **Fail**, ngoài phạm vi, đã chốt giữ nguyên.
