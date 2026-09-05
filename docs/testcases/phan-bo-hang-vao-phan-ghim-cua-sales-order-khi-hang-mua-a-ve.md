@@ -11,9 +11,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 
 > ### ⚠ Đây là ĐỢT 1 — nút *Phân Bổ* CHƯA CÓ
 >
-> Đợt này dựng **chỗ chứa · luật cấp phát · nhả vật tư khi sản xuất xong · nút Phân Bổ**. Phần
-> máy chủ đã chạy đủ; **hộp thoại của nút chưa bấm được trên giao diện** vì phiên đăng nhập trên
-> 8012 bị xoá lúc nạp file JS mới — xem `TC-HAPPY-12`.
+> Đợt này dựng **chỗ chứa · luật cấp phát · nhả vật tư khi sản xuất xong · nút Phân Bổ**. Cả bốn
+> phần đều đã chạy, trong đó **6 ca bấm thật trên giao diện** cổng 8012.
 >
 > ### ⚠ Cách chạy vòng một — đọc trước khi tin cột KQ thực tế
 >
@@ -69,7 +68,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-09 | **Nút Phân Bổ**: hàng về 10 `NVL 2`, đơn còn thiếu 6 | Rót đúng phần còn thiếu, phần dư để tự do | Rót **6** vào `SO-26-00026` (`NVL 2` 32/38 → 38/38), 4 còn lại vẫn tự do. Quét sạch | ✅ Pass |
 | TC-HAPPY-10 | Phân Bổ **lan xuống nhiều cấp** | Hàng về là bán thành phẩm ➜ nguyên vật liệu để làm nó được nhả ra | Về 5 `Bán thành phẩm 1` ➜ ghim 1 → **6**, kéo theo `NVL 1` 8 → 3 và `NVL 2` 16 → 6 (còn phải làm 8 → 3). Quét sạch | ✅ Pass |
 | TC-HAPPY-11 | Bấm Phân Bổ **lần thứ hai** | Không nhân đôi, không cần cờ "đã phân bổ" | 0 dòng rót thêm — tồn tự do đã hết. Sổ không đổi | ✅ Pass |
-| TC-HAPPY-12 | **Trên giao diện thật:** nút *Phân Bổ* trên phiếu nhập đã duyệt, hộp thoại kết quả | Nút hiện, hộp thoại liệt kê đã chia gì cho đơn nào | ⏳ Chưa chạy — mất phiên đăng nhập 8012 sau `bench clear-cache`. Kết quả máy chủ đã biết trước: rót 5 `Bán thành phẩm 1` cho `SO-26-00026` | ⏳ Chưa chạy |
+| TC-HAPPY-12 | **Trên giao diện thật:** nút *Phân Bổ* trên phiếu nhập đã duyệt, hộp thoại kết quả | Nút hiện, hộp thoại liệt kê đã chia gì cho đơn nào | Bấm trên `PNK-26-00003`: hộp thoại **Phân bổ hàng về** hiện bảng *Bán thành phẩm 1 · SO-26-00026 · ghim thêm 5 · Vật tư*, kèm khối xanh liệt kê 2 đơn chưa bật Ghim. Đọc lại máy chủ: `Bán thành phẩm 1` 1 → **6**, kéo theo `NVL 1` 8 → 3 và `NVL 2` 16 → 6. Quét bất biến sạch | ✅ Pass |
+| TC-HAPPY-13 | **Trên giao diện thật:** bấm *Phân Bổ* lần thứ hai | Không nhân đôi | *"Không chia được gì thêm — hoặc các đơn đã ghim đủ, hoặc hàng vừa về đã có chủ."* Sổ không đổi | ✅ Pass |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -168,16 +168,20 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**50 ca · 43 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 6 chưa chạy.** Trong đó **4 ca chạy trên giao diện thật**.
+**51 ca · 45 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 5 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-Sáu ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
+Năm ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
 phiếu nhập vào kho ngoài tập) · `TC-EDGE-19` (**chờ anh Thắng chốt**: huỷ phiếu nhập sau khi đã
-phân bổ thì gỡ ghim theo hay để nguyên và báo) · `TC-HAPPY-12` (hộp thoại nút Phân Bổ trên giao
-diện) · `TC-ISO-03` · `TC-ISO-04`.
+phân bổ thì gỡ ghim theo hay để nguyên và báo) · `TC-ISO-03` · `TC-ISO-04`.
+
+⚠ **Dữ liệu để lại trên site sau vòng test này** (cố ý, để anh Thắng bấm lại được): phiếu nhập
+`PNK-26-00003` — 5 `Bán thành phẩm 1` vào *Kho bán thành phẩm*, **đã duyệt và đã phân bổ thật**.
+Sổ ghim của `SO-26-00026` hiện là `Bán thành phẩm 1` **6/9**, `NVL 1` 3/3, `NVL 2` 6/6, `NVL 3`
+7/24. Muốn trả site về trạng thái trước đó thì huỷ phiếu rồi mở đơn lưu lại một lần.
 
 Cả ba đường vào phần ghim nay đã khép: **người nhập tay** (ô Số Lượng Giữ Chỗ) · **sản xuất xong**
 (tự chuyển) · **hàng mua về** (nút Phân Bổ).
