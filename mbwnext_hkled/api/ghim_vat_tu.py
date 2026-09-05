@@ -112,8 +112,8 @@ def ghim_vat_tu(tru_don=None):
 		return {}
 	rows = frappe.get_all(
 		"HKLed Pinned Material",
-		filters={"parent": ["in", don], "parenttype": "Sales Order", "qty": [">", 0]},
-		fields=["item_code", "sum(qty) as giu"],
+		filters={"parent": ["in", don], "parenttype": "Sales Order", "so_luong_ghim": [">", 0]},
+		fields=["item_code", "sum(so_luong_ghim) as giu"],
 		group_by="item_code",
 	)
 	return {r["item_code"]: flt(r["giu"]) for r in rows}
@@ -216,14 +216,14 @@ def dong_bo_doc(doc, bo_qua_sua_tay=False):
 		for r in frappe.get_all(
 			TEN_BANG,
 			filters={"parent": doc.name, "parenttype": "Sales Order"},
-			fields=["source_item", "item_code", "qty"],
+			fields=["source_item", "item_code", "so_luong_ghim"],
 		):
-			duoi_db[(r["source_item"], r["item_code"])] = flt(r["qty"])
+			duoi_db[(r["source_item"], r["item_code"])] = flt(r["so_luong_ghim"])
 
 	cu = {}
 	for r in doc.get(TRUONG_BANG) or []:
 		khoa = (r.source_item, r.item_code)
-		if khoa in duoi_db and abs(flt(r.qty) - duoi_db[khoa]) > 1e-9:
+		if khoa in duoi_db and abs(flt(r.so_luong_ghim) - duoi_db[khoa]) > 1e-9:
 			r.sua_tay = 1
 		cu[khoa] = r
 
@@ -275,7 +275,7 @@ def dong_bo_doc(doc, bo_qua_sua_tay=False):
 			#   05/09 09:39), nên nó truyền `bo_qua_sua_tay`.
 			dong_cu = cu.get((m, nvl))
 			if dong_cu is not None and dong_cu.get("sua_tay") and not bo_qua_sua_tay:
-				nguoi_dat = flt(dong_cu.qty)
+				nguoi_dat = flt(dong_cu.so_luong_ghim)
 				if nguoi_dat - duoc > 1e-9:
 					# Gõ nhiều hơn phần giữ được. KHÔNG chặn cứng — người dùng đang sửa cả đơn,
 					# ném lỗi ở một dòng bảng phụ là chặn luôn việc họ định làm. Kẹp xuống và
@@ -292,7 +292,7 @@ def dong_bo_doc(doc, bo_qua_sua_tay=False):
 					"item_code": nvl,
 					"source_item": m,
 					"source_qty": flt(tang[m]),
-					"qty": duoc,
+					"so_luong_ghim": duoc,
 					"required_qty": flt(can),
 					"bom": ten_bom,
 					"bom_modified": sua_luc,
@@ -460,6 +460,48 @@ def chuyen_ghim_sau_san_xuat(so_luong, lsx, nguoc=False):
 	return viec
 
 
+def _kiem_quyen_phan_bo():
+	"""Chặn người **không thấy hết Đơn Bán** bấm nút Phân Bổ.
+
+	🔴 **Lỗ hổng thật, Tuấn hỏi ra ngày 05/09 và đo được ngay:** bản đầu chỉ kiểm quyền *đọc
+	phiếu nhập* rồi ghi Đơn Bán bằng `ignore_permissions=True`. Một user *Purchase User* bị
+	User Permission giới hạn — chỉ thấy **14/34** Đơn Bán — vẫn bấm được nút, và hàm **đã lưu**
+	`SO-26-00026` với `SO-26-00028`, hai đơn mà chính user đó mở ra là `PermissionError`.
+
+	## Vì sao không thể "chỉ phân bổ cho đơn user thấy được"
+
+	Phép chia là **toàn cục theo thứ tự ưu tiên**: đơn cần gấp nhất lấy trước. Nếu bỏ qua những
+	đơn người bấm không thấy thì kết quả **phụ thuộc vào ai bấm** — cùng một phiếu nhập, hai
+	người bấm ra hai cách chia. Đó là thứ tệ hơn cả việc chặn.
+
+	➜ Nên luật là: **thấy được hết thì mới bấm được**. Người điều phối hàng về vốn phải nhìn
+	được toàn bộ đơn đang chờ, nếu không thì họ cũng không kiểm được kết quả mình vừa tạo ra.
+
+	🔒 **Anh Thắng chốt 05/09 11:09: *"thủ kho và nhân viên mua hàng được bấm nút phân bổ em
+	nhé"*** — tức luật dừng đúng ở đây: **chỉ cần thấy hết đơn**, KHÔNG bắt buộc phải có quyền
+	sửa Đơn Bán.
+
+	Đo được lúc hỏi: *Purchase User* và *Stock User* có `has_permission("Sales Order", "write")`
+	= **False** — họ không mở Đơn Bán ra sửa được một chữ nào, nhưng vẫn bấm được nút này và cú
+	bấm đó đổi phần ghim của mọi đơn. Anh Thắng biết điều đó và vẫn chọn cho phép: người nhận
+	hàng về chính là người biết hàng vừa tới.
+
+	➜ Đừng thắt thêm nếu không có chốt mới. Thắt là thủ kho và mua hàng mất nút.
+	"""
+	tong = frappe.db.count("Sales Order", loc_don_song())
+	thay = len(frappe.get_list("Sales Order", filters=loc_don_song(), limit_page_length=0, ignore_ifnull=True))
+	if thay < tong:
+		frappe.throw(
+			_(
+				"Nút Phân Bổ chia hàng cho <b>tất cả</b> Đơn Bán đang ghim theo thứ tự cần gấp, "
+				"nên chỉ người xem được toàn bộ đơn mới bấm được.<br><br>"
+				"Tài khoản của anh/chị đang xem được <b>{0}</b> trên <b>{1}</b> đơn đang ghim."
+			).format(thay, tong),
+			title=_("Không đủ quyền phân bổ"),
+			exc=frappe.PermissionError,
+		)
+
+
 @frappe.whitelist()
 def phan_bo(purchase_receipt):
 	"""Nút **Phân Bổ** trên Phiếu nhập mua — chia hàng vừa về cho các đơn chưa ghim đủ.
@@ -496,6 +538,7 @@ def phan_bo(purchase_receipt):
 	"""
 	pr = frappe.get_doc("Purchase Receipt", purchase_receipt)
 	pr.check_permission("read")
+	_kiem_quyen_phan_bo()
 	if pr.docstatus != 1:
 		frappe.throw(
 			_("Phiếu nhập mua chưa được duyệt nên hàng chưa vào kho — chưa phân bổ được."),
@@ -529,7 +572,7 @@ def phan_bo(purchase_receipt):
 	for ten_don in don_theo_uu_tien():
 		doc = frappe.get_doc("Sales Order", ten_don)
 		truoc = {r.name: flt(r.get("custom_so_luong_giu_cho")) for r in doc.get("items") or []}
-		vt_truoc = {(r.source_item, r.item_code): flt(r.qty) for r in doc.get(TRUONG_BANG) or []}
+		vt_truoc = {(r.source_item, r.item_code): flt(r.so_luong_ghim) for r in doc.get(TRUONG_BANG) or []}
 
 		for row in doc.get("items") or []:
 			if row.item_code not in ma_ve:
@@ -559,7 +602,7 @@ def phan_bo(purchase_receipt):
 					{"ma": row.item_code, "don": ten_don, "them": delta, "loai": "Hàng trên đơn"}
 				)
 		for r in doc.get(TRUONG_BANG) or []:
-			delta = flt(r.qty) - vt_truoc.get((r.source_item, r.item_code), 0)
+			delta = flt(r.so_luong_ghim) - vt_truoc.get((r.source_item, r.item_code), 0)
 			if delta > 0 and r.item_code in ma_ve:
 				ket["dong"].append(
 					{"ma": r.item_code, "don": ten_don, "them": delta, "loai": "Vật tư"}
@@ -677,10 +720,10 @@ def _cat_ghim(ten_don, ma, so_luong, ly_do):
 	for r in doc.get(TRUONG_BANG) or []:
 		if r.item_code != ma or con <= 0:
 			continue
-		bot = min(flt(r.qty), con)
+		bot = min(flt(r.so_luong_ghim), con)
 		if bot <= 0:
 			continue
-		r.qty = flt(r.qty) - bot
+		r.so_luong_ghim = flt(r.so_luong_ghim) - bot
 		r.sua_tay = 1        # đã bị can thiệp — đừng tự ghim lại ở lần đồng bộ kế tiếp
 		con -= bot
 		doi = True
@@ -718,23 +761,23 @@ def kiem_bat_bien():
 	dong = frappe.get_all(
 		"HKLed Pinned Material",
 		filters={"parenttype": "Sales Order"},
-		fields=["name", "parent", "item_code", "source_item", "qty", "required_qty", "bom", "bom_modified"],
+		fields=["name", "parent", "item_code", "source_item", "so_luong_ghim", "required_qty", "bom", "bom_modified"],
 	)
 
 	# 4. Không dòng nào ghim nhiều hơn nhu cầu của chính nó.
 	for d in dong:
-		if flt(d["qty"]) - flt(d["required_qty"]) > 1e-9:
+		if flt(d["so_luong_ghim"]) - flt(d["required_qty"]) > 1e-9:
 			loi.append(
-				f"[#4] {d['parent']} · {d['item_code']}: ghim {_so(d['qty'])} > nhu cầu {_so(d['required_qty'])}"
+				f"[#4] {d['parent']} · {d['item_code']}: ghim {_so(d['so_luong_ghim'])} > nhu cầu {_so(d['required_qty'])}"
 			)
 
-	hieu_luc = [d for d in dong if d["parent"] in song and flt(d["qty"]) > 0]
+	hieu_luc = [d for d in dong if d["parent"] in song and flt(d["so_luong_ghim"]) > 0]
 
 	# 1. Tổng ghim (thành phẩm + vật tư) của mọi đơn còn sống ≤ tồn thực tế.
 	tp = ghim_thanh_pham()
 	vt = {}
 	for d in hieu_luc:
-		vt[d["item_code"]] = vt.get(d["item_code"], 0) + flt(d["qty"])
+		vt[d["item_code"]] = vt.get(d["item_code"], 0) + flt(d["so_luong_ghim"])
 	ma = set(tp) | set(vt)
 	ton = _ton_thuc_te(ma, _kho_hop_le()) if ma else {}
 	for m in sorted(ma):
@@ -760,7 +803,7 @@ def kiem_bat_bien():
 	#    — luật 2 mục 2 — miễn là không lọt vào phép cộng nào; `hieu_luc` đã lọc, kiểm lại để
 	#    bắt trường hợp ai đó viết truy vấn mới mà quên lọc.)
 	for d in dong:
-		if d["parent"] not in song and flt(d["qty"]) > 0:
+		if d["parent"] not in song and flt(d["so_luong_ghim"]) > 0:
 			chet = frappe.db.get_value("Sales Order", d["parent"], ["docstatus", "status"], as_dict=True)
 			if chet and (chet["docstatus"] == 2 or chet["status"] in ("Closed", "Completed", "Cancelled")):
 				continue  # đúng như thiết kế: dòng nằm lại nhưng đã rơi khỏi bộ lọc

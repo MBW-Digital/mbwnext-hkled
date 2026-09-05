@@ -230,7 +230,8 @@ def _thanh_phan_theo_template(ma, bo_nho):
 	return bo_nho[khoa]
 
 
-def no_dinh_muc(nhu_cau, canh_bao=None, chua_no_duoc=None, gia_cong=None, da_tham=None, bo_nho=None):
+def no_dinh_muc(nhu_cau, canh_bao=None, chua_no_duoc=None, gia_cong=None, da_tham=None, bo_nho=None,
+				kho=None, ghim=None, be=None, da_dung=None):
 	"""Nổ {mã: SL} xuống nguyên vật liệu lá. Trả về {mã NVL: tổng SL}.
 
 	Thứ tự tra định mức đúng theo đầu bài mục 4.2 — anh Thắng chốt 02/09 11:14:
@@ -243,8 +244,23 @@ def no_dinh_muc(nhu_cau, canh_bao=None, chua_no_duoc=None, gia_cong=None, da_tha
 	  thật submit chứng từ và gỡ cờ `is_default` của BOM cũ; việc đó phải qua một cú bấm rõ ràng,
 	  không được xảy ra lúc người dùng chỉ bấm Tính toán.
 
-	⚠ Gom hết rồi mới trừ tồn MỘT LẦN ở ngoài, không trừ tại từng nhánh — trừ sớm thì cùng một
-	  lượng tồn bị đếm cho nhiều nhánh của cây định mức.
+	🔒 **ĐỔI 05/09/2026 — TRỪ BÁN THÀNH PHẨM ĐANG CÓ TRONG KHO.** Anh Thắng chốt 10:52:
+	*"Phần V cũng tính như bảng 2 em nhé, mình cứ đưa cho họ con số chính xác, còn họ sẽ tự cân
+	đối việc mua hàng số lượng như nào"* — tức bác luôn lý lẽ "tính dư cho an toàn".
+
+	Trước đó hàm nổ **thẳng xuống lá**, tồn chỉ trừ một lần ở tầng lá, nên hệ thống bảo đi mua
+	nguyên vật liệu để làm ra thứ đang nằm sẵn trong kho. Nay mỗi mã **Sản xuất/Gia công** được
+	trừ phần tồn khả dụng của chính nó trước, chỉ phần **còn phải làm** mới bóc xuống.
+
+	⚠ Vẫn giữ luật cũ ở dạng khác: **bể `be` dùng chung cho cả cây VÀ cả các kỳ**, trừ dần chứ
+	  không trừ lại từ đầu ở mỗi nhánh — trừ riêng từng nhánh thì cùng một lượng tồn che được
+	  nhiều nhánh. Ở Phần V còn thêm một chiều nữa: một cái bán thành phẩm trong kho chỉ che
+	  được **một kỳ**, và phải là **kỳ sớm nhất**, nên `be` phải sống qua cả vòng lặp kỳ.
+
+	⚠ `da_dung` ghi lại phần tồn đã tiêu để che bán thành phẩm. Chỗ gọi **phải trừ nó khỏi tồn
+	  tầng lá**, nếu không một mã vừa là bán thành phẩm vừa là hàng mua sẽ được tính tồn hai lần.
+
+	⚠ `kho = None` thì KHÔNG trừ gì — giữ nguyên hành vi cũ cho mọi chỗ gọi khác.
 
 	⚠ `da_tham` chặn định mức lặp vòng. Khách khẳng định không có, nhưng đó là *tình trạng dữ liệu*
 	  chứ không phải ràng buộc hệ thống — một vòng lặp làm treo tiến trình chứ không báo lỗi.
@@ -254,6 +270,9 @@ def no_dinh_muc(nhu_cau, canh_bao=None, chua_no_duoc=None, gia_cong=None, da_tha
 	gia_cong = gia_cong if gia_cong is not None else {}
 	da_tham = da_tham if da_tham is not None else set()
 	bo_nho = bo_nho if bo_nho is not None else {}
+	ghim = ghim or {}
+	be = be if be is not None else {}
+	da_dung = da_dung if da_dung is not None else {}
 	ket = {}
 
 	ma = [m for m, sl in nhu_cau.items() if flt(sl) > 0]
@@ -280,6 +299,20 @@ def no_dinh_muc(nhu_cau, canh_bao=None, chua_no_duoc=None, gia_cong=None, da_tha
 		# Gia công sinh THÊM một dòng dịch vụ, rồi vẫn nổ định mức như hàng sản xuất: ERPNext bắt
 		# công ty cấp NVL cho nhà cung cấp gia công (phần Supplied Items). Nên đây là nhánh thứ
 		# BA, không phải nhánh con của Sản xuất — khách nói "giống cả dạng sản xuất lẫn mua hàng".
+		# ── Trừ tồn khả dụng của CHÍNH mã này trước khi bóc xuống (chốt 05/09) ──
+		if kho:
+			if m not in be:
+				ton_m = flt(_ton_thuc_te([m], kho).get(m, 0))
+				be[m] = max(0.0, _kha_dung(ton_m, ghim.get(m, 0))[0])
+			dung = min(sl, flt(be[m]))
+			if dung > 0:
+				be[m] = flt(be[m]) - dung
+				da_dung[m] = flt(da_dung.get(m, 0)) + dung
+				sl = sl - dung
+			if sl <= 1e-9:
+				# Kho đủ che phần này — không phải làm, nên cũng không phải mua vật tư cho nó.
+				continue
+
 		if pp.get(m) == "Gia công":
 			gia_cong[m] = gia_cong.get(m, 0.0) + sl
 
@@ -309,7 +342,8 @@ def no_dinh_muc(nhu_cau, canh_bao=None, chua_no_duoc=None, gia_cong=None, da_tha
 		con = {}
 		for tp in thanh_phan:
 			con[tp["item_code"]] = con.get(tp["item_code"], 0.0) + flt(tp["qty"]) * sl
-		sau = no_dinh_muc(con, canh_bao, chua_no_duoc, gia_cong, da_tham | {m}, bo_nho)
+		sau = no_dinh_muc(con, canh_bao, chua_no_duoc, gia_cong, da_tham | {m}, bo_nho,
+						  kho=kho, ghim=ghim, be=be, da_dung=da_dung)
 		for nvl, sl_con in sau.items():
 			ket[nvl] = ket.get(nvl, 0.0) + sl_con
 
@@ -548,6 +582,21 @@ def tinh_nhu_cau(
 	# MỘT bộ nhớ đệm cho cả vòng lặp: cây định mức được nổ lại ở từng kỳ, và cùng một bán thành
 	# phẩm xuất hiện dưới nhiều thành phẩm — không dùng chung thì trả giá Server Script mỗi lần.
 	bo_nho = {}
+
+	# 🔒 Chốt 05/09: nổ định mức phải TRỪ bán thành phẩm đang có trong kho, nên tập kho và phần
+	# giữ chỗ phải biết TRƯỚC vòng lặp kỳ — trước đây hai thứ này tính ở bước 3, sau khi nổ xong.
+	#
+	# ⚠ `be` và `da_dung` khai NGOÀI vòng lặp: một cái bán thành phẩm trong kho chỉ che được MỘT
+	#   kỳ, và vòng lặp chạy từ kỳ sớm nhất nên kỳ sớm được che trước — đúng luật "kéo tồn qua kỳ"
+	#   mà bước 3 đang áp cho tầng lá.
+	kho = _kho_hop_le(company)
+	if kieu == KIEU_THEO_DON:
+		giu_cho, cb_ghim = _ghim_ngoai_ky(don_trong_ky)
+	else:
+		giu_cho, cb_ghim = ghim_boi_don_khac()
+	canh_bao.extend(cb_ghim or [])
+	be_ton, da_dung_ton = {}, {}
+
 	for i in range(so_ky_that):
 		mot_ky = {}
 		for m, sl in nhu_cau_tp.items():
@@ -558,7 +607,10 @@ def tinh_nhu_cau(
 		# Nổ định mức chiếm gần hết thời gian chạy, nên thanh tiến độ phải nhích ở ĐÂY. Báo theo
 		# số kỳ đã xong chứ không theo số mã: người dùng đọc được "kỳ 2/4", không đọc được "137 mã".
 		bao(10 + int(75 * i / so_ky_that), _("Nổ định mức kỳ {0}/{1}").format(i + 1, so_ky_that))
-		for nvl, sl in no_dinh_muc(mot_ky, canh_bao, chua_no_duoc, gia_cong, None, bo_nho).items():
+		for nvl, sl in no_dinh_muc(
+			mot_ky, canh_bao, chua_no_duoc, gia_cong, None, bo_nho,
+			kho=kho, ghim=giu_cho, be=be_ton, da_dung=da_dung_ton,
+		).items():
 			nhu_cau_nvl.setdefault(nvl, [0.0] * so_ky_that)
 			nhu_cau_nvl[nvl][i] += sl
 
@@ -574,15 +626,15 @@ def tinh_nhu_cau(
 
 	# ── 3. Tồn khả dụng — cùng một cơ sở với Phần IV (đầu bài mục 5) ─────────
 	bao(88, _("Trừ tồn và kéo tồn qua kỳ"))
-	kho = _kho_hop_le(company)
+	# `kho` và `giu_cho` đã tính ở trên (phép nổ cần chúng). Kiểu 2 lấy TOÀN BỘ phần ghim vì nhu
+	# cầu là lịch sử bán, không trùng đơn hiện tại; Kiểu 1 chỉ lấy phần của đơn ngoài kỳ.
 	ton = _ton_thuc_te(ma_hang, kho)
 
-	if kieu == KIEU_THEO_DON:
-		giu_cho, cb_ghim = _ghim_ngoai_ky(don_trong_ky)
-	else:
-		# Kiểu 2: nhu cầu là lịch sử bán, không trùng đơn hiện tại -> trừ TOÀN BỘ phần ghim.
-		giu_cho, cb_ghim = ghim_boi_don_khac()
-	canh_bao.extend(cb_ghim or [])
+	# 🔴 Phần tồn đã tiêu để che bán thành phẩm ở tầng giữa PHẢI trừ khỏi tồn tầng lá. Một mã vừa
+	# là bán thành phẩm vừa là hàng mua ngoài (site có mã như vậy) sẽ được tính tồn HAI LẦN nếu
+	# quên bước này — và tính hai lần thì ra số cần mua thấp hơn thực tế, tức thiếu hàng thật.
+	if da_dung_ton:
+		ton = {m: max(0.0, flt(sl) - flt(da_dung_ton.get(m, 0))) for m, sl in ton.items()}
 
 	toi_thieu = _ton_toi_thieu(ma_hang, company)
 	po = _po_chua_ve(ma_hang, cac_ky)

@@ -454,14 +454,14 @@ def ghim_chi_tiet(tru_don=None):
 	# nhờ hai công thức trùng nhau.
 	giu_vt = frappe.get_all(
 		"HKLed Pinned Material",
-		filters={"parent": ["in", list(ho_so)], "parenttype": "Sales Order", "qty": [">", 0]},
-		fields=["parent", "item_code", "source_item", "source_qty", "qty", "required_qty"],
+		filters={"parent": ["in", list(ho_so)], "parenttype": "Sales Order", "so_luong_ghim": [">", 0]},
+		fields=["parent", "item_code", "source_item", "source_qty", "so_luong_ghim", "required_qty"],
 	)
 	for d in giu_vt:
 		goc = ho_so[d["parent"]]
 		them(
 			d["item_code"], don=d["parent"], nguoi=goc["nguoi"], ngay=goc["ngay"],
-			giu=flt(d["qty"]), tu_ma=d["source_item"], tu_sl=flt(d["source_qty"]),
+			giu=flt(d["so_luong_ghim"]), tu_ma=d["source_item"], tu_sl=flt(d["source_qty"]),
 			# ⚠ `dinh_muc` chia theo **nhu cầu**, không phải theo phần đã ghim được. Chia theo
 			#   phần đã ghim thì cột này thành "trung bình mỗi cái được cấp bao nhiêu" — một con
 			#   số vô nghĩa, và nó tụt xuống mỗi khi kho hết hàng. Đo thật 04/09: `Bán thành

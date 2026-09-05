@@ -73,6 +73,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-14 | **Nhường hàng**: sửa tay `NVL 1` từ 3 xuống 1 | Ghi nhận, đánh dấu dòng | `NVL 1` 1/3, cột *Giữ Nguyên* bật | ✅ Pass |
 | TC-HAPPY-15 | Lưu lại đơn sau khi nhường | Máy **không** tự ghim lại | Vẫn 1/3 sau khi `dong_bo` chạy lại | ✅ Pass |
 | TC-HAPPY-16 | Bấm **Phân Bổ** khi có dòng đã đánh dấu | Chia lại bình thường theo ưu tiên (chốt 05/09 09:39) | `NVL 1` về 3/3, cờ được gỡ; và ở ca huỷ phiếu, `SO-26-00028` đang mang cờ vẫn nhận đủ 12 | ✅ Pass |
+| TC-HAPPY-17 | 🔴 **Anh Thắng báo 05/09 10:56: *"sửa số ghim rồi ấn save thì không được"*** — gõ vào ô *Đã Ghim* rồi bấm Lưu | Lưu được | ✅ **Sau khi vá**: gõ 3 → Lưu → *Submitted*, không hộp thoại lỗi, cột *Giữ Nguyên* tự bật. Trước vá: **Cannot Update After Submit — Not allowed to change In Words (Company Currency)** | ✅ Pass |
+| TC-REGR-08 | Sửa lưới **hàng hoá** của lõi trên đơn đã duyệt | Không bị ảnh hưởng | ✅ `in_words` giữ nguyên, lưu được — đo cả trước lẫn sau khi vá | ✅ Pass |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -129,6 +131,26 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-PERM-01 | `Guest` đọc bảng ghim vật tư | Bị chặn | `PermissionError` ở cả `client.get_list` lẫn `Sales Order` | ✅ Pass |
 | TC-PERM-02 | User bị giới hạn `Customer = a` đọc bảng con của đơn **không thuộc phạm vi** | Không được thấy | ❌ **THẤY ĐỦ 5 DÒNG** của `SO-26-00026` — đơn mà chính user đó `get_doc` ra `PermissionError` | ❌ Fail — xem ô dưới |
 | TC-PERM-03 | So sánh với bảng con của **lõi** | Để biết đây là lỗi mới hay hiện trạng | `Sales Order Item` của lõi **rò y hệt** trên cùng đơn đó | ✅ Pass (đo được) |
+| TC-PERM-04 | 🔴 **Ai được BẤM nút Phân Bổ** — user *Purchase User* bị User Permission giới hạn, chỉ xem được 14/34 Đơn Bán | Không được phép: nút này đổi phần ghim của **mọi** đơn | ✅ **Sau khi vá 05/09** — chặn kèm câu *"chỉ người xem được toàn bộ đơn mới bấm được. Tài khoản của anh/chị đang xem được **0** trên **2** đơn đang ghim."* | ✅ Pass |
+| TC-PERM-05 | Administrator (không bị giới hạn) bấm Phân Bổ | Vẫn chạy được — lớp chặn không gây hồi quy | Chạy bình thường | ✅ Pass |
+| TC-PERM-06 | `Guest` gọi thẳng hàm `phan_bo` qua API | Bị chặn | `PermissionError` | ✅ Pass |
+| TC-PERM-07 | **Ma trận 6 tài khoản × 3 chức năng** — dựng user riêng theo vai trò nghiệp vụ thật, không mượn tạm vai trò | Người bị giới hạn phạm vi bị chặn ở cả xem lẫn phân bổ; lớp chặn xuất kho thì **không phụ thuộc vai trò** | ✅ Xem bảng dưới — 18/18 ô đúng kỳ vọng | ✅ Pass |
+| TC-PERM-08 | ⚠ *Purchase User* và *Stock User* **KHÔNG có quyền ghi Đơn Bán** (`has_permission('Sales Order','write') = False`) nhưng **vẫn bấm được** nút Phân Bổ | 🔒 **Anh Thắng chốt 05/09 11:09: *"thủ kho và nhân viên mua hàng được bấm nút phân bổ em nhé"*** — cho phép | ✅ Đúng hành vi hiện tại: nút chỉ kiểm *thấy hết đơn*, không kiểm *quyền sửa đơn*. Anh Thắng biết và vẫn chọn cho phép — người nhận hàng về là người biết hàng vừa tới. **Đừng thắt thêm nếu không có chốt mới** | ✅ Pass |
+
+> 🔴 **TC-PERM-04 là LỖ HỔNG THẬT trong code tôi viết, Tuấn hỏi ra mới lộ (05/09).**
+>
+> Bản đầu của `phan_bo` chỉ kiểm quyền **đọc phiếu nhập**, rồi ghi Đơn Bán bằng
+> `ignore_permissions=True`. Đo được: user *Purchase User* bị giới hạn phạm vi — chỉ thấy
+> **14/34** Đơn Bán — bấm nút chạy trót lọt, và hàm **đã lưu** `SO-26-00026` với `SO-26-00028`,
+> hai đơn mà chính user đó `get_doc` ra `PermissionError`. Lần đo đó giá trị không đổi vì không
+> còn hàng tự do; có hàng thì nó đã sửa phần ghim của đơn người khác.
+>
+> **Vì sao không sửa bằng cách "chỉ chia cho đơn user thấy được":** phép chia là toàn cục theo
+> thứ tự cần gấp. Bỏ qua đơn không thấy thì **kết quả phụ thuộc vào ai bấm** — cùng một phiếu,
+> hai người bấm ra hai cách chia. Nên luật là **thấy hết thì mới bấm được**.
+>
+> ⚠ Luật này **do tôi đề xuất, chưa hỏi anh Thắng**. Nếu bên khách muốn thủ kho bấm được dù chỉ
+> thấy một phần đơn thì phải đổi, và khi đó phải chốt luôn: chia theo tập đơn nào.
 
 > 🔴 **TC-PERM-02 Fail — nhưng KHÔNG phải do tính năng này.**
 >
@@ -139,6 +161,49 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 > Ghi Fail chứ không ghi *"không áp dụng"*: người đọc file này cần biết dữ liệu ghim **đọc ra
 > được** bằng API, kể cả bởi người không mở được đơn. Nó chỉ không phải hạng mục đóng được trong
 > phạm vi PM-FEAT-00036. Cùng họ với ca rò rỉ đã báo ở Phần IV.
+
+> 🔴 **TC-HAPPY-17 — lỗi do TÊN TRƯỜNG trùng với lõi, anh Thắng bấm ra (05/09 10:56).**
+>
+> Cột *Đã Ghim* của bảng ghim vốn có fieldname là **`qty`**, trùng tên một handler của
+> `erpnext.TransactionController` trên form Đơn Bán. Sửa ô đó ➜ Frappe gọi
+> `frm.script_manager.trigger("qty", …)` ➜ lõi chạy phép tính tổng chứng từ trên một dòng
+> **không có `rate` lẫn `amount`** ➜ `in_words` bị xoá thành rỗng ➜ lần lưu kế tiếp bị chặn:
+>
+>     Cannot Update After Submit — Not allowed to change In Words (Company Currency)
+>     after submission from "VND Hai Triệu Một Trăm Sáu Mươi Nghìn chẵn" to ""
+>
+> **Đo để không đổ oan cho lõi:** sửa một dòng **lưới hàng hoá** thì `in_words` giữ nguyên và
+> lưu được; sửa một dòng **bảng ghim** thì `in_words` thành rỗng. Khác biệt duy nhất là tên
+> trường.
+>
+> Đã đổi `qty` ➜ `so_luong_ghim`, kèm patch đổi tên cột (10 dòng dữ liệu thật giữ nguyên, đã
+> đối chiếu từng dòng trước/sau rồi mới xoá cột cũ).
+>
+> ⚠ **`item_code` của bảng này CŨNG trùng** một handler của lõi. Hiện không nổ vì trường đó
+> `read_only`. Ngày nào mở khoá nó thì phải đổi tên luôn.
+>
+> **Bài học chung:** bảng con cắm vào chứng từ của lõi thì **đừng đặt tên trường trùng tên
+> trường của lõi** — không có lỗi lúc dựng, chỉ nổ khi người dùng gõ vào ô.
+
+### Ma trận phân quyền — đo 05/09 trên 6 tài khoản
+
+Bộ user dựng riêng cho việc này (tiền tố `test.`, không đặt mật khẩu, `send_welcome_email = 0`):
+
+| Tài khoản | Vai trò | Giới hạn | Đơn thấy | Kiểm Tra Tồn Kho | Nút Phân Bổ | Chặn xuất kho |
+|---|---|---|---|---|---|---|
+| `test.mua@hkled.test` | Purchase + Stock User | không | 20/20 | chạy | **chạy** | chặn đúng |
+| `test.mua.gioihan@hkled.test` | Purchase + Stock User | Customer `a` | 8/20 | **chặn** | **chặn** | chặn đúng |
+| `test.thukho@hkled.test` | Stock User | không | 20/20 | chạy | **chạy** | chặn đúng |
+| `test.gioihan.sales@hkled.test` | Sales User | Customer `a` | 8/20 | **chặn** | **chặn** | chặn đúng |
+| `test.gioihan.nhansu@hkled.test` | Manufacturing User | Employee | — | **chặn** | **chặn** | chặn đúng |
+| `Administrator` | — | không | 20/20 | chạy | chạy | chặn đúng |
+
+Hai điều đọc được từ bảng:
+
+1. **Lớp chặn xuất kho không phụ thuộc vai trò** — cả 6 tài khoản đều bị chặn như nhau. Đúng
+   thiết kế: đây là luật tồn kho, không phải luật phân quyền.
+2. **Người bị giới hạn phạm vi bị chặn ở cả hai màn hình** — `kiem_tra` chặn vì không đọc được
+   chính đơn đó, `phan_bo` chặn vì không thấy hết đơn (`TC-PERM-04`).
 
 ## TC-REGR — regression
 
@@ -163,8 +228,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 |---|---|---|---|---|
 | TC-ISO-01 | DocType mới có đúng `module` | `MBWNext HKLed` | `istable = 1`, `module = MBWNext HKLed` | ✅ Pass |
 | TC-ISO-02 | Custom Field mới có đúng `module` | Đi theo app | `Sales Order-custom_ghim_vat_tu`, `module = MBWNext HKLed`, đã vào `fixtures/custom_field.json` | ✅ Pass |
-| TC-ISO-03 | Site **không cài** app (`mbw.com` trên cùng bench) chạy `migrate` | Không lỗi | ⏳ Chưa chạy — `migrate` là việc độc quyền toàn máy, phải hẹn giờ | ⏳ Chưa chạy |
-| TC-ISO-04 | App lõi có bị bẩn không | `git status` các app lõi sạch | ⏳ Chưa chạy | ⏳ Chưa chạy |
+| TC-ISO-03 | Site **không cài** app (`mbw.com` trên cùng bench) chạy `migrate` | Không lỗi, không dính DocType/Custom Field nào của HKLED | ✅ Tuấn chạy migrate 05/09. Đo lại trên `mbw.com`: app **chưa cài**, `HKLed Pinned Material` **không tồn tại**, **0** Custom Field chứa `ghim`, Patch Log chạy tới cuối, 48.836 Đơn Bán không suy suyển | ✅ Pass |
+| TC-ISO-04 | App lõi có bị bẩn không | `git status` các app lõi sạch | ✅ 5 app `mbwnext_*` và `frappe` **sạch 100%**. `erpnext` có **2 file bẩn** nhưng **không phải do app này**: hai `Notification` chuẩn bị tắt qua giao diện, dấu thời gian **2025-08-14**, trước tính năng này một năm | ✅ Pass |
 
 ## TC-PWA
 
@@ -174,14 +239,19 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**57 ca · 52 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 4 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
+**64 ca · 61 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 2 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-Bốn ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
-phiếu nhập vào kho ngoài tập) · `TC-ISO-03` · `TC-ISO-04`.
+Hai ca chưa chạy, cả hai đều **chờ dữ liệu chứ không chờ quyết định**: `TC-EDGE-11` (cần một đơn
+không vướng Kế hoạch sản xuất để huỷ rồi amend) · `TC-EDGE-18` (cần phiếu nhập vào kho ngoài tập
+tính tồn).
+
+✅ **Không còn câu nào chờ anh Thắng** — `TC-PERM-08` đã chốt 05/09 11:09.
+
+**`TC-ISO-03` và `TC-ISO-04` đã đóng 05/09** sau khi Tuấn chạy `migrate` trên `mbw.com`.
 
 ⚠ **Dữ liệu để lại trên site sau vòng test này** (cố ý, để anh Thắng bấm lại được): phiếu nhập
 `PNK-26-00003` — 5 `Bán thành phẩm 1` vào *Kho bán thành phẩm*, **đã duyệt và đã phân bổ thật**.
