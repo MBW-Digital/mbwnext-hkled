@@ -304,7 +304,18 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 		const dong = kq.dong || [];
 		const $b = this.$nd.find(".hkled-nc-bang").empty();
 		if (!dong.length) {
-			$b.html(`<div class="hkled-nc-trong">${__("Không có vật tư nào thiếu trong khoảng đã chọn")}</div>`);
+			// HAI trạng thái rỗng, nghĩa ngược nhau — đừng gộp một câu.
+			//   • `co_nhu_cau === false`: kỳ này chẳng ai đặt gì, hệ thống CHƯA TÍNH gì cả;
+			//   • ngược lại: có nhu cầu, tính xong, đủ hàng thật.
+			// Trước 05/09 cả hai đều hiện "Không có vật tư nào thiếu" — ở ca đầu là NÓI SAI, người
+			// lập kế hoạch đọc thành "tồn đủ". Cùng họ với "chưa có đơn mua" của Phần IV.
+			$b.html(
+				`<div class="hkled-nc-trong">${
+					kq.co_nhu_cau === false
+						? __("Kỳ đã chọn không có đơn hàng nào — chưa tính được gì. Chọn khoảng khác hoặc kiểm lại ô Thời Gian Bắt Đầu trên đơn bán.")
+						: __("Mọi vật tư đều đủ trong khoảng đã chọn — không phải mua gì thêm")
+				}</div>`
+			);
 			return;
 		}
 

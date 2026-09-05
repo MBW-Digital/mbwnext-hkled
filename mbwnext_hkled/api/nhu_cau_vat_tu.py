@@ -615,8 +615,16 @@ def tinh_nhu_cau(
 			nhu_cau_nvl[nvl][i] += sl
 
 	if not nhu_cau_nvl:
+		# 🔴 `co_nhu_cau = False` để màn hình phân biệt HAI trạng thái rỗng khác hẳn nghĩa nhau:
+		#   • KHÔNG CÓ NHU CẦU  — kỳ này chẳng ai đặt gì, hệ thống chưa tính gì cả;
+		#   • ĐỦ HÀNG HẾT       — có nhu cầu, tính xong, không mã nào thiếu.
+		# Trước 05/09 cả hai đều hiện *"Không có vật tư nào thiếu trong khoảng đã chọn"* — câu đó
+		# ở trạng thái đầu là **nói sai**: người lập kế hoạch đọc thành "tồn đủ", trong khi thật ra
+		# chưa có gì để tính. Cùng họ với lỗi `"chưa có đơn mua"` của Phần IV (vá 04/09): chỗ nguy
+		# hiểm không phải phép tính mà là **câu khẳng định đè lên chỗ trống**.
 		return {
 			"kieu": kieu, "company": company, "cac_ky": cac_ky, "dong": [],
+			"co_nhu_cau": False,
 			"canh_bao": canh_bao + [_("Không có nhu cầu nào trong khoảng đã chọn")],
 			"chua_no_duoc": chua_no_duoc, "gia_cong": [],
 			"khoang_tham_chieu": khoang_tham_chieu,
@@ -714,6 +722,7 @@ def tinh_nhu_cau(
 		"company": company,
 		"cac_ky": cac_ky,
 		"khoang_tham_chieu": khoang_tham_chieu,
+		"co_nhu_cau": True,      # có nhu cầu và đã tính xong — xem chú thích ở nhánh rỗng phía trên
 		"dong": dong,
 		"gia_cong": _dong_gia_cong(gia_cong, canh_bao),
 		"chua_no_duoc": chua_no_duoc,

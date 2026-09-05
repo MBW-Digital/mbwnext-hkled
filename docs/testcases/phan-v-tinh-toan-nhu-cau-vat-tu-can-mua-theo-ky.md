@@ -93,6 +93,8 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | TC-EDGE-04 | 🔴 **Đổi số kỳ thì `tồn khả dụng` ĐỔI THEO — đúng thiết kế, không phải lỗi** | Cùng `NVL 3`: chạy 3 kỳ, rồi chạy 12 kỳ từ 03-08 | Kỳ rộng hơn ⟹ nhiều đơn nằm **trong** kỳ hơn ⟹ được miễn trừ ⟹ ghim còn lại ít ⟹ khả dụng cao hơn | Pass — 3 kỳ: ghim ngoài kỳ `{NVL 3: 7}` → khả dụng **0**. 12 kỳ: ghim ngoài kỳ `{}` → khả dụng **7**. ⚠ Người kiểm thử đo hai lần ra hai số **sẽ tưởng là lỗi** | Pass |
 | TC-EDGE-05 | Ghim thật trên site ⟹ bán thành phẩm **không che được gì** | `no_dinh_muc({"Thành phẩm 1": 2})` với phần ghim thật | Nổ đủ xuống lá, `da_dung` rỗng | Pass — `{NVL 1: 2, NVL 2: 4, NVL 3: 6}`, `da_dung = {}`, bể cả 3 bán thành phẩm đều **0** | Pass |
 | TC-EDGE-06 | Định mức **lặp vòng** → cảnh báo rồi dừng, không treo | Cần một BOM lặp vòng | Cảnh báo *"định mức lặp vòng, dừng nổ tại đây"* | **Chưa chạy** — quét 32 cạnh BOM, **0 mã lặp vòng**. Không dựng được mà không ghi dữ liệu thật | — |
+| TC-EDGE-07 | 🔴 **Kỳ rỗng KHÔNG được nói "không thiếu gì"** | Chạy Kiểu 1 trên khoảng không có đơn nào (04-01-2027, 2 kỳ tuần) | Phải phân biệt *chưa tính được gì* với *đủ hàng* | Pass — engine trả `co_nhu_cau = False` và cảnh báo *"Không có nhu cầu nào trong khoảng đã chọn"*; màn hình hiện *"Kỳ đã chọn không có đơn hàng nào — chưa tính được gì"*. Trước 05/09 cả hai trạng thái đều hiện *"Không có vật tư nào thiếu"* — ở ca này là **nói sai**, người đọc hiểu thành tồn đủ. Cùng họ với `"chưa có đơn mua"` của Phần IV | Pass |
+| TC-EDGE-08 | Có nhu cầu và đủ hàng thì nói đúng câu còn lại | Kiểu 1 trên khoảng có đơn | `co_nhu_cau = True` | Pass — 01-09, 3 kỳ: `co_nhu_cau = True`, 2 dòng ra bảng. Kiểu 2 không có dữ liệu tham chiếu cũng trả `False` đúng | Pass |
 
 ---
 
@@ -115,7 +117,7 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | TC-ISO-01 | Chưa kiểm trên site không cài app khách |
 | TC-UI-01 | Tab **Lập kế hoạch** (bước 4) **chưa làm** — chưa có gì để test |
 
-**Tổng: 20 ca · 19 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+**Tổng: 22 ca · 21 Pass · 1 chưa chạy** (`TC-EDGE-06`).
 
 ⚠ **Đừng đếm bằng `grep "^| TC-"`.** File này có **24** dòng bắt đầu bằng `| TC-`, nhưng 4 trong
 đó là **dòng nhắc** ở bảng *Chưa chạy* ngay trên, không phải ca test. Đếm máy móc ra 24 là **thừa
