@@ -460,6 +460,40 @@ def chuyen_ghim_sau_san_xuat(so_luong, lsx, nguoc=False):
 	return viec
 
 
+def _kiem_quyen_phan_bo():
+	"""Chặn người **không thấy hết Đơn Bán** bấm nút Phân Bổ.
+
+	🔴 **Lỗ hổng thật, Tuấn hỏi ra ngày 05/09 và đo được ngay:** bản đầu chỉ kiểm quyền *đọc
+	phiếu nhập* rồi ghi Đơn Bán bằng `ignore_permissions=True`. Một user *Purchase User* bị
+	User Permission giới hạn — chỉ thấy **14/34** Đơn Bán — vẫn bấm được nút, và hàm **đã lưu**
+	`SO-26-00026` với `SO-26-00028`, hai đơn mà chính user đó mở ra là `PermissionError`.
+
+	## Vì sao không thể "chỉ phân bổ cho đơn user thấy được"
+
+	Phép chia là **toàn cục theo thứ tự ưu tiên**: đơn cần gấp nhất lấy trước. Nếu bỏ qua những
+	đơn người bấm không thấy thì kết quả **phụ thuộc vào ai bấm** — cùng một phiếu nhập, hai
+	người bấm ra hai cách chia. Đó là thứ tệ hơn cả việc chặn.
+
+	➜ Nên luật là: **thấy được hết thì mới bấm được**. Người điều phối hàng về vốn phải nhìn
+	được toàn bộ đơn đang chờ, nếu không thì họ cũng không kiểm được kết quả mình vừa tạo ra.
+
+	⚠ Đây là **luật do tôi đề xuất, chưa hỏi anh Thắng** — nếu bên khách muốn thủ kho bấm được
+	  dù chỉ thấy một phần đơn thì phải đổi, và khi đó phải chốt luôn: chia theo tập đơn nào.
+	"""
+	tong = frappe.db.count("Sales Order", loc_don_song())
+	thay = len(frappe.get_list("Sales Order", filters=loc_don_song(), limit_page_length=0, ignore_ifnull=True))
+	if thay < tong:
+		frappe.throw(
+			_(
+				"Nút Phân Bổ chia hàng cho <b>tất cả</b> Đơn Bán đang ghim theo thứ tự cần gấp, "
+				"nên chỉ người xem được toàn bộ đơn mới bấm được.<br><br>"
+				"Tài khoản của anh/chị đang xem được <b>{0}</b> trên <b>{1}</b> đơn đang ghim."
+			).format(thay, tong),
+			title=_("Không đủ quyền phân bổ"),
+			exc=frappe.PermissionError,
+		)
+
+
 @frappe.whitelist()
 def phan_bo(purchase_receipt):
 	"""Nút **Phân Bổ** trên Phiếu nhập mua — chia hàng vừa về cho các đơn chưa ghim đủ.
@@ -496,6 +530,7 @@ def phan_bo(purchase_receipt):
 	"""
 	pr = frappe.get_doc("Purchase Receipt", purchase_receipt)
 	pr.check_permission("read")
+	_kiem_quyen_phan_bo()
 	if pr.docstatus != 1:
 		frappe.throw(
 			_("Phiếu nhập mua chưa được duyệt nên hàng chưa vào kho — chưa phân bổ được."),

@@ -129,6 +129,24 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-PERM-01 | `Guest` đọc bảng ghim vật tư | Bị chặn | `PermissionError` ở cả `client.get_list` lẫn `Sales Order` | ✅ Pass |
 | TC-PERM-02 | User bị giới hạn `Customer = a` đọc bảng con của đơn **không thuộc phạm vi** | Không được thấy | ❌ **THẤY ĐỦ 5 DÒNG** của `SO-26-00026` — đơn mà chính user đó `get_doc` ra `PermissionError` | ❌ Fail — xem ô dưới |
 | TC-PERM-03 | So sánh với bảng con của **lõi** | Để biết đây là lỗi mới hay hiện trạng | `Sales Order Item` của lõi **rò y hệt** trên cùng đơn đó | ✅ Pass (đo được) |
+| TC-PERM-04 | 🔴 **Ai được BẤM nút Phân Bổ** — user *Purchase User* bị User Permission giới hạn, chỉ xem được 14/34 Đơn Bán | Không được phép: nút này đổi phần ghim của **mọi** đơn | ✅ **Sau khi vá 05/09** — chặn kèm câu *"chỉ người xem được toàn bộ đơn mới bấm được. Tài khoản của anh/chị đang xem được **0** trên **2** đơn đang ghim."* | ✅ Pass |
+| TC-PERM-05 | Administrator (không bị giới hạn) bấm Phân Bổ | Vẫn chạy được — lớp chặn không gây hồi quy | Chạy bình thường | ✅ Pass |
+| TC-PERM-06 | `Guest` gọi thẳng hàm `phan_bo` qua API | Bị chặn | `PermissionError` | ✅ Pass |
+
+> 🔴 **TC-PERM-04 là LỖ HỔNG THẬT trong code tôi viết, Tuấn hỏi ra mới lộ (05/09).**
+>
+> Bản đầu của `phan_bo` chỉ kiểm quyền **đọc phiếu nhập**, rồi ghi Đơn Bán bằng
+> `ignore_permissions=True`. Đo được: user *Purchase User* bị giới hạn phạm vi — chỉ thấy
+> **14/34** Đơn Bán — bấm nút chạy trót lọt, và hàm **đã lưu** `SO-26-00026` với `SO-26-00028`,
+> hai đơn mà chính user đó `get_doc` ra `PermissionError`. Lần đo đó giá trị không đổi vì không
+> còn hàng tự do; có hàng thì nó đã sửa phần ghim của đơn người khác.
+>
+> **Vì sao không sửa bằng cách "chỉ chia cho đơn user thấy được":** phép chia là toàn cục theo
+> thứ tự cần gấp. Bỏ qua đơn không thấy thì **kết quả phụ thuộc vào ai bấm** — cùng một phiếu,
+> hai người bấm ra hai cách chia. Nên luật là **thấy hết thì mới bấm được**.
+>
+> ⚠ Luật này **do tôi đề xuất, chưa hỏi anh Thắng**. Nếu bên khách muốn thủ kho bấm được dù chỉ
+> thấy một phần đơn thì phải đổi, và khi đó phải chốt luôn: chia theo tập đơn nào.
 
 > 🔴 **TC-PERM-02 Fail — nhưng KHÔNG phải do tính năng này.**
 >
@@ -174,7 +192,7 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**57 ca · 52 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 4 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
+**60 ca · 55 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 4 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
