@@ -537,9 +537,14 @@ function tao_phieu(frm, dialog) {
 			const kq = r.message;
 			if (!kq) return;
 			if (!kq.co_phieu) {
+				// ⚠ Phải hiện CẢ `canh_bao`, không chỉ `thong_bao` — nhánh này có ca
+				//   *"mọi mã cần mua đều không tra được trong danh mục"*, mà **mã nào**
+				//   thì nằm trong `canh_bao`. Bỏ đi là người dùng biết mình hỏng nhưng
+				//   không biết hỏng ở đâu. Cùng lỗi với nhánh tạo phiếu, rà ra 05/09.
 				frappe.msgprint({
 					title: __(NHAN_NUT_PHIEU),
-					message: frappe.utils.escape_html(kq.thong_bao),
+					message:
+						frappe.utils.escape_html(kq.thong_bao) + khoi_canh_bao(kq.canh_bao),
 					indicator: "blue",
 				});
 				return;

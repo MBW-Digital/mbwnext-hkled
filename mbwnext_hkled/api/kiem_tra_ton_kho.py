@@ -324,6 +324,7 @@ def ghim_boi_don_khac(tru_don=None):
 	# 🔒 **ĐỔI 04/09 tối — phần vật tư nay ĐỌC TỪ SỔ, không suy ra nữa** (PM-FEAT-00036, mục 8).
 	#
 	# Trước: `boc_dinh_muc(_con_mot_cap(_con_phai_lam(truc_tiep)))` — suy tại chỗ từ định mức.
+	# (Ba hàm đó **đã xoá hết 05/09**, không còn ai gọi. Giữ tên ở đây để tra được lịch sử.)
 	# Cách đó **không thể** giữ được điều anh Thắng chốt 04/09: chia hàng theo thứ tự ưu tiên là
 	# việc phụ thuộc *ai tới trước*, và phần đã chia cho một đơn không được tụt vì thao tác của
 	# đơn khác. Con số suy ra luôn là hàm của hiện tại nên không giữ nổi cam kết.
@@ -340,54 +341,11 @@ def ghim_boi_don_khac(tru_don=None):
 
 	# Thành phẩm bị giữ trực tiếp VÀ nguyên vật liệu của nó đều bị giữ — hai thứ nằm ở hai kho
 	# khác nhau nên cộng cả hai là đúng. Chỉ có mã mua ngoài mới không được cộng lặp, và
-	# `_con_mot_cap` đã loại chúng khỏi nhánh gián tiếp.
+	# nhánh bóc một cấp (hàm `_con_mot_cap`, đã xoá 05/09) đã loại chúng khỏi nhánh gián tiếp.
 	tong = dict(gian_tiep)
 	for m, sl in truc_tiep.items():
 		tong[m] = tong.get(m, 0) + sl
 	return tong, canh_bao
-
-
-def _con_phai_lam(truc_tiep):
-	"""{mã: số lượng còn PHẢI SẢN XUẤT} = phần ghim trừ đi thành phẩm đã có sẵn trong kho.
-
-	🔒 **Anh Thắng chốt 03/09 16:51: "Chọn cách B em nhé."**
-
-	Trước đó, đơn ghim thành phẩm thì hệ thống giữ luôn bộ vật tư để làm ra nó — **kể cả khi
-	thành phẩm đã nằm sẵn trong kho và không phải sản xuất thêm cái nào**. Ca thật đo được:
-	`SO-26-00011` ghim 3 `Thành phẩm 1` trong khi kho có 31; đơn đó lấy hàng từ kho là xong,
-	nhưng hệ thống vẫn giữ 3 bộ vật tư cho nó, trong khi `Bán thành phẩm 2` chỉ có 1 cái. Đó
-	chính là **gốc rễ của chuyện ghim vượt tồn** mà anh Thắng bắt được lúc 16:34.
-
-	Cách B: chỉ lan xuống vật tư cho phần **thật sự phải làm ra**.
-
-	⚠ Trừ tồn ở mức TỔNG, không trừ theo từng đơn: nhiều đơn cùng ghim một mã thì chúng chia
-	  nhau đúng một lượng tồn. Trừ từng đơn là mỗi đơn được "che" bởi cùng số hàng đó — cùng họ
-	  với lỗi trừ hai lần ở bước 4 của đầu bài.
-
-	🔴 **Cách B làm `tru_don` thành BẮT BUỘC, không còn là chuyện gọn gàng.**
-	  `max(0, tổng_ghim − tồn)` là phép **không tuyến tính**, nên KHÔNG được suy "phần đơn X giữ"
-	  bằng cách gọi hai lần rồi trừ ra. Ví dụ: tồn 10, đơn A ghim 8, đơn B ghim 8.
-	  Tổng giữ = `max(0, 16−10)` = **6**. Hỏi "B giữ bao nhiêu": đúng là `max(0, 8−10)` = **0**,
-	  còn trừ ra cho `6 − 0` = **6**. Lệch hẳn, và lệch âm thầm.
-	  ➜ Luôn truyền `tru_don` **ngay từ đầu** cho `ghim_boi_don_khac` / `ghim_chi_tiet`.
-	  (Phiên làm Phần V bản đầu đúng là cách trừ ra; đổi kịp trước khi cách B vào.)
-
-	⚠ `_kho_hop_le()` gọi **không kèm công ty** — cố ý, vì hàm này gom mọi đơn đang ghim chứ
-	  không riêng công ty nào, giống `ghim_boi_don_khac`. `hkled.com` hiện chỉ có **1 công ty**
-	  (`HKLED`, 5 kho hợp lệ, lọc hay không ra cùng kết quả). Ngày nào site có công ty thứ hai
-	  thì chỗ này cộng tồn của cả hai — phải xem lại cùng lúc với `ghim_boi_don_khac`, đừng sửa
-	  lẻ một chỗ.
-	"""
-	ma = [m for m, sl in truc_tiep.items() if flt(sl) > 0]
-	if not ma:
-		return {}
-	ton = _ton_thuc_te(ma, _kho_hop_le())
-	con = {}
-	for m in ma:
-		phai_lam = flt(truc_tiep[m]) - flt(ton.get(m, 0))
-		if phai_lam > 0:
-			con[m] = phai_lam
-	return con
 
 
 def ghim_chi_tiet(tru_don=None):
@@ -474,35 +432,6 @@ def ghim_chi_tiet(tru_don=None):
 	for ma in chi_tiet:
 		chi_tiet[ma].sort(key=lambda r: (r["ngay"] is None, r["ngay"]), reverse=True)
 	return chi_tiet, canh_bao
-
-
-def _con_mot_cap(nhu_cau, canh_bao):
-	"""Chỉ trả về CON TRỰC TIẾP trong định mức của mặt hàng Sản xuất/Gia công.
-
-	Mặt hàng mua ngoài trả về rỗng — chúng đã được tính ở nhánh trực tiếp rồi.
-	"""
-	ma = [m for m, sl in nhu_cau.items() if flt(sl) > 0]
-	if not ma:
-		return {}
-	pp = {
-		r["name"]: (r.get("custom_replenishment_method") or "").strip()
-		for r in frappe.get_all(
-			"Item", filters={"name": ["in", ma]},
-			fields=["name", "custom_replenishment_method"],
-		)
-	}
-	che_bien = [m for m in ma if pp.get(m) in ("Sản xuất", "Gia công")]
-	bom_cua = _bom_mac_dinh(che_bien)
-
-	con = {}
-	for m in che_bien:
-		ten_bom = bom_cua.get(m)
-		if not ten_bom:
-			canh_bao.append(f"{m}: đơn khác đang ghim nhưng chưa có định mức, không lan xuống NVL")
-			continue
-		for nvl, dinh_muc in _dong_bom(ten_bom):
-			con[nvl] = con.get(nvl, 0) + dinh_muc * flt(nhu_cau[m])
-	return con
 
 
 def _kho_mac_dinh(ma_hang, company):
