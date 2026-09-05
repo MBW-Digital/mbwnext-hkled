@@ -73,6 +73,11 @@ def resolve_qty_batch(item_code, component_names, item_template, template_name):
 	Bản cũ gọi MỘT LẦN CHO MỖI THÀNH PHẦN, nên số lần biên dịch = *số biến thể × số thành phần*.
 	Gọi theo lô đưa nó về *số biến thể*.
 
+	⚠ **Trần còn lại là tuyến tính theo SỐ BIẾN THỂ KHÁC NHAU** — đo 03/09 trên 8012:
+	**~0,15 s/biến thể**, tức 300 biến thể ≈ **44 giây**. Gọi theo lô rút được phần nhân lên theo
+	số thành phần, nhưng không rút được phần này. Ai định tối ưu tiếp thì đây là con số nền để so.
+	(Số đo gốc nằm ở nhánh `hkled/feat-00030-engine-phan-v-v2`, đã xoá 04/09 sau khi chép sang đây.)
+
 	Đã thử hai hướng khác và loại cả hai, ghi lại để đừng ai làm lại:
 
 	- **Đệm theo bộ đặc tính của biến thể** — đo 03/09 trên 300 biến thể: theo đủ đặc tính ra 300 bộ
