@@ -143,6 +143,45 @@ Lệnh sản xuất**. Chọn **một nguồn duy nhất**.
 
 ---
 
+## 4b. 🔒 Nổ định mức TRỪ bán thành phẩm đang có trong kho (chốt 05/09/2026)
+
+> **Anh Thắng 10:52:** *"Phần V cũng tính như bảng 2 em nhé, mình cứ đưa cho họ con số chính xác,
+> còn họ sẽ tự cân đối việc mua hàng số lượng như nào."*
+
+Câu này bác thẳng lý lẽ *"tính dư cho an toàn"* mà tôi từng nêu khi hỏi: khách muốn **số đúng**,
+việc gộp đơn mua là quyết định của họ.
+
+Trước đó `no_dinh_muc` nổ **thẳng xuống lá**, tồn chỉ trừ một lần ở tầng lá — hệ thống bảo đi mua
+nguyên vật liệu để làm ra thứ đang nằm sẵn trong kho. Nay mỗi mã *Sản xuất / Gia công* được trừ
+**tồn khả dụng của chính nó** trước; chỉ phần **còn phải làm** mới bóc xuống.
+
+**Đo thật 05/09** (nhu cầu kỳ 1 = 15 `Thành phẩm 1`; định mức 1 TP1 = 1 BTP1 + 1 BTP2, 1 BTP1 =
+1 `NVL 1` + 2 `NVL 2`), sau khi thêm 10 `Bán thành phẩm 1` rảnh vào kho:
+
+| Mã | Cách cũ | Cách mới |
+|---|---|---|
+| `NVL 1` | 15 | **5** |
+| `NVL 2` | 30 | **10** |
+| `NVL 3` | 45 | 45 (không đổi — đến từ BTP2, không có hàng rảnh) |
+
+⚠ **Trên dữ liệu hiện tại của site, con số KHÔNG đổi** — mọi bán thành phẩm trong kho đều đang bị
+ghim hết nên tồn khả dụng bằng 0. Phải dựng thế có hàng rảnh mới thấy được tác dụng. Ghi lại để
+người sau đừng tưởng thay đổi này vô nghĩa vì chạy thử thấy số y hệt.
+
+### Hai chỗ khác Bảng 2, và cả hai đều dễ sai
+
+**1. Bể tồn phải sống qua CẢ CÁC KỲ.** Một cái bán thành phẩm trong kho chỉ che được **một kỳ**,
+và phải là **kỳ sớm nhất**. Nên `be` khai ngoài vòng lặp kỳ, trừ dần theo thứ tự kỳ — đúng luật
+*"kéo tồn qua kỳ"* mà bước 3 vốn đã áp cho tầng lá.
+
+**2. Phần tồn đã tiêu ở tầng giữa phải TRỪ khỏi tồn tầng lá.** Một mã vừa là bán thành phẩm vừa
+là hàng mua ngoài sẽ được tính tồn **hai lần** nếu quên — và tính hai lần thì ra số cần mua *thấp
+hơn* thực tế, tức **thiếu hàng thật**. Hàm trả thêm `da_dung` để bước 3 trừ lại.
+
+⚠ `no_dinh_muc(kho=None)` giữ nguyên hành vi cũ — mọi chỗ gọi khác không bị ảnh hưởng.
+
+---
+
 ## 5. Tồn khả dụng — cùng một cơ sở cho mọi con số
 
 Đây là **tồn khả dụng riêng của HKLED**, không phải tồn khả dụng mặc định của hệ thống. Hai điều kiện:
