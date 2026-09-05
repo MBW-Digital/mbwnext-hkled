@@ -121,6 +121,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-EDGE-17 | — | Đơn đang thiếu mã vừa về nhưng **chưa bật Ghim** | Không chia, nhưng **phải báo** | Trả về `SAL-ORD-2026-00013` và `SAL-ORD-2026-00012` mỗi đơn thiếu 1 — hộp thoại hiện khối xanh nhắc bật Ghim rồi bấm lại | ✅ Pass |
 | TC-EDGE-18 | — | Hàng nhập vào **kho ngoài tập tính tồn** | Không chia được, và **phải nói ra** | Chưa chạy — site chưa có phiếu nhập vào `Kho trung chuyển`/`Kho đang sản xuất`. Code có nhánh riêng, hộp thoại có khối vàng | ⏳ Chưa chạy |
 | TC-EDGE-19 | #1 | **Huỷ phiếu nhập** sau khi đã phân bổ | Thu hồi **đúng đơn đã được chia**, đơn khác không bị đụng | Về 12 `NVL 3` ➜ phân bổ cho `SO-26-00028` ➜ huỷ phiếu ➜ tự cắt đúng 12 của chính đơn đó, `SO-26-00026` giữ nguyên 7. Quét sạch | ✅ Pass |
+| TC-EDGE-22 | #1 | **Trên giao diện thật:** cả vòng nhập ➜ Phân Bổ ➜ **Huỷ phiếu** | Câu thông báo thu hồi phải **hiện ra**, nêu đích danh đơn bị cắt | ✅ `PNK-26-00005` (3 `Bán thành phẩm 1`) ➜ Phân Bổ rót **4** cho `SO-26-00028` ➜ bấm **Cancel** ➜ hộp thoại *"Thu hồi phần đã phân bổ — SO-26-00028 · Bán thành phẩm 1: vật tư −4 (đã nhận từ phiếu này)"*. Site về nguyên trạng: tồn 6, `SO-26-00028` về 0, `SO-26-00026` **không bị đụng**, quét sạch | ✅ Pass |
 | TC-EDGE-20 | #2 | Nhật ký phân bổ ghi trên phiếu nhập | Có, và **cộng dồn** chứ không ghi đè | `custom_ghim_da_phan_bo` = `[{"ma":"NVL 3","don":"SO-26-00028","them":12.0,"loai":"Vật tư"}]` | ✅ Pass |
 | TC-EDGE-21 | #1 | **Ca thật đã xảy ra 05/09**: anh Thắng phân bổ 10 `NVL 3` rồi huỷ phiếu, lúc chưa có cơ chế thu hồi | Phép kiểm phải bắt được | Bắt đúng: `[#1] NVL 3: tổng ghim 17 > tồn thực tế 7`. Đã sửa dữ liệu thật bằng nhật ký hồi tố ➜ cắt đúng 10 của `SO-26-00028` | ✅ Pass |
 
@@ -239,7 +240,7 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**64 ca · 61 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 2 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
+**65 ca · 62 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 2 chưa chạy.** Trong đó **7 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
