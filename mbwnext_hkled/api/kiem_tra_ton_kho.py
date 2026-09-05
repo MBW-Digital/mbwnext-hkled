@@ -1128,16 +1128,39 @@ def tao_yeu_cau_mua_hang(sales_order):
 	# ⚠ Từ 03/09 cảnh báo này QUAN TRỌNG HƠN TRƯỚC. Anh Thắng chốt lấy thẳng cột `Thiếu`, nên
 	#   hệ thống KHÔNG còn tự trừ phần đã có phiếu/đơn mua lo. Bấm nút hai lần trên cùng một đơn
 	#   là ra hai phiếu cho cùng một phần thiếu, và chỉ dòng cảnh báo này nói cho người dùng biết.
-	phieu_cu = frappe.get_all(
+	# 🔴 **SỬA 05/09 — câu cảnh báo cũ NÓI NGƯỢC.** Nó ghi *"Phần đã nằm trong các phiếu đó
+	#   không được tính lại"*, trong khi từ chốt 03/09 hệ thống **không trừ gì cả**. Anh Thắng
+	#   đọc câu đó, bấm nút hai lần thấy số y hệt, và báo lúc 05/09 14:38 *"nó đang không trừ đi
+	#   phiếu trước đó thì phải"* — anh ấy đúng về hiện tượng, chỉ là câu chữ của em đã hứa một
+	#   điều hệ thống không làm.
+	#
+	#   Đây đúng loại lỗi cả Phần IV sinh ra để chặn: câu dự phòng thêm vào để chống sai âm thầm
+	#   lại trở thành câu sai thẳng. Cùng họ với ca *"chưa có đơn mua"* đã vá 04/09.
+	#
+	# Nay nói ĐÚNG việc đang xảy ra, và nói luôn **từng mã đã xin bao nhiêu** để người dùng tự
+	# quyết — không tự trừ (giữ chốt của anh Thắng), nhưng cũng không để họ mua trùng vì không
+	# biết.
+	dong_cu = frappe.get_all(
 		"Material Request Item",
 		filters={"sales_order": don.name, "docstatus": ["<", 2]},
-		fields=["parent"], group_by="parent", pluck="parent",
+		fields=["parent", "item_code", "qty"],
 	)
-	if phieu_cu:
-		canh_bao.append(
+	if dong_cu:
+		theo_ma = {}
+		for d in dong_cu:
+			if d["item_code"] in can_mua:
+				theo_ma[d["item_code"]] = theo_ma.get(d["item_code"], 0) + flt(d["qty"])
+		phieu_cu = sorted({d["parent"] for d in dong_cu})
+		cau = (
 			"Đơn này đã có phiếu yêu cầu mặt hàng: " + ", ".join(phieu_cu[:5])
-			+ ". Phần đã nằm trong các phiếu đó không được tính lại."
+			+ ". Hệ thống KHÔNG tự trừ phần đã xin trong các phiếu đó (chốt 03/09) — "
+			"bấm lần nữa là ra thêm một phiếu cho cùng phần thiếu."
 		)
+		if theo_ma:
+			cau += " Đã xin rồi: " + " · ".join(
+				f"{m} {_so(sl)}" for m, sl in sorted(theo_ma.items())
+			) + ". Kiểm lại trước khi gửi để khỏi mua trùng."
+		canh_bao.append(cau)
 
 	return {
 		"co_phieu": True,

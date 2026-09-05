@@ -7,7 +7,7 @@
 Đầu bài: `docs/features/kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`
 Mockup đã duyệt: bản 7 (Bảng 1b bản 6, Bảng 2b bản 7)
 
-**Tổng kết (05/09 trưa):** **54 ca · 53 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
+**Tổng kết (05/09 chiều):** **55 ca · 54 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
 (`Employee Allocation` chưa có dòng nào từ hôm nay, nên cột *Đã phân bổ* luôn bằng 0).
 
 > **Bổ sung 05/09** — 6 ca mới cho việc **Bảng 2 trừ bán thành phẩm đang có trong kho**
@@ -150,6 +150,7 @@ khác nhau**. Nếu số không khớp bảng dưới, kiểm *Phương pháp b�
 | TC-REGR-05 | 25 đơn trên site vẫn tính được sau khi đổi phép bóc | Chạy `kiem_tra` cho mọi đơn `docstatus < 2` | Không đơn nào nổ lỗi | Pass — 25/25, 0 lỗi | Pass |
 | TC-REGR-06 | Nút **Tạo Yêu Cầu Mặt Hàng** vẫn dựng được phiếu | `SO-26-00026` | Dựng được phiếu nháp với số mới | Pass — `co_phieu = True`, phiếu `YCM-…` dựng đủ dòng | Pass |
 | TC-REGR-07 | **Phần V không bị ảnh hưởng** | `nhu_cau_vat_tu.tinh_nhu_cau()` | Chạy bình thường | Pass — Phần V có đường nổ định mức **riêng** (BOM → BOM Template → liệt kê), không dùng `boc_dinh_muc`. ⚠ Câu *"Phần V có phải trừ bán thành phẩm không"* **chưa hỏi anh Thắng** | Pass |
+| TC-VALID-07 | 🔴 **Anh Thắng báo 05/09 14:38: *"tạo 2 lần phiếu yêu cầu mua hàng, nó đang không trừ đi phiếu trước đó thì phải"*** | Bấm nút *Tạo Yêu Cầu Mặt Hàng* hai lần trên `SO-26-00013` | Số **không trừ** — đúng chốt 03/09 16:51 của chính anh Thắng (`7ogrbbbtls`). Nhưng câu cảnh báo phải nói ĐÚNG điều đó | Pass **sau khi vá 05/09** — hành vi số đúng từ đầu (64 · 105 cả hai lần). **Câu cảnh báo thì SAI**: nó ghi *"Phần đã nằm trong các phiếu đó không được tính lại"* — tàn dư của luật 28/08 đã bị đảo ngược. Anh Thắng đọc câu đó, thấy số y hệt, nên tưởng hệ thống hỏng. Nay ghi: *"Hệ thống KHÔNG tự trừ phần đã xin (chốt 03/09) — bấm lần nữa là ra thêm một phiếu cho cùng phần thiếu. Đã xin rồi: NVL 2 64 · NVL 3 105"* | Pass |
 | TC-HAPPY-12 | 🔴 **Bảng 3 tính đúng khi CÓ lịch làm việc** | Anh Thắng thêm lịch 04/09 (**138 dòng từ hôm nay**, 3 nhân sự). Mở Bảng 3 trên `SO-26-00013` (giao 07-09), `SO-26-00014` (11-09), `SO-26-00016` (12-09) | Ra *Tổng theo lịch · Đã phân bổ · Còn lại · Đơn này cần* bằng phút chuẩn, có kết luận đủ/thiếu | Pass — **lần đầu tiên Bảng 3 được kiểm chứng**. `SO-26-00013`: 3 nhân sự, tổng **3.915** phút chuẩn, đơn cần **350** → *đủ*. `SO-26-00014`: **9.135** / cần 1.000 → *đủ*. `SO-26-00016`: **10.440** / cần 200 → *đủ*. ⚠ **Tự tính lại tay để đối chứng, không tin số của hàm**: 18 dòng lịch trong khoảng 04→07/09, mỗi ca 225 phút, `Anh A` 100% + `Anh B` 100% + `Anh C` **90%** = 450+450+**405** = 1.305 phút chuẩn/ngày × 3 ngày = **3.915** — **khớp đúng đến số lẻ**. Hệ số năng lực áp đúng vào phía cung | Pass |
 | TC-HAPPY-13 | Bảng 3 trừ đúng phần đã cam kết cho đơn khác | Hai đơn cùng khoảng, đơn A đã phân bổ nhân sự | Cột *Đã phân bổ* của đơn B tính cả phần A đang giữ | **CHƯA CHẠY** — `Employee Allocation` có 39 dòng nhưng **0 dòng từ hôm nay trở đi**, nên `Đã phân bổ` = 0 trên cả ba đơn. Lịch làm việc đã có (TC-HAPPY-12 chạy được), còn **phân bổ** thì chưa. Cần một bản ghi phân bổ từ 04/09 trở đi mới chạm tới được | — |
 
