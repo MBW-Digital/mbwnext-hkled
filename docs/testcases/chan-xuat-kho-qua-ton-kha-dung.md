@@ -27,7 +27,7 @@ Code: `controllers/python_hook/chan_xuat_kho.py`, cắm vào `before_submit` c�
 >
 > **✅ Bổ sung 04/09 (chiều) — phiên `cozy-dev-0c` đóng thêm hai ca.** `TC-REGR-02` (luật tồn kho
 > tối đa của app lõi) và `TC-PERM-01` (chặn không phụ thuộc vai trò) chạy bằng đúng kỹ thuật dựng
-> chứng từ không lưu ở trên — **0 bút toán kho**, tồn không đổi. Bảng hiện là **41 ca · 41 Pass · 0 chưa chạy** — bộ test này đã **chạy hết**.
+> chứng từ không lưu ở trên — **0 bút toán kho**, tồn không đổi. Bảng hiện là **41 ca · 41 Pass · 0 chưa chạy** — bộ test này đã **chạy hết**. **Đã chạy lại toàn bộ sau khi gộp vào `main` ngày 05/09 15:4x** — xem mục cuối file.
 > `TC-EDGE-05` (huỷ rồi sửa) và `TC-ISO-03` (`bench --site mbw.com migrate`) đóng nốt chiều 04/09 sau khi Tuấn cấp phép.
 > Đọc kèm ô cảnh báo dưới bảng TC-REGR về `custom_max_stock_qty = 0`.
 
@@ -160,3 +160,58 @@ Bản đồ va chạm ở `before_submit` (thứ tự nạp theo `sites/apps.txt
 |---|---|
 | Điểm (b) anh Thắng chốt 25/08 — *"chỉ tự sinh BOM khi mặt hàng chưa có BOM nào"* | Luồng Ghim **không gọi** `auto_create_bom` nên không có rủi ro ghi đè ở đây. Nhưng `auto_create_bom` vẫn quyết định bằng `is_bom_tree_valid` (*BOM có khớp công thức mẫu không*) chứ không phải *có BOM hay chưa* — nút trên màn hình BOM và Kế hoạch sản xuất vẫn có thể **thay mất BOM sửa tay**. Đã báo Tuấn và phiên kia; cần chốt ai sửa |
 | Điểm (d) — *"ghim rồi mà bổ sung rule/template thì phải ấn nút tính lại"* | Màn hình Kiểm Tra Tồn Kho tính lại mỗi lần bấm, không có bộ nhớ đệm. Nhưng **số đã ghim thì không tự đổi** khi template đổi. Cần hỏi anh Thắng: có cần nút tính lại phần ghim riêng không |
+
+---
+
+## Chạy lại sau khi gộp vào `main` — 05/09 15:4x
+
+Nền: `upstream/main` = `d03cf34` (gộp PR #20). Vân tay code trên cây làm việc **trùng khớp
+`main`** (`git diff main -- '*.py' '*.js'` rỗng) — tức bản đang chạy trên cổng 8012 đúng là bản
+vừa gộp, không phải bản cũ còn sót.
+
+Nền dữ liệu lúc đo: `NVL 1` tồn 68 / ghim 14 / **khả dụng 54** · `NVL 2` 32/28/**4** ·
+`NVL 3` 7/7/**0** · `Thành phẩm 1` 31/31/**0** · `Bán thành phẩm 1` 6/5/**1**.
+
+**16 tình huống chặn, chạy thẳng vào `chan_xuat_qua_ton_kha_dung` với chứng từ dựng trong bộ
+nhớ — không ghi một bút toán kho nào.**
+
+| Ca | Kết quả |
+|---|---|
+| Phiếu giao hàng trong hạn (`NVL 1` × 50 ≤ 54) | Đi qua |
+| Phiếu giao hàng vượt (× 60) | **Chặn** — *"NVL 1: xuất 60, tồn khả dụng còn 54"* |
+| Ba dòng cùng mã 3 × 20 = 60 | **Chặn theo tổng**, không theo dòng lẻ |
+| Ba dòng cùng mã 3 × 15 = 45 | Đi qua — đối chứng cho ca trên |
+| Kho ngoài tập tính tồn (`Kho hàng lỗi cần sửa chữa`), 9999 cái | Đi qua — đúng luật bỏ qua |
+| Chuyển kho nội bộ NVL → BTP, `NVL 3` × 5 | Đi qua — tổng tồn không đổi |
+| Xuất kho nội bộ `NVL 3` × 5 (khả dụng 0) | **Chặn** |
+| Nhiều mã, chỉ một mã vượt | **Chặn**, chỉ nêu mã vượt |
+| Chứng từ rỗng · số lượng 0 | Đi qua, không nổ |
+| Phiếu nhập mua thường 500 cái | Đi qua — nhập kho không phải rút tồn |
+| Phiếu nhập mua **trả hàng** (`is_return`) `NVL 3` × 5 | **Chặn** — đảo chiều ăn đúng |
+| Trả hàng `NVL 1` × 5 (còn 54) | Đi qua |
+| Hoá đơn bán **có** cập nhật kho, vượt | **Chặn** |
+| Hoá đơn bán **không** cập nhật kho | Đi qua |
+| Kiểm kê hạ tồn 68 → 10 (rút 58 > 54) | **Chặn** — *"xuất 58"*, tính theo phần giảm |
+| Kiểm kê hạ tồn 68 → 20 (rút 48) · kiểm kê **nâng** tồn | Đi qua |
+| Nhận hàng gia công tiêu hao `NVL 3` × 5 (kho hợp lệ) | **Chặn** |
+| Gia công tiêu hao ở kho ngoài tập | Đi qua |
+| Vốn hoá tài sản tiêu hao `NVL 3` × 5 | **Chặn** |
+
+⚠ Hai ca đầu tiên ra **sai** vì bộ đo của em thiếu trường, không phải code sai: phiếu trả hàng
+phải có `is_return = 1` (không phải số âm), và kiểm kê phải có `current_qty` thì mới tính ra
+phần giảm. Ghi lại đây vì đây đúng là chỗ người viết ca test tiếp theo sẽ vấp.
+
+**Miễn trừ — cả hai đường:**
+
+| Ca | Kết quả |
+|---|---|
+| Giao `NVL 3` × 5, không khai đơn | **Chặn** (khả dụng 0) |
+| Giao `NVL 3` × 5, khai `against_sales_order = SO-26-00026` (đơn này ghim 7) | Đi qua — miễn đúng phần đơn tự giữ |
+| Giao `NVL 3` × 8 với cùng đơn đó | **Chặn** — miễn 7, tồn 7, không nới thêm |
+| Giao `NVL 3` × 5, khai `SO-26-00028` (đơn này ghim 0 `NVL 3`) | **Chặn** — không miễn nhầm sang đơn khác |
+| `don_ban_cua_lsx` quét 39 Lệnh sản xuất | 16 lệnh trả về đơn bán, **3 lệnh chỉ nối được qua Kế hoạch sản xuất** — chặng thứ hai vẫn còn tác dụng, không phải nhánh chết |
+
+**TC-ISO-01 chạy lại:** `mbwnext_localization` · `advanced_selling` · `advanced_stock` ·
+`advanced_buying` · `advanced_accounting` · `frappe` — `git status` **sạch cả sáu**. `erpnext` có
+2 file `notification/*.json` đổi, nhưng là bản sửa từ **14/08/2025** (tắt thông báo năm tài chính),
+không dính gì Phần IV.

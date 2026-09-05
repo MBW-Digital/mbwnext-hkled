@@ -7,7 +7,7 @@
 Đầu bài: `docs/features/kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`
 Mockup đã duyệt: bản 7 (Bảng 1b bản 6, Bảng 2b bản 7)
 
-**Tổng kết (05/09 chiều):** **56 ca · 55 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
+**Tổng kết (05/09 chiều):** **56 ca · 55 Pass · 1 chưa xong** — **đã chạy lại sau khi gộp vào `main`, xem mục cuối file** — chỉ còn `TC-HAPPY-13`
 (`Employee Allocation` chưa có dòng nào từ hôm nay, nên cột *Đã phân bổ* luôn bằng 0).
 
 > **Bổ sung 05/09** — 6 ca mới cho việc **Bảng 2 trừ bán thành phẩm đang có trong kho**
@@ -209,3 +209,58 @@ Bản đồ va chạm (`grep -rn '"Sales Order"' apps/*/*/hooks.py` + thứ tự
 | ~~Ghim gián tiếp giữ vật tư cho cả thành phẩm đã có sẵn trong kho~~ | ✅ **Đã xử lý 03/09 17:2x** — anh Thắng chốt **cách B** lúc 16:51. Chỉ giữ vật tư cho phần còn phải sản xuất. Xem TC-EDGE-12/13/14 và mục 6c của đặc tả |
 | ~~TC-PERM-02 — Bảng 1b/2b không áp User Permission~~ | ✅ **Đã chốt 04/09 10:45: giữ nguyên.** Anh Thắng: *"em cứ giữ nguyên nhé, lúc xuất kho mà cho hiện nhiều thông tin sợ nó rối chứ không phải sợ lộ đơn"*. 🔒 Đây là **quyết định có chủ ý**, không phải việc treo — chi tiết và số đo ở ca `TC-PERM-02` phía trên. ⚠ Câu chốt đó cũng **đính chính một hiểu nhầm của em**: câu chặn xuất kho không nêu tên đơn là vì **sợ rối màn hình**, không phải vì riêng tư — nên **chưa bao giờ có mâu thuẫn** giữa hai chỗ như em từng nêu |
 | Bảng 3 khớp nhân sự bằng **họ tên hiển thị**, không phải mã nhân sự (`kiem_tra_ton_kho.py:623`) | Ba đường vỡ, **hiện chưa đường nào xảy ra** (đo 04/09: 4 nhân sự đều Active, **0 họ tên trùng**; lịch làm việc nay **287 dòng**, 138 dòng từ hôm nay trở đi, khớp hết): (a) **đổi tên nhân sự** ➜ mọi dòng lịch cũ của người đó thôi khớp, im lặng; (b) **hai người trùng họ tên cùng Active** ➜ `ra[employee_name]` ghi đè, một người biến mất khỏi năng lực; (c) **nhân sự nghỉ việc** ➜ bỏ khỏi *tổng theo lịch* thì đúng, nhưng bỏ khỏi *đã phân bổ* làm `còn lại` **to hơn thực tế** — tức **báo đủ nhân lực trong khi không đủ**, sai về phía nguy hiểm. Chưa vá vì chưa lộ và sát hạn; khách chưa dùng phân hệ nhân sự nên lộ ra sẽ rất khó lần |
+
+---
+
+## Chạy lại sau khi gộp vào `main` — 05/09 15:4x
+
+Nền: `upstream/main` = `d03cf34`. Code trên cổng 8012 trùng khớp `main`.
+
+**Bảng hiển thị — bấm thật trên giao diện, đơn `SO-26-00026`:**
+
+| Chỗ kiểm | Kết quả |
+|---|---|
+| Nút **Kiểm Tra Tồn Kho** trên đơn đã duyệt | Hiện, mở được hộp thoại |
+| Bảng 1 | `Thành phẩm 1` cần 40 · tồn 31 · khả dụng 31 · đơn khác giữ — · **thiếu 9** |
+| Bảng 2 | **đủ 3 dòng** `NVL 1` 3/68/58/0 · `NVL 2` 6/32/12/0 · `NVL 3` 24/7/7/**17** ⟵ lỗi mất dòng đã vá vẫn không tái phát |
+| Cột *Ngày hàng về · SL về* | `NVL 3`: **07-09-2026 · về 10**; hai mã kia *"chưa có đơn mua"* |
+| Bảng 2b (bấm *10 đang ghim*) | `SO-26-00028` · Administrator · **10** · *Bóc ra từ: Bán thành phẩm 1 · 10 × **1,00*** · lấy hàng 10-09-2026 |
+| Dòng cộng của Bảng 2b | *"Cộng — đúng phần đã trừ khỏi tồn khả dụng: **10**"* — khớp Bảng 2 |
+| Bảng 3 | 14.355 phút (≈ 239,25 giờ) · đơn cần 400 · **Đủ nhân lực** |
+
+🔴 **Định mức hiện `1,00`** — lỗi cũ cho ra `0,111` (lấy `qty/source_qty` thay vì
+`required_qty/source_qty`) **không quay lại**. Đo lại cả 7 dòng chi tiết: `NVL 1` ← `BTP 1` ×1 ·
+`NVL 2` ← `BTP 1` ×2 · `NVL 3` ← `BTP 2` ×3 — đúng định mức BOM.
+
+**Số liệu — đối chiếu máy chủ:**
+
+| Chỗ kiểm | Kết quả |
+|---|---|
+| Tổng chi tiết (Bảng 1b/2b) == tổng đã trừ (Bảng 1/2) | **Khớp cả 6 mã**, lệch 0 |
+| Đổi góc nhìn `tru_don` cho từng đơn | Không đơn nào **tự kể chính mình** trong danh sách "đơn khác giữ" |
+| `ghim_boi_don_khac` / `ghim_chi_tiet` | Không sinh cảnh báo nào |
+
+**Nút Tạo Yêu Cầu Mặt Hàng — bấm thật:**
+
+Hộp thoại **"Đọc trước khi lưu phiếu"** hiện lên đúng, nội dung nguyên văn:
+
+> *Đơn này đã có phiếu yêu cầu mặt hàng: YCM-26-00003, YCM-26-00004. Hệ thống **KHÔNG** tự trừ
+> phần đã xin trong các phiếu đó (chốt 03/09) — bấm lần nữa là ra thêm một phiếu cho cùng phần
+> thiếu. Đã xin rồi: NVL 3 27. Kiểm lại trước khi gửi để khỏi mua trùng.*
+
+🔴 Đây đúng chỗ đã hỏng hai lần: câu chữ **nói ngược** (vá `d63932c`) rồi **không hiện ra**
+(vá `577c65c`). Nay **cả hai đều đúng trên giao diện thật**, không phải chỉ đúng khi gọi hàm.
+
+Phiếu dựng ra: 1 dòng `NVL 3` × 17, kho `Kho nguyên vật liệu`, hạn 17-09-2026 — **chưa lưu**,
+đóng đi là không để lại gì.
+
+Thêm một vòng ở tầng máy chủ: dựng thật một phiếu YCM thứ ba rồi bấm lại ➜ câu cảnh báo cộng dồn
+đúng (*"NVL 3 44"*, ba số phiếu), rồi `rollback` — phiếu không còn.
+
+**Cảnh báo trên phiếu Yêu Cầu Mặt Hàng (`Material Issue`):** xin `NVL 3` × 50 (khả dụng 0) ➜
+*"1 mặt hàng đang xin nhiều hơn tồn khả dụng: NVL 3. Vẫn lập được phiếu, nhưng lúc xuất kho thật
+sẽ bị chặn nếu tồn chưa về kịp."* · xin `NVL 1` × 5 (còn 54) ➜ **0 thông báo**, không cảnh báo oan.
+
+**TC-PERM-02 đo lại:** tài khoản `test.mua.gioihan@hkled.test` thấy **14 Đơn Bán** qua
+`get_list`, nhưng đọc được **10 dòng bảng ghim** của `SO-26-00026`/`SO-26-00028` — hai đơn nằm
+ngoài quyền. Vẫn đúng hiện trạng đã ghi: hành vi lõi Frappe, và anh Thắng đã chốt 04/09 giữ nguyên.
