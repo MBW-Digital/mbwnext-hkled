@@ -126,3 +126,50 @@ def validate_serial_prefix_uniqueness(sales_order_name, work_order_name):
 	if so_prefix == wo_prefix:
 		frappe.throw(_("Trùng gốc mã serial giữa đơn bán và lệnh sản xuất: {0}").format(so_prefix))
 	return so_prefix, wo_prefix
+
+
+def chuyen_ghim_khi_san_xuat_xong(doc, method=None):
+	"""Chứng từ sản xuất được duyệt ➜ đơn được ghim thêm thành phẩm, vật tư tự nhả.
+
+	PM-FEAT-00036 — luật ở `api/ghim_vat_tu.chuyen_ghim_sau_san_xuat`, đọc docstring bên đó
+	trước khi sửa. Hàm này chỉ là chỗ cắm và chỗ **nuốt lỗi có kiểm soát**.
+
+	🔴 **Cố ý KHÔNG cho lỗi ở đây làm hỏng việc duyệt chứng từ sản xuất.** Hàng đã làm ra thật
+	  và đã nhập kho thật; chặn chứng từ lại vì một phép ghi sổ giữ chỗ là đổi một sai lệch nhỏ
+	  lấy một sai lệch lớn — người thao tác sẽ không hiểu vì sao không duyệt được, và cái họ làm
+	  tiếp thường là tắt tính năng đi.
+
+	  Nhưng **không nuốt im lặng**: hiện thông báo ngay trên màn hình và ghi Error Log, vì phần
+	  ghim lệch mà không ai biết đúng là loại lỗi cả Phần IV sinh ra để chặn.
+	"""
+	if doc.doctype != "Stock Entry" or doc.get("purpose") != "Manufacture":
+		return
+	if not doc.get("work_order") or flt(doc.get("fg_completed_qty")) <= 0:
+		return
+
+	from mbwnext_hkled.api.ghim_vat_tu import chuyen_ghim_sau_san_xuat
+
+	nguoc = doc.docstatus == 2
+	try:
+		viec = chuyen_ghim_sau_san_xuat(doc.fg_completed_qty, doc.work_order, nguoc=nguoc)
+	except Exception:
+		frappe.log_error(
+			title="Chuyển ghim sau sản xuất thất bại",
+			message=f"{doc.name} · lệnh {doc.work_order}\n\n{frappe.get_traceback()}",
+		)
+		frappe.msgprint(
+			_(
+				"Chứng từ đã được ghi nhận, nhưng <b>phần giữ chỗ của Đơn Bán chưa cập nhật được</b>. "
+				"Mở Đơn Bán liên quan và lưu lại một lần để hệ thống tính lại phần ghim."
+			),
+			title=_("Chưa chuyển được phần ghim"),
+			indicator="orange",
+		)
+		return
+
+	if viec:
+		frappe.msgprint(
+			_("Đã chuyển phần ghim sang thành phẩm:") + "<br>• " + "<br>• ".join(viec),
+			alert=True,
+			indicator="green",
+		)

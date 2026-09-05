@@ -1,0 +1,138 @@
+{
+ "actions": [],
+ "creation": "2026-09-04 20:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "source_item",
+  "source_qty",
+  "column_break_qty",
+  "qty",
+  "required_qty",
+  "sua_tay",
+  "section_break_bom",
+  "bom",
+  "bom_modified",
+  "column_break_meta",
+  "updated_at"
+ ],
+ "fields": [
+  {
+   "allow_on_submit": 1,
+   "columns": 3,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vật Tư",
+   "options": "Item",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 3,
+   "description": "Thành phẩm trên đơn sinh ra nhu cầu vật tư này.",
+   "fieldname": "source_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Từ Mặt Hàng",
+   "options": "Item",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "description": "Số thành phẩm còn phải sản xuất đã sinh ra nhu cầu này. Chia Nhu Cầu cho số này ra định mức hiệu dụng.",
+   "fieldname": "source_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Phải Làm",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "description": "Số vật tư đơn này đang thực sự giữ. Sửa tay được để nhường bớt cho đơn khác — không nhập vượt phần tồn chưa ai giữ. Sửa rồi thì máy không tự ghim lại nữa, xem cột Sửa Tay.",
+   "fieldname": "qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Đã Ghim",
+   "non_negative": 1,
+   "read_only": 0
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "description": "Nhu cầu theo định mức. Chênh với Đã Ghim chính là phần nút Phân Bổ sẽ rót vào khi hàng về.",
+   "fieldname": "required_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Nhu Cầu",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_bom",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "bom",
+   "fieldtype": "Link",
+   "label": "Định Mức",
+   "options": "BOM",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "description": "Lần sửa cuối của định mức tại thời điểm ghim. Lệch với hiện tại nghĩa là định mức đã đổi sau khi ghim.",
+   "fieldname": "bom_modified",
+   "fieldtype": "Datetime",
+   "label": "Định Mức Sửa Lúc",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_meta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "updated_at",
+   "fieldtype": "Datetime",
+   "label": "Cập Nhật Lúc",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "default": "0",
+   "description": "Máy đánh dấu khi con số này bị CAN THIỆP — người sửa tay để nhường hàng, hoặc hệ thống thu hồi lúc huỷ phiếu nhập. Dòng đã đánh dấu thì máy chỉ được cắt xuống khi hết hàng, không tự ghim thêm; bấm nút Phân Bổ thì chia lại bình thường.",
+   "fieldname": "sua_tay",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Giữ Nguyên",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-09-04 20:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "MBWNext HKLed",
+ "name": "HKLed Pinned Material",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -204,27 +204,16 @@ def _don_duoc_mien(doc):
 				don.add(d.get(truong))
 
 	# Đường thứ hai: đầu phiếu ➜ Lệnh sản xuất ➜ Đơn Bán (Chứng từ kho nội bộ, Yêu Cầu Mặt Hàng).
+	#
+	# 📌 Từ 04/09 tối, luật đi hai chặng nằm ở `api.ghim_vat_tu.don_ban_cua_lsx` — **một định
+	#    nghĩa dùng chung** với việc chuyển ghim sau sản xuất (PM-FEAT-00036). Hai chỗ hiểu khác
+	#    nhau thì lớp chặn miễn trừ cho đơn này còn sổ ghim lại chuyển cho đơn kia, và không có
+	#    lỗi nào nổ ra. Số đo và lý do của chặng thứ hai nằm trong docstring của hàm đó.
+	from mbwnext_hkled.api.ghim_vat_tu import don_ban_cua_lsx
+
 	lsx = doc.get("work_order")
 	if lsx:
-		truc, ke_hoach = frappe.db.get_value("Work Order", lsx, ["sales_order", "production_plan"]) or (None, None)
-		if truc:
-			don.add(truc)
-		elif ke_hoach:
-			# ⚠ Chặng thứ hai — KHÔNG bỏ được. Anh Thắng mô tả 04/09 16:35: hàng làm cho đơn thì
-			#   bên khách tạo **Kế hoạch sản xuất từ Đơn Bán**, rồi mới tạo Lệnh sản xuất từ kế
-			#   hoạch. Lệnh sinh theo đường đó **không phải lúc nào cũng** mang sẵn `sales_order`.
-			#   Đo 04/09 trên 33 lệnh đang mở: 13 có sẵn ô Đơn Bán · **3 chỉ tra được qua kế
-			#   hoạch** · 17 không có đường nào (đó là sản xuất để tồn kho, không cần miễn trừ).
-			#   Bỏ chặng này là 3 lệnh kia bị chặn oan khi lấy chính vật tư đơn của mình đã ghim.
-			don.update(
-				r["sales_order"]
-				for r in frappe.get_all(
-					"Production Plan Sales Order",
-					filters={"parent": ke_hoach, "sales_order": ["is", "set"]},
-					fields=["sales_order"],
-				)
-			)
-
+		don.update(don_ban_cua_lsx(lsx))
 	return don
 
 

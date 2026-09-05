@@ -130,3 +130,33 @@ def chan_giu_cho_vuot_ton(doc, method=None):
 			)
 
 		da_dung[row.item_code] = da_dung.get(row.item_code, 0) + moi
+
+
+def dong_bo_ghim_vat_tu(doc, method=None):
+	"""Tính lại sổ cam kết vật tư của đơn — PM-FEAT-00036, xem `api/ghim_vat_tu.py`.
+
+	Treo ở **hai** sự kiện, và cả hai đều cần thiết:
+
+	- `validate` — chạy cả lúc lưu nháp lẫn lúc duyệt (Frappe đặt `docstatus = 1` **trước** khi
+	  gọi `validate` trên đường submit). Nháp thì xoá sạch bảng, duyệt thì cấp phát.
+	- `before_update_after_submit` — đơn ĐÃ DUYỆT sửa số ghim. Từ 04/09 hai ô ghim mở khoá sau
+	  khi duyệt (anh Thắng chốt), nên đây là đường người dùng đi nhiều nhất.
+
+	🔴 **`validate` KHÔNG chạy trên đường update-after-submit.** Frappe chọn nhánh
+	  `_action = "update_after_submit"` và chỉ gọi `before_update_after_submit`. Nên mở khoá
+	  `allow_on_submit` mà quên treo `chan_giu_cho_vuot_ton` vào đúng sự kiện này thì người dùng
+	  sửa *Số Lượng Giữ Chỗ* trên đơn đã duyệt sẽ **không bị kiểm gì cả** — mà đó chính là con số
+	  bị trừ khỏi tồn khả dụng của mọi đơn khác. Kiểm lại `hooks.py` mỗi lần đụng chỗ này.
+	"""
+	if doc.doctype != "Sales Order" or doc.flags.get("bo_qua_ghim_vat_tu"):
+		return
+
+	from mbwnext_hkled.api.ghim_vat_tu import dong_bo_doc
+
+	_so_dong, canh_bao = dong_bo_doc(doc, bo_qua_sua_tay=bool(doc.flags.get("phan_bo_lai")))
+
+	# Cảnh báo dạng toast, không chặn lưu: thiếu định mức là chuyện dữ liệu của khách, không
+	# phải lỗi thao tác. Nhưng phải NÓI RA — im lặng bỏ qua phần không ghim được đúng là loại
+	# lỗi "cắt bớt dữ liệu rồi trình bày như đã đủ" mà cả Phần IV sinh ra để chặn.
+	for c in canh_bao:
+		frappe.msgprint(c, alert=True, indicator="orange")

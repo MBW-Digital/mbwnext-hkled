@@ -124,6 +124,8 @@ doctype_js = {
 	"BOM Template": "controllers/js/bom_template.js",
 	"Production Plan": "controllers/js/production_plan.js",
 	"Sales Order": "controllers/js/sales_order.js",
+	# PM-FEAT-00036: nút Phân Bổ trên phiếu nhập mua đã duyệt.
+	"Purchase Receipt": "controllers/js/purchase_receipt.js",
 	"Employee": "controllers/js/employee.js",
 	"Work Order": "controllers/js/work_order.js",
 	"Other Task": "controllers/js/other_task.js",
@@ -303,6 +305,17 @@ doc_events = {
 		"validate": [
 			"mbwnext_hkled.controllers.python_hook.sales_order.fill_item_production_note",
 			"mbwnext_hkled.controllers.python_hook.sales_order.chan_giu_cho_vuot_ton",
+			# PM-FEAT-00036: sổ cam kết vật tư. Phải đứng SAU `chan_giu_cho_vuot_ton` — nó cấp
+			# phát dựa trên số ghim thành phẩm, cấp phát trước khi số đó được kiểm là cấp theo
+			# con số có thể bị chặn ngay sau đó.
+			"mbwnext_hkled.controllers.python_hook.sales_order.dong_bo_ghim_vat_tu",
+		],
+		# 🔴 PM-FEAT-00036: từ 04/09 hai ô ghim mở khoá sau khi duyệt (anh Thắng chốt 15:59).
+		# Frappe **không chạy `validate`** trên đường update-after-submit, nên không treo lại ở
+		# đây thì lớp chặn giữ-chỗ-vượt-tồn thủng đúng ngay lúc vừa mở khoá.
+		"before_update_after_submit": [
+			"mbwnext_hkled.controllers.python_hook.sales_order.chan_giu_cho_vuot_ton",
+			"mbwnext_hkled.controllers.python_hook.sales_order.dong_bo_ghim_vat_tu",
 		],
 	},
 	"Stock Entry": {
@@ -312,6 +325,17 @@ doc_events = {
 			"mbwnext_hkled.controllers.python_hook.stock_entry.set_serial_no_on_manufacture",
 			"mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
 		],
+		# PM-FEAT-00036: sản xuất xong ➜ nhả vật tư, chuyển thành ghim thành phẩm.
+		#
+		# ⚠ `on_submit` chứ không phải `before_submit`: phải chờ bút toán kho ghi xong thì số
+		#   thành phẩm vừa làm ra mới là tồn thật để ghim. Hook của `doc_events` chạy SAU phương
+		#   thức của lõi, nên tới lượt hàm này thì kho đã cập nhật.
+		# ⚠ Và phải nằm trong CÙNG giao dịch: lúc đó hàng vừa nhập kho là hàng tự do, chạy định
+		#   kỳ thì có khe hở để đơn khác ghim mất.
+		"on_submit": "mbwnext_hkled.controllers.python_hook.stock_entry.chuyen_ghim_khi_san_xuat_xong",
+		# Huỷ chứng từ sản xuất thì hàng bay khỏi kho — phải kéo phần ghim xuống theo, nếu không
+		# đơn giữ nhiều hơn số đang có (bất biến #1 của mục 12e).
+		"on_cancel": "mbwnext_hkled.controllers.python_hook.stock_entry.chuyen_ghim_khi_san_xuat_xong",
 	},
 	# ══ PM-FEAT-00034 · Chặn xuất kho quá tồn khả dụng ══
 	#
@@ -329,6 +353,9 @@ doc_events = {
 	},
 	"Purchase Receipt": {
 		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+		# PM-FEAT-00036: huỷ phiếu sau khi đã bấm Phân Bổ ➜ thu hồi đúng phần đã chia.
+		# Ca này đã xảy ra thật trên 8012 ngày 05/09 — xem docstring của `purchase_receipt.py`.
+		"on_cancel": "mbwnext_hkled.controllers.python_hook.purchase_receipt.thu_hoi_ghim_khi_huy",
 	},
 	"Purchase Invoice": {
 		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",

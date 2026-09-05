@@ -7,8 +7,14 @@
 Đầu bài: `docs/features/kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`
 Mockup đã duyệt: bản 7 (Bảng 1b bản 6, Bảng 2b bản 7)
 
-**Tổng kết (04/09 chiều):** **49 ca · 48 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
+**Tổng kết (05/09 sáng):** **53 ca · 52 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
 (`Employee Allocation` chưa có dòng nào từ hôm nay, nên cột *Đã phân bổ* luôn bằng 0).
+
+> **Bổ sung 05/09** — 6 ca mới cho việc **Bảng 2 trừ bán thành phẩm đang có trong kho**
+> (anh Thắng chốt 09:20, xem mục 12f của đầu bài): `TC-EDGE-19` → `TC-EDGE-21` và
+> `TC-REGR-05` → `TC-REGR-07`. Đây là **đổi con số đi mua hàng thật**, không phải đổi hiển thị —
+> `NVL 3` của `SO-26-00026` giảm từ cần mua 20 xuống **17**. Số đếm ở dòng trên tính bằng máy từ
+> chính bảng, không gõ tay.
 
 > ### 🔴 Đọc trước khi tin con số 45 Pass — Bảng 3 CHƯA ĐƯỢC KIỂM CHỨNG BAO GIỜ
 >
@@ -138,6 +144,12 @@ khác nhau**. Nếu số không khớp bảng dưới, kiểm *Phương pháp b�
 | TC-EDGE-16 | 🔴 Câu *"chưa có đơn mua"* không được nói dối | Mã `Thành phẩm 1` (có `PO-26-00003` còn 5 hẹn 02-09 và `PUR-ORD-2026-00002` còn 1 hẹn 10-08) và `dịch vụ gia công` (còn 1 hẹn 21-08) — **toàn bộ đều quá hạn** | Hiện đơn mua thật kèm số ngày quá hạn | Pass **sau khi vá 04/09** — trước vá: cả hai mã bị giấu **100%**, ô ghi *"chưa có đơn mua"* trong khi đơn mua **có thật**. Đây là ca nặng nhất: câu dự phòng vốn thêm vào để **chống** sai im lặng lại trở thành câu sai thẳng. Sau vá: `Thành phẩm 1` → *"10-08 · về 1 · quá hạn 25 ngày"*, `dịch vụ gia công` → *"21-08 · về 1 · quá hạn 14 ngày"* | Pass |
 | TC-EDGE-17 | Cột này KHÔNG gồm Yêu Cầu Mặt Hàng | `NVL 3` có `YCM-26-00001` 60 cái đang chờ | Không cộng vào cột — YCM chưa phải nguồn cung chắc chắn. Đã ghi rõ trong tài liệu để không ai đọc nhầm | Pass — cột chỉ đếm Đơn Mua Hàng đã duyệt; `YCM-26-00001` không xuất hiện. **Có chủ ý, không phải sót** | Pass |
 | TC-EDGE-18 | Số lượng trong câu cảnh báo đọc được, và không làm tròn sai | Gõ **30** vào *Số Lượng Giữ Chỗ* của `Thành phẩm 1` (khả dụng 0). Kiểm thêm hàm `so()` với 2,5 · 0,125 · 1000,5 | Câu hiện *"chỉ giữ chỗ được 0"*, không phải *"0,000"*; số lẻ **giữ nguyên**, không bị làm tròn | Pass **sau khi vá 04/09** — trước vá: *"chỉ giữ chỗ được **0,000**"* (`format_number` trần, 3 chữ số thập phân — đọc như số tiền). Sau vá: *"0"*. ⚠ Cố ý **không** ép cứng 0 chữ số: UOM `Kg`/`m`/`Lít` trên site đều cho phép số lẻ, ép 0 thì **2,5 hiện thành 3** — thay câu khó đọc bằng câu sai. Đo: 2,5 → `2,5` · 0,125 → `0,125` · 1000,5 → `1.000,5` · 68,0 → `68` | Pass |
+| TC-EDGE-19 | 🔒 **Bảng 2 TRỪ bán thành phẩm đang có trong kho** (anh Thắng chốt 05/09 09:20) | `SO-26-00026` phải làm 9 `Thành phẩm 1`; kho có 6 `Bán thành phẩm 1` và 1 `Bán thành phẩm 2` | Chỉ bóc nguyên vật liệu cho phần **thật sự phải làm**, không bóc cho phần đang có sẵn | Pass — **giao diện**: `NVL 1` cần 9 → **3**, `NVL 2` 18 → **6**, `NVL 3` 27 → **24**. Cần mua `NVL 3` giảm 20 → **17**. Trước 05/09 hệ thống bảo đi mua vật tư để làm ra thứ đang nằm trong kho | Pass |
+| TC-EDGE-20 | Dòng đã ĐỦ hàng vẫn phải hiện ở Bảng 2 | Cùng đơn trên; `NVL 1` và `NVL 2` thiếu 0 | Vẫn có dòng, vẫn hiện cần/tồn/khả dụng/ngày hàng về | Pass — **bắt được trong lúc làm**: bản đầu của hàm mới chỉ trả phần còn thiếu nên hai dòng này **biến mất khỏi bảng**. Đã sửa: hàm trả cả nhu cầu gộp lẫn phần phải mua | Pass |
+| TC-EDGE-21 | Trừ theo **bể chung**, không trừ riêng từng nhánh | Một mã là con của nhiều thành phẩm | Một cái hàng trong kho chỉ che được một nhánh | Pass — bể `be` dùng chung cho cả phép bóc, trừ dần theo thứ tự cấp. Đây chính là cảnh báo đã ghi từ đầu ở `boc_dinh_muc` cũ | Pass |
+| TC-REGR-05 | 25 đơn trên site vẫn tính được sau khi đổi phép bóc | Chạy `kiem_tra` cho mọi đơn `docstatus < 2` | Không đơn nào nổ lỗi | Pass — 25/25, 0 lỗi | Pass |
+| TC-REGR-06 | Nút **Tạo Yêu Cầu Mặt Hàng** vẫn dựng được phiếu | `SO-26-00026` | Dựng được phiếu nháp với số mới | Pass — `co_phieu = True`, phiếu `YCM-…` dựng đủ dòng | Pass |
+| TC-REGR-07 | **Phần V không bị ảnh hưởng** | `nhu_cau_vat_tu.tinh_nhu_cau()` | Chạy bình thường | Pass — Phần V có đường nổ định mức **riêng** (BOM → BOM Template → liệt kê), không dùng `boc_dinh_muc`. ⚠ Câu *"Phần V có phải trừ bán thành phẩm không"* **chưa hỏi anh Thắng** | Pass |
 | TC-HAPPY-12 | 🔴 **Bảng 3 tính đúng khi CÓ lịch làm việc** | Anh Thắng thêm lịch 04/09 (**138 dòng từ hôm nay**, 3 nhân sự). Mở Bảng 3 trên `SO-26-00013` (giao 07-09), `SO-26-00014` (11-09), `SO-26-00016` (12-09) | Ra *Tổng theo lịch · Đã phân bổ · Còn lại · Đơn này cần* bằng phút chuẩn, có kết luận đủ/thiếu | Pass — **lần đầu tiên Bảng 3 được kiểm chứng**. `SO-26-00013`: 3 nhân sự, tổng **3.915** phút chuẩn, đơn cần **350** → *đủ*. `SO-26-00014`: **9.135** / cần 1.000 → *đủ*. `SO-26-00016`: **10.440** / cần 200 → *đủ*. ⚠ **Tự tính lại tay để đối chứng, không tin số của hàm**: 18 dòng lịch trong khoảng 04→07/09, mỗi ca 225 phút, `Anh A` 100% + `Anh B` 100% + `Anh C` **90%** = 450+450+**405** = 1.305 phút chuẩn/ngày × 3 ngày = **3.915** — **khớp đúng đến số lẻ**. Hệ số năng lực áp đúng vào phía cung | Pass |
 | TC-HAPPY-13 | Bảng 3 trừ đúng phần đã cam kết cho đơn khác | Hai đơn cùng khoảng, đơn A đã phân bổ nhân sự | Cột *Đã phân bổ* của đơn B tính cả phần A đang giữ | **CHƯA CHẠY** — `Employee Allocation` có 39 dòng nhưng **0 dòng từ hôm nay trở đi**, nên `Đã phân bổ` = 0 trên cả ba đơn. Lịch làm việc đã có (TC-HAPPY-12 chạy được), còn **phân bổ** thì chưa. Cần một bản ghi phân bổ từ 04/09 trở đi mới chạm tới được | — |
 

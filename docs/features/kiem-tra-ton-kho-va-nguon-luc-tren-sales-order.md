@@ -932,6 +932,46 @@ hệ thống tự dựng từ `date` + `start`/`end`. Gán thẳng `start_time` 
 co về gần 0 và `Tổng theo lịch` ra `0,00015` phút. **Số vô lý là dấu hiệu dữ liệu thử sai, không
 phải công thức sai** — đừng sửa công thức cho khớp số vô lý.
 
+## 12f. 🔒 Bảng 2 TRỪ bán thành phẩm đang có trong kho (chốt 05/09/2026)
+
+> **Anh Thắng 09:20:** *"Bảng 2 em cũng phải trừ bán thành phẩm đang có trong kho nhé, nói chung
+> là nó cần phải bóc tách để tính ra được số nguyên vật liệu thiếu chính xác. Ví dụ thiếu 2 bán
+> thành phẩm, 1 bán thành phẩm đã có sẵn tồn khả dụng rồi thì chỉ cần bóc nguyên vật liệu của 1
+> bán thành phẩm thôi."*
+
+Trước đó Bảng 2 chỉ trừ tồn ở **cấp 0** (phần thiếu của Bảng 1) rồi bóc **thẳng xuống lá**, coi
+như trong kho không có bán thành phẩm nào. Hệ quả: hệ thống bảo đi mua nguyên vật liệu để làm ra
+thứ đang nằm sẵn trong kho.
+
+Nay `boc_dinh_muc_tru_ton` đi **từng cấp**, trừ **tồn khả dụng** ở mỗi cấp bằng một **bể dùng
+chung** — bể chung để một cái hàng trong kho không che được nhiều nhánh cùng lúc, đúng cảnh báo
+đã ghi từ đầu ở `boc_dinh_muc`.
+
+**Đo thật trên `SO-26-00026` (05/09, đơn phải làm 9 `Thành phẩm 1`, kho có 6 `Bán thành phẩm 1`
+và 1 `Bán thành phẩm 2`):**
+
+| Mã | Cần — cách cũ | Cần — cách mới | Thiếu (mới) |
+|---|---|---|---|
+| `NVL 1` | 9 | **3** | 0 |
+| `NVL 2` | 18 | **6** | 0 |
+| `NVL 3` | 27 | **24** | 17 |
+
+⚠ **Đây là con số đi mua hàng thật**, không phải hiển thị: cột *Thiếu* chảy thẳng vào phiếu Yêu
+Cầu Mặt Hàng qua `tinh_can_mua`. Số cần mua `NVL 3` của đơn này giảm 20 → 17.
+
+⚠ **Dòng đã đủ hàng vẫn phải hiện.** Bản đầu của hàm mới chỉ trả về phần còn thiếu, làm Bảng 2
+mất hẳn dòng `NVL 1` và `NVL 2` — giảm thông tin âm thầm, đúng loại lỗi mục này sinh ra để chặn.
+Hàm trả về **hai** thứ: nhu cầu gộp của mọi mã lá (để dựng bảng) và phần thật sự phải mua.
+
+⚠ **Phần V KHÔNG dùng chung phép bóc này** — `api/nhu_cau_vat_tu.py` có đường nổ định mức riêng
+(BOM → BOM Template → liệt kê). Đã rà 05/09. Câu hỏi *"Phần V có phải trừ bán thành phẩm không"*
+là câu **chưa hỏi anh Thắng**, đừng tự suy từ chốt này.
+
+➜ `boc_dinh_muc` cũ đã **xoá hẳn** sau khi đổi: để lại một hàm bóc-không-trừ nằm cạnh hàm
+bóc-có-trừ là mời người sau gọi nhầm, mà gọi nhầm thì hệ thống mua dư chứ không báo lỗi.
+
+---
+
 ## 12e. 🔴 Bảng lưu phần ghim vật tư — BẤT BIẾN PHẢI GIỮ (viết TRƯỚC khi code)
 
 Anh Thắng chốt 04/09 11:04: **cần một bảng ghi lại số nguyên vật liệu đã ghim**. Mục này viết
