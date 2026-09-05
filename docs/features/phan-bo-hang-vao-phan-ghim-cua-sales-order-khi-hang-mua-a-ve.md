@@ -353,13 +353,55 @@ ghim. Bấm lần hai tự thấy hết hàng. Đo thật: lần hai rót thêm 
 Ba thứ hộp thoại **phải nói ra** thay vì im lặng: kho nhận hàng nằm ngoài tập tính tồn · đơn đang
 thiếu mã đó nhưng chưa bật Ghim · phiếu chưa duyệt.
 
-### 8.10 Vẫn CHƯA làm
+### 8.10 Sửa tay phần ghim vật tư + thu hồi khi huỷ phiếu (làm 05/09, chốt sáng 05/09)
+
+**Sửa tay** — anh Thắng 09:20: *"anh muốn sửa được không, vì có thể có trường hợp các bạn nhường
+nhau 1 vài nguyên vật liệu trong đó"*.
+
+Không phải chỉ mở khoá. Bảng được **tính lại mỗi lần lưu đơn**, nên mở khoá suông thì người dùng
+sửa xong, lưu phát nữa là số cũ quay lại mà không có thông báo nào. Ba thứ phải đi cùng:
+
+1. Máy **đánh dấu** dòng vừa bị can thiệp (so số trên form với số dưới database).
+2. Dòng đã đánh dấu: máy **chỉ được cắt xuống khi hết hàng**, không tự ghim thêm.
+3. Gõ vượt phần giữ được thì **kẹp xuống và nói ra** — cùng lối với ô *Số Lượng Giữ Chỗ*.
+
+⚠ Riêng **nút Phân Bổ thì chia lại bình thường** theo thứ tự ưu tiên, không kiêng dòng đã đánh
+dấu (anh Thắng chốt 09:39). Ranh giới nằm ở đó: *lần lưu tự động* tôn trọng con số người đặt,
+*cú bấm nút* thì chia lại.
+
+**Thu hồi khi huỷ phiếu nhập** — anh Thắng duyệt 09:39 đúng thứ tự:
+
+1. lấy lại từ **đúng đơn đã được chia từ phiếu đó**;
+2. còn vượt tồn thì cắt tiếp của đơn **ít gấp nhất**;
+3. **liệt kê rõ** đã cắt của ai bao nhiêu, không cắt im lặng.
+
+Bước 1 cần nhớ *đã chia cho ai* — sổ ghim chỉ lưu *đơn nào giữ mã nào bao nhiêu*. Nên nút Phân Bổ
+ghi **nhật ký** vào chính phiếu nhập (`Purchase Receipt.custom_ghim_da_phan_bo`), **cộng dồn**
+chứ không ghi đè.
+
+⚠ Bước 2 không bỏ được: đơn được chia có thể đã **mang vật tư đi sản xuất** rồi, phần ghim đã
+tiêu, không còn gì để trả — mà tồn vẫn tụt. Ai đó vẫn phải nhả, và người đó không phải người đã
+nhận.
+
+> 🔴 **Ca này đã xảy ra thật trên cổng 8012 ngày 05/09, do anh Thắng tự chạy thử trước khi hỏi.**
+> 09:08 tạo `PNK-26-00004` 10 `NVL 3` ➜ bấm *Phân Bổ* ➜ 10 cái vào `SO-26-00028`; 09:09 **huỷ
+> phiếu** ➜ tồn tụt về 7 nhưng phần ghim vẫn **17**. Hậu quả: `NVL 3` còn 7 cái thật mà mọi đơn
+> đều thấy tồn khả dụng **0** — hàng bị giam, không một thông báo nào.
+>
+> **Phép kiểm bất biến ở mục 8.7 bắt được chỗ này**, đúng việc nó sinh ra để làm. Đã sửa dữ liệu
+> thật: dựng nhật ký hồi tố cho `PNK-26-00004` (bằng chứng lấy từ lịch sử sửa đổi của
+> `SO-26-00028` lúc 09:08:22, dòng qty 0 → 10) rồi chạy thu hồi ➜ cắt đúng 10 của
+> `SO-26-00028`, `SO-26-00026` không bị đụng.
+
+### 8.11 Vẫn CHƯA làm
 
 - **Ghim vượt cấp cho bán thành phẩm mua ngoài** — 8.5 đổi hành vi, cần đo lại trên dữ liệu thật.
-- ⚠ **Bảng 2 và sổ ghim đang tính khác nhau** một chỗ, đã hỏi anh Thắng 04/09 tối
-  (`89cclg1akq`): cùng một đơn, Bảng 2 tính cần **27** `NVL 3` (9 thành phẩm × 3) còn sổ ghim
-  tính **24** (8 × 3), vì sổ trừ 1 bán thành phẩm đang có trong kho còn Bảng 2 thì không. Chốt
-  cách nào cũng phải sửa **một trong hai**, không để hai con số cùng hiện.
+- 🔴 **Bảng 2 phải trừ bán thành phẩm đang có trong kho** — anh Thắng chốt 05/09 09:20: *"thiếu 2
+  bán thành phẩm, 1 cái đã có sẵn tồn khả dụng rồi thì chỉ cần bóc nguyên vật liệu của 1 bán
+  thành phẩm thôi"*. Tức **24 đúng, 27 sai**. Đây là sửa vào phép bóc định mức của PM-FEAT-00023
+  — một tính năng **đã nghiệm thu** — và cột *Thiếu* chảy thẳng vào phiếu Yêu Cầu Mặt Hàng, nên
+  **số đi mua sẽ giảm**. Phải làm riêng một nhánh và chạy lại cả 49 ca cũ, đồng thời rà xem Phần
+  V có dùng chung phép bóc đó không.
 
 ---
 

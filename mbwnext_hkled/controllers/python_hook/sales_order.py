@@ -153,7 +153,7 @@ def dong_bo_ghim_vat_tu(doc, method=None):
 
 	from mbwnext_hkled.api.ghim_vat_tu import dong_bo_doc
 
-	_so_dong, canh_bao = dong_bo_doc(doc)
+	_so_dong, canh_bao = dong_bo_doc(doc, bo_qua_sua_tay=bool(doc.flags.get("phan_bo_lai")))
 
 	# Cảnh báo dạng toast, không chặn lưu: thiếu định mức là chuyện dữ liệu của khách, không
 	# phải lỗi thao tác. Nhưng phải NÓI RA — im lặng bỏ qua phần không ghim được đúng là loại

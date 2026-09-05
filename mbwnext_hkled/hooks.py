@@ -353,6 +353,9 @@ doc_events = {
 	},
 	"Purchase Receipt": {
 		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",
+		# PM-FEAT-00036: huỷ phiếu sau khi đã bấm Phân Bổ ➜ thu hồi đúng phần đã chia.
+		# Ca này đã xảy ra thật trên 8012 ngày 05/09 — xem docstring của `purchase_receipt.py`.
+		"on_cancel": "mbwnext_hkled.controllers.python_hook.purchase_receipt.thu_hoi_ghim_khi_huy",
 	},
 	"Purchase Invoice": {
 		"before_submit": "mbwnext_hkled.controllers.python_hook.chan_xuat_kho.chan_xuat_qua_ton_kha_dung",

@@ -70,6 +70,9 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-11 | Bấm Phân Bổ **lần thứ hai** | Không nhân đôi, không cần cờ "đã phân bổ" | 0 dòng rót thêm — tồn tự do đã hết. Sổ không đổi | ✅ Pass |
 | TC-HAPPY-12 | **Trên giao diện thật:** nút *Phân Bổ* trên phiếu nhập đã duyệt, hộp thoại kết quả | Nút hiện, hộp thoại liệt kê đã chia gì cho đơn nào | Bấm trên `PNK-26-00003`: hộp thoại **Phân bổ hàng về** hiện bảng *Bán thành phẩm 1 · SO-26-00026 · ghim thêm 5 · Vật tư*, kèm khối xanh liệt kê 2 đơn chưa bật Ghim. Đọc lại máy chủ: `Bán thành phẩm 1` 1 → **6**, kéo theo `NVL 1` 8 → 3 và `NVL 2` 16 → 6. Quét bất biến sạch | ✅ Pass |
 | TC-HAPPY-13 | **Trên giao diện thật:** bấm *Phân Bổ* lần thứ hai | Không nhân đôi | *"Không chia được gì thêm — hoặc các đơn đã ghim đủ, hoặc hàng vừa về đã có chủ."* Sổ không đổi | ✅ Pass |
+| TC-HAPPY-14 | **Nhường hàng**: sửa tay `NVL 1` từ 3 xuống 1 | Ghi nhận, đánh dấu dòng | `NVL 1` 1/3, cột *Giữ Nguyên* bật | ✅ Pass |
+| TC-HAPPY-15 | Lưu lại đơn sau khi nhường | Máy **không** tự ghim lại | Vẫn 1/3 sau khi `dong_bo` chạy lại | ✅ Pass |
+| TC-HAPPY-16 | Bấm **Phân Bổ** khi có dòng đã đánh dấu | Chia lại bình thường theo ưu tiên (chốt 05/09 09:39) | `NVL 1` về 3/3, cờ được gỡ; và ở ca huỷ phiếu, `SO-26-00028` đang mang cờ vẫn nhận đủ 12 | ✅ Pass |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -85,6 +88,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-VALID-03 | Mã *Sản xuất* chưa có định mức | Phải nói ra, không im lặng bỏ qua | `C28DX03S100-328-40C-280LED: chưa có định mức, phần còn phải sản xuất (40) không ghim được vật tư` — hiện dạng toast màu cam | ✅ Pass |
 | TC-VALID-04 | **Trên giao diện thật:** gõ 40 vào *Số Lượng Giữ Chỗ* (tồn 31) rồi lưu | Không lọt | Lớp giao diện **kẹp trước**: *"Thành phẩm 1: chỉ giữ chỗ được 31 — đã sửa lại giúp anh/chị"*, giá trị về 31 rồi mới lưu. Lớp server (TC-VALID-01) là lưới thứ hai cho đường API | ✅ Pass |
 | TC-VALID-05 | Bấm Phân Bổ trên phiếu nhập **chưa duyệt** | Chặn, nói rõ vì sao | *"Phiếu nhập mua chưa được duyệt nên hàng chưa vào kho — chưa phân bổ được."* Nút cũng ẩn trên bản nháp | ✅ Pass |
+| TC-VALID-06 | Gõ số ghim **vượt** phần giữ được (999 trên trần 3) | Kẹp xuống và **nói ra**, không nuốt im lặng | Về 3, kèm câu *"NVL 1: chỉ giữ chỗ được 3, không được 999 — đã sửa lại giúp anh/chị"* | ✅ Pass |
 
 > 🔴 **TC-VALID-01 là ca quan trọng nhất của đợt này.** Anh Thắng chốt mở khoá ô ghim trên đơn đã
 > duyệt. Frappe **không chạy `validate`** trên đường update-after-submit, nên nếu chỉ bật cờ
@@ -114,7 +118,9 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-EDGE-16 | — | Chứng từ **Chuyển vật tư đi sản xuất** (chưa phải Manufacture) | Không chuyển gì — hàng chưa làm xong | Ghim giữ nguyên 31 | ✅ Pass |
 | TC-EDGE-17 | — | Đơn đang thiếu mã vừa về nhưng **chưa bật Ghim** | Không chia, nhưng **phải báo** | Trả về `SAL-ORD-2026-00013` và `SAL-ORD-2026-00012` mỗi đơn thiếu 1 — hộp thoại hiện khối xanh nhắc bật Ghim rồi bấm lại | ✅ Pass |
 | TC-EDGE-18 | — | Hàng nhập vào **kho ngoài tập tính tồn** | Không chia được, và **phải nói ra** | Chưa chạy — site chưa có phiếu nhập vào `Kho trung chuyển`/`Kho đang sản xuất`. Code có nhánh riêng, hộp thoại có khối vàng | ⏳ Chưa chạy |
-| TC-EDGE-19 | #1 | **Huỷ phiếu nhập** sau khi đã phân bổ | Hàng bay khỏi kho, phần ghim phải xuống theo | Chưa chạy — bẫy 2 mục 5 của đầu bài, anh Thắng **chưa chốt** gỡ ghim theo hay để nguyên và báo. Hiện phép quét bắt được, đồng bộ lại thì cắt xuống, nhưng **không tự động** | ⏳ Chưa chạy |
+| TC-EDGE-19 | #1 | **Huỷ phiếu nhập** sau khi đã phân bổ | Thu hồi **đúng đơn đã được chia**, đơn khác không bị đụng | Về 12 `NVL 3` ➜ phân bổ cho `SO-26-00028` ➜ huỷ phiếu ➜ tự cắt đúng 12 của chính đơn đó, `SO-26-00026` giữ nguyên 7. Quét sạch | ✅ Pass |
+| TC-EDGE-20 | #2 | Nhật ký phân bổ ghi trên phiếu nhập | Có, và **cộng dồn** chứ không ghi đè | `custom_ghim_da_phan_bo` = `[{"ma":"NVL 3","don":"SO-26-00028","them":12.0,"loai":"Vật tư"}]` | ✅ Pass |
+| TC-EDGE-21 | #1 | **Ca thật đã xảy ra 05/09**: anh Thắng phân bổ 10 `NVL 3` rồi huỷ phiếu, lúc chưa có cơ chế thu hồi | Phép kiểm phải bắt được | Bắt đúng: `[#1] NVL 3: tổng ghim 17 > tồn thực tế 7`. Đã sửa dữ liệu thật bằng nhật ký hồi tố ➜ cắt đúng 10 của `SO-26-00028` | ✅ Pass |
 
 ## TC-PERM — phân quyền
 
@@ -168,15 +174,14 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**51 ca · 45 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 5 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
+**57 ca · 52 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 4 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-Năm ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
-phiếu nhập vào kho ngoài tập) · `TC-EDGE-19` (**chờ anh Thắng chốt**: huỷ phiếu nhập sau khi đã
-phân bổ thì gỡ ghim theo hay để nguyên và báo) · `TC-ISO-03` · `TC-ISO-04`.
+Bốn ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
+phiếu nhập vào kho ngoài tập) · `TC-ISO-03` · `TC-ISO-04`.
 
 ⚠ **Dữ liệu để lại trên site sau vòng test này** (cố ý, để anh Thắng bấm lại được): phiếu nhập
 `PNK-26-00003` — 5 `Bán thành phẩm 1` vào *Kho bán thành phẩm*, **đã duyệt và đã phân bổ thật**.

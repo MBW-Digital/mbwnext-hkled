@@ -11,6 +11,7 @@
   "column_break_qty",
   "qty",
   "required_qty",
+  "sua_tay",
   "section_break_bom",
   "bom",
   "bom_modified",
@@ -58,13 +59,13 @@
   {
    "allow_on_submit": 1,
    "columns": 2,
-   "description": "Số vật tư đơn này đang thực sự giữ. Chỉ được cấp phát từ phần tồn chưa ai giữ.",
+   "description": "Số vật tư đơn này đang thực sự giữ. Sửa tay được để nhường bớt cho đơn khác — không nhập vượt phần tồn chưa ai giữ. Sửa rồi thì máy không tự ghim lại nữa, xem cột Sửa Tay.",
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Đã Ghim",
    "non_negative": 1,
-   "read_only": 1
+   "read_only": 0
   },
   {
    "allow_on_submit": 1,
@@ -106,6 +107,17 @@
    "fieldname": "updated_at",
    "fieldtype": "Datetime",
    "label": "Cập Nhật Lúc",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 1,
+   "default": "0",
+   "description": "Máy đánh dấu khi con số này bị CAN THIỆP — người sửa tay để nhường hàng, hoặc hệ thống thu hồi lúc huỷ phiếu nhập. Dòng đã đánh dấu thì máy chỉ được cắt xuống khi hết hàng, không tự ghim thêm; bấm nút Phân Bổ thì chia lại bình thường.",
+   "fieldname": "sua_tay",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Giữ Nguyên",
    "read_only": 1
   }
  ],

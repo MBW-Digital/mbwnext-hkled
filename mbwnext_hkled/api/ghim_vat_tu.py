@@ -39,6 +39,8 @@ trúc**, không phải nhờ một phép kiểm chạy sau. Khác hẳn `_kha_du
 đó kẹp `min(ghim, tồn)` **lúc đọc**, tức vẫn cho ghi con số vượt rồi che đi lúc hiển thị.
 """
 
+import json
+
 import frappe
 from frappe import _
 from frappe.utils import flt, now_datetime
@@ -54,6 +56,8 @@ from mbwnext_hkled.api.kiem_tra_ton_kho import (
 )
 
 TRUONG_BANG = "custom_ghim_vat_tu"
+TEN_BANG = "HKLed Pinned Material"
+TRUONG_NHAT_KY = "custom_ghim_da_phan_bo"
 CHE_BIEN = ("Sản xuất", "Gia công")
 
 # Định mức lồng nhau quá sâu là dấu hiệu dữ liệu hỏng (thường là vòng lặp mà `da_tham` chưa bắt
@@ -176,7 +180,7 @@ def _phai_san_xuat(doc):
 	return can
 
 
-def dong_bo_doc(doc):
+def dong_bo_doc(doc, bo_qua_sua_tay=False):
 	"""Tính lại sổ cam kết vật tư của MỘT đơn, ghi thẳng vào `doc` trong bộ nhớ.
 
 	Trả về `(số dòng, cảnh báo)`. **Không** gọi `doc.save()` — hàm này chạy trong `before_submit`
@@ -202,9 +206,26 @@ def dong_bo_doc(doc):
 	if not doc.get("custom_ghim_ton_kha_dung"):
 		return len(doc.get(TRUONG_BANG) or []), canh_bao
 
+	# Dòng người dùng vừa sửa tay: so số trên form với số dưới database. Code của mình luôn ghi
+	# lại toàn bộ bảng ngay trong cùng lần lưu, nên chênh lệch ở bước NÀY chỉ có thể do người gõ.
+	#
+	# 🔒 Anh Thắng 05/09 09:20: *"anh muốn sửa được, vì có thể có trường hợp các bạn nhường nhau
+	# 1 vài nguyên vật liệu trong đó"*.
+	duoi_db = {}
+	if not doc.is_new():
+		for r in frappe.get_all(
+			TEN_BANG,
+			filters={"parent": doc.name, "parenttype": "Sales Order"},
+			fields=["source_item", "item_code", "qty"],
+		):
+			duoi_db[(r["source_item"], r["item_code"])] = flt(r["qty"])
+
 	cu = {}
 	for r in doc.get(TRUONG_BANG) or []:
-		cu[(r.source_item, r.item_code)] = r
+		khoa = (r.source_item, r.item_code)
+		if khoa in duoi_db and abs(flt(r.qty) - duoi_db[khoa]) > 1e-9:
+			r.sua_tay = 1
+		cu[khoa] = r
 
 	moi = []
 	da_cap = {}
@@ -246,6 +267,24 @@ def dong_bo_doc(doc):
 		for (m, nvl), can in sorted(con.items()):
 			con_lai = flt(tu_do.get(nvl, 0)) - flt(da_cap.get(nvl, 0))
 			duoc = max(0.0, min(flt(can), con_lai))
+
+			# ⚠ Dòng đã có người sửa tay: máy **chỉ được cắt xuống**, không được tự ghim thêm.
+			#   Thiếu luật này thì cái nhường của đơn A bị chính máy xoá ngay lần lưu kế tiếp —
+			#   người dùng sửa xong, lưu phát nữa thấy số cũ quay lại, không có thông báo nào.
+			#   Riêng nút *Phân Bổ* thì chia lại bình thường theo thứ tự ưu tiên (anh Thắng chốt
+			#   05/09 09:39), nên nó truyền `bo_qua_sua_tay`.
+			dong_cu = cu.get((m, nvl))
+			if dong_cu is not None and dong_cu.get("sua_tay") and not bo_qua_sua_tay:
+				nguoi_dat = flt(dong_cu.qty)
+				if nguoi_dat - duoc > 1e-9:
+					# Gõ nhiều hơn phần giữ được. KHÔNG chặn cứng — người dùng đang sửa cả đơn,
+					# ném lỗi ở một dòng bảng phụ là chặn luôn việc họ định làm. Kẹp xuống và
+					# NÓI RA, cùng lối với lớp giao diện của ô Số Lượng Giữ Chỗ.
+					canh_bao.append(
+						f"{nvl}: chỉ giữ chỗ được {_so(duoc)}, không được {_so(nguoi_dat)} — đã sửa lại giúp anh/chị"
+					)
+				else:
+					duoc = min(duoc, nguoi_dat)
 			da_cap[nvl] = flt(da_cap.get(nvl, 0)) + duoc
 			ten_bom, sua_luc = bom_meta.get(m, (None, None))
 			moi.append(
@@ -258,6 +297,7 @@ def dong_bo_doc(doc):
 					"bom": ten_bom,
 					"bom_modified": sua_luc,
 					"updated_at": luc_nay,
+					"sua_tay": 0 if bo_qua_sua_tay else (1 if (dong_cu is not None and dong_cu.get("sua_tay")) else 0),
 				}
 			)
 			if flt(can) - duoc > 0:
@@ -287,7 +327,7 @@ def dong_bo_doc(doc):
 	return len(moi), canh_bao
 
 
-def dong_bo(sales_order, ghi=True):
+def dong_bo(sales_order, ghi=True, bo_qua_sua_tay=False):
 	"""Bản gọi được từ ngoài (console, nút bấm): nạp đơn, tính lại, rồi ghi.
 
 	Cờ `bo_qua_ghim_vat_tu` chặn đệ quy: `doc.save()` kích `before_update_after_submit`, mà hook
@@ -295,7 +335,7 @@ def dong_bo(sales_order, ghi=True):
 	dữ liệu chưa commit.
 	"""
 	doc = frappe.get_doc("Sales Order", sales_order)
-	so_dong, canh_bao = dong_bo_doc(doc)
+	so_dong, canh_bao = dong_bo_doc(doc, bo_qua_sua_tay=bo_qua_sua_tay)
 	if ghi:
 		doc.flags.bo_qua_ghim_vat_tu = True
 		doc.flags.ignore_version = True
@@ -503,6 +543,11 @@ def phan_bo(purchase_receipt):
 
 		# Lưu luôn kể cả khi phần bán thẳng không đổi: chính lần lưu này chạy `dong_bo_ghim_vat_tu`
 		# và đó là chỗ phần VẬT TƯ được rót thêm (cấp phát = min(nhu cầu, tồn tự do)).
+		# 🔒 Anh Thắng 05/09 09:39: *"khi ấn nút phân bổ thì nó vẫn sẽ phân bổ theo đúng thứ tự
+		# đơn như bình thường"* — tức nút này KHÔNG kiêng dòng đã sửa tay. Khác với lần lưu đơn
+		# thông thường: ở đó máy phải tôn trọng con số người đã đặt, nếu không cái nhường của
+		# đơn A bị xoá ngay lần lưu kế tiếp.
+		doc.flags.phan_bo_lai = True
 		doc.flags.ignore_version = True
 		doc.save(ignore_permissions=True)
 		doc.reload()
@@ -542,10 +587,120 @@ def phan_bo(purchase_receipt):
 					{"don": r["parent"], "ma": r["item_code"], "con_thieu": con}
 				)
 
+	# ── Ghi NHẬT KÝ vào chính phiếu nhập ──
+	#
+	# 🔒 Anh Thắng 05/09 09:20 hỏi: *"nếu theo cách A thì liệu nó có cắt đúng số lượng trước đó
+	# đã phân bổ vào không em nhỉ"*. Muốn cắt đúng người thì phải NHỚ đã chia cho ai — sổ ghim
+	# chỉ lưu *đơn nào giữ mã nào bao nhiêu*, không lưu nguồn.
+	#
+	# ⚠ CỘNG DỒN chứ không ghi đè: bấm nút lần hai trả về rỗng, ghi đè là xoá sạch nhật ký của
+	#   lần một và mất luôn đường thu hồi.
+	if ket["dong"]:
+		cu_json = pr.get(TRUONG_NHAT_KY) or ""
+		try:
+			nhat_ky = json.loads(cu_json) if cu_json else []
+		except ValueError:
+			nhat_ky = []
+		nhat_ky.extend(ket["dong"])
+		pr.db_set(TRUONG_NHAT_KY, json.dumps(nhat_ky, ensure_ascii=False), update_modified=False)
+
 	loi = kiem_bat_bien()
 	if loi:
 		ket["canh_bao"] = loi
 	return ket
+
+
+def thu_hoi_phan_bo(purchase_receipt):
+	"""Huỷ phiếu nhập ➜ thu hồi phần đã phân bổ. Trả về danh sách việc đã làm.
+
+	🔒 Anh Thắng duyệt 05/09 09:39 đúng thứ tự này: **lấy lại từ đơn đã được chia từ phiếu đó
+	trước**, còn thiếu bao nhiêu mới cắt tiếp của đơn **ít gấp nhất**, và **liệt kê rõ** đã cắt
+	của ai bao nhiêu.
+
+	⚠ Vì sao phải có bước hai: đơn được chia có thể đã **mang vật tư đi sản xuất** rồi. Lúc đó
+	  phần ghim của nó đã tiêu, không còn gì để trả — mà tồn kho thì vẫn tụt. Ai đó vẫn phải
+	  nhả, và người đó không phải người đã nhận. Em đã nói trước ca này với anh Thắng.
+
+	⚠ Không ném lỗi làm hỏng việc huỷ phiếu: hàng đã ra khỏi kho rồi, chặn lại là giữ một chứng
+	  từ sai trong sổ. Nuốt lỗi thì báo ra màn hình + Error Log, cùng lối với chuyển ghim sau
+	  sản xuất.
+	"""
+	pr = frappe.get_doc("Purchase Receipt", purchase_receipt)
+	viec = []
+
+	try:
+		nhat_ky = json.loads(pr.get(TRUONG_NHAT_KY) or "[]")
+	except ValueError:
+		nhat_ky = []
+
+	# ── Bước 1: lấy lại từ đúng đơn đã được chia ──
+	can_thu = {}
+	for d in nhat_ky:
+		can_thu[(d.get("don"), d.get("ma"))] = flt(can_thu.get((d.get("don"), d.get("ma")), 0)) + flt(d.get("them"))
+
+	for (ten_don, ma), sl in sorted(can_thu.items()):
+		if sl <= 0 or not frappe.db.exists("Sales Order", ten_don):
+			continue
+		viec += _cat_ghim(ten_don, ma, sl, "đã nhận từ phiếu này")
+
+	# ── Bước 2: còn vượt tồn thì cắt tiếp của đơn ÍT GẤP NHẤT ──
+	# Một lượt là đủ: mỗi đơn nhả tối đa những gì nó đang giữ, nên đi hết danh sách mà vẫn còn
+	# vượt thì nghĩa là không ai còn gì để nhả — lặp thêm cũng không đổi được gì.
+	for ma in sorted({m for _d, m in can_thu}):
+		for ten_don in reversed(don_theo_uu_tien()):
+			thua = _phan_vuot_ton(ma)
+			if thua <= 1e-9:
+				break
+			viec += _cat_ghim(ten_don, ma, thua, "cắt thêm vì hàng đã rời kho")
+
+	return viec
+
+
+def _phan_vuot_ton(ma):
+	"""Phần đang ghim VƯỢT tồn thực tế của một mã. 0 nghĩa là đang đúng luật."""
+	ton = flt(_ton_thuc_te([ma], _kho_hop_le()).get(ma, 0))
+	dang_ghim = flt(ghim_thanh_pham().get(ma, 0)) + flt(ghim_vat_tu().get(ma, 0))
+	return max(0.0, dang_ghim - ton)
+
+
+def _cat_ghim(ten_don, ma, so_luong, ly_do):
+	"""Cắt tối đa `so_luong` phần ghim mã `ma` của một đơn. Trả về mô tả việc đã làm."""
+	viec = []
+	con = flt(so_luong)
+	if con <= 0:
+		return viec
+	doc = frappe.get_doc("Sales Order", ten_don)
+	doi = False
+
+	# Vật tư trước, hàng bán thẳng sau: phần bán thẳng là con số người dùng tự nhập, đụng vào
+	# nó là sửa dữ liệu của người khác — chỉ làm khi không còn đường nào khác.
+	for r in doc.get(TRUONG_BANG) or []:
+		if r.item_code != ma or con <= 0:
+			continue
+		bot = min(flt(r.qty), con)
+		if bot <= 0:
+			continue
+		r.qty = flt(r.qty) - bot
+		r.sua_tay = 1        # đã bị can thiệp — đừng tự ghim lại ở lần đồng bộ kế tiếp
+		con -= bot
+		doi = True
+		viec.append(f"{ten_don} · {ma}: vật tư −{_so(bot)} ({ly_do})")
+
+	for row in doc.get("items") or []:
+		if row.item_code != ma or con <= 0:
+			continue
+		bot = min(flt(row.get("custom_so_luong_giu_cho")), con)
+		if bot <= 0:
+			continue
+		row.custom_so_luong_giu_cho = flt(row.custom_so_luong_giu_cho) - bot
+		con -= bot
+		doi = True
+		viec.append(f"{ten_don} · {ma}: hàng trên đơn −{_so(bot)} ({ly_do})")
+
+	if doi:
+		doc.flags.ignore_version = True
+		doc.save(ignore_permissions=True)
+	return viec
 
 
 def kiem_bat_bien():
