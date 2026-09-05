@@ -555,6 +555,23 @@ function tao_phieu(frm, dialog) {
 					indicator: "orange",
 				});
 			}
+			// 🔴 THÊM 05/09 — anh Thắng báo 15:04: *"anh thử lại ấn nút lần thứ 2 chưa thấy
+			// cảnh báo gì"*. Anh ấy đúng nguyên văn: máy chủ VẪN trả `canh_bao`, nhưng nhánh
+			// này **vứt đi**. `khoi_canh_bao()` chỉ dùng trong hộp thoại Kiểm Tra Tồn Kho.
+			//
+			// Cảnh báo nặng nhất ở đây là *"đơn này đã có phiếu yêu cầu mặt hàng rồi"* — bỏ
+			// nó đi thì người dùng lập phiếu trùng mà không biết, tức mua trùng bằng tiền thật.
+			//
+			// Hiện SAU khi chuyển trang: hộp thoại nổi lên trên phiếu vừa dựng, người dùng đọc
+			// rồi mới quyết định bấm Lưu. Dùng `msgprint` chứ không `show_alert` — alert tự tắt
+			// sau vài giây, mà đây là thứ phải đọc.
+			if (kq.canh_bao && kq.canh_bao.length) {
+				frappe.msgprint({
+					title: __("Đọc trước khi lưu phiếu"),
+					message: khoi_canh_bao(kq.canh_bao),
+					indicator: "orange",
+				});
+			}
 		},
 	});
 }
