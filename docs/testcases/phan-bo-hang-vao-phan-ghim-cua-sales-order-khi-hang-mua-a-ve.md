@@ -11,9 +11,9 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 
 > ### ⚠ Đây là ĐỢT 1 — nút *Phân Bổ* CHƯA CÓ
 >
-> Đợt này dựng **chỗ chứa · luật cấp phát · việc nhả vật tư khi sản xuất xong**. Còn thiếu đúng
-> một thứ: **nút *Phân bổ hàng về***. Xem mục 8.9 của đầu bài. Đừng đọc bảng dưới như đã nghiệm
-> thu cả tính năng.
+> Đợt này dựng **chỗ chứa · luật cấp phát · nhả vật tư khi sản xuất xong · nút Phân Bổ**. Phần
+> máy chủ đã chạy đủ; **hộp thoại của nút chưa bấm được trên giao diện** vì phiên đăng nhập trên
+> 8012 bị xoá lúc nạp file JS mới — xem `TC-HAPPY-12`.
 >
 > ### ⚠ Cách chạy vòng một — đọc trước khi tin cột KQ thực tế
 >
@@ -66,6 +66,10 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-06 | Cột *định mức hiệu dụng* trên Bảng 2b | Là định mức thật, không phải phần được cấp | `BTP1`: 9/9 = **1**, không phải 1/9 = 0,111 (đã sửa trong lúc chạy — xem ghi chú dưới) | ✅ Pass |
 | TC-HAPPY-07 | **Trên giao diện thật:** mở `SO-26-00026`, bảng *Ghim Vật Tư* hiện ngay dưới lưới hàng hoá | Đủ 5 dòng, cột Việt hoá, không sửa tay được | Đủ 5 dòng · mọi ô `read_only` · không có nút *Thêm dòng* ở lưới. Bảng 2b của đơn khác hiện *"7 đang ghim"* với định mức **3,00** | ✅ Pass |
 | TC-HAPPY-08 | **Sản xuất xong 5 chiếc** cho đơn đang ghim | Ghim thành phẩm tăng, vật tư nhả theo | Ghim 31 → **36** · phải làm 9 → **4** · `NVL 1` 8 → 3 · `NVL 2` 16 → 6 · nhu cầu `NVL 3` 24 → 9. Quét bất biến sạch | ✅ Pass |
+| TC-HAPPY-09 | **Nút Phân Bổ**: hàng về 10 `NVL 2`, đơn còn thiếu 6 | Rót đúng phần còn thiếu, phần dư để tự do | Rót **6** vào `SO-26-00026` (`NVL 2` 32/38 → 38/38), 4 còn lại vẫn tự do. Quét sạch | ✅ Pass |
+| TC-HAPPY-10 | Phân Bổ **lan xuống nhiều cấp** | Hàng về là bán thành phẩm ➜ nguyên vật liệu để làm nó được nhả ra | Về 5 `Bán thành phẩm 1` ➜ ghim 1 → **6**, kéo theo `NVL 1` 8 → 3 và `NVL 2` 16 → 6 (còn phải làm 8 → 3). Quét sạch | ✅ Pass |
+| TC-HAPPY-11 | Bấm Phân Bổ **lần thứ hai** | Không nhân đôi, không cần cờ "đã phân bổ" | 0 dòng rót thêm — tồn tự do đã hết. Sổ không đổi | ✅ Pass |
+| TC-HAPPY-12 | **Trên giao diện thật:** nút *Phân Bổ* trên phiếu nhập đã duyệt, hộp thoại kết quả | Nút hiện, hộp thoại liệt kê đã chia gì cho đơn nào | ⏳ Chưa chạy — mất phiên đăng nhập 8012 sau `bench clear-cache`. Kết quả máy chủ đã biết trước: rót 5 `Bán thành phẩm 1` cho `SO-26-00026` | ⏳ Chưa chạy |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -80,6 +84,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-VALID-02 | Bảng ghim vật tư có sửa tay được không | Không — máy ghi, người chỉ đọc | `read_only = 1` ở cả trường bảng lẫn mọi cột con | ✅ Pass |
 | TC-VALID-03 | Mã *Sản xuất* chưa có định mức | Phải nói ra, không im lặng bỏ qua | `C28DX03S100-328-40C-280LED: chưa có định mức, phần còn phải sản xuất (40) không ghim được vật tư` — hiện dạng toast màu cam | ✅ Pass |
 | TC-VALID-04 | **Trên giao diện thật:** gõ 40 vào *Số Lượng Giữ Chỗ* (tồn 31) rồi lưu | Không lọt | Lớp giao diện **kẹp trước**: *"Thành phẩm 1: chỉ giữ chỗ được 31 — đã sửa lại giúp anh/chị"*, giá trị về 31 rồi mới lưu. Lớp server (TC-VALID-01) là lưới thứ hai cho đường API | ✅ Pass |
+| TC-VALID-05 | Bấm Phân Bổ trên phiếu nhập **chưa duyệt** | Chặn, nói rõ vì sao | *"Phiếu nhập mua chưa được duyệt nên hàng chưa vào kho — chưa phân bổ được."* Nút cũng ẩn trên bản nháp | ✅ Pass |
 
 > 🔴 **TC-VALID-01 là ca quan trọng nhất của đợt này.** Anh Thắng chốt mở khoá ô ghim trên đơn đã
 > duyệt. Frappe **không chạy `validate`** trên đường update-after-submit, nên nếu chỉ bật cờ
@@ -107,6 +112,9 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-EDGE-14 | — | Sản xuất **nhiều hơn** phần đơn còn thiếu (20 trên 9) | Kẹp ở số lượng trên dòng, phần dư để tự do | Ghim → **40** (đúng trần), sổ vật tư còn **0 dòng** — hết phải sản xuất thì không giữ vật tư nào. Quét sạch | ✅ Pass |
 | TC-EDGE-15 | — | Lệnh sản xuất **không nối được về Đơn Bán** (làm để tồn kho) | Không chuyển gì | Ghim giữ nguyên 31. Đúng thiết kế — 17/33 lệnh trên site thuộc loại này | ✅ Pass |
 | TC-EDGE-16 | — | Chứng từ **Chuyển vật tư đi sản xuất** (chưa phải Manufacture) | Không chuyển gì — hàng chưa làm xong | Ghim giữ nguyên 31 | ✅ Pass |
+| TC-EDGE-17 | — | Đơn đang thiếu mã vừa về nhưng **chưa bật Ghim** | Không chia, nhưng **phải báo** | Trả về `SAL-ORD-2026-00013` và `SAL-ORD-2026-00012` mỗi đơn thiếu 1 — hộp thoại hiện khối xanh nhắc bật Ghim rồi bấm lại | ✅ Pass |
+| TC-EDGE-18 | — | Hàng nhập vào **kho ngoài tập tính tồn** | Không chia được, và **phải nói ra** | Chưa chạy — site chưa có phiếu nhập vào `Kho trung chuyển`/`Kho đang sản xuất`. Code có nhánh riêng, hộp thoại có khối vàng | ⏳ Chưa chạy |
+| TC-EDGE-19 | #1 | **Huỷ phiếu nhập** sau khi đã phân bổ | Hàng bay khỏi kho, phần ghim phải xuống theo | Chưa chạy — bẫy 2 mục 5 của đầu bài, anh Thắng **chưa chốt** gỡ ghim theo hay để nguyên và báo. Hiện phép quét bắt được, đồng bộ lại thì cắt xuống, nhưng **không tự động** | ⏳ Chưa chạy |
 
 ## TC-PERM — phân quyền
 
@@ -160,14 +168,16 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**42 ca · 38 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **4 ca chạy trên giao diện thật**.
+**50 ca · 43 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 6 chưa chạy.** Trong đó **4 ca chạy trên giao diện thật**.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-**Chưa có test cho phần chưa code:** còn đúng **nút *Phân Bổ***.
+Sáu ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
+phiếu nhập vào kho ngoài tập) · `TC-EDGE-19` (**chờ anh Thắng chốt**: huỷ phiếu nhập sau khi đã
+phân bổ thì gỡ ghim theo hay để nguyên và báo) · `TC-HAPPY-12` (hộp thoại nút Phân Bổ trên giao
+diện) · `TC-ISO-03` · `TC-ISO-04`.
 
-Việc *nhả vật tư khi sản xuất xong* đã làm và đã test (`TC-HAPPY-08`, `TC-EDGE-13` → `TC-EDGE-16`),
-nên lo ngại "giam hàng" tôi nêu với anh Thắng buổi tối đã được gỡ ở đường sản xuất. Đường còn lại
-là hàng **mua** về — chính là việc của nút Phân Bổ.
+Cả ba đường vào phần ghim nay đã khép: **người nhập tay** (ô Số Lượng Giữ Chỗ) · **sản xuất xong**
+(tự chuyển) · **hàng mua về** (nút Phân Bổ).

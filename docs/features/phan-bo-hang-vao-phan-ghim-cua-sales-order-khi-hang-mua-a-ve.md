@@ -335,9 +335,26 @@ là đơn giữ nhiều hơn số đang có (bất biến #1). Đo thật: huỷ
 ⚠ Lệnh sản xuất **không nối được về Đơn Bán** (17/33 lệnh, làm để tồn kho) thì không chuyển gì —
 đúng thiết kế, xem `api/ghim_vat_tu.don_ban_cua_lsx`.
 
-### 8.9 Vẫn CHƯA làm
+### 8.9 Nút Phân Bổ (làm 05/09 sáng)
 
-- **Nút Phân bổ** — việc còn lại cuối cùng của tính năng.
+Trên **Phiếu nhập mua đã duyệt**, đúng chỗ anh Thắng chỉ trong đầu bài gốc.
+
+Chia **hai loại thiếu**, không phải một: hàng bán thẳng thì rót vào ô *Số Lượng Giữ Chỗ*; vật tư
+thì rót vào sổ cam kết. Ví dụ của anh Thắng là loại thứ nhất, nhưng chốt cách B nói hàng mua về
+là **vật tư** — mà đo được 0/1.825 mã *Mua hàng* từng nằm trên dòng Đơn Bán, nên chỉ làm loại thứ
+nhất thì nút bấm xong không tìm thấy gì để phân bổ.
+
+Cả hai loại đi **chung một vòng lặp** theo thứ tự ưu tiên. Tách hai vòng thì đơn gấp nhất chỉ
+được ưu tiên trong loại của nó, còn đơn xếp sau lại lấy trước ở loại kia.
+
+**Không cần cờ "đã phân bổ"** — cả hai loại chỉ lấy từ tồn tự do, mà tồn tự do đã trừ phần đã
+ghim. Bấm lần hai tự thấy hết hàng. Đo thật: lần hai rót thêm 0 dòng.
+
+Ba thứ hộp thoại **phải nói ra** thay vì im lặng: kho nhận hàng nằm ngoài tập tính tồn · đơn đang
+thiếu mã đó nhưng chưa bật Ghim · phiếu chưa duyệt.
+
+### 8.10 Vẫn CHƯA làm
+
 - **Ghim vượt cấp cho bán thành phẩm mua ngoài** — 8.5 đổi hành vi, cần đo lại trên dữ liệu thật.
 - ⚠ **Bảng 2 và sổ ghim đang tính khác nhau** một chỗ, đã hỏi anh Thắng 04/09 tối
   (`89cclg1akq`): cùng một đơn, Bảng 2 tính cần **27** `NVL 3` (9 thành phẩm × 3) còn sổ ghim

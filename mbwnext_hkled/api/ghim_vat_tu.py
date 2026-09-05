@@ -40,9 +40,11 @@ trúc**, không phải nhờ một phép kiểm chạy sau. Khác hẳn `_kha_du
 """
 
 import frappe
+from frappe import _
 from frappe.utils import flt, now_datetime
 
 from mbwnext_hkled.api.kiem_tra_ton_kho import (
+	TRANG_THAI_DON_CHET,
 	_bom_mac_dinh,
 	_dong_bom,
 	_kho_hop_le,
@@ -416,6 +418,134 @@ def chuyen_ghim_sau_san_xuat(so_luong, lsx, nguoc=False):
 			doc.save(ignore_permissions=True)
 
 	return viec
+
+
+@frappe.whitelist()
+def phan_bo(purchase_receipt):
+	"""Nút **Phân Bổ** trên Phiếu nhập mua — chia hàng vừa về cho các đơn chưa ghim đủ.
+
+	🔒 Đầu bài nguyên văn anh Thắng 31/08: *"khi hàng về, người dùng tạo phiếu Purchase Receipt
+	xong có thể ấn nút phân bổ, sau khi ấn nút thì những mặt hàng đang có số tồn khả dụng sẽ được
+	phân bổ vào phần ghim hàng của những đơn Sales Order chưa ghim đủ … Ưu tiên phân bổ theo thứ
+	tự hàng cần gấp trước."*
+
+	## Chia HAI loại thiếu, không phải một
+
+	| Loại | Thiếu ở đâu | Rót vào |
+	|---|---|---|
+	| Hàng bán thẳng | `Sales Order Item.custom_so_luong_giu_cho` chưa bằng số cần | chính ô đó |
+	| Vật tư | dòng trong sổ cam kết có `qty < required_qty` | sổ, qua `dong_bo_doc` |
+
+	Ví dụ của anh Thắng là loại thứ nhất. Nhưng chốt **cách B** (04/09) nói hàng mua về là **vật
+	tư**, mà đo được **0/1.825** mã *Mua hàng* từng nằm trên dòng Đơn Bán — nên nếu chỉ làm loại
+	thứ nhất thì nút này bấm xong **không tìm thấy gì để phân bổ**, đúng cái bế tắc đã nêu ở mục
+	4.1 của đầu bài.
+
+	## Không cần cờ "đã phân bổ"
+
+	Cả hai loại đều chỉ lấy từ **tồn tự do**, mà tồn tự do đã trừ phần đã ghim. Bấm nút lần thứ
+	hai tự thấy hết hàng. Đây là tính chất sẵn có của phép tính, không phải thứ phải canh.
+
+	## Ba thứ phải NÓI RA thay vì im lặng bỏ qua
+
+	1. Kho nhận hàng **nằm ngoài tập kho được tính tồn** (`Kho trung chuyển`, `Kho đang sản
+	   xuất`…): hàng về thật mà hệ thống vẫn thấy tồn 0 ➜ chia không ra gì. Bẫy 1 mục 5.
+	2. Đơn đang thiếu mã đó nhưng **chưa bật Ghim**: theo chốt 4.4 thì không chia, nhưng phải báo
+	   để người dùng tự quyết.
+	3. Phiếu **chưa duyệt**: `Bin.actual_qty` chưa đổi, chia ra là chia hàng chưa có. Bẫy 3 mục 5.
+	"""
+	pr = frappe.get_doc("Purchase Receipt", purchase_receipt)
+	pr.check_permission("read")
+	if pr.docstatus != 1:
+		frappe.throw(
+			_("Phiếu nhập mua chưa được duyệt nên hàng chưa vào kho — chưa phân bổ được."),
+			title=_("Chưa duyệt phiếu"),
+		)
+
+	kho_ok = set(_kho_hop_le())
+	ma_ve, kho_ngoai = {}, {}
+	for d in pr.get("items") or []:
+		sl = flt(d.get("stock_qty") or d.get("qty"))
+		if sl <= 0:
+			continue
+		if d.get("warehouse") and d.get("warehouse") not in kho_ok:
+			kho_ngoai[d.item_code] = d.get("warehouse")
+			continue
+		ma_ve[d.item_code] = ma_ve.get(d.item_code, 0) + sl
+
+	ket = {
+		"phieu": purchase_receipt,
+		"dong": [],
+		"kho_ngoai_tap": [{"ma": m, "kho": k} for m, k in sorted(kho_ngoai.items())],
+		"bo_qua_chua_ghim": [],
+		"canh_bao": [],
+	}
+	if not ma_ve:
+		return ket
+
+	# ── Loại 1: hàng bán thẳng ── và ── Loại 2: vật tư ── đi CHUNG một vòng lặp theo thứ tự ưu
+	# tiên. Tách hai vòng thì đơn gấp nhất chỉ được ưu tiên trong loại của nó, còn đơn xếp sau
+	# lại lấy trước ở loại kia — không còn là "cần gấp trước" nữa.
+	for ten_don in don_theo_uu_tien():
+		doc = frappe.get_doc("Sales Order", ten_don)
+		truoc = {r.name: flt(r.get("custom_so_luong_giu_cho")) for r in doc.get("items") or []}
+		vt_truoc = {(r.source_item, r.item_code): flt(r.qty) for r in doc.get(TRUONG_BANG) or []}
+
+		for row in doc.get("items") or []:
+			if row.item_code not in ma_ve:
+				continue
+			ghim = flt(row.get("custom_so_luong_giu_cho"))
+			thieu = flt(row.qty) - flt(row.delivered_qty) - ghim
+			tu_do = flt(ton_tu_do([row.item_code], tru_ghim_vat_tu_cua=ten_don).get(row.item_code, 0))
+			them = max(0.0, min(thieu, tu_do))
+			if them > 0:
+				row.custom_so_luong_giu_cho = ghim + them
+
+		# Lưu luôn kể cả khi phần bán thẳng không đổi: chính lần lưu này chạy `dong_bo_ghim_vat_tu`
+		# và đó là chỗ phần VẬT TƯ được rót thêm (cấp phát = min(nhu cầu, tồn tự do)).
+		doc.flags.ignore_version = True
+		doc.save(ignore_permissions=True)
+		doc.reload()
+
+		for row in doc.get("items") or []:
+			delta = flt(row.get("custom_so_luong_giu_cho")) - truoc.get(row.name, 0)
+			if delta > 0:
+				ket["dong"].append(
+					{"ma": row.item_code, "don": ten_don, "them": delta, "loai": "Hàng trên đơn"}
+				)
+		for r in doc.get(TRUONG_BANG) or []:
+			delta = flt(r.qty) - vt_truoc.get((r.source_item, r.item_code), 0)
+			if delta > 0 and r.item_code in ma_ve:
+				ket["dong"].append(
+					{"ma": r.item_code, "don": ten_don, "them": delta, "loai": "Vật tư"}
+				)
+
+	# Đơn đang thiếu mã vừa về nhưng CHƯA BẬT GHIM — không chia (chốt 4.4), nhưng phải báo.
+	chua_ghim = frappe.get_all(
+		"Sales Order",
+		filters={
+			"docstatus": 1,
+			"custom_ghim_ton_kha_dung": 0,
+			"status": ["not in", list(TRANG_THAI_DON_CHET)],
+		},
+		pluck="name",
+	)
+	if chua_ghim:
+		for r in frappe.get_all(
+			"Sales Order Item",
+			filters={"parent": ["in", chua_ghim], "item_code": ["in", list(ma_ve)]},
+			fields=["parent", "item_code", "qty", "delivered_qty"],
+		):
+			con = flt(r["qty"]) - flt(r["delivered_qty"])
+			if con > 0:
+				ket["bo_qua_chua_ghim"].append(
+					{"don": r["parent"], "ma": r["item_code"], "con_thieu": con}
+				)
+
+	loi = kiem_bat_bien()
+	if loi:
+		ket["canh_bao"] = loi
+	return ket
 
 
 def kiem_bat_bien():

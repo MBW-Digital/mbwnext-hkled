@@ -124,6 +124,8 @@ doctype_js = {
 	"BOM Template": "controllers/js/bom_template.js",
 	"Production Plan": "controllers/js/production_plan.js",
 	"Sales Order": "controllers/js/sales_order.js",
+	# PM-FEAT-00036: nút Phân Bổ trên phiếu nhập mua đã duyệt.
+	"Purchase Receipt": "controllers/js/purchase_receipt.js",
 	"Employee": "controllers/js/employee.js",
 	"Work Order": "controllers/js/work_order.js",
 	"Other Task": "controllers/js/other_task.js",
