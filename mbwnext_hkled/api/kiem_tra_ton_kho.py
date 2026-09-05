@@ -184,70 +184,112 @@ def _dong_bom(ten_bom):
 	return [(d.item_code, flt(d.stock_qty or d.qty) / sl_thanh_pham) for d in bom.items]
 
 
-def boc_dinh_muc(nhu_cau, da_tham=None, canh_bao=None):
-	"""Bóc {mã: số lượng} xuống NVL lá. Trả về {mã NVL: tổng số lượng}.
+CAP_BOC_TOI_DA = 8
 
-	Mặt hàng *Mua hàng* (hoặc bỏ trống Phương pháp bổ sung — coi như Mua hàng) là lá: chính nó
-	là thứ phải mua. Mặt hàng *Sản xuất / Gia công* thì bóc tiếp theo BOM mặc định.
 
-	⚠ Gom hết rồi mới trừ tồn MỘT LẦN ở ngoài, không trừ tại từng nhánh — trừ sớm thì cùng một
-	  lượng tồn bị đếm cho nhiều nhánh (bước 4 của đầu bài).
-	⚠ `da_tham` chặn BOM lặp vòng. Khách khẳng định không có, nhưng đó là **tình trạng dữ liệu**
-	  chứ không phải ràng buộc hệ thống — một BOM vòng làm treo cả tiến trình, không phải báo lỗi.
+def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
+	"""Bóc định mức xuống NVL lá, **TRỪ TỒN KHẢ DỤNG Ở TỪNG CẤP**.
+
+	Trả về `(can_mua, nhu_cau_la)`: `can_mua` = {mã lá: số thật sự phải mua sau khi đã trừ hàng
+	có sẵn ở mọi cấp}; `nhu_cau_la` = {mã lá: nhu cầu gộp} — kể cả mã đã đủ hàng, để Bảng 2 vẫn
+	hiện đủ dòng chứ không âm thầm giấu những mã không phải mua.
+
+	🔒 **Anh Thắng chốt 05/09/2026 09:20:**
+
+	> *"Bảng 2 em cũng phải trừ bán thành phẩm đang có trong kho nhé… Ví dụ thiếu 2 bán thành
+	> phẩm, 1 bán thành phẩm đã có sẵn tồn khả dụng rồi thì chỉ cần bóc nguyên vật liệu của 1
+	> bán thành phẩm thôi."*
+
+	Khác `boc_dinh_muc` ở đúng một điểm, và điểm đó đổi con số đi mua hàng: hàm kia bóc **thẳng
+	xuống lá**, coi như trong kho không có bán thành phẩm nào. Đo trên `SO-26-00026` ngày 04/09:
+	đơn phải làm 9 `Thành phẩm 1`, kho có sẵn 1 `Bán thành phẩm 2` nên chỉ phải làm 8 — hàm kia
+	vẫn ra `NVL 3` cần **27**, đúng phải là **24**.
+
+	## ⚠ Trừ theo BỂ CHUNG, không trừ riêng từng nhánh
+
+	Cảnh báo trong `boc_dinh_muc` vẫn nguyên giá trị: *"trừ sớm thì cùng một lượng tồn bị đếm cho
+	nhiều nhánh"*. Một mã có thể là con của nhiều thành phẩm; mỗi nhánh tự trừ tồn của nó thì 1
+	cái hàng trong kho che được 3 nhánh.
+
+	Nên `be` là **một bể dùng chung cho cả phép bóc**: mã nào lấy trước thì trừ đi, nhánh sau chỉ
+	còn phần dư. Đi theo **từng cấp** thay vì đệ quy theo nhánh chính là để bể được chia đúng thứ
+	tự.
+
+	⚠ Trừ **tồn khả dụng** (đã trừ phần đơn khác ghim), không phải tồn thực tế — hàng người khác
+	  đang giữ thì không dùng được, y như Bảng 1.
 	"""
-	da_tham = da_tham if da_tham is not None else set()
+	ghim = ghim or {}
 	canh_bao = canh_bao if canh_bao is not None else []
-	ket = {}
+	can_mua = {}
+	nhu_cau_la = {}
+	be = {}
+	da_tham = set()
+	tang = {m: flt(sl) for m, sl in (nhu_cau or {}).items() if flt(sl) > 0}
 
-	ma = [m for m, sl in nhu_cau.items() if flt(sl) > 0]
-	if not ma:
-		return ket
+	for _cap in range(CAP_BOC_TOI_DA):
+		if not tang:
+			break
 
-	pp = {
-		r["name"]: (r.get("custom_replenishment_method") or "").strip()
-		for r in frappe.get_all(
-			"Item", filters={"name": ["in", ma]},
-			fields=["name", "custom_replenishment_method"],
-		)
-	}
-	bom_cua = _bom_mac_dinh([m for m in ma if pp.get(m) in ("Sản xuất", "Gia công")])
+		# Nạp bể cho mã lần đầu gặp — MỘT query cho cả cấp, không hỏi trong vòng lặp.
+		chua_co = [m for m in tang if m not in be]
+		if chua_co:
+			ton = _ton_thuc_te(chua_co, kho)
+			for m in chua_co:
+				be[m] = max(0.0, _kha_dung(flt(ton.get(m, 0)), ghim.get(m, 0))[0])
 
-	# Mặt hàng bị coi là lá NHƯNG lại có định mức — dấu hiệu khách quên khai Phương pháp bổ sung.
-	# Đo 03/09: 487 mã đang để trống trường này (335 NULL + 152 chuỗi rỗng). Hiện chỉ 3 mã vừa
-	# trống vừa có định mức, và cả 3 là dữ liệu thử. Nhưng nếu một thành phẩm thật rơi vào đó thì
-	# hệ thống sẽ đi MUA CHÍNH NÓ thay vì mua nguyên vật liệu — sai hoàn toàn mà không báo gì.
-	bom_cua_la = _bom_mac_dinh([m for m in ma if pp.get(m) not in ("Sản xuất", "Gia công")])
-
-	for m in ma:
-		sl = flt(nhu_cau[m])
-		if pp.get(m) not in ("Sản xuất", "Gia công"):
-			if m in bom_cua_la:
-				canh_bao.append(
-					f"{m}: Phương pháp bổ sung đang là {pp.get(m) or 'trống'} nên coi như phải mua, "
-					f"nhưng mặt hàng này CÓ định mức ({bom_cua_la[m]}) — kiểm lại xem có phải hàng sản xuất"
-				)
-			ket[m] = ket.get(m, 0) + sl          # Mua hàng, hoặc trống -> là lá
-			continue
-		if m in da_tham:
-			canh_bao.append(f"{m}: định mức lặp vòng, dừng bóc tại đây")
-			ket[m] = ket.get(m, 0) + sl
-			continue
-		ten_bom = bom_cua.get(m)
-		if not ten_bom:
-			# Chưa có BOM. KHÔNG tự sinh ở đây: `auto_create_bom` submit chứng từ thật và gỡ
-			# cờ is_default của BOM cũ — việc đó phải qua một cú bấm rõ ràng, không được xảy ra
-			# lúc người dùng chỉ bấm xem tồn kho.
-			canh_bao.append(f"{m}: chưa có định mức, tạm coi như phải mua")
-			ket[m] = ket.get(m, 0) + sl
-			continue
+		pp = {
+			r["name"]: (r.get("custom_replenishment_method") or "").strip()
+			for r in frappe.get_all(
+				"Item", filters={"name": ["in", list(tang)]},
+				fields=["name", "custom_replenishment_method"],
+			)
+		}
+		che_bien = [m for m in tang if pp.get(m) in ("Sản xuất", "Gia công") and m not in da_tham]
+		bom_cua = _bom_mac_dinh(che_bien)
+		bom_cua_la = _bom_mac_dinh([m for m in tang if m not in che_bien])
 
 		con = {}
-		for nvl, dinh_muc in _dong_bom(ten_bom):
-			con[nvl] = con.get(nvl, 0) + dinh_muc * sl
-		for nvl, sl_con in boc_dinh_muc(con, da_tham | {m}, canh_bao).items():
-			ket[nvl] = ket.get(nvl, 0) + sl_con
+		for m, sl in tang.items():
+			dung = min(sl, flt(be.get(m, 0)))
+			be[m] = flt(be.get(m, 0)) - dung
+			thieu = sl - dung
 
-	return ket
+			ten_bom = bom_cua.get(m)
+			la = m not in che_bien or not ten_bom
+			if la:
+				# Là LÁ: chính nó là thứ phải mua. Ghi cả nhu cầu gộp lẫn phần còn thiếu.
+				if m in che_bien and not ten_bom:
+					canh_bao.append(f"{m}: chưa có định mức, tạm coi như phải mua")
+				elif m not in che_bien and m in bom_cua_la:
+					# Dấu hiệu khách quên khai Phương pháp bổ sung — hệ thống sẽ đi MUA CHÍNH NÓ
+					# thay vì mua nguyên vật liệu, sai hoàn toàn mà không báo gì.
+					canh_bao.append(
+						f"{m}: Phương pháp bổ sung đang là {pp.get(m) or 'trống'} nên coi như phải mua, "
+						f"nhưng mặt hàng này CÓ định mức ({bom_cua_la[m]}) — kiểm lại xem có phải hàng sản xuất"
+					)
+				if m in da_tham:
+					canh_bao.append(f"{m}: định mức lặp vòng, dừng bóc tại đây")
+				nhu_cau_la[m] = flt(nhu_cau_la.get(m, 0)) + sl
+				if thieu > 1e-9:
+					can_mua[m] = flt(can_mua.get(m, 0)) + thieu
+				continue
+
+			# Hàng sản xuất: chỉ bóc phần CÒN PHẢI LÀM xuống cấp dưới.
+			if thieu <= 1e-9:
+				continue
+			for nvl, dinh_muc in _dong_bom(ten_bom):
+				con[nvl] = con.get(nvl, 0) + dinh_muc * thieu
+
+		da_tham.update(che_bien)
+		tang = con
+	else:
+		if tang:
+			canh_bao.append(
+				f"định mức lồng quá {CAP_BOC_TOI_DA} cấp, dừng bóc — kiểm lại dữ liệu định mức: "
+				+ ", ".join(sorted(tang))
+			)
+
+	return can_mua, nhu_cau_la
 
 
 def ghim_boi_don_khac(tru_don=None):
@@ -826,8 +868,19 @@ def kiem_tra(sales_order=None, doc=None):
 			"thieu": thieu,
 		})
 
-	# Bước 3+4: chỉ bóc phần CÒN THIẾU, gom hết rồi mới trừ tồn một lần.
-	nvl = boc_dinh_muc(thieu_b1, canh_bao=canh_bao)
+	# Bước 3+4: bóc theo TỪNG CẤP, trừ tồn khả dụng ở mỗi cấp bằng một bể dùng chung.
+	#
+	# 🔒 **ĐỔI 05/09/2026** — anh Thắng chốt 09:20: *"Bảng 2 em cũng phải trừ bán thành phẩm đang
+	# có trong kho nhé"*. Trước đó truyền `thieu_b1` vào `boc_dinh_muc`, tức chỉ trừ tồn ở CẤP 0
+	# rồi bóc thẳng xuống lá — bán thành phẩm nằm sẵn trong kho không được tính, và hệ thống bảo
+	# đi mua nguyên vật liệu để làm ra thứ đang có.
+	#
+	# Nay truyền `nhu_cau` NGUYÊN (chưa trừ) và để hàm tự trừ ở từng cấp; riêng cấp 0 nó ra đúng
+	# `thieu_b1` vì cùng công thức `_kha_dung`.
+	#
+	# ⚠ Con số này chảy thẳng vào phiếu **Yêu Cầu Mặt Hàng** qua `tinh_can_mua` — sửa ở đây là
+	#   đổi số đi mua hàng thật, không phải đổi hiển thị.
+	_can_mua_la, nvl = boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=ghim, canh_bao=canh_bao)
 	ton_b2 = _ton_thuc_te(set(nvl), kho)
 	ve = _ngay_hang_ve(set(nvl))
 	bang2 = []

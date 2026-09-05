@@ -396,7 +396,8 @@ nhận.
 ### 8.11 Vẫn CHƯA làm
 
 - **Ghim vượt cấp cho bán thành phẩm mua ngoài** — 8.5 đổi hành vi, cần đo lại trên dữ liệu thật.
-- 🔴 **Bảng 2 phải trừ bán thành phẩm đang có trong kho** — anh Thắng chốt 05/09 09:20: *"thiếu 2
+- ✅ **Bảng 2 trừ bán thành phẩm đang có trong kho — ĐÃ LÀM 05/09**, xem mục 12f của
+  `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`. Nguyên văn chốt 05/09 09:20: *"thiếu 2
   bán thành phẩm, 1 cái đã có sẵn tồn khả dụng rồi thì chỉ cần bóc nguyên vật liệu của 1 bán
   thành phẩm thôi"*. Tức **24 đúng, 27 sai**. Đây là sửa vào phép bóc định mức của PM-FEAT-00023
   — một tính năng **đã nghiệm thu** — và cột *Thiếu* chảy thẳng vào phiếu Yêu Cầu Mặt Hàng, nên
