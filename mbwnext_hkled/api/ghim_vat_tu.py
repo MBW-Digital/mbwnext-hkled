@@ -477,8 +477,16 @@ def _kiem_quyen_phan_bo():
 	➜ Nên luật là: **thấy được hết thì mới bấm được**. Người điều phối hàng về vốn phải nhìn
 	được toàn bộ đơn đang chờ, nếu không thì họ cũng không kiểm được kết quả mình vừa tạo ra.
 
-	⚠ Đây là **luật do tôi đề xuất, chưa hỏi anh Thắng** — nếu bên khách muốn thủ kho bấm được
-	  dù chỉ thấy một phần đơn thì phải đổi, và khi đó phải chốt luôn: chia theo tập đơn nào.
+	🔒 **Anh Thắng chốt 05/09 11:09: *"thủ kho và nhân viên mua hàng được bấm nút phân bổ em
+	nhé"*** — tức luật dừng đúng ở đây: **chỉ cần thấy hết đơn**, KHÔNG bắt buộc phải có quyền
+	sửa Đơn Bán.
+
+	Đo được lúc hỏi: *Purchase User* và *Stock User* có `has_permission("Sales Order", "write")`
+	= **False** — họ không mở Đơn Bán ra sửa được một chữ nào, nhưng vẫn bấm được nút này và cú
+	bấm đó đổi phần ghim của mọi đơn. Anh Thắng biết điều đó và vẫn chọn cho phép: người nhận
+	hàng về chính là người biết hàng vừa tới.
+
+	➜ Đừng thắt thêm nếu không có chốt mới. Thắt là thủ kho và mua hàng mất nút.
 	"""
 	tong = frappe.db.count("Sales Order", loc_don_song())
 	thay = len(frappe.get_list("Sales Order", filters=loc_don_song(), limit_page_length=0, ignore_ifnull=True))

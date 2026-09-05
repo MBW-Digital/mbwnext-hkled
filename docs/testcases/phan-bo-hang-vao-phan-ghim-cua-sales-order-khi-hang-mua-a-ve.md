@@ -135,7 +135,7 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-PERM-05 | Administrator (không bị giới hạn) bấm Phân Bổ | Vẫn chạy được — lớp chặn không gây hồi quy | Chạy bình thường | ✅ Pass |
 | TC-PERM-06 | `Guest` gọi thẳng hàm `phan_bo` qua API | Bị chặn | `PermissionError` | ✅ Pass |
 | TC-PERM-07 | **Ma trận 6 tài khoản × 3 chức năng** — dựng user riêng theo vai trò nghiệp vụ thật, không mượn tạm vai trò | Người bị giới hạn phạm vi bị chặn ở cả xem lẫn phân bổ; lớp chặn xuất kho thì **không phụ thuộc vai trò** | ✅ Xem bảng dưới — 18/18 ô đúng kỳ vọng | ✅ Pass |
-| TC-PERM-08 | ⚠ *Purchase User* và *Stock User* **KHÔNG có quyền ghi Đơn Bán** (`has_permission('Sales Order','write') = False`) nhưng **vẫn bấm được** nút Phân Bổ | Chờ anh Thắng chốt | ⏳ Đo được: nút chỉ kiểm *thấy hết đơn*, không kiểm *quyền sửa đơn*. Hàm ghi bằng `ignore_permissions`. Thắt thêm sẽ **chặn đúng người hay bấm nút nhất** (mua hàng / thủ kho) nên không tự quyết | ⏳ Chưa chạy |
+| TC-PERM-08 | ⚠ *Purchase User* và *Stock User* **KHÔNG có quyền ghi Đơn Bán** (`has_permission('Sales Order','write') = False`) nhưng **vẫn bấm được** nút Phân Bổ | 🔒 **Anh Thắng chốt 05/09 11:09: *"thủ kho và nhân viên mua hàng được bấm nút phân bổ em nhé"*** — cho phép | ✅ Đúng hành vi hiện tại: nút chỉ kiểm *thấy hết đơn*, không kiểm *quyền sửa đơn*. Anh Thắng biết và vẫn chọn cho phép — người nhận hàng về là người biết hàng vừa tới. **Đừng thắt thêm nếu không có chốt mới** | ✅ Pass |
 
 > 🔴 **TC-PERM-04 là LỖ HỔNG THẬT trong code tôi viết, Tuấn hỏi ra mới lộ (05/09).**
 >
@@ -239,15 +239,17 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**64 ca · 60 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
+**64 ca · 61 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 2 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-Năm ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
-phiếu nhập vào kho ngoài tập) · `TC-PERM-08` (**chờ anh Thắng chốt**: có bắt buộc quyền *sửa Đơn
-Bán* mới được bấm Phân Bổ không) · `TC-HAPPY-14`/`15`/`16` đã chạy.
+Hai ca chưa chạy, cả hai đều **chờ dữ liệu chứ không chờ quyết định**: `TC-EDGE-11` (cần một đơn
+không vướng Kế hoạch sản xuất để huỷ rồi amend) · `TC-EDGE-18` (cần phiếu nhập vào kho ngoài tập
+tính tồn).
+
+✅ **Không còn câu nào chờ anh Thắng** — `TC-PERM-08` đã chốt 05/09 11:09.
 
 **`TC-ISO-03` và `TC-ISO-04` đã đóng 05/09** sau khi Tuấn chạy `migrate` trên `mbw.com`.
 
