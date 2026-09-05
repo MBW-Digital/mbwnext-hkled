@@ -73,6 +73,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-HAPPY-14 | **Nhường hàng**: sửa tay `NVL 1` từ 3 xuống 1 | Ghi nhận, đánh dấu dòng | `NVL 1` 1/3, cột *Giữ Nguyên* bật | ✅ Pass |
 | TC-HAPPY-15 | Lưu lại đơn sau khi nhường | Máy **không** tự ghim lại | Vẫn 1/3 sau khi `dong_bo` chạy lại | ✅ Pass |
 | TC-HAPPY-16 | Bấm **Phân Bổ** khi có dòng đã đánh dấu | Chia lại bình thường theo ưu tiên (chốt 05/09 09:39) | `NVL 1` về 3/3, cờ được gỡ; và ở ca huỷ phiếu, `SO-26-00028` đang mang cờ vẫn nhận đủ 12 | ✅ Pass |
+| TC-HAPPY-17 | 🔴 **Anh Thắng báo 05/09 10:56: *"sửa số ghim rồi ấn save thì không được"*** — gõ vào ô *Đã Ghim* rồi bấm Lưu | Lưu được | ✅ **Sau khi vá**: gõ 3 → Lưu → *Submitted*, không hộp thoại lỗi, cột *Giữ Nguyên* tự bật. Trước vá: **Cannot Update After Submit — Not allowed to change In Words (Company Currency)** | ✅ Pass |
+| TC-REGR-08 | Sửa lưới **hàng hoá** của lõi trên đơn đã duyệt | Không bị ảnh hưởng | ✅ `in_words` giữ nguyên, lưu được — đo cả trước lẫn sau khi vá | ✅ Pass |
 
 > **Ghi chú TC-HAPPY-06 — lỗi bắt được trong chính vòng chạy này.** Bản đầu chia
 > `đã ghim / phải làm`, nên `Bán thành phẩm 1` hiện định mức **0,111** thay vì **1**. Con số đó
@@ -160,6 +162,29 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 > được** bằng API, kể cả bởi người không mở được đơn. Nó chỉ không phải hạng mục đóng được trong
 > phạm vi PM-FEAT-00036. Cùng họ với ca rò rỉ đã báo ở Phần IV.
 
+> 🔴 **TC-HAPPY-17 — lỗi do TÊN TRƯỜNG trùng với lõi, anh Thắng bấm ra (05/09 10:56).**
+>
+> Cột *Đã Ghim* của bảng ghim vốn có fieldname là **`qty`**, trùng tên một handler của
+> `erpnext.TransactionController` trên form Đơn Bán. Sửa ô đó ➜ Frappe gọi
+> `frm.script_manager.trigger("qty", …)` ➜ lõi chạy phép tính tổng chứng từ trên một dòng
+> **không có `rate` lẫn `amount`** ➜ `in_words` bị xoá thành rỗng ➜ lần lưu kế tiếp bị chặn:
+>
+>     Cannot Update After Submit — Not allowed to change In Words (Company Currency)
+>     after submission from "VND Hai Triệu Một Trăm Sáu Mươi Nghìn chẵn" to ""
+>
+> **Đo để không đổ oan cho lõi:** sửa một dòng **lưới hàng hoá** thì `in_words` giữ nguyên và
+> lưu được; sửa một dòng **bảng ghim** thì `in_words` thành rỗng. Khác biệt duy nhất là tên
+> trường.
+>
+> Đã đổi `qty` ➜ `so_luong_ghim`, kèm patch đổi tên cột (10 dòng dữ liệu thật giữ nguyên, đã
+> đối chiếu từng dòng trước/sau rồi mới xoá cột cũ).
+>
+> ⚠ **`item_code` của bảng này CŨNG trùng** một handler của lõi. Hiện không nổ vì trường đó
+> `read_only`. Ngày nào mở khoá nó thì phải đổi tên luôn.
+>
+> **Bài học chung:** bảng con cắm vào chứng từ của lõi thì **đừng đặt tên trường trùng tên
+> trường của lõi** — không có lỗi lúc dựng, chỉ nổ khi người dùng gõ vào ô.
+
 ### Ma trận phân quyền — đo 05/09 trên 6 tài khoản
 
 Bộ user dựng riêng cho việc này (tiền tố `test.`, không đặt mật khẩu, `send_welcome_email = 0`):
@@ -214,7 +239,7 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**62 ca · 58 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
+**64 ca · 60 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
