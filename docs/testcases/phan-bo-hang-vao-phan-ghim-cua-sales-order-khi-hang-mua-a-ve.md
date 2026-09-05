@@ -132,6 +132,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 | TC-PERM-04 | 🔴 **Ai được BẤM nút Phân Bổ** — user *Purchase User* bị User Permission giới hạn, chỉ xem được 14/34 Đơn Bán | Không được phép: nút này đổi phần ghim của **mọi** đơn | ✅ **Sau khi vá 05/09** — chặn kèm câu *"chỉ người xem được toàn bộ đơn mới bấm được. Tài khoản của anh/chị đang xem được **0** trên **2** đơn đang ghim."* | ✅ Pass |
 | TC-PERM-05 | Administrator (không bị giới hạn) bấm Phân Bổ | Vẫn chạy được — lớp chặn không gây hồi quy | Chạy bình thường | ✅ Pass |
 | TC-PERM-06 | `Guest` gọi thẳng hàm `phan_bo` qua API | Bị chặn | `PermissionError` | ✅ Pass |
+| TC-PERM-07 | **Ma trận 6 tài khoản × 3 chức năng** — dựng user riêng theo vai trò nghiệp vụ thật, không mượn tạm vai trò | Người bị giới hạn phạm vi bị chặn ở cả xem lẫn phân bổ; lớp chặn xuất kho thì **không phụ thuộc vai trò** | ✅ Xem bảng dưới — 18/18 ô đúng kỳ vọng | ✅ Pass |
+| TC-PERM-08 | ⚠ *Purchase User* và *Stock User* **KHÔNG có quyền ghi Đơn Bán** (`has_permission('Sales Order','write') = False`) nhưng **vẫn bấm được** nút Phân Bổ | Chờ anh Thắng chốt | ⏳ Đo được: nút chỉ kiểm *thấy hết đơn*, không kiểm *quyền sửa đơn*. Hàm ghi bằng `ignore_permissions`. Thắt thêm sẽ **chặn đúng người hay bấm nút nhất** (mua hàng / thủ kho) nên không tự quyết | ⏳ Chưa chạy |
 
 > 🔴 **TC-PERM-04 là LỖ HỔNG THẬT trong code tôi viết, Tuấn hỏi ra mới lộ (05/09).**
 >
@@ -158,6 +160,26 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 > được** bằng API, kể cả bởi người không mở được đơn. Nó chỉ không phải hạng mục đóng được trong
 > phạm vi PM-FEAT-00036. Cùng họ với ca rò rỉ đã báo ở Phần IV.
 
+### Ma trận phân quyền — đo 05/09 trên 6 tài khoản
+
+Bộ user dựng riêng cho việc này (tiền tố `test.`, không đặt mật khẩu, `send_welcome_email = 0`):
+
+| Tài khoản | Vai trò | Giới hạn | Đơn thấy | Kiểm Tra Tồn Kho | Nút Phân Bổ | Chặn xuất kho |
+|---|---|---|---|---|---|---|
+| `test.mua@hkled.test` | Purchase + Stock User | không | 20/20 | chạy | **chạy** | chặn đúng |
+| `test.mua.gioihan@hkled.test` | Purchase + Stock User | Customer `a` | 8/20 | **chặn** | **chặn** | chặn đúng |
+| `test.thukho@hkled.test` | Stock User | không | 20/20 | chạy | **chạy** | chặn đúng |
+| `test.gioihan.sales@hkled.test` | Sales User | Customer `a` | 8/20 | **chặn** | **chặn** | chặn đúng |
+| `test.gioihan.nhansu@hkled.test` | Manufacturing User | Employee | — | **chặn** | **chặn** | chặn đúng |
+| `Administrator` | — | không | 20/20 | chạy | chạy | chặn đúng |
+
+Hai điều đọc được từ bảng:
+
+1. **Lớp chặn xuất kho không phụ thuộc vai trò** — cả 6 tài khoản đều bị chặn như nhau. Đúng
+   thiết kế: đây là luật tồn kho, không phải luật phân quyền.
+2. **Người bị giới hạn phạm vi bị chặn ở cả hai màn hình** — `kiem_tra` chặn vì không đọc được
+   chính đơn đó, `phan_bo` chặn vì không thấy hết đơn (`TC-PERM-04`).
+
 ## TC-REGR — regression
 
 | Mã | Tình huống | KQ mong đợi | KQ thực tế | Đạt |
@@ -181,8 +203,8 @@ Code: `api/ghim_vat_tu.py` · DocType con `HKLed Pinned Material` ·
 |---|---|---|---|---|
 | TC-ISO-01 | DocType mới có đúng `module` | `MBWNext HKLed` | `istable = 1`, `module = MBWNext HKLed` | ✅ Pass |
 | TC-ISO-02 | Custom Field mới có đúng `module` | Đi theo app | `Sales Order-custom_ghim_vat_tu`, `module = MBWNext HKLed`, đã vào `fixtures/custom_field.json` | ✅ Pass |
-| TC-ISO-03 | Site **không cài** app (`mbw.com` trên cùng bench) chạy `migrate` | Không lỗi | ⏳ Chưa chạy — `migrate` là việc độc quyền toàn máy, phải hẹn giờ | ⏳ Chưa chạy |
-| TC-ISO-04 | App lõi có bị bẩn không | `git status` các app lõi sạch | ⏳ Chưa chạy | ⏳ Chưa chạy |
+| TC-ISO-03 | Site **không cài** app (`mbw.com` trên cùng bench) chạy `migrate` | Không lỗi, không dính DocType/Custom Field nào của HKLED | ✅ Tuấn chạy migrate 05/09. Đo lại trên `mbw.com`: app **chưa cài**, `HKLed Pinned Material` **không tồn tại**, **0** Custom Field chứa `ghim`, Patch Log chạy tới cuối, 48.836 Đơn Bán không suy suyển | ✅ Pass |
+| TC-ISO-04 | App lõi có bị bẩn không | `git status` các app lõi sạch | ✅ 5 app `mbwnext_*` và `frappe` **sạch 100%**. `erpnext` có **2 file bẩn** nhưng **không phải do app này**: hai `Notification` chuẩn bị tắt qua giao diện, dấu thời gian **2025-08-14**, trước tính năng này một năm | ✅ Pass |
 
 ## TC-PWA
 
@@ -192,14 +214,17 @@ Không áp dụng — tính năng không có màn hình mobile.
 
 ## Tổng kết vòng một
 
-**60 ca · 55 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 4 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật**.
+**62 ca · 58 Pass · 1 Fail (ngoài phạm vi, xem TC-PERM-02) · 3 chưa chạy.** Trong đó **6 ca chạy trên giao diện thật** và **6 tài khoản khác nhau** cho phân quyền.
 
 > Con số trên **đếm bằng máy** từ chính bảng, không gõ tay — đã đếm nhầm ba lần ở các bộ trước.
 
 Chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất), `TC-ISO-03`, `TC-ISO-04`.
 
-Bốn ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
-phiếu nhập vào kho ngoài tập) · `TC-ISO-03` · `TC-ISO-04`.
+Năm ca chưa chạy: `TC-EDGE-11` (cần đơn không vướng Kế hoạch sản xuất) · `TC-EDGE-18` (chưa có
+phiếu nhập vào kho ngoài tập) · `TC-PERM-08` (**chờ anh Thắng chốt**: có bắt buộc quyền *sửa Đơn
+Bán* mới được bấm Phân Bổ không) · `TC-HAPPY-14`/`15`/`16` đã chạy.
+
+**`TC-ISO-03` và `TC-ISO-04` đã đóng 05/09** sau khi Tuấn chạy `migrate` trên `mbw.com`.
 
 ⚠ **Dữ liệu để lại trên site sau vòng test này** (cố ý, để anh Thắng bấm lại được): phiếu nhập
 `PNK-26-00003` — 5 `Bán thành phẩm 1` vào *Kho bán thành phẩm*, **đã duyệt và đã phân bổ thật**.

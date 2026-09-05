@@ -7,7 +7,7 @@
 Đầu bài: `docs/features/kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`
 Mockup đã duyệt: bản 7 (Bảng 1b bản 6, Bảng 2b bản 7)
 
-**Tổng kết (05/09 sáng):** **53 ca · 52 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
+**Tổng kết (05/09 trưa):** **54 ca · 53 Pass · 1 chưa xong** — chỉ còn `TC-HAPPY-13`
 (`Employee Allocation` chưa có dòng nào từ hôm nay, nên cột *Đã phân bổ* luôn bằng 0).
 
 > **Bổ sung 05/09** — 6 ca mới cho việc **Bảng 2 trừ bán thành phẩm đang có trong kho**
@@ -162,6 +162,7 @@ khác nhau**. Nếu số không khớp bảng dưới, kiểm *Phương pháp b�
 | TC-PERM-05 | Đối chiếu: câu chặn xuất kho có lộ không | Dưới cùng user đó, gửi duyệt phiếu xuất vượt tồn | Không lộ mã đơn | Pass — vẫn chặn đúng, và câu lỗi **không chứa mã đơn nào**. ⚠ Tức trong cùng một mảng đang có **hai tư thế khác nhau**: câu chặn giấu (anh Thắng chốt 25/08), Bảng 1b/2b hiện (em tự chọn, chưa ai duyệt) | Pass |
 | TC-PERM-03 | Không lộ tên khách hàng | Xem Bảng 1b và 2b | Không có cột tên khách hàng | Pass — mockup bản 6 chốt vậy, code không truy vấn trường đó | Pass |
 | TC-PERM-04 | Admin không bị lớp lọc làm hồi quy | Chạy dưới `Administrator` | Thấy đủ như trước | Pass | Pass |
+| TC-PERM-06 | 🔁 **Kiểm lại sau khi viết lại `ghim_chi_tiet`** (05/09 — nay đọc sổ cam kết thay vì bóc lại định mức) | Chạy `kiem_tra` dưới 2 user bị giới hạn, trên mọi đơn họ đọc được, soi cột *Đơn khác giữ* | Hành vi **cố ý** theo chốt của anh Thắng vẫn giữ nguyên, không bị đổi ngầm | Pass — `test.mua.gioihan` và `test.gioihan.sales` (mỗi người thấy 8/20 đơn) mở đơn của mình vẫn thấy `SO-26-00026`/`SO-26-00028` trong Bảng 1b/2b kèm Người phụ trách. ⚠ Đây là **kỳ vọng**, không phải rò rỉ — xem TC-PERM-02 | Pass |
 
 ## TC-REGR — không làm hỏng app lõi
 
