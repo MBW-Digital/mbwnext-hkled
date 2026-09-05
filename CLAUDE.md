@@ -848,8 +848,9 @@ nên không qua hàm đó nữa, nhưng **trường `slug` của PM Feature vẫ
 | `bom-template-theo-bien-the` | PM-FEAT-00007 | ✔ | ✔ (.md) | ✔ A–H | — |
 | `bac-tho-lich-san-xuat` | PM-FEAT-00008 | ✔ | ✔ (.html) | ✔ 61 ca | ✔ cấu hình + vận hành + `anh/` |
 | `bieu-do-gantt-lich-lam-viec` | PM-FEAT-00009 | ✔ | ✔ (.html) | ✔ 31 ca | ✔ vận hành + `anh/` |
-| `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order` | PM-FEAT-00023 | ✔ | ✔ (.html) | — | — |
-| `chan-xuat-kho-qua-ton-kha-dung` | PM-FEAT-00034 | ✔ | ✔ (.html) | — | — |
+| `kiem-tra-ton-kho-va-nguon-luc-tren-sales-order` | PM-FEAT-00023 | ✔ | ✔ (.html) | ✔ 49 ca | — (đang Chờ test) |
+| `chan-xuat-kho-qua-ton-kha-dung` | PM-FEAT-00034 | ✔ | ✔ (.html) | ✔ 39 ca, **chạy hết** | ✔ cấu hình + vận hành — ⚠ **chưa có `anh/`** |
+| `khai-kho-mac-dinh-va-ton-toi-thieu-theo-cong-ty` | PM-FEAT-00037 | ✔ | — | ✔ 22 ca | ✔ cấu hình + vận hành + `anh/` |
 | `phan-v-tinh-toan-nhu-cau-vat-tu-can-mua-theo-ky` | PM-FEAT-00030 | ✔ | — | — | — |
 | `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` | PM-FEAT-00036 | ✔ | — | — | — |
 | `khai-kho-mac-dinh-va-ton-toi-thieu-theo-cong-ty` | PM-FEAT-00037 | ✔ | — | — | — |
