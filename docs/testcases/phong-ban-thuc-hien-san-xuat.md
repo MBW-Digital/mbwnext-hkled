@@ -94,12 +94,23 @@ phải "hiếm khi chạy" mà là **nổ mỗi lần chạm tới**. Chạy th�
 từ commit đầu `8299675`; `Error Log` 0 bản ghi nên **chưa nổ lần nào trên thực tế**, vì hai cửa
 thoát ở đầu hàm che gần hết đường.
 
-🔄 **Cập nhật 07/09 chiều:** cửa sổ giữ Phần II–III **đang vá**, Tuấn đã duyệt hướng — chuyển khối
-đó về cuối `inherit_from_production_plan`, nơi `work_team` đang sống. Vá đó nằm ở **commit riêng
-của họ**, không thuộc đợt này. Khi nó vào, WO tạo từ Kế hoạch sẽ **bắt đầu tự điền công nhân** —
-việc chưa từng xảy ra dù đã có trong mockup duyệt — kéo theo `Employee Allocation` và **đổi số
-Bảng 3** của PM-FEAT-00008 đã nghiệm thu. Đợt 1 cố ý **không đụng một dòng nào** trong hai hàm đó,
-nên hai phần gộp được mà không phải sửa tay.
+🔄 **Cập nhật 07/09 chiều — đã vá, commit `fe2dd6f`** (cửa sổ giữ Phần II–III, Tuấn duyệt hướng):
+khối đó chuyển về cuối `inherit_from_production_plan`, nơi `work_team` đang sống. Vá nằm ở
+**commit riêng của họ**, không thuộc đợt này.
+
+Từ `fe2dd6f`, WO tạo từ Kế hoạch **bắt đầu tự điền công nhân** — kéo theo `Employee Allocation` và
+**đổi số Bảng 3** của PM-FEAT-00008 đã nghiệm thu. ⚠ **Chỉ Lệnh sản xuất tạo MỚI; số cũ không bị
+tính lại** — hook chạy ở `before_insert` nên không có gì hồi tố. Đã kiểm bằng `hooks.py:274`.
+
+Hai bên **đã chạy chung**: họ tạo Lệnh sản xuất thật qua trọn chuỗi 5 hook `before_insert` (gồm cả
+`inherit_department` của đợt này) rồi `rollback` — WO tạo được, `custom_department = None` (đúng,
+chưa ai khai), bảng nhân sự vẫn đủ 3 dòng có `employee_level` và `performance_factor_`. Hai phần
+độc lập thật, không phải chỉ trên lý thuyết. `Employee Allocation` 39 → 39 sau khi xoá WO,
+`TC-HAPPY-13` vẫn 202,5.
+
+⚠ **Chỉnh lại một câu quá mạnh ở bản trước của tài liệu này:** tôi từng viết tính năng *"chưa từng
+hoạt động ngày nào"*. **Không chứng minh được.** Bằng chứng chỉ đủ nói: hỏng **từ `8299675`
+(08/08) tới 07/09**. Trước đó không kiểm được — xem mục *Pass cũ* ở cuối.
 
 **2. Ô Đội Sản Xuất cũ ở Kế hoạch vẫn còn.** Anh Thắng nói *"không cần gán đội sản xuất nữa"*,
 nhưng gỡ ô là phải mổ vào chính hàm đang lỗi ở trên. Đã báo anh Thắng 07/09 và xin để đợt sau.
@@ -125,3 +136,21 @@ sách phòng thật. Chờ anh Thắng.
   sách nên hai file JS cùng chạy. Gỡ tính năng = bỏ 2 dòng trong `hooks.py`.
 - Hook `inherit_department` khai **trước** `ensure_start_time` có chủ đích: hàm kia đang lỗi ở
   nhánh cuối, chạy trước thì phần phòng ban không phụ thuộc số phận của nó.
+
+
+---
+
+## ⚠ Ô Pass cũ không bảo chứng cho mã hiện tại
+
+Ghi lại vì nó suýt làm cả hai cửa sổ kết luận sai, và nó làm hỏng đúng thứ ta dùng để tự trấn an.
+
+`TC-HAPPY-05` trong `docs/testcases/bac-tho-lich-san-xuat.md` ghi **Pass ngày 03/08** cho đúng
+hành vi *"WO thừa hưởng thời gian + nhân sự đội"* — thứ mà hôm nay đo ra là **NameError**. Commit
+làm hỏng là `8299675` ngày **08/08**, tức **5 ngày SAU** lượt test đó.
+
+Ở dự án này **cây làm việc chính là bản đang chạy trên 8012**, nên một lượt test hoàn toàn có thể
+chạy trên mã **chưa commit**, rồi mã được commit sau đó lại là một bản khác. Ô Pass ấy **đúng lúc
+chạy** và **sai lúc đọc lại**, mà không có gì trên bảng báo điều đó.
+
+**Luật rút ra:** ghi ngày chạy vào từng ô là **chưa đủ**. Ô nào đo một hành vi mà mã của hành vi đó
+đã đổi sau ngày chạy thì **phải chạy lại**, không được đọc ô Pass cũ như bằng chứng cho hôm nay.
