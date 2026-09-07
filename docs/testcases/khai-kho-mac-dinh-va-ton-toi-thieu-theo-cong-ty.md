@@ -8,7 +8,7 @@
 Code: **không có mã nghiệp vụ mới.** Tính năng là **một Custom Field** thêm vào bảng con
 `Item Default` của lõi — `patches/them_ton_toi_thieu_vao_kho_mac_dinh.py` + `fixtures/custom_field.json`.
 
-**Tổng kết:** **22 ca · 19 Pass · 3 cần người test.**
+**Tổng kết:** **22 ca · 20 Pass · 2 cần người test** — `TC-ISO-04` đã đóng 07/09 sau lượt `migrate` 05/09; còn `TC-ISO-03` và `TC-EDGE-04`.
 
 > ### ⚠ Đọc trước: tính năng này KHÔNG có logic riêng, nên rủi ro nằm chỗ khác
 >
@@ -82,7 +82,27 @@ Code: **không có mã nghiệp vụ mới.** Tính năng là **một Custom Fie
 | TC-ISO-01 | Custom Field gán đúng module | Đọc trường `module` | Module của app khách | Pass — `MBWNext HKLed`. Thiếu cái này thì trường **không đi theo app** và biến mất ở lần deploy site mới | Pass |
 | TC-ISO-02 | Có trong fixtures, không chỉ trong patch | Đọc `fixtures/custom_field.json` | Có mặt | Pass — có `Item Default-custom_ton_kho_kha_dung_toi_thieu`; file hiện **34 trường**. ⚠ Đặc tả mục 6d ghi *"35 trường"* — đếm lại là **34** | Pass |
 | TC-ISO-03 | Site không cài app không có trường này | Trên `mbw.com` (không cài `mbwnext_hkled`), tìm trường | Không có | **Cần người test** — đã đo trên `mbw.com` là **không có** trường `custom_ton_kho_kha_dung_toi_thieu` (kiểm cùng lượt `bench migrate` 04/09 10:29), nhưng chưa thao tác Mặt hàng trên site đó để khẳng định luồng lõi không đổi |
-| TC-ISO-04 | Patch chưa chạy trên site hiện tại | Tra `Patch Log` | Biết rõ trạng thái | **Cần người test / cần lượt migrate** — `them_ton_toi_thieu_vao_kho_mac_dinh` **CHƯA CHẠY** trên `hkled.com`. Trường vẫn có (fixtures đã nạp), nên hôm nay không ảnh hưởng; nhưng patch **sẽ chạy** ở lần `bench migrate` tới và cần xác nhận nó không ghi đè gì |
+| TC-ISO-04 | Patch chạy rồi có ghi đè gì không | Tra `Patch Log`, đối chiếu Custom Field và dữ liệu trước/sau | Patch chạy xong, không mất dữ liệu nào | **Pass — đóng 07/09 09:2x.** `Patch Log` có `mbwnext_hkled.patches.them_ton_toi_thieu_vao_kho_mac_dinh`, **creation 05/09 10:20:31** (lượt `migrate` của Tuấn). Đo lại sau đó: Custom Field **đúng 1 bản ghi**, không trùng lặp — `module = MBWNext HKLed`, `fieldtype = Float`, `insert_after = default_warehouse`, `in_list_view = 1`, `columns = 2`, `non_negative = 1`, đúng y như patch khai. **6 dòng khách đã khai giá trị vẫn nguyên** (NVL 1 = 50 · NVL 2 = 40 · NVL 3 = 10 · Thành phẩm 1 = 20 · Bán thành phẩm 1 = 5 · Bán thành phẩm 2 = 5), dấu `modified` của cả 6 đều là **03–04/09**, tức **trước** lượt migrate — patch không chạm vào dòng nào | Pass |
+
+### ⚠ Phát hiện kèm theo khi đóng TC-ISO-04 — *"để trống"* là điều không thể
+
+Đo cột thật trong database sau khi patch chạy:
+
+```
+custom_ton_kho_kha_dung_toi_thieu   decimal(21,9)   NULL=NO   DEFAULT 0.000000000
+```
+
+`62.055 / 62.055` dòng có giá trị, **0 dòng NULL**. Không phải patch điền — patch **không ghi
+một dòng dữ liệu nào**, đúng như phần *"Cố ý KHÔNG điền giá trị"* trong docstring của nó. Đây
+là cách Frappe dựng cột `Float`: luôn `NOT NULL DEFAULT 0`.
+
+Hệ quả phải sửa trong lời văn: mô tả của trường ghi *"Để trống nghĩa là chưa khai, không phải
+bằng 0"* — **trên thực tế không phân biệt được hai trạng thái đó.** Ai chưa khai thì hệ thống
+đọc ra `0`.
+
+May là `0` rơi về phía an toàn: `0` = không cần đệm, nên **không đẻ ra nhu cầu mua ảo** trên
+62.049 mặt hàng chưa khai. Nhưng nếu sau này có chỗ nào muốn xử lý *"chưa khai"* khác *"khai
+mức 0"* thì phải thêm một cột cờ riêng, không đọc được từ cột này.
 
 ## TC-PWA
 
