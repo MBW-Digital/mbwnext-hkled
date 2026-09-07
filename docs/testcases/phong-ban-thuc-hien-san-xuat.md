@@ -1,6 +1,7 @@
 # Ca test — Phòng Ban thực hiện sản xuất (PM-TASK-00143)
 
-> **Tổng kết 07/09 chiều:** **18 ca · 18 Pass · 4 cần người test** (đợt 1 + đợt 1b).
+> **Tổng kết 07/09 chiều:** **23 ca · 22 Pass · 1 chờ dữ liệu** (đợt 1 + 1b + bấm thật trên giao diện).
+> Ba con số này **đếm bằng máy** từ chính các bảng dưới. Bản nháp đầu tôi gõ tay ra `22 ca · 21 Pass` — sai cả hai, đúng cái bẫy đếm ghi ngay dòng dưới.
 > Con số đếm bằng máy từ chính bảng dưới, không gõ tay.
 > Đếm bằng `grep '^| TC-'` sẽ **thừa 4** vì bảng *Cần người test* cũng có dòng `| TC-`.
 
@@ -72,16 +73,51 @@ Chặn ở **server** (`validate`), không chỉ ở màn hình: API và nhập 
 
 ---
 
-## Cần người test — 4 ca, đều là thao tác thật trên giao diện
+## TC-UI — đã bấm thật trên giao diện `dev.mbwnext.com:8012` (07/09 11:0x)
 
-Máy không thay được, vì đây là phần nhìn thấy và bấm được.
+Đăng nhập bằng `bench browse` (một lần, không gõ mật khẩu), thao tác trên **form Lệnh sản xuất
+mới chưa lưu** nên không đụng bản ghi thật nào. Kiểm sau khi xong: `Work Order` **39 → 39**,
+`Employee Allocation` **39 → 39**, không có lệnh nào được tạo trong 30 phút.
 
-| Mã | Tình huống | Cách thử | Vì sao máy không thay được |
+| Mã | Tình huống | KQ thực tế | Đạt |
 |---|---|---|---|
-| TC-UI-01 | Ô **Phòng Ban** hiện trong lưới *Assembly Items* | Mở một Kế hoạch sản xuất, xem cột Phòng Ban có trong lưới không | `in_list_view` chỉ có tác dụng khi lưới được vẽ |
-| TC-UI-02 | Danh sách đội **bị lọc** theo phòng của lệnh | Mở Lệnh sản xuất, khai Phòng Ban, bấm ô Đội Sản Xuất | `set_query` chạy ở trình duyệt |
-| TC-UI-03 | Đổi phòng ban thì **đội cũ bị bỏ chọn** kèm lời nhắc | Chọn đội, rồi đổi sang phòng khác | Cần thấy `show_alert` hiện ra |
-| TC-UI-04 | Lệnh chưa khai phòng thì ô Đội **hiện hết** đội, không rỗng | Để trống Phòng Ban rồi bấm ô Đội | Kiểm điều kiện `return {}` — lọc theo ô trống sẽ ra danh sách rỗng khó hiểu |
+| TC-UI-01 | Ô **Phòng Ban** hiện trong lưới *Assembly Items* | Cột *Phòng Ban* hiện đúng ở cuối lưới trên `KSX-26-00001` | ✅ Pass |
+| TC-UI-02 | Khai Phòng Ban rồi bấm ô **Đội Sản Xuất** | Hiện `Đội 1`, `Đội 2` **kèm dòng** *"Filters applied for Phong Ban = Phòng kỹ thuật - HKL"* — bộ lọc có chạy, và không giấu mất đội nào | ✅ Pass |
+| TC-UI-04 | **Chưa khai** Phòng Ban rồi bấm ô Đội | Hiện đủ `Đội 1`, `Đội 2`, không rỗng | ✅ Pass |
+| TC-UI-05 | Ô Phòng Ban và Đội Sản Xuất hiện đúng nhãn + mô tả trên form | Đúng nhãn tiếng Việt, mô tả hiện dưới ô | ✅ Pass |
+| TC-UI-03 | Đổi phòng ban thì **đội cũ bị bỏ chọn** kèm lời nhắc | ⏳ **Chưa chạy được** — cần ít nhất một đội đã khai phòng ban, mà `Work Team` hiện **0/2**. Nhánh này chỉ kích hoạt khi đội *có* phòng và phòng đó *khác* phòng của lệnh | — |
+
+> Console lúc thao tác: **0 lỗi từ mã của tính năng này**. Bốn lỗi thấy được đều có sẵn từ trước
+> và không liên quan (`chart.min.js` import, socket.io không kết nối được).
+
+### 🔴 TC-UI-02 tìm ra một lỗi THẬT — và nó là cái bẫy `IN (NULL)` lần thứ ba trong ngày
+
+Bản đầu của bộ lọc viết ở JS:
+
+```js
+filters: [["Work Team", "custom_department", "in", [doc.custom_department, ""]]]
+```
+
+Đo trên site trước khi sửa: `Đội 1` và `Đội 2` đều `custom_department` **IS NULL** — không phải
+chuỗi rỗng. Mà trong SQL, **`NULL` không khớp `IN` bất kể danh sách có gì**, kể cả có `NULL` trong
+đó. Kết quả:
+
+| Cách viết | Số đội khớp |
+|---|---|
+| `custom_department IN ('Phòng kỹ thuật - HKL', '')` | **0 / 2** |
+| `ifnull(custom_department,'') IN ('Phòng kỹ thuật - HKL', '')` | **2 / 2** |
+
+Nghĩa là chỉ cần lệnh có Phòng Ban là ô Đội Sản Xuất **rỗng trắng** — đúng cái mà chú thích trong
+chính file JS đó viết ra để tránh. Bộ ca phía server **không bắt được**, vì nó kiểm `validate`
+chứ không kiểm truy vấn của ô Link.
+
+Đã sửa: chuyển sang truy vấn riêng `doi_theo_phong_ban` có `ifnull` ở server, rồi bấm lại trên
+giao diện (ảnh trong TC-UI-02).
+
+⚠ **Cùng cái bẫy đã vấp 2 lần khác trong ngày 07/09:** đếm đơn trống *Thời Gian Bắt Đầu* bằng
+`filters={"custom_start_time": ["in", [None, ""]]}` ra **0** trong khi thật ra là **9**. Luật:
+**cột nào có thể `NULL` mà đem so bằng `in` thì phải `ifnull` trước** — và phép so đó im lặng,
+không báo lỗi, chỉ trả ít kết quả hơn.
 
 ---
 

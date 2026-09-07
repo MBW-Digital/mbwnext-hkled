@@ -17,10 +17,15 @@ frappe.ui.form.on("Work Order", {
 			}
 			// Đội chưa gắn phòng ban vẫn phải chọn được — dữ liệu cũ, cả 2 đội trên site đang
 			// như vậy (đo 07/09). Cùng luật với ba ca cho qua ở validate phía server.
+			//
+			// 🔴 KHÔNG dùng `filters: [[..., "in", [phong, ""]]]` — bản đầu tôi viết thế và nó
+			//    SAI: cột này ở bản ghi cũ là `NULL`, mà SQL thì `NULL` không khớp `IN` bất kể
+			//    danh sách có gì. Đo 07/09: bộ lọc đó khớp 0/2 đội, tức ô này rỗng trắng ngay
+			//    khi lệnh có Phòng Ban. Phải đi qua truy vấn riêng có `ifnull` ở server.
 			return {
-				filters: [
-					["Work Team", "custom_department", "in", [doc.custom_department, ""]],
-				],
+				query:
+					"mbwnext_hkled.controllers.python_hook.work_order_phong_ban.doi_theo_phong_ban",
+				filters: { phong_ban: doc.custom_department },
 			};
 		});
 	},

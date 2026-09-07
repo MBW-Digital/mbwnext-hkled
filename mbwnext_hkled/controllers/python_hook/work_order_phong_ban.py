@@ -110,3 +110,44 @@ def validate_team_in_department(doc, method=None):
 			).format(doc.custom_work_team, phong_cua_doi, doc.custom_department),
 			title=frappe._("Đội không thuộc phòng ban của lệnh"),
 		)
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def doi_theo_phong_ban(doctype, txt, searchfield, start, page_len, filters):
+	"""Danh sách Đội Sản Xuất cho ô *Đội Sản Xuất* trên Lệnh sản xuất: đội của phòng này, **cộng**
+	đội chưa khai phòng nào.
+
+	🔴 **Vì sao phải là truy vấn riêng chứ không phải một dòng `filters` bình thường.**
+	Bản đầu tôi viết ở JS là `["custom_department", "in", [phong, ""]]`. Nó dịch ra
+	`custom_department IN ('Phòng kỹ thuật - HKL', '')`, và trong SQL **`NULL` không khớp `IN`
+	bất kể trong danh sách có gì** — kể cả `NULL`. Mà cột này của các bản ghi cũ đúng là `NULL`
+	chứ không phải chuỗi rỗng.
+
+	Đo trên site 07/09 trước khi sửa: `Đội 1` và `Đội 2` đều `custom_department IS NULL`, và bộ
+	lọc kia khớp **0 / 2** đội. Nghĩa là chỉ cần lệnh có Phòng Ban là ô Đội **rỗng trắng** —
+	đúng thứ chú thích trong `work_order_phong_ban.js` viết ra để tránh. Dùng `ifnull(...)` thì
+	khớp **2 / 2**.
+
+	⚠ Đây là lần thứ ba cùng một cái bẫy trong ngày 07/09: nó cũng làm phép đếm "đơn trống Thời
+	Gian Bắt Đầu" ra **0** trong khi thật ra là **9** (`filters={"custom_start_time": ["in",
+	[None, ""]]}`). Hễ một cột có thể `NULL` mà đem so bằng `in` thì phải `ifnull` trước.
+	"""
+	phong = (filters or {}).get("phong_ban")
+	dieu_kien = ["ifnull(wt.is_active, 0) = 1"]
+	tham_so = {"txt": "%%%s%%" % (txt or ""), "start": start, "page_len": page_len}
+
+	if phong:
+		# Đội của đúng phòng này, HOẶC đội chưa khai phòng nào (dữ liệu cũ — không được giấu đi,
+		# giấu là người dùng không chọn được gì mà không hiểu vì sao).
+		dieu_kien.append("(wt.custom_department = %(phong)s or ifnull(wt.custom_department, '') = '')")
+		tham_so["phong"] = phong
+
+	return frappe.db.sql(
+		"""select wt.name, wt.custom_department
+		from `tabWork Team` wt
+		where {dieu_kien} and (wt.name like %(txt)s or ifnull(wt.mo_ta, '') like %(txt)s)
+		order by wt.name
+		limit %(start)s, %(page_len)s""".format(dieu_kien=" and ".join(dieu_kien)),
+		tham_so,
+	)
