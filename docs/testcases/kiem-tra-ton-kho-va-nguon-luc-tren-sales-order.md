@@ -308,9 +308,51 @@ số lượng ở cột thiếu, không cần trừ các đơn đã đặt mua"*
 PO rơi vào kỳ 2 còn nhu cầu ở kỳ 1 — hàng về sau khi cần thì không cứu được. Nhưng nếu PO về
 **kịp kỳ** thì hai màn hình sẽ lệch thêm đúng phần PO đó.
 
-**b) Con số của Phần V đổi theo NGÀY BẤM NÚT.** Phiên kia đo 05/09 ra NVL 3 = *72 gộp / 62
-ròng* (PO bị trừ, vì ranh giới kỳ hôm đó ôm 07/09 vào cùng kỳ với nhu cầu); 07/09 cùng đơn
-cùng PO ra *72 / 72*. Dữ liệu không đổi, số đi mua hàng đổi.
+**b) Con số của Phần V đổi theo CỬA SỔ KỲ.** Đo 07/09, **cùng một ngày, cùng một bộ dữ liệu,
+chỉ đổi mỗi tham số `tu_ngay`** — tôi tự chạy lại `nhu_cau_vat_tu.tinh_nhu_cau(company="HKLED",
+loai_ky="Tuần", so_ky=4)` ba lượt, không lấy số của phiên kia:
+
+| `tu_ngay` | Kỳ 1 | `NVL 3` | `NVL 2` | |
+|---|---|---|---|---|
+| `2026-09-05` | 05–11/09 | **55** | 44 | `PO-26-00004` (10 cái, hẹn 07/09) về **cùng kỳ** với nhu cầu → được trừ |
+| `2026-08-31` | 31/08–06/09 | **72** | 44 | cùng PO đó rơi **sang kỳ sau** → không trừ được |
+| *mặc định* (07/09) | 07–13/09 | — | — | **`co_nhu_cau = False`, 0 dòng** |
+
+Phép tính từng kỳ không sai; **cái trượt là cửa sổ**. `_cac_ky` (`nhu_cau_vat_tu.py:90`) lấy mốc
+= `tu_ngay or nowdate()` rồi cắt khối 7 ngày **từ chính mốc đó**, không nắn về đầu tuần lịch.
+
+⚠ *Đính chính:* bản đầu của mục này ghi *"05/09 ra 72 gộp / 62 ròng, 07/09 ra 72/72"* — **bỏ đi,
+đừng trích ở đâu**. Hai số đó đến từ hai cách gọi khác nhau (một lượt mặc định, một lượt đặt tay
+`tu_ngay`) nên không so được với nhau, và bộ dữ liệu cũng đã đổi thật từ đó (`SO-26-00027` tạo
+05/09 15:35, sau lượt đo 14:47). Bảng ba dòng ở trên mới là bằng chứng dùng được: **một biến,
+ba kết quả.**
+
+### 🔴 Dòng thứ ba mới là chỗ nặng nhất — và không phải chuyện "trượt"
+
+Bấm nút hôm nay, đúng như người dùng thật sẽ bấm, không đặt tham số gì: **màn hình không có dòng
+nào.** Trong khi Bảng 2 của `SO-26-00026` cùng lúc đó nói thiếu **17 `NVL 3`**. Không còn là
+"hai màn hình ra hai số" — là một màn hình **không có số nào**.
+
+Tôi truy tiếp vì "hôm nay rỗng" nghe như xui rủi. Không phải:
+
+`_nhu_cau_kieu_1` xếp đơn vào kỳ theo **`Sales Order.custom_start_time`** (*Thời Gian Bắt Đầu*),
+không phải theo `delivery_date`. Đo cả **18 đơn đã duyệt còn sống** trên site: `custom_start_time`
+muộn nhất là **05/09 15:35**, tất cả đều ở quá khứ. Mà cửa sổ mặc định **mở từ hôm nay**. Nên đơn
+nào cũng rơi ra ngoài — **theo cấu trúc, không theo hên xui.**
+
+Hệ quả: màn hình mặc định chỉ hiện được đơn có *Thời Gian Bắt Đầu* **từ hôm nay trở đi**. Ngày
+05/09 nó ra số chỉ vì hôm đó tình cờ có ba đơn (`SO-26-00025`, `00027`, `00028`) mang mốc đúng
+ngày 05/09. Hôm sau là rỗng, và sẽ rỗng mọi ngày không ai nhập đơn mới.
+
+Đáng chú ý thêm: `SO-26-00027` có *Thời Gian Bắt Đầu* **05/09** nhưng ngày giao **04/09** — mốc
+bắt đầu **sau** ngày giao. Nên trường này trên các đơn đang có mang dáng dấp *"lúc ai đó lập
+đơn"* chứ chưa chắc là *"lúc dự kiến bắt đầu làm"*. Không có code nào của `mbwnext_hkled` tự điền
+`Sales Order.custom_start_time` — người dùng gõ tay.
+
+**Đây là câu của Phần V, không phải của Phần IV** — ghi ở đây vì phát hiện ra trong lúc đối
+chiếu, và vì nó **đổi thứ tự trình bày**: câu mở đầu với anh Thắng nên là *"màn hình Phần V bấm
+hôm nay không ra dòng nào"*, còn 4-vs-44 và đơn mua chưa về là hai câu sau. Kết luận về nguyên
+nhân để phiên giữ Phần V chốt — tôi chỉ đo, không sửa `nhu_cau_vat_tu.py`.
 
 **Bên Bảng 1+2 thì SỐ LƯỢNG không có tính chất này** — nhưng phải nói đúng phạm vi, vì bản đầu
 của mục này (commit `58c6ae1`) viết rộng hơn bằng chứng và phiên `cozy-dev-10` bắt được:
