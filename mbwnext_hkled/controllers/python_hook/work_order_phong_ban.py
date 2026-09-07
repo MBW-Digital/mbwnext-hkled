@@ -29,6 +29,14 @@ import frappe
 BANG_THANH_PHAM_CHINH = "Production Plan Item"
 BANG_BAN_THANH_PHAM = "Production Plan Sub Assembly Item"
 
+# ⛔ Từng có `validate_team_in_department` ở đây — chặn chọn đội sai phòng trên ô
+# `Work Order.custom_work_team`. **Đã gỡ 07/09 11:2x cùng với chính ô đó**, theo chốt của anh
+# Thắng lúc 11:13: *"em bỏ phần đội sản xuất này đi nhé, trưởng phòng ban sẽ thêm thành viên bằng
+# nút Thêm Đội Sản Xuất trước đó mình đã làm rồi, thì ở nút đó lúc chọn đội, em chỉ cho hiện những
+# đội thuộc phòng ban đó thôi"*. Việc phân đội đi qua nút GAP-6 (`controllers/js/work_order.js`),
+# và chỗ lọc là `get_query` của nút đó — nó gọi `doi_theo_phong_ban` bên dưới. Đừng dựng lại ô
+# `custom_work_team` trên Lệnh sản xuất: nó đã bị bỏ có chủ đích, không phải sót.
+
 
 def _phong_ban_tu_ke_hoach(doc):
 	"""Phòng ban của dòng kế hoạch đã sinh ra lệnh này; None nếu không tra được.
@@ -77,39 +85,6 @@ def inherit_department(doc, method=None):
 	phong = _phong_ban_tu_ke_hoach(doc)
 	if phong:
 		doc.custom_department = phong
-
-
-def validate_team_in_department(doc, method=None):
-	"""`validate` — Đội Sản Xuất chọn ở lệnh phải thuộc đúng Phòng Ban của lệnh.
-
-	🔒 Anh Thắng thêm ý này ngày 03/09 14:57: *"cho Đội Sản Xuất gắn phòng ban để trưởng phòng
-	chỉ chọn được đội của phòng mình"*. Màn hình đã lọc sẵn danh sách đội theo phòng, nhưng lọc
-	ở màn hình chỉ là tiện tay — API và nhập liệu hàng loạt đi vòng qua được, nên chặn ở server.
-
-	Ba trường hợp CỐ Ý cho qua, vì chặn là gây hại nhiều hơn lợi:
-	  1. Lệnh chưa có phòng ban — chưa ai khai ở kế hoạch, không có gì để đối chiếu.
-	  2. Đội chưa gắn phòng ban — dữ liệu cũ; 2 đội đang có trên site đều chưa gắn (đo 07/09).
-	  3. Không chọn đội — phân đội là việc của trưởng phòng, làm sau, không phải điều kiện để
-	     lệnh ra đời.
-	Chỉ chặn khi **cả hai đều đã khai và khác nhau** — lúc đó mới thật sự là chọn nhầm.
-	"""
-	if doc.doctype != "Work Order":
-		return
-	if not doc.get("custom_work_team") or not doc.get("custom_department"):
-		return
-
-	phong_cua_doi = frappe.db.get_value("Work Team", doc.custom_work_team, "custom_department")
-	if not phong_cua_doi:
-		return
-
-	if phong_cua_doi != doc.custom_department:
-		frappe.throw(
-			frappe._(
-				"Đội <b>{0}</b> thuộc phòng <b>{1}</b>, không thuộc phòng <b>{2}</b> của lệnh này. "
-				"Chọn đội của đúng phòng, hoặc sửa lại ô Phòng Ban."
-			).format(doc.custom_work_team, phong_cua_doi, doc.custom_department),
-			title=frappe._("Đội không thuộc phòng ban của lệnh"),
-		)
 
 
 @frappe.whitelist()

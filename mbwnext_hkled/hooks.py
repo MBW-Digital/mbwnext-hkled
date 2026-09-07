@@ -127,9 +127,7 @@ doctype_js = {
 	# PM-FEAT-00036: nút Phân Bổ trên phiếu nhập mua đã duyệt.
 	"Purchase Receipt": "controllers/js/purchase_receipt.js",
 	"Employee": "controllers/js/employee.js",
-	# PM-TASK-00143: file thứ hai lọc Đội theo Phòng Ban. Tách file vì work_order.js thuộc
-	# cửa sổ giữ Phần II–III; doctype_js nhận danh sách nên hai file cùng chạy.
-	"Work Order": ["controllers/js/work_order.js", "controllers/js/work_order_phong_ban.js"],
+	"Work Order": "controllers/js/work_order.js",
 	"Other Task": "controllers/js/other_task.js",
 }
 
@@ -287,9 +285,6 @@ doc_events = {
 		"validate": [
 			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production",
 			"mbwnext_hkled.controllers.python_hook.work_order.set_sales_info",
-			# PM-TASK-00143: đội chọn ở lệnh phải thuộc đúng phòng ban của lệnh. Màn hình đã lọc
-			# sẵn, nhưng API và nhập hàng loạt đi vòng qua được nên phải chặn ở server.
-			"mbwnext_hkled.controllers.python_hook.work_order_phong_ban.validate_team_in_department",
 		],
 		"before_update_after_submit": (
 			"mbwnext_hkled.controllers.python_hook.work_order.validate_employee_production"

@@ -1,6 +1,6 @@
 # Ca test — Phòng Ban thực hiện sản xuất (PM-TASK-00143)
 
-> **Tổng kết 07/09 chiều:** **23 ca · 22 Pass · 1 chờ dữ liệu** (đợt 1 + 1b + bấm thật trên giao diện).
+> **Tổng kết 07/09 chiều:** **23 ca · 23 Pass · 0 chờ dữ liệu** (đợt 1 + 1b + bấm thật trên giao diện).
 > Ba con số này **đếm bằng máy** từ chính các bảng dưới. Bản nháp đầu tôi gõ tay ra `22 ca · 21 Pass` — sai cả hai, đúng cái bẫy đếm ghi ngay dòng dưới.
 > Con số đếm bằng máy từ chính bảng dưới, không gõ tay.
 > Đếm bằng `grep '^| TC-'` sẽ **thừa 4** vì bảng *Cần người test* cũng có dòng `| TC-`.
@@ -85,10 +85,44 @@ mới chưa lưu** nên không đụng bản ghi thật nào. Kiểm sau khi xon
 | TC-UI-02 | Khai Phòng Ban rồi bấm ô **Đội Sản Xuất** | Hiện `Đội 1`, `Đội 2` **kèm dòng** *"Filters applied for Phong Ban = Phòng kỹ thuật - HKL"* — bộ lọc có chạy, và không giấu mất đội nào | ✅ Pass |
 | TC-UI-04 | **Chưa khai** Phòng Ban rồi bấm ô Đội | Hiện đủ `Đội 1`, `Đội 2`, không rỗng | ✅ Pass |
 | TC-UI-05 | Ô Phòng Ban và Đội Sản Xuất hiện đúng nhãn + mô tả trên form | Đúng nhãn tiếng Việt, mô tả hiện dưới ô | ✅ Pass |
-| TC-UI-03 | Đổi phòng ban thì **đội cũ bị bỏ chọn** kèm lời nhắc | ⏳ **Chưa chạy được** — cần ít nhất một đội đã khai phòng ban, mà `Work Team` hiện **0/2**. Nhánh này chỉ kích hoạt khi đội *có* phòng và phòng đó *khác* phòng của lệnh | — |
+| TC-UI-06 | 🔒 **Ca nghiệm thu chính** — mở `LSX-26-00008` (*Phòng KCS - HKL*), bấm nút **Thêm Đội Sản Xuất**, mở ô Đội | Hiện **duy nhất `Đội 2`** kèm dòng phụ *Phòng KCS - HKL*, và *"Filters applied for Phong Ban = Phòng KCS - HKL"*. `Đội 1` (Phòng kỹ thuật) **bị ẩn đúng** | ✅ Pass |
 
 > Console lúc thao tác: **0 lỗi từ mã của tính năng này**. Bốn lỗi thấy được đều có sẵn từ trước
 > và không liên quan (`chart.min.js` import, socket.io không kết nối được).
+
+### 🔄 Đổi hướng 07/09 11:13 — bỏ ô *Đội Sản Xuất* trên Lệnh sản xuất
+
+Anh Thắng, sau khi tự bấm thử luồng này trên site:
+
+> *"em bỏ phần đội sản xuất này đi nhé, trưởng phòng ban sẽ thêm thành viên bằng nút **Thêm Đội
+> Sản Xuất** trước đó mình đã làm rồi, thì ở nút đó lúc chọn đội, em chỉ cho hiện những đội thuộc
+> phòng ban đó thôi"*
+
+Nên ô `Work Order.custom_work_team` (thêm sáng nay) **đã gỡ khỏi fixtures và xoá khỏi site**, cùng
+hook `validate_team_in_department` và file `js/work_order_phong_ban.js` — không còn ô nào để lọc
+hay để kiểm. Chỗ lọc chuyển sang `get_query` của nút GAP-6 trong `controllers/js/work_order.js`
+(cửa sổ giữ Phần II–III sửa, commit `93ce5e3`), gọi chính `doi_theo_phong_ban` ở đây.
+
+⚠ Xoá ô đó làm mất giá trị `Đội 1` trên bản **nháp** `LSX-26-00006` — bản ghi thử của chính anh
+Thắng, tạo 11:08 và bỏ ô lúc 11:13. Đã kiểm trước khi xoá: **không có bản ghi đã duyệt nào** mang
+giá trị ở ô này.
+
+### ✅ Anh Thắng tự nghiệm thu TC-KE-01 và TC-KE-02 trên dữ liệu thật
+
+Không phải ca máy chạy — chính khách thao tác, lúc 11:08:
+
+```
+11:08:54  tao Ke hoach KSX-26-00002-1, khai Phong Ban cho ca 3 dong
+11:08:56  duyet ke hoach
+11:08:58  tao 3 Lenh san xuat  ->  hook dien phong ban DUNG ca 3
+             Thanh pham 1     -> Phong ky thuat   (tu bang Assembly Items)
+             Ban thanh pham 1 -> Phong ky thuat   (tu bang Sub Assembly)
+             Ban thanh pham 2 -> Phong KCS        <- KHAC phong cua thanh pham chinh
+```
+
+Dòng cuối là bằng chứng mạnh nhất cho **TC-KE-02**: bán thành phẩm lấy phòng của *chính dòng nó*
+chứ không lấy theo thành phẩm chính. Ca rollback của tôi chứng minh điều đó bằng dữ liệu dựng
+tạm; đây là dữ liệu thật, do khách tạo, không ai sắp đặt.
 
 ### 🔴 TC-UI-02 tìm ra một lỗi THẬT — và nó là cái bẫy `IN (NULL)` lần thứ ba trong ngày
 
