@@ -225,3 +225,135 @@ Vòng test ngày 03/08 đã dọn sạch: huỷ + xoá 4 phiếu kho, 1 Lệnh s
 Tồn `NVL 1` về đúng 99, `Thành phẩm 1` bật lại *Có Lô*, Lịch làm việc về đúng 11 bản ghi gốc.
 
 **Người test lại nhớ làm tương tự** — đây là site dùng chung.
+
+---
+
+## 🔴 GAP-5 hỏng suốt — phát hiện và sửa 07/09/2026
+
+`TC-HAPPY-05` ở trên ghi **Pass** ngày 03/08. Ô đó **không nói gì về mã hiện tại** — đọc tiếp.
+
+### Lỗi
+
+Khối tự thêm nhân sự của đội vào Lệnh sản xuất nằm ở cuối `ensure_start_time`, nhưng biến
+`work_team` nó dùng **chỉ được gán trong `inherit_from_production_plan`** — một hàm khác. Biến
+không đi qua được ranh giới hàm.
+
+```
+awk quet than ensure_start_time  ->  0 phep gan work_team
+```
+
+Nên đó không phải "hiếm khi chạy" mà là **`NameError` mỗi lần chạm tới**, và vì hook đứng ở
+`before_insert` nên nó **chặn luôn việc tạo Lệnh sản xuất**.
+
+Chạy thật, hai ca, trước khi sửa:
+
+| Ca | Kết quả |
+|---|---|
+| WO không gắn Đơn Bán, chưa có *Thời Gian Bắt Đầu* | `NameError: name 'work_team' is not defined` |
+| WO gắn `SAL-ORD-2026-00001` (đơn đã duyệt, **trống** ô đó) | `NameError: name 'work_team' is not defined` |
+
+### Vì sao không ai vấp suốt một tháng
+
+Hai cửa thoát ở đầu `ensure_start_time` che gần hết đường: WO tạo từ Kế Hoạch thì
+`inherit_from_production_plan` đã điền `custom_start_time` xong nên thoát ở cửa đầu; tạo tay thì
+trường `reqd = 1` buộc người dùng điền. Đường còn hở là **WO chưa có giờ mà Đơn Bán của nó cũng
+trống ô đó** — đo 07/09: **9 đơn đã duyệt** đang ở tình trạng này. `Error Log`: **0 bản ghi**
+nhắc `work_team` hay `ensure_start_time` trên tổng 1.887. Đường nổ có thật, chưa nổ lần nào.
+
+### Hỏng từ bao giờ — và vì sao KHÔNG kết luận "chưa từng chạy"
+
+`git show 8299675:…` (08/08, commit đưa khối này vào) cho thấy khối **đã** nằm sai hàm ngay từ
+đó. Commit trước (`ca52b17`, 08/07) chưa có `work_team` nào.
+
+⚠ Nhưng `TC-HAPPY-05` ghi Pass ngày **03/08** — **5 ngày TRƯỚC** `8299675` — với
+`MFG-WO-2026-00008` "đủ Anh A/B/C". Cây làm việc là bản chạy thật, nên hoàn toàn có thể lúc đó
+trên site là một bản khác chưa commit. WO đó **đã bị xoá trong đợt dọn 03/08** (xem ghi chú cuối
+mục trên) nên không kiểm lại được. Chỉ khẳng định được: **hỏng từ `8299675` tới 07/09**.
+
+### Cách sửa (Tuấn duyệt 07/09)
+
+Chuyển khối về cuối `inherit_from_production_plan`, nơi `work_team` đang sống và đang bị bỏ
+không — đúng chỗ docstring hàm đó mô tả và đúng **GAP-5** trong mockup đã duyệt
+(`docs/mockups/bac-tho-lich-san-xuat.html`, mục *Phần không có giao diện mới*): *"tạo lệnh sản
+xuất từ kế hoạch: tự thừa hưởng thời gian **và tự thêm nhân sự của đội** vào bảng Nhân Công Tham
+Gia"*. `ensure_start_time` nay chỉ còn đúng một việc: bảo đảm `custom_start_time` không rỗng.
+
+### Chạy lại sau khi sửa — trên cây có **cả** bản vá này **và** commit `a676f85` (Phòng Ban, PM-TASK-00143)
+
+Tạo Lệnh sản xuất **thật** qua trọn chuỗi `before_insert` (5 hook, đúng thứ tự `hooks.py`), trong
+giao dịch rồi `rollback`:
+
+| Ca | Kết quả | P/F |
+|---|---|---|
+| Hai ca từng nổ ở trên | Không còn `NameError`; `custom_start_time` được điền, bảng nhân sự trống (đúng — không có Kế Hoạch) | Pass |
+| **GAP-5 chạy thật**: WO từ `MFG-PP-2026-00005` (đội *Đội 1*) | `LSX-26-00006` — **tự điền đủ 3 công nhân**, kèm Bậc Thợ và Nguồn Lực: Anh A `Bậc 7 / 100`, Anh B `Bậc 7 / 100`, Anh C `Bậc 6 / 90`. Không dòng nào trống — đúng phần bù `fetch_from` | Pass |
+| Tôn trọng dữ liệu có sẵn | WO đã có 1 dòng nhân sự → sau khi chạy vẫn **1 dòng**, không ghi đè | Pass |
+| Vòng xoá WO | `Employee Allocation` **39 → 39**, không để lại bản ghi mồ côi | Pass |
+| `TC-HAPPY-13` chạy lại | *Đã phân bổ* 0 → **202,5** · *Còn lại* 1.305 → **1.102,5** — không hồi quy | Pass |
+| Bất biến sổ ghim | `kiem_bat_bien()` **sạch** | Pass |
+| Dọn sạch | `rollback` xong: `Employee Allocation` **39**, `Work Order` **39** — đúng như trước | Pass |
+
+⚠ Hook `inherit_department` của `a676f85` chạy **ngay sau** `inherit_from_production_plan` trên
+cùng `before_insert`. Hai bên **không va nhau**: `custom_department = None` (đúng, chưa ai khai
+phòng ban) trong khi bảng nhân sự vẫn đủ 3 dòng.
+
+### 📌 Hệ quả phải báo anh Thắng
+
+Từ nay Lệnh sản xuất tạo từ Kế Hoạch **bắt đầu tự điền công nhân** — việc lâu nay không xảy ra.
+Kéo theo `Employee Allocation` được sinh, và **số trên Bảng 3 của Phần IV sẽ đổi**. Đây là hành
+vi đã có trong mockup duyệt từ đầu, không phải tính năng mới; nhưng người đang nhìn màn hình thì
+thấy số khác đi, nên phải nói trước.
+
+### Bài học
+
+Ô **Pass cũ không bảo chứng cho mã hiện tại** khi ngày chạy test trước ngày commit. Ở dự án này
+cây làm việc *là* bản đang chạy, nên test có thể chạy trên mã chưa commit — và mã được commit sau
+đó lại là một bản khác. Ghi ngày chạy vào từng ô test là chưa đủ; **ô nào đo hành vi mà mã đã đổi
+sau đó thì phải chạy lại**, đừng đọc ô Pass rồi yên tâm.
+
+---
+
+## GAP-6 lọc Đội theo Phòng Ban — 07/09 chiều (PM-TASK-00143)
+
+Anh Thắng chốt **07/09 11:13** (nguyên văn, đã đọc lại trên PM-TASK-00143):
+
+> *"em bỏ phần đội sản xuất này đi nhé, trưởng phòng ban sẽ thêm thành viên bằng nút **Thêm đội
+> sản xuất** trước đó mình đã làm rồi, thì ở nút đó lúc chọn đội, em chỉ cho hiện những đội thuộc
+> phòng ban đó thôi"*
+
+Tức ô *Đội Sản Xuất* thêm thẳng vào Lệnh sản xuất (sáng 07/09) **bỏ đi**; việc phân đội quay về
+đúng nút GAP-6 này, chỉ thêm một bộ lọc.
+
+Đổi ở `controllers/js/work_order.js` — ô *Đội Sản Xuất* trong hộp thoại *Thêm Đội Sản Xuất* nay
+gọi truy vấn `work_order_phong_ban.doi_theo_phong_ban`, truyền `phong_ban = frm.doc.custom_department`.
+
+### ⚠ Vì sao không dùng một dòng `filters` — cái bẫy `NULL` với `IN`
+
+Cách hiển nhiên là `filters: [["custom_department", "in", [phong, ""]]]`. **Sai.** Cột đó ở bản
+ghi cũ là `NULL` chứ không phải chuỗi rỗng, mà trong SQL **`NULL` không khớp `IN`** bất kể danh
+sách có gì — kể cả khi trong danh sách có `NULL`. Đo 07/09 trước khi sửa: lọc kiểu đó khớp
+**0/2** đội, tức chỉ cần Lệnh sản xuất có Phòng Ban là ô Đội **rỗng trắng**. Dùng `ifnull` thì
+khớp **2/2**.
+
+⚠ Đây là **lần thứ ba cùng một cái bẫy trong ngày 07/09**. Lần đầu làm phép đếm *"đơn trống Thời
+Gian Bắt Đầu"* ra **0** trong khi thật ra là **9** (`filters={"custom_start_time": ["in", [None, ""]]}`).
+Hễ một cột có thể `NULL` mà đem so bằng `in` thì phải `ifnull` trước.
+
+⚠ Và **18 ca test phía server không bắt được** — chỉ bấm thật trên giao diện mới lộ, vì lỗi nằm ở
+chỗ ô Link không trả về gì, không phải ở dữ liệu.
+
+### Chạy lại — ba trạng thái
+
+Đo lúc 11:2x. ⚠ **Anh Thắng đã khai Phòng Ban cho cả hai đội** (khác thời điểm phiên `cozy-dev-10`
+đo, lúc đó còn `0/2`): `Đội 1` → *Phòng kỹ thuật - HKL*, `Đội 2` → *Phòng KCS - HKL*.
+
+| Ca | Lệnh sản xuất có Phòng Ban | Ô Đội hiện gì | P/F |
+|---|---|---|---|
+| Chưa khai phòng (`None`) | — | **cả 2 đội** — không gãy hành vi GAP-6 cũ | Pass |
+| Khai *Phòng kỹ thuật - HKL* | ✔ | **chỉ `Đội 1`** | Pass |
+| Khai *Phòng KCS - HKL* | ✔ | **chỉ `Đội 2`** | Pass |
+
+Ca 3 chạy trong giao dịch rồi `rollback`; kiểm sau khi chạy: `Đội 1` giữ nguyên phòng đã khai.
+
+**Còn cần người test:** bấm nút thật trên giao diện. Đây đúng loại lỗi mà lượt trước chỉ giao diện
+mới bắt được — đo bằng lệnh thấy đủ 2/2 không có nghĩa ô Link vẽ ra đúng.

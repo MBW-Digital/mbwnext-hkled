@@ -271,6 +271,11 @@ doc_events = {
 			"mbwnext_hkled.controllers.python_hook.work_order.clear_copied_allocation_record",
 			"mbwnext_hkled.controllers.python_hook.work_order.inherit_from_production_plan",
 			"mbwnext_hkled.controllers.python_hook.work_order.set_sales_info",
+			# PM-TASK-00143: Phòng Ban thừa hưởng từ dòng Kế Hoạch sinh ra lệnh (chốt Thắng 07/09).
+			# Đặt TRƯỚC ensure_start_time có chủ đích: hàm đó đang lỗi NameError ở nhánh cuối
+			# (đo 07/09) và việc vá thuộc cửa sổ giữ Phần II–III. Chạy trước thì phần phòng ban
+			# không phụ thuộc số phận hàm kia. File riêng, không đụng work_order.py của họ.
+			"mbwnext_hkled.controllers.python_hook.work_order_phong_ban.inherit_department",
 			"mbwnext_hkled.controllers.python_hook.work_order.ensure_start_time",
 		],
 		# GAP-7 (C12): tổng Sản Lượng Nhân Viên phải khớp Số Lượng Đã Sản Xuất.
@@ -376,7 +381,12 @@ doc_events = {
 	"Employee": {
 		# C1: `mandatory_depends_on` của Frappe CHỈ chạy phía client — lưu bằng script/API
 		# vẫn lọt. Phải chặn thêm ở server. Xem controllers/python_hook/employee.py.
-		"validate": "mbwnext_hkled.controllers.python_hook.employee.validate_employee_level",
+		# PM-TASK-00143: Phòng Ban của nhân sự bám theo Đội Sản Xuất (anh Thắng 07/09 10:55) —
+		# một sự thật khai hai nơi thì phải chọn một nơi làm gốc, đội là gốc.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.employee.validate_employee_level",
+			"mbwnext_hkled.controllers.python_hook.employee_phong_ban.sync_department_from_team",
+		],
 	},
 }
 

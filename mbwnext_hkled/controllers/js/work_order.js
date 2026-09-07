@@ -91,7 +91,24 @@ function show_work_team_dialog(frm) {
 				label: __("Đội Sản Xuất"),
 				options: "Work Team",
 				reqd: 1,
-				get_query: () => ({ filters: { is_active: 1 } }),
+				/* PM-TASK-00143 — anh Thắng chốt 07/09 11:13: *"ở nút đó lúc chọn đội, em chỉ
+				   cho hiện những đội thuộc phòng ban đó thôi"*. Ô Đội Sản Xuất thêm thẳng
+				   vào Lệnh sản xuất đã bị bỏ trong cùng lượt chốt đó; việc phân đội quay về
+				   đúng nút này.
+
+				   ⚠ KHÔNG thay bằng `filters: [["custom_department","in",[phong,""]]]`.
+				   Cột đó ở bản ghi cũ là NULL chứ không phải chuỗi rỗng, mà SQL thì NULL
+				   không khớp IN bất kể danh sách có gì — đo 07/09: lọc kiểu đó khớp 0/2 đội,
+				   tức chỉ cần lệnh có Phòng Ban là ô này rỗng trắng. `doi_theo_phong_ban`
+				   dùng `ifnull` nên khớp 2/2, và nó tự lọc `is_active` nên bỏ được điều kiện
+				   cũ ở đây.
+
+				   `phong_ban` rỗng thì hàm trả về HẾT đội — lệnh chưa khai Phòng Ban vẫn
+				   dùng nút bình thường, không gãy hành vi GAP-6 cũ. */
+				get_query: () => ({
+					query: "mbwnext_hkled.controllers.python_hook.work_order_phong_ban.doi_theo_phong_ban",
+					filters: { phong_ban: frm.doc.custom_department },
+				}),
 				onchange() {
 					load_team_members(dialog, frm, this.get_value());
 				},
