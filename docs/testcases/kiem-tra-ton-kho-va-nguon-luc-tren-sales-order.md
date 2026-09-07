@@ -327,27 +327,56 @@ Phép tính từng kỳ không sai; **cái trượt là cửa sổ**. `_cac_ky` 
 05/09 15:35, sau lượt đo 14:47). Bảng ba dòng ở trên mới là bằng chứng dùng được: **một biến,
 ba kết quả.**
 
-### 🔴 Dòng thứ ba mới là chỗ nặng nhất — và không phải chuyện "trượt"
+### 🔴 Dòng thứ ba mới là chỗ nặng nhất — nhưng KHÔNG phải "hỏng vĩnh viễn"
 
 Bấm nút hôm nay, đúng như người dùng thật sẽ bấm, không đặt tham số gì: **màn hình không có dòng
 nào.** Trong khi Bảng 2 của `SO-26-00026` cùng lúc đó nói thiếu **17 `NVL 3`**. Không còn là
 "hai màn hình ra hai số" — là một màn hình **không có số nào**.
 
-Tôi truy tiếp vì "hôm nay rỗng" nghe như xui rủi. Không phải:
+⚠ **Đính chính bản trước (`2838f1c`).** Tôi viết *"rỗng theo cấu trúc, sẽ rỗng mọi ngày không ai
+nhập đơn mới"*. **Quá mạnh** — phiên `cozy-dev-10` bắt được. Tôi lọc *đơn đã duyệt* rồi kết luận
+cho *toàn site*, nên bỏ sót đơn nháp. Bản đúng, hẹp hơn nhưng vẫn đủ sắc:
 
-`_nhu_cau_kieu_1` xếp đơn vào kỳ theo **`Sales Order.custom_start_time`** (*Thời Gian Bắt Đầu*),
-không phải theo `delivery_date`. Đo cả **18 đơn đã duyệt còn sống** trên site: `custom_start_time`
-muộn nhất là **05/09 15:35**, tất cả đều ở quá khứ. Mà cửa sổ mặc định **mở từ hôm nay**. Nên đơn
-nào cũng rơi ra ngoài — **theo cấu trúc, không theo hên xui.**
+> Cửa sổ mặc định chỉ nhận đơn **đã duyệt** có *Thời Gian Bắt Đầu* **từ hôm nay trở đi**. Hôm nay
+> không có đơn nào như vậy: **11 đơn đã duyệt có điền** thì mốc đều **≤ 05/09**, **9 đơn đã duyệt
+> khác bỏ trống hẳn**. Đơn duy nhất mang mốc tương lai — `SO-26-00029`, mốc **11/09**, rơi gọn
+> vào kỳ 1 của cửa sổ hôm nay — vẫn là **nháp** (`docstatus=0`), mà `_nhu_cau_kieu_1` lọc
+> `docstatus=1`. Nên màn hình rỗng, và **duyệt đơn nháp đó là hết rỗng.**
 
-Hệ quả: màn hình mặc định chỉ hiện được đơn có *Thời Gian Bắt Đầu* **từ hôm nay trở đi**. Ngày
-05/09 nó ra số chỉ vì hôm đó tình cờ có ba đơn (`SO-26-00025`, `00027`, `00028`) mang mốc đúng
-ngày 05/09. Hôm sau là rỗng, và sẽ rỗng mọi ngày không ai nhập đơn mới.
+Khác biệt quan trọng giữa hai cách nói: bản cũ bảo cơ chế hỏng; bản đúng bảo **cơ chế chạy đúng
+thiết kế, thứ rơi ra ngoài tầm nhìn là đơn đang sản xuất dở.** `SO-26-00026` khởi công 04/09,
+**giao 17/09**, vẫn đang ăn vật tư, vẫn thiếu 17 `NVL 3` theo Bảng 2 — mà Phần V không thấy vì
+mốc bắt đầu đã qua.
 
-Đáng chú ý thêm: `SO-26-00027` có *Thời Gian Bắt Đầu* **05/09** nhưng ngày giao **04/09** — mốc
-bắt đầu **sau** ngày giao. Nên trường này trên các đơn đang có mang dáng dấp *"lúc ai đó lập
-đơn"* chứ chưa chắc là *"lúc dự kiến bắt đầu làm"*. Không có code nào của `mbwnext_hkled` tự điền
-`Sales Order.custom_start_time` — người dùng gõ tay.
+**Nên câu cho anh Thắng là câu nghiệp vụ, không phải câu code:**
+
+> Đơn đã bắt đầu sản xuất nhưng chưa giao xong thì nhu cầu vật tư của nó tính vào kỳ nào — kỳ nó
+> khởi công (đã qua, nên biến mất khỏi màn hình mua hàng), hay kỳ hiện tại (vì nó vẫn đang thiếu
+> hàng thật)?
+
+**Cũng bỏ luôn suy đoán về ngữ nghĩa trường.** Bản trước tôi viết `custom_start_time` *"mang dáng
+dấp lúc ai đó lập đơn"*. Sai. Đo `custom_start_time − creation` từng đơn thì nó tách hai cụm rõ:
+một cụm lệch dưới một giờ (chọn đúng giờ đang ngồi) và một cụm lệch **+1.138 → +8.639 phút**, tức
+**gần đúng 1, 2 và 6 ngày sau** — người dùng mở lịch chọn ngày mai / ngày kia. Trường cũng không
+có `default` trong Custom Field (`default: None`, `reqd: 1`). Đây là khai kế hoạch có chủ đích.
+Mốc đang dùng **đúng nghĩa của nó** — câu hỏi không phải *"xếp đơn theo mốc nào"*.
+
+**Còn một chỗ nữa, ngược lại: đơn được đề nghị đem duyệt lại đang mang chính cái bất thường đó.**
+
+`SO-26-00027` có *Thời Gian Bắt Đầu* **05/09** mà ngày giao **04/09** — bắt đầu **sau** ngày giao.
+Phiên `cozy-dev-10` xếp nó là gõ nhầm lẻ, *"ca duy nhất trên site"*, không đáng đem vào gói câu
+hỏi. Tôi đếm lại toàn bộ đơn `docstatus < 2`: **có hai ca, không phải một** —
+
+| Đơn | Bắt đầu | Giao | Trạng thái |
+|---|---|---|---|
+| `SO-26-00027` | 05/09 15:35 | **04/09** | đã duyệt |
+| `SO-26-00029` | 11/09 15:01 | **10/09** | **nháp** |
+
+`SO-26-00029` chính là đơn mà duyệt nó sẽ làm màn hình Phần V hết rỗng. Nên trước khi lấy nó làm
+cách chữa, phải hỏi người nhập: **mốc bắt đầu sau ngày giao là gõ nhầm, hay là cách khách hiểu
+trường này khác cách mình hiểu?** Hai ca trên hai đơn liên tiếp thì chưa gọi là quy luật, nhưng
+cũng không còn là một lần gõ nhầm lẻ — và nếu duyệt đơn đó để chữa màn hình rỗng thì ta vừa đem
+chính cái bất thường chưa hiểu vào làm dữ liệu mẫu.
 
 **Đây là câu của Phần V, không phải của Phần IV** — ghi ở đây vì phát hiện ra trong lúc đối
 chiếu, và vì nó **đổi thứ tự trình bày**: câu mở đầu với anh Thắng nên là *"màn hình Phần V bấm
