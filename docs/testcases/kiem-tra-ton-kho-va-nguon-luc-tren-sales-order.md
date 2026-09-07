@@ -7,8 +7,13 @@
 Đầu bài: `docs/features/kiem-tra-ton-kho-va-nguon-luc-tren-sales-order.md`
 Mockup đã duyệt: bản 7 (Bảng 1b bản 6, Bảng 2b bản 7)
 
-**Tổng kết (05/09 chiều):** **56 ca · 55 Pass · 1 chưa xong** — **đã chạy lại sau khi gộp vào `main`, xem mục cuối file** — chỉ còn `TC-HAPPY-13`
-(`Employee Allocation` chưa có dòng nào từ hôm nay, nên cột *Đã phân bổ* luôn bằng 0).
+**Tổng kết (cập nhật 07/09 sáng):** **56 ca · 56 Pass · 0 chưa xong** — **đã chạy lại sau
+khi gộp vào `main`, xem mục cuối file**. `TC-HAPPY-13` là ô cuối cùng, đóng sáng 07/09: trước
+đó nó kẹt vì `Employee Allocation` không có dòng nào từ hôm nay trở đi nên cột *Đã phân bổ*
+luôn bằng 0; đã chạy bằng cách **dựng một bản ghi phân bổ trong giao dịch rồi `rollback`**, đo
+được số thật mà không để lại dữ liệu (dòng `Employee Allocation` trước và sau đều là **39**).
+Dữ liệu thật trên site vẫn chưa có phân bổ nào từ hôm nay — **người test vẫn nên bấm lại một
+lượt trên giao diện** khi có Lệnh sản xuất thật gán người.
 
 > **Bổ sung 05/09** — 6 ca mới cho việc **Bảng 2 trừ bán thành phẩm đang có trong kho**
 > (anh Thắng chốt 09:20, xem mục 12f của đầu bài): `TC-EDGE-19` → `TC-EDGE-21` và
@@ -153,7 +158,7 @@ khác nhau**. Nếu số không khớp bảng dưới, kiểm *Phương pháp b�
 | TC-VALID-07 | 🔴 **Anh Thắng báo 05/09 14:38: *"tạo 2 lần phiếu yêu cầu mua hàng, nó đang không trừ đi phiếu trước đó thì phải"*** | Bấm nút *Tạo Yêu Cầu Mặt Hàng* hai lần trên `SO-26-00013` | Số **không trừ** — đúng chốt 03/09 16:51 của chính anh Thắng (`7ogrbbbtls`). Nhưng câu cảnh báo phải nói ĐÚNG điều đó | Pass **sau khi vá 05/09** — hành vi số đúng từ đầu (64 · 105 cả hai lần). **Câu cảnh báo thì SAI**: nó ghi *"Phần đã nằm trong các phiếu đó không được tính lại"* — tàn dư của luật 28/08 đã bị đảo ngược. Anh Thắng đọc câu đó, thấy số y hệt, nên tưởng hệ thống hỏng. Nay ghi: *"Hệ thống KHÔNG tự trừ phần đã xin (chốt 03/09) — bấm lần nữa là ra thêm một phiếu cho cùng phần thiếu. Đã xin rồi: NVL 2 64 · NVL 3 105"* | Pass |
 | TC-VALID-08 | 🔴 **Anh Thắng báo tiếp 05/09 15:04: *"ấn nút lần thứ 2 chưa thấy cảnh báo gì"*** | Bấm *Tạo Yêu Cầu Mặt Hàng* trên đơn đã có phiếu YCM | Cảnh báo phải **hiện ra**, không chỉ tồn tại trong dữ liệu trả về | Pass **sau khi vá 05/09 chiều** — **giao diện**: hộp thoại *"Đọc trước khi lưu phiếu"* nổi trên phiếu vừa dựng, ghi *"Đơn này đã có phiếu yêu cầu mặt hàng: YCM-26-00003, YCM-26-00004 … Đã xin rồi: NVL 3 27"*. ⚠ Trước vá: máy chủ **vẫn trả** `canh_bao`, nhưng nhánh tạo phiếu trong `sales_order.js` **vứt đi** — `khoi_canh_bao()` chỉ dùng trong hộp thoại Kiểm Tra Tồn Kho. Anh Thắng nói đúng nguyên văn, và đúng cả TRƯỚC lẫn SAU lần vá câu chữ buổi trưa | Pass |
 | TC-HAPPY-12 | 🔴 **Bảng 3 tính đúng khi CÓ lịch làm việc** | Anh Thắng thêm lịch 04/09 (**138 dòng từ hôm nay**, 3 nhân sự). Mở Bảng 3 trên `SO-26-00013` (giao 07-09), `SO-26-00014` (11-09), `SO-26-00016` (12-09) | Ra *Tổng theo lịch · Đã phân bổ · Còn lại · Đơn này cần* bằng phút chuẩn, có kết luận đủ/thiếu | Pass — **lần đầu tiên Bảng 3 được kiểm chứng**. `SO-26-00013`: 3 nhân sự, tổng **3.915** phút chuẩn, đơn cần **350** → *đủ*. `SO-26-00014`: **9.135** / cần 1.000 → *đủ*. `SO-26-00016`: **10.440** / cần 200 → *đủ*. ⚠ **Tự tính lại tay để đối chứng, không tin số của hàm**: 18 dòng lịch trong khoảng 04→07/09, mỗi ca 225 phút, `Anh A` 100% + `Anh B` 100% + `Anh C` **90%** = 450+450+**405** = 1.305 phút chuẩn/ngày × 3 ngày = **3.915** — **khớp đúng đến số lẻ**. Hệ số năng lực áp đúng vào phía cung | Pass |
-| TC-HAPPY-13 | Bảng 3 trừ đúng phần đã cam kết cho đơn khác | Hai đơn cùng khoảng, đơn A đã phân bổ nhân sự | Cột *Đã phân bổ* của đơn B tính cả phần A đang giữ | **CHƯA CHẠY** — `Employee Allocation` có 39 dòng nhưng **0 dòng từ hôm nay trở đi**, nên `Đã phân bổ` = 0 trên cả ba đơn. Lịch làm việc đã có (TC-HAPPY-12 chạy được), còn **phân bổ** thì chưa. Cần một bản ghi phân bổ từ 04/09 trở đi mới chạm tới được | — |
+| TC-HAPPY-13 | Bảng 3 trừ đúng phần đã cam kết cho đơn khác | Hai đơn cùng khoảng, đơn A đã phân bổ nhân sự | Cột *Đã phân bổ* của đơn B tính cả phần A đang giữ | **Pass — chạy 07/09 09:3x** trong một giao dịch **đã `rollback`**, không để lại bản ghi nào (`Employee Allocation` trước và sau đều **39 dòng**). Dựng 1 phân bổ *Anh C · 07/09 08:00→11:45* (225 phút thật, hệ số năng lực **90%** → **202,5 phút chuẩn**) gắn vào `MFG-WO-2026-00018`. **Đơn A `SO-26-00013`** (giao 07/09): `Đã phân bổ` **0 → 202,5**, `Còn lại` **1.305 → 1.102,5** — trừ đúng bằng phần cam kết. **Đơn B `SO-26-00029`** (giao 10/09, khoảng dài hơn): cũng thấy `Đã phân bổ` = **202,5**, `Còn lại` **5.220 → 5.017,5** — tức phần đơn A đang giữ **có** bị trừ khỏi năng lực của đơn B, đúng như mong đợi | Pass |
 
 ## TC-PERM — phân quyền
 
@@ -264,3 +269,148 @@ sẽ bị chặn nếu tồn chưa về kịp."* · xin `NVL 1` × 5 (còn 54) �
 **TC-PERM-02 đo lại:** tài khoản `test.mua.gioihan@hkled.test` thấy **14 Đơn Bán** qua
 `get_list`, nhưng đọc được **10 dòng bảng ghim** của `SO-26-00026`/`SO-26-00028` — hai đơn nằm
 ngoài quyền. Vẫn đúng hiện trạng đã ghi: hành vi lõi Frappe, và anh Thắng đã chốt 04/09 giữ nguyên.
+
+---
+
+## Đối chiếu chéo với Phần V — 07/09 sáng
+
+Phiên `cozy-dev-10` chạy vế Phần V, tôi chạy vế Bảng 1+2. Ghi lại vì đây là **lần đầu hai
+màn hình được so trên cùng một tập đơn**, và câu trả lời không hiển nhiên.
+
+Kỳ 31/08–06/09, 4 đơn đã duyệt rơi vào. Mốc so là `tinh_can_mua(SO)` chứ **không phải** dòng
+thô của Bảng 2 — dòng thô bỏ mất vế Bảng 1 (phần mua thẳng trên đơn).
+
+| Đơn | `tinh_can_mua()` |
+|---|---|
+| `SO-26-00026` (giao 17/09) | NVL 3 = 17 |
+| `SO-26-00028` (giao 10/09) | NVL 3 = 30 |
+| `SO-26-00025` (giao 05/09) | NVL 2 = 4 · NVL 3 = 15 |
+| `SO-26-00027` (giao 04/09) | — |
+| **Tổng** | **NVL 3 = 62 · NVL 2 = 4** |
+
+| Mã | Bảng 1+2 | Phần V | Lệch | Đệm đã khai |
+|---|---|---|---|---|
+| NVL 2 | 4 | 44 | **40** | **40** |
+| NVL 3 | 62 | 72 | **10** | **10** |
+
+**Toàn bộ chênh lệch = mức đệm `Item Default.custom_ton_kho_kha_dung_toi_thieu`, khớp đến
+từng đơn vị.** Bảng 2 không đọc cột đó (grep `toi_thieu` trong `kiem_tra_ton_kho.py` ra rỗng);
+Phần V đọc (`nhu_cau_vat_tu.py:134`). Chênh lệch do **phạm vi ghim** (Bảng 2 trừ
+`ghim_boi_don_khac` theo từng đơn, Phần V tính cả kỳ) **triệt tiêu** khi cộng đủ 4 đơn — đúng
+như phải thế, và đó là bằng chứng hai engine không lệch ở chỗ nào khác.
+
+### ⚠ Hai chỗ phải hỏi anh Thắng — không phải lỗi, là hai lần chốt khác nhau
+
+**a) Đơn mua chưa về.** `PO-26-00004` (NVL 3, 10 cái, hẹn 07/09) hiện trên Bảng 2 ở cột
+*Ngày hàng về · SL về* nhưng **không bị trừ** — đúng chốt 03/09 16:51 (*"cứ cho tạo dựa theo
+số lượng ở cột thiếu, không cần trừ các đơn đã đặt mua"*), vốn đã **đảo ngược** luật 28/08
+(PM-TASK-00140). Phần V thì **đem đi tính**. Lượt chạy 07/09 không phơi ra chênh lệch này vì
+PO rơi vào kỳ 2 còn nhu cầu ở kỳ 1 — hàng về sau khi cần thì không cứu được. Nhưng nếu PO về
+**kịp kỳ** thì hai màn hình sẽ lệch thêm đúng phần PO đó.
+
+**b) Con số của Phần V đổi theo CỬA SỔ KỲ.** Đo 07/09, **cùng một ngày, cùng một bộ dữ liệu,
+chỉ đổi mỗi tham số `tu_ngay`** — tôi tự chạy lại `nhu_cau_vat_tu.tinh_nhu_cau(company="HKLED",
+loai_ky="Tuần", so_ky=4)` ba lượt, không lấy số của phiên kia:
+
+| `tu_ngay` | Kỳ 1 | `NVL 3` | `NVL 2` | |
+|---|---|---|---|---|
+| `2026-09-05` | 05–11/09 | **55** | 44 | `PO-26-00004` (10 cái, hẹn 07/09) về **cùng kỳ** với nhu cầu → được trừ |
+| `2026-08-31` | 31/08–06/09 | **72** | 44 | cùng PO đó rơi **sang kỳ sau** → không trừ được |
+| *mặc định* (07/09) | 07–13/09 | — | — | **`co_nhu_cau = False`, 0 dòng** |
+
+Phép tính từng kỳ không sai; **cái trượt là cửa sổ**. `_cac_ky` (`nhu_cau_vat_tu.py:90`) lấy mốc
+= `tu_ngay or nowdate()` rồi cắt khối 7 ngày **từ chính mốc đó**, không nắn về đầu tuần lịch.
+
+⚠ *Đính chính:* bản đầu của mục này ghi *"05/09 ra 72 gộp / 62 ròng, 07/09 ra 72/72"* — **bỏ đi,
+đừng trích ở đâu**. Hai số đó đến từ hai cách gọi khác nhau (một lượt mặc định, một lượt đặt tay
+`tu_ngay`) nên không so được với nhau, và bộ dữ liệu cũng đã đổi thật từ đó (`SO-26-00027` tạo
+05/09 15:35, sau lượt đo 14:47). Bảng ba dòng ở trên mới là bằng chứng dùng được: **một biến,
+ba kết quả.**
+
+### 🔴 Dòng thứ ba mới là chỗ nặng nhất — nhưng KHÔNG phải "hỏng vĩnh viễn"
+
+Bấm nút hôm nay, đúng như người dùng thật sẽ bấm, không đặt tham số gì: **màn hình không có dòng
+nào.** Trong khi Bảng 2 của `SO-26-00026` cùng lúc đó nói thiếu **17 `NVL 3`**. Không còn là
+"hai màn hình ra hai số" — là một màn hình **không có số nào**.
+
+⚠ **Đính chính bản trước (`2838f1c`).** Tôi viết *"rỗng theo cấu trúc, sẽ rỗng mọi ngày không ai
+nhập đơn mới"*. **Quá mạnh** — phiên `cozy-dev-10` bắt được. Tôi lọc *đơn đã duyệt* rồi kết luận
+cho *toàn site*, nên bỏ sót đơn nháp. Bản đúng, hẹp hơn nhưng vẫn đủ sắc:
+
+> Cửa sổ mặc định chỉ nhận đơn **đã duyệt** có *Thời Gian Bắt Đầu* **từ hôm nay trở đi**. Hôm nay
+> không có đơn nào như vậy: **11 đơn đã duyệt có điền** thì mốc đều **≤ 05/09**, **9 đơn đã duyệt
+> khác bỏ trống hẳn**. Đơn duy nhất mang mốc tương lai — `SO-26-00029`, mốc **11/09**, rơi gọn
+> vào kỳ 1 của cửa sổ hôm nay — vẫn là **nháp** (`docstatus=0`), mà `_nhu_cau_kieu_1` lọc
+> `docstatus=1`. Nên màn hình rỗng, và **duyệt đơn nháp đó là hết rỗng.**
+
+Khác biệt quan trọng giữa hai cách nói: bản cũ bảo cơ chế hỏng; bản đúng bảo **cơ chế chạy đúng
+thiết kế, thứ rơi ra ngoài tầm nhìn là đơn đang sản xuất dở.** `SO-26-00026` khởi công 04/09,
+**giao 17/09**, vẫn đang ăn vật tư, vẫn thiếu 17 `NVL 3` theo Bảng 2 — mà Phần V không thấy vì
+mốc bắt đầu đã qua.
+
+**Nên câu cho anh Thắng là câu nghiệp vụ, không phải câu code:**
+
+> Đơn đã bắt đầu sản xuất nhưng chưa giao xong thì nhu cầu vật tư của nó tính vào kỳ nào — kỳ nó
+> khởi công (đã qua, nên biến mất khỏi màn hình mua hàng), hay kỳ hiện tại (vì nó vẫn đang thiếu
+> hàng thật)?
+
+**Cũng bỏ luôn suy đoán về ngữ nghĩa trường.** Bản trước tôi viết `custom_start_time` *"mang dáng
+dấp lúc ai đó lập đơn"*. Sai. Đo `custom_start_time − creation` từng đơn thì nó tách hai cụm rõ:
+một cụm lệch dưới một giờ (chọn đúng giờ đang ngồi) và một cụm lệch **+1.138 → +8.639 phút**, tức
+**gần đúng 1, 2 và 6 ngày sau** — người dùng mở lịch chọn ngày mai / ngày kia. Trường cũng không
+có `default` trong Custom Field (`default: None`, `reqd: 1`). Đây là khai kế hoạch có chủ đích.
+Mốc đang dùng **đúng nghĩa của nó** — câu hỏi không phải *"xếp đơn theo mốc nào"*.
+
+**Còn một chỗ nữa, ngược lại: đơn được đề nghị đem duyệt lại đang mang chính cái bất thường đó.**
+
+`SO-26-00027` có *Thời Gian Bắt Đầu* **05/09** mà ngày giao **04/09** — bắt đầu **sau** ngày giao.
+Phiên `cozy-dev-10` xếp nó là gõ nhầm lẻ, *"ca duy nhất trên site"*, không đáng đem vào gói câu
+hỏi. Tôi đếm lại toàn bộ đơn `docstatus < 2`: **có hai ca, không phải một** —
+
+| Đơn | Bắt đầu | Giao | Trạng thái |
+|---|---|---|---|
+| `SO-26-00027` | 05/09 15:35 | **04/09** | đã duyệt |
+| `SO-26-00029` | 11/09 15:01 | **10/09** | **nháp** |
+
+`SO-26-00029` chính là đơn mà duyệt nó sẽ làm màn hình Phần V hết rỗng. Nên trước khi lấy nó làm
+cách chữa, phải hỏi người nhập: **mốc bắt đầu sau ngày giao là gõ nhầm, hay là cách khách hiểu
+trường này khác cách mình hiểu?** Hai ca trên hai đơn liên tiếp thì chưa gọi là quy luật, nhưng
+cũng không còn là một lần gõ nhầm lẻ — và nếu duyệt đơn đó để chữa màn hình rỗng thì ta vừa đem
+chính cái bất thường chưa hiểu vào làm dữ liệu mẫu.
+
+**Đây là câu của Phần V, không phải của Phần IV** — ghi ở đây vì phát hiện ra trong lúc đối
+chiếu, và vì nó **đổi thứ tự trình bày**: câu mở đầu với anh Thắng nên là *"màn hình Phần V bấm
+hôm nay không ra dòng nào"*, còn 4-vs-44 và đơn mua chưa về là hai câu sau. Kết luận về nguyên
+nhân để phiên giữ Phần V chốt — tôi chỉ đo, không sửa `nhu_cau_vat_tu.py`.
+
+**Bên Bảng 1+2 thì SỐ LƯỢNG không có tính chất này** — nhưng phải nói đúng phạm vi, vì bản đầu
+của mục này (commit `58c6ae1`) viết rộng hơn bằng chứng và phiên `cozy-dev-10` bắt được:
+
+> ~~*"trong nhánh tính Bảng 1/2, `getdate()` chỉ xuất hiện một chỗ"*~~ — **sai**. Grep đủ
+> (`getdate|nowdate|now_datetime|today\(`) trong `kiem_tra_ton_kho.py` ra **6 chỗ**, không phải 1.
+
+Chỗ đúng để chứng minh không phải là đếm `getdate()` trong cả file, mà là đọc `tinh_can_mua`
+(dòng ~900–911): nó dựng `can_mua` **chỉ** từ `flt(d["thieu"])` của `bang1` và `bang2`, không
+một nhánh nào chạm ngày. Cột `Thiếu` = *cần − tồn − ghim đơn khác*, cả ba đọc dữ liệu tĩnh
+(`Bin.actual_qty` và sổ ghim). **Nên: cùng dữ liệu thì cùng số lượng, bấm ngày nào cũng vậy.**
+
+Ba chỗ dùng ngày còn lại **không** thuộc nhánh đó, và hai trong ba là thứ có thật cần biết:
+
+| Dòng | Ở đâu | Có làm số lượng trượt không |
+|---|---|---|
+| 554 · 558 | `_ngay_hang_ve` | Không — chỉ tính số ngày **trễ hẹn đem hiển thị** |
+| 619 · 620 | `nguon_luc_nhan_su` → **Bảng 3** | **Có, nhưng là Bảng 3.** Bảng 3 chạy trên khoảng `hôm nay → ngày giao`, nên nó *đúng là* trượt theo ngày. Câu "nhánh tính Bảng 1/2" ở bản cũ vô tình gom cả nó vào |
+| 962 · 964 | `tao_yeu_cau_mua_hang` | Không đổi **số lượng**, nhưng đổi **ngày cần hàng** ghi vào phiếu: `delivery_date` đã qua thì thay bằng hôm nay. Trên site đang có `SO-26-00025` (giao 05/09) và `SO-26-00027` (giao 04/09) đều quá hạn — bấm nút hôm nay ra phiếu ghi hôm nay, bấm tuần sau ghi tuần sau. **Số ổn định, chứng từ thì không** |
+| 1099 | `ngay_bi_kep` | Không — cờ hiển thị |
+
+Nên câu đem đi hỏi anh Thắng phải thu về đúng chữ **số lượng**: *"**số lượng** của Bảng 1+2
+không phụ thuộc ngày bấm; Phần V thì có, vì ranh giới kỳ trượt."* Viết rộng hơn thế là hở.
+
+⚠ Ghi lại cả cái sai này chứ không lặng lẽ sửa, vì nó **đúng loại lỗi cả hai phiên đi săn cả
+tuần**: kết luận đúng, câu chữ rộng hơn bằng chứng. Nó không bị bắt bởi bất kỳ phép chạy nào —
+chỉ có người đọc kỹ bằng chứng mới bắt được.
+
+Nên khi trình bày cho anh Thắng: NVL 2 ra **4** ở một màn hình và **44** ở màn hình kia. Cả hai
+đúng theo định nghĩa của mình, nhưng người mua hàng mở hai màn hình cạnh nhau thì không có gì
+giải thích. Đây là câu hỏi nghiệp vụ, không phải lỗi code — và **đừng đưa ra một cột "lệch"
+trần**, phải kèm ba cột giải thích (đệm · phạm vi ghim · đơn mua chưa về).
