@@ -233,6 +233,49 @@ def inherit_from_production_plan(doc, method=None):
 			"Production Plan Item", doc.production_plan_item, "custom_note"
 		)
 
+	# ── Nhân sự của đội — vế thứ hai của docstring (GAP-5, mục IV.1/IV.4) ──────────
+	#
+	# Mockup đã duyệt `docs/mockups/bac-tho-lich-san-xuat.html` (mục *Phần không có giao
+	# diện mới*, GAP-5) chốt nguyên văn: *"tạo lệnh sản xuất từ kế hoạch: tự thừa hưởng
+	# thời gian VÀ tự thêm nhân sự của đội vào bảng Nhân Công Tham Gia"*.
+	#
+	# ⚠ Khối này trước nằm ở CUỐI `ensure_start_time`, nơi `work_team` **không tồn tại** —
+	#   biến chỉ được gán ở đây (dòng `_plan_row_for` phía trên) và không đi qua được ranh
+	#   giới hàm. Nên nó không phải "hiếm khi chạy" mà là **NameError mỗi lần chạm tới**,
+	#   chặn luôn việc tạo Lệnh sản xuất.
+	#
+	#   Từ bao giờ: đã sai **ngay tại `8299675` (08/08)** — commit đưa khối này vào. Kiểm
+	#   `git show 8299675:…` thấy khối nằm trong `ensure_start_time` còn `work_team` gán ở
+	#   `inherit_from_production_plan`, y như trước lúc sửa. Commit trước đó (`ca52b17`,
+	#   08/07) chưa có `work_team` nào cả.
+	#   ⚠ **Không kết luận "chưa từng chạy ngày nào".** `TC-HAPPY-05` ghi Pass ngày **03/08**
+	#     (`MFG-WO-2026-00008`, đủ Anh A/B/C) — tức **5 ngày TRƯỚC** `8299675`, trên bản đang
+	#     nằm trên site mà chưa commit. Cây làm việc là bản chạy thật nên chuyện đó có thể
+	#     xảy ra. WO đó đã bị xoá trong đợt dọn 03/08 nên không kiểm lại được. Chỉ chắc
+	#     được: **hỏng từ `8299675` tới 07/09**, và ô Pass kia không nói gì về mã hiện tại.
+	#
+	#   Vì sao không ai vấp suốt thời gian đó: hai cửa thoát ở đầu `ensure_start_time` che
+	#   gần hết đường — WO tạo từ Kế Hoạch thì hàm này đã điền `custom_start_time` xong,
+	#   còn tạo tay thì trường `reqd = 1` buộc người dùng điền. Đường còn hở là WO chưa có
+	#   giờ mà Đơn Bán của nó cũng trống ô đó (đo 07/09: 9 đơn đã duyệt ở tình trạng này).
+	#   `Error Log` 0 bản ghi — chưa nổ lần nào, nhưng đường nổ có thật.
+	#
+	# 📌 Hệ quả: từ đây WO tạo từ Kế Hoạch **bắt đầu tự điền công nhân** — việc lâu nay
+	#    chưa từng xảy ra dù đã có trong mockup duyệt. Kéo theo `Employee Allocation` và
+	#    **số trên Bảng 3 sẽ đổi**. Tuấn duyệt hướng sửa 07/09.
+	if work_team and not doc.get("custom_work_order_employee"):
+		for member in _work_team_members(work_team):
+			doc.append(
+				"custom_work_order_employee",
+				{
+					"employee": member.name,
+					# Điền tay vì fetch_from đã chạy xong trước before_insert —
+					# xem _work_team_members.
+					"employee_level": member.employee_level,
+					"performance_factor_": member.performance_factor_,
+				},
+			)
+
 
 def ensure_start_time(doc, method=None):
 	"""Lệnh sản xuất KHÔNG được phép ra đời mà thiếu Thời Gian Bắt Đầu (lỗi Thắng báo 08/08).
@@ -270,19 +313,15 @@ def ensure_start_time(doc, method=None):
 		"planned_start_date"
 	) else now_datetime()
 
-	if not work_team or doc.get("custom_work_order_employee"):
-		return
-
-	for member in _work_team_members(work_team):
-		doc.append(
-			"custom_work_order_employee",
-			{
-				"employee": member.name,
-				# Điền tay vì fetch_from đã chạy xong trước before_insert — xem _work_team_members.
-				"employee_level": member.employee_level,
-				"performance_factor_": member.performance_factor_,
-			},
-		)
+	# ⚠ KHÔNG thêm nhân sự của đội ở đây. Khối đó từng nằm ngay dưới dòng này và dùng biến
+	#   `work_team` **không hề tồn tại trong hàm này** — nó chỉ được gán trong
+	#   `inherit_from_production_plan`. Mọi lần chạy tới đều `NameError`, chặn luôn việc tạo
+	#   Lệnh sản xuất. Đã chuyển về đúng hàm đó ngày 07/09 (xem chú thích ở cuối
+	#   `inherit_from_production_plan`).
+	#
+	#   Hàm này CHỈ lo một việc: bảo đảm `custom_start_time` không rỗng. Cần thừa hưởng thêm
+	#   thứ gì từ Kế Hoạch Sản Xuất thì đặt vào `inherit_from_production_plan` — nơi đã có
+	#   sẵn kết quả `_plan_row_for(doc)`.
 
 
 # ══════════════════════════════════════════════════════════════════════════════

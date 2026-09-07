@@ -225,3 +225,88 @@ Vòng test ngày 03/08 đã dọn sạch: huỷ + xoá 4 phiếu kho, 1 Lệnh s
 Tồn `NVL 1` về đúng 99, `Thành phẩm 1` bật lại *Có Lô*, Lịch làm việc về đúng 11 bản ghi gốc.
 
 **Người test lại nhớ làm tương tự** — đây là site dùng chung.
+
+---
+
+## 🔴 GAP-5 hỏng suốt — phát hiện và sửa 07/09/2026
+
+`TC-HAPPY-05` ở trên ghi **Pass** ngày 03/08. Ô đó **không nói gì về mã hiện tại** — đọc tiếp.
+
+### Lỗi
+
+Khối tự thêm nhân sự của đội vào Lệnh sản xuất nằm ở cuối `ensure_start_time`, nhưng biến
+`work_team` nó dùng **chỉ được gán trong `inherit_from_production_plan`** — một hàm khác. Biến
+không đi qua được ranh giới hàm.
+
+```
+awk quet than ensure_start_time  ->  0 phep gan work_team
+```
+
+Nên đó không phải "hiếm khi chạy" mà là **`NameError` mỗi lần chạm tới**, và vì hook đứng ở
+`before_insert` nên nó **chặn luôn việc tạo Lệnh sản xuất**.
+
+Chạy thật, hai ca, trước khi sửa:
+
+| Ca | Kết quả |
+|---|---|
+| WO không gắn Đơn Bán, chưa có *Thời Gian Bắt Đầu* | `NameError: name 'work_team' is not defined` |
+| WO gắn `SAL-ORD-2026-00001` (đơn đã duyệt, **trống** ô đó) | `NameError: name 'work_team' is not defined` |
+
+### Vì sao không ai vấp suốt một tháng
+
+Hai cửa thoát ở đầu `ensure_start_time` che gần hết đường: WO tạo từ Kế Hoạch thì
+`inherit_from_production_plan` đã điền `custom_start_time` xong nên thoát ở cửa đầu; tạo tay thì
+trường `reqd = 1` buộc người dùng điền. Đường còn hở là **WO chưa có giờ mà Đơn Bán của nó cũng
+trống ô đó** — đo 07/09: **9 đơn đã duyệt** đang ở tình trạng này. `Error Log`: **0 bản ghi**
+nhắc `work_team` hay `ensure_start_time` trên tổng 1.887. Đường nổ có thật, chưa nổ lần nào.
+
+### Hỏng từ bao giờ — và vì sao KHÔNG kết luận "chưa từng chạy"
+
+`git show 8299675:…` (08/08, commit đưa khối này vào) cho thấy khối **đã** nằm sai hàm ngay từ
+đó. Commit trước (`ca52b17`, 08/07) chưa có `work_team` nào.
+
+⚠ Nhưng `TC-HAPPY-05` ghi Pass ngày **03/08** — **5 ngày TRƯỚC** `8299675` — với
+`MFG-WO-2026-00008` "đủ Anh A/B/C". Cây làm việc là bản chạy thật, nên hoàn toàn có thể lúc đó
+trên site là một bản khác chưa commit. WO đó **đã bị xoá trong đợt dọn 03/08** (xem ghi chú cuối
+mục trên) nên không kiểm lại được. Chỉ khẳng định được: **hỏng từ `8299675` tới 07/09**.
+
+### Cách sửa (Tuấn duyệt 07/09)
+
+Chuyển khối về cuối `inherit_from_production_plan`, nơi `work_team` đang sống và đang bị bỏ
+không — đúng chỗ docstring hàm đó mô tả và đúng **GAP-5** trong mockup đã duyệt
+(`docs/mockups/bac-tho-lich-san-xuat.html`, mục *Phần không có giao diện mới*): *"tạo lệnh sản
+xuất từ kế hoạch: tự thừa hưởng thời gian **và tự thêm nhân sự của đội** vào bảng Nhân Công Tham
+Gia"*. `ensure_start_time` nay chỉ còn đúng một việc: bảo đảm `custom_start_time` không rỗng.
+
+### Chạy lại sau khi sửa — trên cây có **cả** bản vá này **và** commit `a676f85` (Phòng Ban, PM-TASK-00143)
+
+Tạo Lệnh sản xuất **thật** qua trọn chuỗi `before_insert` (5 hook, đúng thứ tự `hooks.py`), trong
+giao dịch rồi `rollback`:
+
+| Ca | Kết quả | P/F |
+|---|---|---|
+| Hai ca từng nổ ở trên | Không còn `NameError`; `custom_start_time` được điền, bảng nhân sự trống (đúng — không có Kế Hoạch) | Pass |
+| **GAP-5 chạy thật**: WO từ `MFG-PP-2026-00005` (đội *Đội 1*) | `LSX-26-00006` — **tự điền đủ 3 công nhân**, kèm Bậc Thợ và Nguồn Lực: Anh A `Bậc 7 / 100`, Anh B `Bậc 7 / 100`, Anh C `Bậc 6 / 90`. Không dòng nào trống — đúng phần bù `fetch_from` | Pass |
+| Tôn trọng dữ liệu có sẵn | WO đã có 1 dòng nhân sự → sau khi chạy vẫn **1 dòng**, không ghi đè | Pass |
+| Vòng xoá WO | `Employee Allocation` **39 → 39**, không để lại bản ghi mồ côi | Pass |
+| `TC-HAPPY-13` chạy lại | *Đã phân bổ* 0 → **202,5** · *Còn lại* 1.305 → **1.102,5** — không hồi quy | Pass |
+| Bất biến sổ ghim | `kiem_bat_bien()` **sạch** | Pass |
+| Dọn sạch | `rollback` xong: `Employee Allocation` **39**, `Work Order` **39** — đúng như trước | Pass |
+
+⚠ Hook `inherit_department` của `a676f85` chạy **ngay sau** `inherit_from_production_plan` trên
+cùng `before_insert`. Hai bên **không va nhau**: `custom_department = None` (đúng, chưa ai khai
+phòng ban) trong khi bảng nhân sự vẫn đủ 3 dòng.
+
+### 📌 Hệ quả phải báo anh Thắng
+
+Từ nay Lệnh sản xuất tạo từ Kế Hoạch **bắt đầu tự điền công nhân** — việc lâu nay không xảy ra.
+Kéo theo `Employee Allocation` được sinh, và **số trên Bảng 3 của Phần IV sẽ đổi**. Đây là hành
+vi đã có trong mockup duyệt từ đầu, không phải tính năng mới; nhưng người đang nhìn màn hình thì
+thấy số khác đi, nên phải nói trước.
+
+### Bài học
+
+Ô **Pass cũ không bảo chứng cho mã hiện tại** khi ngày chạy test trước ngày commit. Ở dự án này
+cây làm việc *là* bản đang chạy, nên test có thể chạy trên mã chưa commit — và mã được commit sau
+đó lại là một bản khác. Ghi ngày chạy vào từng ô test là chưa đủ; **ô nào đo hành vi mà mã đã đổi
+sau đó thì phải chạy lại**, đừng đọc ô Pass rồi yên tâm.
