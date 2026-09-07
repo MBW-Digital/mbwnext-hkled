@@ -386,7 +386,12 @@ doc_events = {
 	"Employee": {
 		# C1: `mandatory_depends_on` của Frappe CHỈ chạy phía client — lưu bằng script/API
 		# vẫn lọt. Phải chặn thêm ở server. Xem controllers/python_hook/employee.py.
-		"validate": "mbwnext_hkled.controllers.python_hook.employee.validate_employee_level",
+		# PM-TASK-00143: Phòng Ban của nhân sự bám theo Đội Sản Xuất (anh Thắng 07/09 10:55) —
+		# một sự thật khai hai nơi thì phải chọn một nơi làm gốc, đội là gốc.
+		"validate": [
+			"mbwnext_hkled.controllers.python_hook.employee.validate_employee_level",
+			"mbwnext_hkled.controllers.python_hook.employee_phong_ban.sync_department_from_team",
+		],
 	},
 }
 

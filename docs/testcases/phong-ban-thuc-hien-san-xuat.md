@@ -1,6 +1,6 @@
 # Ca test — Phòng Ban thực hiện sản xuất (PM-TASK-00143)
 
-> **Tổng kết 07/09 chiều:** **11 ca · 11 Pass · 4 cần người test** (đợt 1).
+> **Tổng kết 07/09 chiều:** **18 ca · 18 Pass · 4 cần người test** (đợt 1 + đợt 1b).
 > Con số đếm bằng máy từ chính bảng dưới, không gõ tay.
 > Đếm bằng `grep '^| TC-'` sẽ **thừa 4** vì bảng *Cần người test* cũng có dòng `| TC-`.
 
@@ -137,6 +137,52 @@ sách phòng thật. Chờ anh Thắng.
 - Hook `inherit_department` khai **trước** `ensure_start_time` có chủ đích: hàm kia đang lỗi ở
   nhánh cuối, chạy trước thì phần phòng ban không phụ thuộc số phận của nó.
 
+
+---
+
+## TC-NS — Phòng Ban của nhân sự bám theo Đội Sản Xuất (đợt 1b)
+
+🔒 **Anh Thắng 07/09 10:55:** *"khi chọn đội cho nhân sự thì phòng ban của đội đó được gán vào
+nhân sự đó luôn có được không, vì dễ có trường hợp nhân sự thuộc đội 1, đội 1 thuộc phòng kĩ
+thuật nhưng ở nhân sự mình lại gán nhầm sang phòng kcs"*
+
+Đây là **một sự thật khai hai nơi** — kiểu dữ liệu bao giờ cũng lệch. Chữa bằng cách chọn một nơi
+làm gốc rồi suy ra nơi kia. Anh Thắng chọn **Đội là gốc**.
+
+⚠ Hook này **cố ý GHI ĐÈ**, khác mọi hook thừa hưởng khác của app (vốn chỉ điền chỗ trống). Nếu
+chỉ điền chỗ trống thì **đúng cái sai anh Thắng mô tả sẽ không bao giờ được sửa** — người đã bị
+gán nhầm sang Phòng KCS sẽ ở lại đó vĩnh viễn vì ô không trống.
+
+| Mã | Tình huống | KQ mong đợi | KQ thực tế | Đạt |
+|---|---|---|---|---|
+| TC-NS-01 | Người gán nhầm **KCS**, đội thuộc **Kỹ thuật** | Kéo về đúng phòng của đội — chính ca anh Thắng nêu | `Phòng kỹ thuật - HKL` | ✅ Pass |
+| TC-NS-02 | Đang đúng sẵn | Giữ nguyên, không báo gì | Giữ nguyên | ✅ Pass |
+| TC-NS-03 | Người **chưa có** phòng ban | Điền theo đội | `Phòng kỹ thuật - HKL` | ✅ Pass |
+| TC-NS-04 | **Đội chưa khai** phòng ban | **Không** xoá phòng của người — trống là tệ hơn hiện trạng | Giữ `Phòng KCS - HKL` | ✅ Pass |
+| TC-NS-05 | Người **không thuộc đội nào** | Giữ nguyên phòng nhập tay | Giữ `Phòng KCS - HKL` | ✅ Pass |
+| TC-NS-06 | Hook nhận nhầm doctype khác | Bỏ qua, không nổ | Không nổ | ✅ Pass |
+| TC-NS-07 | **Đội đổi phòng** | Người của đội đổi theo | `Phòng KCS - HKL` | ✅ Pass |
+
+> Khi có thứ bị đổi thì hook **nói ra** bằng `msgprint`, kèm phòng cũ → phòng mới và lý do.
+> Đổi âm thầm ô phòng ban của một người đúng là loại *"số đổi mà không ai đụng gì"* mà cả dự án
+> này đang đi săn — người bấm Lưu phải thấy mình vừa gây ra gì.
+
+**Vì sao không dùng `fetch_from`:** nó chỉ điền khi ô đích còn trống (không sửa được bản ghi đã
+gán nhầm) và chỉ chạy phía client (lọt đường script/API). Hai chỗ đã bẫy app này rồi — xem C1 ở
+`python_hook/employee.py` và `set_sales_info` ở `work_order.py`.
+
+### 🔴 Chưa có hiệu lực cho tới khi khai Đội → Phòng Ban
+
+Đo 07/09 11:0x, **sau khi** anh Thắng nạp dữ liệu:
+
+| Thứ | Số đo | |
+|---|---|---|
+| `Department` | **16** — có `Phòng kỹ thuật - HKL` và `Phòng KCS - HKL` (tạo 10:50) | ✅ xong |
+| `Employee.department` | **4/4** đã gán | ✅ xong |
+| `Work Team.custom_department` | **0/2** — `Đội 1` và `Đội 2` đều trống | ❌ **còn thiếu** |
+
+Nên hôm nay hook chưa đổi một ai. Đã báo anh Thắng: cần khai ô *Phòng Ban* trên **hai bản ghi Đội
+Sản Xuất**, đó là ô cuối cùng còn thiếu.
 
 ---
 
