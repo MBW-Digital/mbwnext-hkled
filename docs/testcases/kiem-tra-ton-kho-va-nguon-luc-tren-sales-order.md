@@ -414,3 +414,73 @@ Nên khi trình bày cho anh Thắng: NVL 2 ra **4** ở một màn hình và **
 đúng theo định nghĩa của mình, nhưng người mua hàng mở hai màn hình cạnh nhau thì không có gì
 giải thích. Đây là câu hỏi nghiệp vụ, không phải lỗi code — và **đừng đưa ra một cột "lệch"
 trần**, phải kèm ba cột giải thích (đệm · phạm vi ghim · đơn mua chưa về).
+
+---
+
+## Anh Thắng hỏi `SO-26-00030` — 07/09 11:25. Không có lỗi, nhưng có một chỗ làm thinh
+
+> *"tại sao NVL 1 chỉ cần 9 nhỉ. anh thử ghim thì bảng ghim vật tư không thấy được ghim NVL nào"*
+
+Hai câu, hai chuyện khác nhau. Cả hai đều **đúng thiết kế**, nhưng câu thứ hai lộ ra một chỗ hệ
+thống im lặng.
+
+### 1. `NVL 1 = 9` đúng — và nó là bằng chứng bản vá 05/09 đang chạy
+
+Tính tay từ định mức, **không** đọc kết quả rồi giải thích ngược:
+
+```
+1 TP1  = 1 BTP1 + 1 BTP2
+1 BTP1 = 1 NVL1 + 2 NVL2
+1 BTP2 = 3 NVL3
+don can 10 TP1
+
+BTP1: kha dung 1  -> con phai lam 9  -> NVL1 = 9x1 = 9 · NVL2 = 9x2 = 18
+BTP2: kha dung 0  -> con phai lam 10 -> NVL3 = 10x3 = 30
+```
+
+Hệ thống hiện **9 · 18 · 30**. Khớp. Đúng chốt anh Thắng 05/09 09:20 — *Bảng 2 phải trừ bán
+thành phẩm đang có trong kho*. Nếu Bảng 2 **không** trừ thì `NVL 1` phải ra 10, không phải 9.
+
+📌 Cách tự kiểm nhanh cho người dùng: **`NVL 2` luôn phải gấp đôi `NVL 1`** (định mức 2:1).
+Lệch tỉ lệ đó mới là hỏng.
+
+### 2. Bảng ghim trống vì đơn đang **nháp** — đúng luật, nhưng trước nay không nói ra
+
+`SO-26-00030`: `docstatus = 0`, **ô Ghim đã tích**, 0 dòng cam kết. `api/ghim_vat_tu.py` xoá sạch
+bảng ở nhánh `docstatus == 0` — **bất biến #7**: bản amend không được kế thừa cam kết của bản cũ,
+vì bản cũ đã `docstatus = 2` nên đã nhả, bản mới phải giành lại từ đầu.
+
+Kiểm cả site, không ngoại lệ: mọi đơn **có** dòng ghim đều đã duyệt; mọi đơn nháp/huỷ đều **0 dòng**.
+
+**Nhưng `canh_bao` trả về rỗng.** Người dùng tích ô, bấm Lưu, **không có câu nào**, mở bảng ra
+thấy trống — nhìn y hệt hỏng. Mockup đã duyệt cũng chỉ hứa *"tích ô này thì số lượng chưa giao
+của đơn được giữ chỗ"*, không nói gì tới đơn nháp.
+
+Đây đúng loại **làm thinh rồi trình bày phần còn lại như thể đã đủ** — thứ cả Phần IV sinh ra để
+chặn, mà chính nó mắc.
+
+### Đã vá 07/09 chiều
+
+Thêm một dòng vào `canh_bao` ở nhánh `docstatus == 0`, **chỉ khi ô Ghim được tích**:
+
+> *Đơn chưa duyệt nên **chưa giữ chỗ được vật tư** — bảng cam kết để trống là đúng, không phải
+> lỗi. Duyệt đơn thì phần ghim mới có hiệu lực.*
+
+Đi qua đường `canh_bao` sẵn có → `msgprint(alert=True, indicator="orange")` trong
+`dong_bo_ghim_vat_tu`. Không dựng gì mới, không chặn lưu.
+
+| Ca | Kết quả | P/F |
+|---|---|---|
+| Đơn nháp, **có** tích Ghim (`SO-26-00030` thật) | hiện đúng câu trên, bảng vẫn 0 dòng | Pass |
+| Đơn nháp, **không** tích Ghim | `canh_bao` **rỗng** — vẫn im như cũ, không thêm ồn | Pass |
+| Đơn **đã duyệt** (`SO-26-00026`) | nhánh này không chạy; vẫn cấp phát **5 dòng**, không cảnh báo | Pass |
+| Bảng 2 của `SO-26-00030` | vẫn **9 · 18 · 30**, không đổi | Pass |
+| `kiem_bat_bien()` | sạch | Pass |
+
+⚠ **Không ồn ở đường Duyệt:** Frappe đặt `docstatus = 1` **trước** khi gọi `validate`, nên lúc
+bấm Duyệt nhánh nháp không chạy. Câu này chỉ nổ khi thật sự lưu nháp.
+
+### 3. Một chỗ nữa trên cùng đơn, cũng đúng
+
+Bảng 1 báo **thiếu 10 Thành phẩm 1** trong khi kho có **31** — vì cả 31 đang bị đơn khác giữ,
+khả dụng bằng 0. Không phải lỗi đếm.

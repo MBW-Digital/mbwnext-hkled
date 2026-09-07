@@ -199,7 +199,26 @@ def dong_bo_doc(doc, bo_qua_sua_tay=False):
 	# Đơn nháp chưa giữ chỗ của ai cả. Xoá sạch để bản amend không kế thừa cam kết của bản cũ —
 	# **bất biến #7**: bản cũ đã `docstatus = 2` nên đã nhả, bản mới phải giành lại từ đầu.
 	if doc.docstatus == 0:
+		co_dong_cu = len(doc.get(TRUONG_BANG) or [])
 		doc.set(TRUONG_BANG, [])
+		# 🔴 PHẢI NÓI RA. Người dùng tích *Ghim Tồn Khả Dụng* trên đơn nháp rồi bấm Lưu thì
+		# trước đây **không có câu nào**, mở bảng ra thấy trống — nhìn y hệt hỏng. Anh Thắng
+		# vấp đúng chỗ này ngày 07/09 trên `SO-26-00030` (*"anh thử ghim thì bảng ghim vật tư
+		# không thấy được ghim NVL nào"*), và mockup đã duyệt cũng chỉ hứa *"tích ô này thì số
+		# lượng chưa giao của đơn được giữ chỗ"*, không nói gì tới đơn nháp.
+		#
+		# Đây đúng loại "làm thinh rồi trình bày phần còn lại như thể đã đủ" mà cả Phần IV sinh
+		# ra để chặn — nên im ở đây là tự mâu thuẫn.
+		#
+		# ⚠ Không ồn ở đường duyệt: Frappe đặt `docstatus = 1` **trước** khi gọi `validate`, nên
+		#   lúc bấm Duyệt nhánh này không chạy. Chỉ nổ khi thật sự lưu nháp, và chỉ khi ô được
+		#   tích — đơn nháp không tích thì vẫn im như cũ.
+		if doc.get("custom_ghim_ton_kha_dung"):
+			canh_bao.append(
+				"Đơn chưa duyệt nên <b>chưa giữ chỗ được vật tư</b> — bảng cam kết để trống là "
+				"đúng, không phải lỗi. Duyệt đơn thì phần ghim mới có hiệu lực"
+				+ (", và bảng sẽ được tính lại từ đầu." if co_dong_cu else ".")
+			)
 		return 0, canh_bao
 
 	# Bỏ tích Ghim: KHÔNG xoá bảng (luật 2 mục 2 — bỏ tích không xoá số đã nhập), chỉ ngừng có
