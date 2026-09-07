@@ -312,10 +312,32 @@ PO rơi vào kỳ 2 còn nhu cầu ở kỳ 1 — hàng về sau khi cần thì 
 ròng* (PO bị trừ, vì ranh giới kỳ hôm đó ôm 07/09 vào cùng kỳ với nhu cầu); 07/09 cùng đơn
 cùng PO ra *72 / 72*. Dữ liệu không đổi, số đi mua hàng đổi.
 
-**Bảng 1+2 KHÔNG có tính chất này** — đã kiểm: trong nhánh tính Bảng 1/2, `getdate()` chỉ xuất
-hiện **một chỗ** (`kiem_tra_ton_kho.py:554`) và chỉ để tính số ngày **trễ hẹn đem hiển thị**;
-cột `Thiếu` dựng từ *cần − tồn − ghim đơn khác*, không chạm ngày nào. Bấm hôm nay hay tuần sau,
-cùng dữ liệu thì cùng số.
+**Bên Bảng 1+2 thì SỐ LƯỢNG không có tính chất này** — nhưng phải nói đúng phạm vi, vì bản đầu
+của mục này (commit `58c6ae1`) viết rộng hơn bằng chứng và phiên `cozy-dev-10` bắt được:
+
+> ~~*"trong nhánh tính Bảng 1/2, `getdate()` chỉ xuất hiện một chỗ"*~~ — **sai**. Grep đủ
+> (`getdate|nowdate|now_datetime|today\(`) trong `kiem_tra_ton_kho.py` ra **6 chỗ**, không phải 1.
+
+Chỗ đúng để chứng minh không phải là đếm `getdate()` trong cả file, mà là đọc `tinh_can_mua`
+(dòng ~900–911): nó dựng `can_mua` **chỉ** từ `flt(d["thieu"])` của `bang1` và `bang2`, không
+một nhánh nào chạm ngày. Cột `Thiếu` = *cần − tồn − ghim đơn khác*, cả ba đọc dữ liệu tĩnh
+(`Bin.actual_qty` và sổ ghim). **Nên: cùng dữ liệu thì cùng số lượng, bấm ngày nào cũng vậy.**
+
+Ba chỗ dùng ngày còn lại **không** thuộc nhánh đó, và hai trong ba là thứ có thật cần biết:
+
+| Dòng | Ở đâu | Có làm số lượng trượt không |
+|---|---|---|
+| 554 · 558 | `_ngay_hang_ve` | Không — chỉ tính số ngày **trễ hẹn đem hiển thị** |
+| 619 · 620 | `nguon_luc_nhan_su` → **Bảng 3** | **Có, nhưng là Bảng 3.** Bảng 3 chạy trên khoảng `hôm nay → ngày giao`, nên nó *đúng là* trượt theo ngày. Câu "nhánh tính Bảng 1/2" ở bản cũ vô tình gom cả nó vào |
+| 962 · 964 | `tao_yeu_cau_mua_hang` | Không đổi **số lượng**, nhưng đổi **ngày cần hàng** ghi vào phiếu: `delivery_date` đã qua thì thay bằng hôm nay. Trên site đang có `SO-26-00025` (giao 05/09) và `SO-26-00027` (giao 04/09) đều quá hạn — bấm nút hôm nay ra phiếu ghi hôm nay, bấm tuần sau ghi tuần sau. **Số ổn định, chứng từ thì không** |
+| 1099 | `ngay_bi_kep` | Không — cờ hiển thị |
+
+Nên câu đem đi hỏi anh Thắng phải thu về đúng chữ **số lượng**: *"**số lượng** của Bảng 1+2
+không phụ thuộc ngày bấm; Phần V thì có, vì ranh giới kỳ trượt."* Viết rộng hơn thế là hở.
+
+⚠ Ghi lại cả cái sai này chứ không lặng lẽ sửa, vì nó **đúng loại lỗi cả hai phiên đi săn cả
+tuần**: kết luận đúng, câu chữ rộng hơn bằng chứng. Nó không bị bắt bởi bất kỳ phép chạy nào —
+chỉ có người đọc kỹ bằng chứng mới bắt được.
 
 Nên khi trình bày cho anh Thắng: NVL 2 ra **4** ở một màn hình và **44** ở màn hình kia. Cả hai
 đúng theo định nghĩa của mình, nhưng người mua hàng mở hai màn hình cạnh nhau thì không có gì
