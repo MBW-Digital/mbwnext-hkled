@@ -310,3 +310,50 @@ thấy số khác đi, nên phải nói trước.
 cây làm việc *là* bản đang chạy, nên test có thể chạy trên mã chưa commit — và mã được commit sau
 đó lại là một bản khác. Ghi ngày chạy vào từng ô test là chưa đủ; **ô nào đo hành vi mà mã đã đổi
 sau đó thì phải chạy lại**, đừng đọc ô Pass rồi yên tâm.
+
+---
+
+## GAP-6 lọc Đội theo Phòng Ban — 07/09 chiều (PM-TASK-00143)
+
+Anh Thắng chốt **07/09 11:13** (nguyên văn, đã đọc lại trên PM-TASK-00143):
+
+> *"em bỏ phần đội sản xuất này đi nhé, trưởng phòng ban sẽ thêm thành viên bằng nút **Thêm đội
+> sản xuất** trước đó mình đã làm rồi, thì ở nút đó lúc chọn đội, em chỉ cho hiện những đội thuộc
+> phòng ban đó thôi"*
+
+Tức ô *Đội Sản Xuất* thêm thẳng vào Lệnh sản xuất (sáng 07/09) **bỏ đi**; việc phân đội quay về
+đúng nút GAP-6 này, chỉ thêm một bộ lọc.
+
+Đổi ở `controllers/js/work_order.js` — ô *Đội Sản Xuất* trong hộp thoại *Thêm Đội Sản Xuất* nay
+gọi truy vấn `work_order_phong_ban.doi_theo_phong_ban`, truyền `phong_ban = frm.doc.custom_department`.
+
+### ⚠ Vì sao không dùng một dòng `filters` — cái bẫy `NULL` với `IN`
+
+Cách hiển nhiên là `filters: [["custom_department", "in", [phong, ""]]]`. **Sai.** Cột đó ở bản
+ghi cũ là `NULL` chứ không phải chuỗi rỗng, mà trong SQL **`NULL` không khớp `IN`** bất kể danh
+sách có gì — kể cả khi trong danh sách có `NULL`. Đo 07/09 trước khi sửa: lọc kiểu đó khớp
+**0/2** đội, tức chỉ cần Lệnh sản xuất có Phòng Ban là ô Đội **rỗng trắng**. Dùng `ifnull` thì
+khớp **2/2**.
+
+⚠ Đây là **lần thứ ba cùng một cái bẫy trong ngày 07/09**. Lần đầu làm phép đếm *"đơn trống Thời
+Gian Bắt Đầu"* ra **0** trong khi thật ra là **9** (`filters={"custom_start_time": ["in", [None, ""]]}`).
+Hễ một cột có thể `NULL` mà đem so bằng `in` thì phải `ifnull` trước.
+
+⚠ Và **18 ca test phía server không bắt được** — chỉ bấm thật trên giao diện mới lộ, vì lỗi nằm ở
+chỗ ô Link không trả về gì, không phải ở dữ liệu.
+
+### Chạy lại — ba trạng thái
+
+Đo lúc 11:2x. ⚠ **Anh Thắng đã khai Phòng Ban cho cả hai đội** (khác thời điểm phiên `cozy-dev-10`
+đo, lúc đó còn `0/2`): `Đội 1` → *Phòng kỹ thuật - HKL*, `Đội 2` → *Phòng KCS - HKL*.
+
+| Ca | Lệnh sản xuất có Phòng Ban | Ô Đội hiện gì | P/F |
+|---|---|---|---|
+| Chưa khai phòng (`None`) | — | **cả 2 đội** — không gãy hành vi GAP-6 cũ | Pass |
+| Khai *Phòng kỹ thuật - HKL* | ✔ | **chỉ `Đội 1`** | Pass |
+| Khai *Phòng KCS - HKL* | ✔ | **chỉ `Đội 2`** | Pass |
+
+Ca 3 chạy trong giao dịch rồi `rollback`; kiểm sau khi chạy: `Đội 1` giữ nguyên phòng đã khai.
+
+**Còn cần người test:** bấm nút thật trên giao diện. Đây đúng loại lỗi mà lượt trước chỉ giao diện
+mới bắt được — đo bằng lệnh thấy đủ 2/2 không có nghĩa ô Link vẽ ra đúng.
