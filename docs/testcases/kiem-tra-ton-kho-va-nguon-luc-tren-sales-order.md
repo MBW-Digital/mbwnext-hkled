@@ -269,3 +269,55 @@ sẽ bị chặn nếu tồn chưa về kịp."* · xin `NVL 1` × 5 (còn 54) �
 **TC-PERM-02 đo lại:** tài khoản `test.mua.gioihan@hkled.test` thấy **14 Đơn Bán** qua
 `get_list`, nhưng đọc được **10 dòng bảng ghim** của `SO-26-00026`/`SO-26-00028` — hai đơn nằm
 ngoài quyền. Vẫn đúng hiện trạng đã ghi: hành vi lõi Frappe, và anh Thắng đã chốt 04/09 giữ nguyên.
+
+---
+
+## Đối chiếu chéo với Phần V — 07/09 sáng
+
+Phiên `cozy-dev-10` chạy vế Phần V, tôi chạy vế Bảng 1+2. Ghi lại vì đây là **lần đầu hai
+màn hình được so trên cùng một tập đơn**, và câu trả lời không hiển nhiên.
+
+Kỳ 31/08–06/09, 4 đơn đã duyệt rơi vào. Mốc so là `tinh_can_mua(SO)` chứ **không phải** dòng
+thô của Bảng 2 — dòng thô bỏ mất vế Bảng 1 (phần mua thẳng trên đơn).
+
+| Đơn | `tinh_can_mua()` |
+|---|---|
+| `SO-26-00026` (giao 17/09) | NVL 3 = 17 |
+| `SO-26-00028` (giao 10/09) | NVL 3 = 30 |
+| `SO-26-00025` (giao 05/09) | NVL 2 = 4 · NVL 3 = 15 |
+| `SO-26-00027` (giao 04/09) | — |
+| **Tổng** | **NVL 3 = 62 · NVL 2 = 4** |
+
+| Mã | Bảng 1+2 | Phần V | Lệch | Đệm đã khai |
+|---|---|---|---|---|
+| NVL 2 | 4 | 44 | **40** | **40** |
+| NVL 3 | 62 | 72 | **10** | **10** |
+
+**Toàn bộ chênh lệch = mức đệm `Item Default.custom_ton_kho_kha_dung_toi_thieu`, khớp đến
+từng đơn vị.** Bảng 2 không đọc cột đó (grep `toi_thieu` trong `kiem_tra_ton_kho.py` ra rỗng);
+Phần V đọc (`nhu_cau_vat_tu.py:134`). Chênh lệch do **phạm vi ghim** (Bảng 2 trừ
+`ghim_boi_don_khac` theo từng đơn, Phần V tính cả kỳ) **triệt tiêu** khi cộng đủ 4 đơn — đúng
+như phải thế, và đó là bằng chứng hai engine không lệch ở chỗ nào khác.
+
+### ⚠ Hai chỗ phải hỏi anh Thắng — không phải lỗi, là hai lần chốt khác nhau
+
+**a) Đơn mua chưa về.** `PO-26-00004` (NVL 3, 10 cái, hẹn 07/09) hiện trên Bảng 2 ở cột
+*Ngày hàng về · SL về* nhưng **không bị trừ** — đúng chốt 03/09 16:51 (*"cứ cho tạo dựa theo
+số lượng ở cột thiếu, không cần trừ các đơn đã đặt mua"*), vốn đã **đảo ngược** luật 28/08
+(PM-TASK-00140). Phần V thì **đem đi tính**. Lượt chạy 07/09 không phơi ra chênh lệch này vì
+PO rơi vào kỳ 2 còn nhu cầu ở kỳ 1 — hàng về sau khi cần thì không cứu được. Nhưng nếu PO về
+**kịp kỳ** thì hai màn hình sẽ lệch thêm đúng phần PO đó.
+
+**b) Con số của Phần V đổi theo NGÀY BẤM NÚT.** Phiên kia đo 05/09 ra NVL 3 = *72 gộp / 62
+ròng* (PO bị trừ, vì ranh giới kỳ hôm đó ôm 07/09 vào cùng kỳ với nhu cầu); 07/09 cùng đơn
+cùng PO ra *72 / 72*. Dữ liệu không đổi, số đi mua hàng đổi.
+
+**Bảng 1+2 KHÔNG có tính chất này** — đã kiểm: trong nhánh tính Bảng 1/2, `getdate()` chỉ xuất
+hiện **một chỗ** (`kiem_tra_ton_kho.py:554`) và chỉ để tính số ngày **trễ hẹn đem hiển thị**;
+cột `Thiếu` dựng từ *cần − tồn − ghim đơn khác*, không chạm ngày nào. Bấm hôm nay hay tuần sau,
+cùng dữ liệu thì cùng số.
+
+Nên khi trình bày cho anh Thắng: NVL 2 ra **4** ở một màn hình và **44** ở màn hình kia. Cả hai
+đúng theo định nghĩa của mình, nhưng người mua hàng mở hai màn hình cạnh nhau thì không có gì
+giải thích. Đây là câu hỏi nghiệp vụ, không phải lỗi code — và **đừng đưa ra một cột "lệch"
+trần**, phải kèm ba cột giải thích (đệm · phạm vi ghim · đơn mua chưa về).
