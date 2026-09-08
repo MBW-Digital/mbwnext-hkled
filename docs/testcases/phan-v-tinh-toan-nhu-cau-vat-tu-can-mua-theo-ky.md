@@ -120,8 +120,10 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 **Tổng: 31 ca · 30 Pass · 1 chưa chạy** (`TC-EDGE-06`).
 
 > Cập nhật 08/09: thêm nhóm `TC-YCM` (9 ca) sau chốt (B) của anh Thắng — xem cuối file.
-> Con số đếm bằng máy (`grep -c '| Pass |'`), **không** đếm bằng `grep '^| TC-'`: bảng
-> *Chưa chạy* cũng có dòng `| TC-` nên cách kia thừa 4.
+> Đếm bằng `grep -c '^| TC-.*| Pass |'` — **phải neo `^| TC-`**. Hai cách sai đã thử:
+> `grep '^| TC-'` thừa 4 vì bảng *Chưa chạy* cũng có dòng `| TC-`; còn `grep '| Pass |'`
+> thừa 1 vì **chính dòng ghi chú này** chứa chuỗi đó. Tài liệu tự làm hỏng phép đếm của
+> chính nó — đúng loại bẫy cả bộ này đang đi săn.
 
 ⚠ **Đừng đếm bằng `grep "^| TC-"`.** File này có **24** dòng bắt đầu bằng `| TC-`, nhưng 4 trong
 đó là **dòng nhắc** ở bảng *Chưa chạy* ngay trên, không phải ca test. Đếm máy móc ra 24 là **thừa
