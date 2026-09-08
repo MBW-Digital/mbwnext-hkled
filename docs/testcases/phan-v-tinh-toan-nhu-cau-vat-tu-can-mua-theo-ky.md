@@ -117,7 +117,11 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | TC-ISO-01 | Chưa kiểm trên site không cài app khách |
 | TC-UI-01 | Tab **Lập kế hoạch** (bước 4) **chưa làm** — chưa có gì để test |
 
-**Tổng: 22 ca · 21 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+**Tổng: 31 ca · 30 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+
+> Cập nhật 08/09: thêm nhóm `TC-YCM` (9 ca) sau chốt (B) của anh Thắng — xem cuối file.
+> Con số đếm bằng máy (`grep -c '| Pass |'`), **không** đếm bằng `grep '^| TC-'`: bảng
+> *Chưa chạy* cũng có dòng `| TC-` nên cách kia thừa 4.
 
 ⚠ **Đừng đếm bằng `grep "^| TC-"`.** File này có **24** dòng bắt đầu bằng `| TC-`, nhưng 4 trong
 đó là **dòng nhắc** ở bảng *Chưa chạy* ngay trên, không phải ca test. Đếm máy móc ra 24 là **thừa
@@ -152,15 +156,15 @@ bảo mua** (72 · 58 · 15). Không nói ra thì mỗi lần bấm là mua trù
 
 | Mã | Tình huống | KQ mong đợi | KQ thực tế | Đạt |
 |---|---|---|---|---|
-| TC-YCM-01 | Đọc phần **đã duyệt, chưa thành đơn mua** | Đúng ba mã, đúng số | `{NVL 3: 99, NVL 2: 70, NVL 1: 20}` | ✅ Pass |
-| TC-YCM-02 | Mã không có phiếu nào | Không sinh khoá rỗng | không có khoá | ✅ Pass |
-| TC-YCM-03 | Danh sách rỗng | `{}`, không truy vấn | `{}` | ✅ Pass |
-| TC-YCM-04 | Truyền `None` | `{}`, không nổ | `{}` | ✅ Pass |
-| TC-YCM-05 | Phiếu còn **nháp** không được cộng vào | Bỏ qua | site có 15 NVL 3 đang nháp; kết quả vẫn 99, không gồm | ✅ Pass |
-| TC-YCM-06 | Phần **đã thành đơn mua** không đếm lại | Trừ `ordered_qty` | có 30 đã đặt, không cộng lần hai | ✅ Pass |
-| TC-YCM-07 | Mọi dòng kết quả mang trường `ycm_dang_cho` | Có | có | ✅ Pass |
-| TC-YCM-08 | Đúng **một** câu cảnh báo, không lặp | 1 câu | 1 câu | ✅ Pass |
-| TC-YCM-09 | 🔒 **Số cần mua KHÔNG bị trừ** — đúng chốt (B) | Giữ nguyên 72 | 72, không thành −27 | ✅ Pass |
+| TC-YCM-01 | Đọc phần **đã duyệt, chưa thành đơn mua** | Đúng ba mã, đúng số | `{NVL 3: 99, NVL 2: 70, NVL 1: 20}` | Pass |
+| TC-YCM-02 | Mã không có phiếu nào | Không sinh khoá rỗng | không có khoá | Pass |
+| TC-YCM-03 | Danh sách rỗng | `{}`, không truy vấn | `{}` | Pass |
+| TC-YCM-04 | Truyền `None` | `{}`, không nổ | `{}` | Pass |
+| TC-YCM-05 | Phiếu còn **nháp** không được cộng vào | Bỏ qua | site có 15 NVL 3 đang nháp; kết quả vẫn 99, không gồm | Pass |
+| TC-YCM-06 | Phần **đã thành đơn mua** không đếm lại | Trừ `ordered_qty` | có 30 đã đặt, không cộng lần hai | Pass |
+| TC-YCM-07 | Mọi dòng kết quả mang trường `ycm_dang_cho` | Có | có | Pass |
+| TC-YCM-08 | Đúng **một** câu cảnh báo, không lặp | 1 câu | 1 câu | Pass |
+| TC-YCM-09 | 🔒 **Số cần mua KHÔNG bị trừ** — đúng chốt (B) | Giữ nguyên 72 | 72, không thành −27 | Pass |
 
 > Chạy bằng cách gọi thẳng hàm, **không lưu tài liệu nào**. Kiểm sau: `Material Request` **10 → 10**.
 
