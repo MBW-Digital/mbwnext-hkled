@@ -39,3 +39,5 @@ mbwnext_hkled.patches.them_cot_giu_cho_vao_luoi
 mbwnext_hkled.patches.them_ton_toi_thieu_vao_kho_mac_dinh
 mbwnext_hkled.patches.them_bang_ghim_vat_tu
 mbwnext_hkled.patches.doi_ten_cot_ghim_vat_tu
+# PM-FEAT-00045: hai tỷ lệ tính giá niêm yết khai trên từng mặt hàng.
+mbwnext_hkled.patches.them_ty_le_gia_niem_yet

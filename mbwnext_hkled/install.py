@@ -83,6 +83,8 @@ CAC_BUOC = (
 	# của chính patch đó để biết lý do (fixtures sẽ chụp cả quyền của app lõi).
 	"grant_production_read_on_employee",
 	# ⚠ THỨ TỰ DƯỚI ĐÂY GIỐNG HỆT `patches.txt` VÀ CÓ Ý NGHĨA — xem chú thích ở đó.
+	# PM-FEAT-00045: hai tỷ lệ trên Item + bản ghi Single với tỷ lệ mặc định.
+	"them_ty_le_gia_niem_yet",
 	"seed_item_attribute",
 	"import_danh_muc_vat_tu",
 	"add_item_replenishment_method",

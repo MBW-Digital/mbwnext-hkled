@@ -1,0 +1,49 @@
+/* Bảng giá niêm yết — PM-FEAT-00045.
+   Bám biến màu của Frappe (--text-muted, --border-color…) để tự đúng ở cả nền sáng lẫn nền tối,
+   thay vì gõ cứng mã màu rồi hỏng khi người dùng bật chế độ tối. */
+
+.bgny { padding: 0 15px 30px; }
+
+.bgny-chip-hang { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; }
+.bgny-chip {
+	font-size: 12px; padding: 3px 10px; border-radius: 20px;
+	background: var(--bg-light-gray); color: var(--text-muted);
+	border: 1px solid var(--border-color);
+}
+.bgny-chip b { color: var(--text-color); font-variant-numeric: tabular-nums; }
+.bgny-chip-lech { border-color: var(--yellow-300); background: var(--yellow-50); }
+.bgny-chip-lech b { color: var(--yellow-700); }
+
+.bgny-canh {
+	margin: 8px 0; padding: 8px 12px; font-size: 12.5px;
+	border-left: 3px solid var(--yellow-400); background: var(--yellow-50);
+	color: var(--text-color); border-radius: 0 6px 6px 0;
+}
+.bgny-canh-do { border-left-color: var(--red-400); background: var(--red-50); }
+
+.bgny-cuon { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; }
+.bgny-tb { width: 100%; border-collapse: collapse; font-size: 13px; }
+.bgny-tb th, .bgny-tb td {
+	padding: 7px 10px; border-bottom: 1px solid var(--border-color); text-align: left;
+	vertical-align: middle; white-space: nowrap;
+}
+.bgny-tb th {
+	background: var(--bg-light-gray); font-weight: 600; font-size: 12px;
+	color: var(--text-muted); position: sticky; top: 0; z-index: 1;
+}
+.bgny-tb td.num, .bgny-tb th.num {
+	text-align: right; font-variant-numeric: tabular-nums;
+	font-family: var(--font-stack-mono, monospace); font-size: 12px;
+}
+.bgny-tb tbody tr:hover { background: var(--bg-light-gray); }
+.bgny-tick { width: 34px; text-align: center !important; }
+
+/* Tên hàng là cột DUY NHẤT được phép dài — cho nó xuống dòng, các cột số thì giữ nguyên hàng
+   để so theo cột được. */
+.bgny-tb td.bgny-ten { white-space: normal; min-width: 260px; max-width: 460px; }
+
+.bgny-mo td:not(.bgny-tick) { opacity: .55; }
+.bgny-khong { color: var(--red-500); }
+.bgny-lech { color: var(--yellow-700); font-weight: 600; }
+
+.bgny-trong { padding: 28px 12px; color: var(--text-muted); text-align: center; }

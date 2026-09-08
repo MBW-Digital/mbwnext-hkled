@@ -1,0 +1,78 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-09-08 17:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "gioi_thieu",
+  "ty_le_hao_phi",
+  "column_break_1",
+  "ty_le_tinh_gia_niem_yet"
+ ],
+ "fields": [
+  {
+   "fieldname": "gioi_thieu",
+   "fieldtype": "HTML",
+   "options": "<p class=\"text-muted\">Hai tỷ lệ này áp cho <b>toàn hệ thống</b> khi tính giá niêm yết. Hai tỷ lệ còn lại — <b>Tỷ Lệ Chi Phí R&amp;D</b> và <b>Tỷ Lệ Lợi Nhuận</b> — khai trên <b>từng mặt hàng</b>.</p><p class=\"text-muted\">Giá niêm yết = làm tròn tới bội 5.000 gần nhất của <code>giá vốn × (100 + hao phí + R&amp;D + lợi nhuận) / 100 ÷ tỷ lệ tính giá niêm yết × 100</code>.</p>"
+  },
+  {
+   "default": "3",
+   "description": "Phần trăm cộng thêm vào giá vốn để bù hao hụt trong sản xuất.",
+   "fieldname": "ty_le_hao_phi",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Tỷ Lệ Hao Phí"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "description": "Giá vốn cộng lãi chiếm bao nhiêu phần trăm của giá niêm yết. Đây là số CHIA, không phải số nhân: để 30 nghĩa là giá niêm yết gấp khoảng 3,33 lần. Không được để 0.",
+   "fieldname": "ty_le_tinh_gia_niem_yet",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Tỷ Lệ Tính Giá Niêm Yết",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-09-08 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "MBWNext HKLed",
+ "name": "HKLed Pricing Setting",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Sales User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
