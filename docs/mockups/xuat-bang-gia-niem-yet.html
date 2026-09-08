@@ -1,0 +1,277 @@
+<meta charset="utf-8">
+<title>Mockup — Xuất bảng giá niêm yết (HKLED)</title>
+
+<style>
+	:root {
+		--ground: #f2f4f6; --surface: #ffffff; --sunken: #f7f9fa;
+		--ink: #1c2b36; --ink-soft: #5c6a75; --ink-faint: #8b97a1;
+		--line: #dfe4e8; --line-soft: #eaeef1;
+		--decided: #0f766e; --decided-bg: #ecfdf9;
+		--ask: #b45309; --ask-bg: #fdf6e7;
+		--danger: #b42318; --danger-bg: #fdf2f1;
+		--new: #1d4ed8; --new-bg: #eef3fe;
+		--btn: #202a33; --btn-ink: #ffffff;
+		--serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+		--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root:not([data-theme="light"]) {
+			--ground: #14181c; --surface: #1c2126; --sunken: #22282e;
+			--ink: #e4e8ec; --ink-soft: #a4aeb7; --ink-faint: #7b868f;
+			--line: #2f363d; --line-soft: #262c32;
+			--decided: #2dd4bf; --decided-bg: #14262a;
+			--ask: #f0b458; --ask-bg: #2a2317;
+			--danger: #f4a5a0; --danger-bg: #2a1a19;
+			--new: #93c5fd; --new-bg: #172538;
+			--btn: #e4e8ec; --btn-ink: #14181c;
+		}
+	}
+	:root[data-theme="dark"] {
+		--ground: #14181c; --surface: #1c2126; --sunken: #22282e;
+		--ink: #e4e8ec; --ink-soft: #a4aeb7; --ink-faint: #7b868f;
+		--line: #2f363d; --line-soft: #262c32;
+		--decided: #2dd4bf; --decided-bg: #14262a;
+		--ask: #f0b458; --ask-bg: #2a2317;
+		--danger: #f4a5a0; --danger-bg: #2a1a19;
+		--new: #93c5fd; --new-bg: #172538;
+		--btn: #e4e8ec; --btn-ink: #14181c;
+	}
+
+	body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.55; }
+	.wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 80px; }
+	h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; }
+	h2 { font-family: var(--serif); font-size: 21px; margin: 44px 0 4px; }
+	h3 { font-size: 14px; margin: 26px 0 8px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-soft); }
+	p { margin: 8px 0; }
+	.sub { color: var(--ink-soft); margin: 0 0 4px; }
+	code { font-family: var(--mono); font-size: .88em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
+
+	.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0; margin: 14px 0 0; overflow: hidden; }
+	.card-hd { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); background: var(--sunken); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+	.card-hd strong { font-size: 15px; }
+	.card-bd { padding: 16px; }
+
+	.tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: .03em; }
+	.t-decided { color: var(--decided); background: var(--decided-bg); }
+	.t-ask { color: var(--ask); background: var(--ask-bg); }
+	.t-new { color: var(--new); background: var(--new-bg); }
+	.t-danger { color: var(--danger); background: var(--danger-bg); }
+
+	table { width: 100%; border-collapse: collapse; font-size: 13px; }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; }
+	th { background: var(--sunken); font-weight: 600; font-size: 12px; color: var(--ink-soft); }
+	td.num, th.num { text-align: right; font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+	tr.bom td { background: var(--sunken); color: var(--ink-soft); font-size: 12px; }
+	tr.bom td:first-child { padding-left: 34px; }
+	.scroll { overflow-x: auto; }
+
+	.btn { display: inline-block; background: var(--btn); color: var(--btn-ink); border-radius: 6px; padding: 6px 13px; font-size: 12.5px; font-weight: 600; }
+	.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+	.field { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; background: var(--surface); font-size: 13px; }
+	.field b { font-family: var(--mono); }
+
+	.note { border-left: 3px solid var(--line); padding: 8px 0 8px 14px; margin: 12px 0; color: var(--ink-soft); }
+	.note.ask { border-color: var(--ask); background: var(--ask-bg); padding-right: 14px; border-radius: 0 6px 6px 0; color: var(--ink); }
+	.note.danger { border-color: var(--danger); background: var(--danger-bg); padding-right: 14px; border-radius: 0 6px 6px 0; color: var(--ink); }
+	.note.decided { border-color: var(--decided); background: var(--decided-bg); padding-right: 14px; border-radius: 0 6px 6px 0; color: var(--ink); }
+
+	.legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 18px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+	.muted { color: var(--ink-faint); }
+	.hr { height: 1px; background: var(--line); margin: 40px 0 0; border: 0; }
+	ol, ul { margin: 8px 0; padding-left: 22px; }
+	li { margin: 4px 0; }
+</style>
+
+<div class="wrap">
+
+<h1>Xuất bảng giá niêm yết</h1>
+<p class="sub">HKLED · <code>PM-FEAT-00045</code> · bản 1 · 08/09/2026</p>
+<p class="sub muted">Dựng theo file <em>Tính giá</em> khách gửi, trường <em>Ghi chú</em> của PM Feature,
+và các chốt của anh Thắng lúc 15:36 và 16:21 ngày 08/09.</p>
+
+<div class="legend">
+	<span><span class="tag t-decided">đã chốt</span> anh Thắng / khách đã trả lời</span>
+	<span><span class="tag t-new">đề xuất</span> tôi thêm, chờ anh duyệt</span>
+	<span><span class="tag t-ask">cần chốt</span> chưa có câu trả lời</span>
+</div>
+
+<hr class="hr">
+
+<h2>Màn hình 1 — Cài đặt tỷ lệ (HKLED)</h2>
+<p class="sub">Chốt 16:21: <em>“nên tạo 1 màn hình cài đặt riêng cho HKLED”</em> — không thêm trường vào
+màn hình cài đặt của app lõi dùng chung.</p>
+
+<div class="card">
+	<div class="card-hd"><strong>Cài Đặt Giá Niêm Yết</strong> <span class="tag t-decided">đã chốt</span></div>
+	<div class="card-bd">
+		<p><span class="field">Tỷ lệ hao phí <b>3 %</b></span>
+		&nbsp; <span class="field">Tỷ lệ tính giá niêm yết <b>30 %</b></span></p>
+		<p class="sub muted">Hai tỷ lệ này áp cho <strong>toàn hệ thống</strong>. Hai tỷ lệ còn lại
+		(<em>chi phí R&amp;D</em>, <em>lợi nhuận</em>) khai <strong>trên từng mặt hàng</strong>.</p>
+	</div>
+</div>
+
+<h2>Màn hình 2 — Bảng giá niêm yết</h2>
+
+<div class="card">
+	<div class="card-hd">
+		<strong>Bảng Giá Niêm Yết</strong>
+		<span class="field">Bộ lọc: <b>Nhóm mặt hàng · Mặt hàng cha</b></span>
+		<span style="margin-left:auto"></span>
+		<span class="btn ghost">Xuất Excel</span>
+		<span class="btn">Cập nhật giá niêm yết</span>
+	</div>
+	<div class="scroll">
+	<table>
+		<thead>
+			<tr>
+				<th style="width:26px"></th><th style="width:32px">STT</th>
+				<th>Mã mặt hàng</th><th>Tên mặt hàng</th>
+				<th class="num">Giá thành</th><th class="num">Hao phí</th>
+				<th class="num">R&amp;D</th><th class="num">Lợi nhuận</th>
+				<th class="num">Cộng</th><th class="num">Tỷ lệ NY</th>
+				<th class="num">Giá niêm yết</th>
+				<th class="num">Đang áp dụng</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>☑</td><td>1</td>
+				<td><code>DP01S200-6B3HN-AD</code></td>
+				<td>Đèn LED pha P01 SMD 200W | Trắng, Bridgelux 3030, HKLED Nhỏ | Nhôm đùn trắng, Dọc</td>
+				<td class="num">739.300</td><td class="num">3%</td><td class="num">5%</td><td class="num">10%</td>
+				<td class="num">872.374</td><td class="num">30%</td>
+				<td class="num"><strong>2.910.000</strong></td>
+				<td class="num muted">2.850.000</td>
+			</tr>
+			<tr class="bom"><td></td><td></td><td colspan="2">Thành phần định mức — Bộ vỏ (VDP01-…)</td>
+				<td class="num">80.000</td><td colspan="7" class="muted">× 1</td></tr>
+			<tr class="bom"><td></td><td></td><td colspan="2">Module (M30S050-6B3…)</td>
+				<td class="num">480.000</td><td colspan="7" class="muted">120.000 × 4</td></tr>
+			<tr class="bom"><td></td><td></td><td colspan="2">Ốc vít · Dây điện · Hộp carton · Nguồn</td>
+				<td class="num">167.000</td><td colspan="7" class="muted">gộp cho gọn mockup</td></tr>
+			<tr class="bom"><td></td><td></td><td colspan="2">Chi phí sản xuất</td>
+				<td class="num">12.300</td><td colspan="7" class="muted">820 × 15</td></tr>
+			<tr>
+				<td>☑</td><td>2</td>
+				<td><code>DP01S200-6B3DN-AD</code></td>
+				<td>Đèn LED pha P01 SMD 200W | Trắng, Bridgelux 3030, Done Nhỏ | Nhôm đùn trắng, Dọc</td>
+				<td class="num">749.300</td><td class="num">3%</td><td class="num">5%</td><td class="num">10%</td>
+				<td class="num">884.174</td><td class="num">30%</td>
+				<td class="num"><strong>2.945.000</strong></td>
+				<td class="num muted">2.945.000</td>
+			</tr>
+			<tr>
+				<td>☐</td><td>3</td>
+				<td><code>DP01S050-B3HN-B</code></td>
+				<td>Đèn LED pha P01 SMD 50W | Khung xám</td>
+				<td class="num" style="color:var(--danger)">— chưa có</td>
+				<td class="num">3%</td><td class="num">5%</td><td class="num">10%</td>
+				<td class="num">—</td><td class="num">30%</td>
+				<td class="num" style="color:var(--danger)">không tính được</td>
+				<td class="num muted">—</td>
+			</tr>
+		</tbody>
+	</table>
+	</div>
+</div>
+
+<div class="note decided">
+	<strong>Cột <em>Giá niêm yết</em> luôn tính lại theo dữ liệu hiện tại.</strong> Cột
+	<em>Đang áp dụng</em> là con số sales đang nhìn thấy lúc lập đơn. Hai cột lệch nhau nghĩa là
+	có thay đổi <strong>chưa được đẩy sang</strong> — bấm <em>Cập nhật giá niêm yết</em> mới đẩy.
+	<span class="tag t-new">đề xuất</span> Cột <em>Đang áp dụng</em> là em thêm: ghi chú của anh nói
+	“không được tự ý cập nhật”, nhưng nếu không hiện số đang áp dụng thì người dùng không có cách nào
+	biết cái gì đang lệch để mà chọn.
+</div>
+
+<div class="note danger">
+	<strong>Dòng 3 là ca thật, không phải ví dụ.</strong> Đo trên cổng 8012 ngày 08/09:
+	mặt hàng <em>Mua hàng</em> có 1.828 mã nhưng chỉ <strong>3 mã</strong> có giá mua gần nhất;
+	mặt hàng <em>Sản xuất</em> có 59.749 mã nhưng chỉ <strong>1 BOM</strong> có giá thành khác 0.
+	Tức hôm nay <strong>gần như mọi dòng sẽ trông như dòng 3</strong>.
+	<br><span class="tag t-ask">cần chốt</span> Dòng không tính được thì hiện <em>“không tính được”</em>
+	như trên, hay ẩn hẳn khỏi bảng? Em nghiêng về <strong>hiện</strong> — ẩn đi thì người dùng tưởng
+	mặt hàng không tồn tại, mà thực ra là thiếu giá vốn.
+</div>
+
+<h2>Màn hình 3 — File Excel xuất ra</h2>
+<p class="sub">Chốt 16:21: 3 cột, cột <em>Giá bán</em> để trống, và file có <strong>công thức sống</strong>.</p>
+
+<div class="card">
+	<div class="card-hd"><strong>bang-gia-niem-yet-2026-09-08.xlsx</strong> <span class="tag t-decided">đã chốt</span></div>
+	<div class="card-bd">
+		<p><span class="field">Tỷ lệ chiết khấu <b>68 %</b></span> <span class="muted">← người dùng tự điền, ô duy nhất phải gõ</span></p>
+		<table style="margin-top:10px">
+			<thead><tr><th>Mã mặt hàng</th><th class="num">Giá niêm yết</th><th class="num">Giá bán</th></tr></thead>
+			<tbody>
+				<tr><td><code>DP01S200-6B3HN-AD</code></td><td class="num">2.910.000</td><td class="num">931.200</td></tr>
+				<tr><td><code>DP01S200-6B3DN-AD</code></td><td class="num">2.945.000</td><td class="num">942.400</td></tr>
+			</tbody>
+		</table>
+		<p class="sub muted" style="margin-top:10px">Cột <em>Giá bán</em> xuất ra <strong>rỗng</strong>,
+		mang công thức <code>= Giá niêm yết × (1 − Tỷ lệ chiết khấu)</code>. Gõ 68% vào ô trên là cả cột
+		tự hiện số. Đổi sang 60% thì cả cột đổi theo — không phải xuất lại file.</p>
+	</div>
+</div>
+
+<hr class="hr">
+
+<h2>Công thức</h2>
+
+<div class="card"><div class="card-bd">
+<p style="font-family:var(--mono); font-size:13px; line-height:1.9; margin:0">
+cost&nbsp;=&nbsp;<span class="muted">Mua hàng ➜ giá đơn mua gần nhất &nbsp;·&nbsp; Sản xuất/Gia công ➜ giá thành BOM mặc định</span><br>
+Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
+<strong>Giá niêm yết&nbsp;=&nbsp;Làm tròn 5.000 của ( Cộng / tỷ lệ NY × 100 )</strong>
+</p>
+</div></div>
+
+<div class="note decided">
+	<strong>Đã kiểm chéo ba nguồn, cả ba khớp.</strong>
+	<br>① Số trong file <em>Tính giá</em>: <code>739.300 × 1,18 = 872.374 ➜ ÷30×100 = 2.907.913 ➜ 2.910.000</code> ✔
+	<br>② Ghi chú của anh Thắng: đúng công thức đó, ví dụ <code>50.000 ➜ 195.000</code> ✔
+	<br>③ Khách đính chính anh Thắng (ảnh 16:21): <em>“giá niêm yết 100k ⇒ trước khi chia là 30k ⇒ đổi tỷ lệ
+	thành 25% ⇒ 30.000/0,25 = 120.000”</em> — xác nhận <strong>đổi tỷ lệ thì tử số giữ nguyên</strong> ✔
+	<br>④ Khớp chéo với file báo giá: chiết khấu 68% ⇒ giá bán = 32,05% niêm yết, cùng cỡ tỷ lệ 30% ✔
+</div>
+
+<div class="note ask">
+	<span class="tag t-ask">cần chốt</span> <strong>Làm tròn tới bội 5.000 GẦN NHẤT, không phải làm tròn lên.</strong>
+	Số trong file khách buộc phải hiểu vậy: <code>2.947.247 ➜ 2.945.000</code> chứ không phải 2.950.000.
+	Ví dụ <em>“197.800 ➜ 200.000”</em> của anh cũng là gần nhất. Xin anh xác nhận một câu — chỗ này
+	lệch là lệch tiền.
+</div>
+
+<h2>Nút <em>Cập nhật giá niêm yết</em> ghi vào đâu</h2>
+
+<div class="note decided">
+	Chốt 16:21 — ghi vào <code>Item Price</code>, để lúc sales lập đơn thì cột
+	<strong>Đơn giá theo bảng giá</strong> trên dòng hàng hiện giá niêm yết hiện tại. Sales bán giá
+	khác thì sửa cột <strong>Đơn giá</strong> của dòng.
+	<br><span class="muted">Đã kiểm trên cổng 8012: <code>price_list_rate</code> là trường
+	<strong>chỉ đọc</strong>, chảy từ <code>Item Price</code>; <code>rate</code> thì sửa được. Cơ chế
+	sẵn có, không phải chế thêm.</span>
+</div>
+
+<div class="note ask">
+	<span class="tag t-ask">cần chốt</span> <strong>Ghi vào bảng giá nào?</strong> Trên cổng 8012 chỉ có
+	<code>Standard Selling</code> và cả 40 đơn bán đều dùng nó. Em đề xuất ghi thẳng vào
+	<code>Standard Selling</code> cho khớp luồng đang chạy. Nếu anh muốn một bảng giá riêng tên
+	<em>Giá niêm yết</em> thì phải đổi cả bảng giá mặc định của đơn bán — nói em biết trước.
+</div>
+
+<h2>Phạm vi đợt 1</h2>
+<ul>
+	<li><span class="tag t-decided">làm</span> Màn hình cài đặt tỷ lệ</li>
+	<li><span class="tag t-decided">làm</span> Bảng giá niêm yết + tính realtime</li>
+	<li><span class="tag t-decided">làm</span> Nút cập nhật sang <code>Item Price</code></li>
+	<li><span class="tag t-decided">làm</span> Xuất Excel 3 cột, có công thức sống</li>
+	<li><span class="muted">để sau</span> Hình ảnh · mô tả · cấu hình sản xuất · bảo hành · kho</li>
+</ul>
+
+<p class="sub muted" style="margin-top:34px">Bản 1 — chờ anh Thắng chốt 3 chỗ gắn thẻ
+<span class="tag t-ask">cần chốt</span> ở trên trước khi code.</p>
+
+</div>
