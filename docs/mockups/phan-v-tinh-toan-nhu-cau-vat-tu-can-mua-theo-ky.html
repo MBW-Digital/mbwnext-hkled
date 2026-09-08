@@ -592,7 +592,7 @@
 	ngoặc</b>, vì đó mới là số người mua hàng phải hành động.
 </p>
 
-<h2 id="c">C. Tab Lập kế hoạch <span class="gap">CHƯA LÀM — anh đã chốt luồng 08/09</span></h2>
+<h2 id="c">C. Tab Lập kế hoạch <span class="gap">đã chạy — dựng 08/09 theo đúng chốt của anh</span></h2>
 
 <p class="lede">
 	Gộp tổng các kỳ thành <b>một dòng mỗi vật tư</b>, người dùng sửa số, tích chọn, rồi bấm
@@ -700,7 +700,21 @@
 	<b>chưa trừ</b> phần đó."</i>
 </p>
 
-<h2 id="d">D. Gợi ý nhà cung cấp <span class="gap">CHƯA LÀM — làm cuối</span></h2>
+<div class="note ask">
+	<b>🔴 Một chỗ trong mục C2 ở trên em hứa mà code chưa giữ được — cần anh chốt.</b><br>
+	C2 viết <i>"đơn mua vừa tạo sẽ được lần chạy sau trừ đi"</i>. Thực tế: nút này tạo đơn ở trạng
+	thái <b>NHÁP</b>, mà phép trừ chỉ đếm đơn <b>đã duyệt</b>. Nên lập đơn xong, bấm Tính toán lại
+	thì số thiếu <b>vẫn y nguyên</b>.<br><br>
+	Em để nháp là cố ý: duyệt đơn là cam kết tiền thật với nhà cung cấp, mà đơn giá do hệ thống điền
+	từ bảng giá — mã nào chưa khai giá thì ra 0. Máy không nên chốt con số đó thay người mua.<br><br>
+	Hiện em che bằng ba lớp: <b>(1)</b> cảnh báo nêu rõ phần đang nằm trong đơn nháp (đo 08/09:
+	NVL 2 · 146, NVL 3 · 122); <b>(2)</b> dòng đã lập đơn bị khoá ngay trên lưới, ghi rõ đã vào đơn
+	nào; <b>(3)</b> hộp thoại báo thành công nói thẳng đơn còn nháp nên số chưa giảm.<br><br>
+	<b>Anh chọn giúp em:</b> để <b>nháp</b> như hiện tại (an toàn, nhưng người mua phải tự vào duyệt),
+	hay <b>tự duyệt</b> luôn (số trừ ngay, đổi lại hệ thống chốt giá thay người mua)?
+</div>
+
+<h2 id="d">D. Gợi ý nhà cung cấp <span class="gap">đã chạy — nằm trong hộp thoại C2</span></h2>
 
 <p class="lede">
 	Vì nhà cung cấp nay chọn <b>trong hộp thoại C2</b> chứ không phải từng dòng, ba gợi ý cũng

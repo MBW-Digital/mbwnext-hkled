@@ -2,8 +2,13 @@
 //
 // Đầu bài: docs/features/phan-v-tinh-toan-nhu-cau-vat-tu-can-mua-theo-ky.md
 //
-// Trang CHỈ ĐỌC. Không tạo BOM, không tạo đơn mua — tab Lập kế hoạch (bước 4) mới làm việc đó,
-// và phải qua một cú bấm rõ ràng. Kết quả chỉ đúng tại thời điểm bấm Tính toán, không chốt cứng.
+// HAI tab, và ranh giới giữa chúng là ranh giới GHI DỮ LIỆU:
+//   • tab Tính toán    — chỉ đọc, không tạo BOM, không tạo đơn mua, không ghi một bản ghi nào;
+//   • tab Lập kế hoạch — chỗ DUY NHẤT của cả Phần V ghi dữ liệu thật, và chỉ khi người dùng bấm
+//     Lập đơn hàng rồi xác nhận nhà cung cấp trong hộp thoại.
+//
+// Kết quả chỉ đúng tại thời điểm bấm Tính toán, không chốt cứng — nên lưới Lập kế hoạch luôn dựng
+// lại từ lần tính gần nhất, không giữ trạng thái qua các lần bấm.
 //
 // ⚠ Vì sao chạy NỀN chứ không gọi thẳng: chi phí tỉ lệ với số BIẾN THỂ khác nhau — đo 03/09 trên
 // cổng 8012 là ~0,15 s mỗi biến thể, tức 300 biến thể ≈ 44 giây. Vượt timeout gateway, mà kể cả
@@ -35,6 +40,11 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 	dung_khung() {
 		this.$nd = $(`
 			<div class="hkled-nc">
+				<div class="hkled-nc-tab">
+					<button type="button" class="t" data-tab="tinh">${__("Tính toán")}</button>
+					<button type="button" class="t" data-tab="ke">${__("Lập kế hoạch")}</button>
+				</div>
+
 				<div class="hkled-nc-loc">
 					<div class="hkled-nc-o"><label>${__("Kiểu tính")}</label><div class="o-kieu"></div></div>
 					<div class="hkled-nc-o k1"><label>${__("Loại kỳ")}</label><div class="o-loai-ky"></div></div>
@@ -54,12 +64,22 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 					<div class="chu"></div>
 				</div>
 
-				<div class="hkled-nc-tomtat" hidden></div>
-				<div class="hkled-nc-canhbao" hidden></div>
-				<div class="hkled-nc-khung"><div class="hkled-nc-bang"></div></div>
-				<div class="hkled-nc-phu-luc"></div>
+				<div class="pane pane-tinh">
+					<div class="hkled-nc-tomtat" hidden></div>
+					<div class="hkled-nc-canhbao" hidden></div>
+					<div class="hkled-nc-khung"><div class="hkled-nc-bang"></div></div>
+					<div class="hkled-nc-phu-luc"></div>
+				</div>
+
+				<div class="pane pane-ke" hidden>
+					<div class="hkled-nc-ke"></div>
+				</div>
 			</div>
 		`).appendTo(this.page.main);
+
+		this.$nd
+			.find(".hkled-nc-tab .t")
+			.on("click", (e) => this.doi_tab($(e.currentTarget).data("tab")));
 
 		this.o_kieu = this.o({
 			sel: ".o-kieu",
@@ -95,6 +115,7 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 
 		this.page.set_primary_action(__("Tính toán"), () => this.tinh(), "play");
 		this.doi_kieu();
+		this.doi_tab("tinh");
 	}
 
 	// Số lượng vật tư gần như luôn là số nguyên. `format_number` mặc định 3 chữ số thập phân nên
@@ -127,6 +148,28 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 			.contents()
 			.first()
 			.replaceWith(this.kieu === "1" ? __("Bắt đầu từ ngày") : __("Từ ngày"));
+	}
+
+	// Tab Lập kế hoạch KHOÁ cho tới khi có kết quả. Cho bấm vào một lưới rỗng thì người dùng
+	// đọc thành "không phải mua gì" — trong khi thật ra là chưa bấm Tính toán lần nào.
+	doi_tab(ten) {
+		if (ten === "ke" && !this.kq) {
+			frappe.show_alert({
+				message: __("Bấm Tính toán trước — lưới lập kế hoạch dựng từ kết quả lần tính gần nhất"),
+				indicator: "orange",
+			});
+			return;
+		}
+		this.tab = ten;
+		this.$nd.find(".hkled-nc-tab .t").each((i, el) => {
+			$(el).toggleClass("dang", $(el).data("tab") === ten);
+		});
+		this.$nd.find(".pane-tinh").attr("hidden", ten !== "tinh" ? true : null);
+		this.$nd.find(".pane-ke").attr("hidden", ten !== "ke" ? true : null);
+		// Bộ lọc thuộc về tab Tính toán. Để nó nằm trên lưới lập kế hoạch là mời người dùng đổi kỳ
+		// rồi tưởng lưới bên dưới đã đổi theo — nó không đổi cho tới khi bấm Tính toán lại.
+		this.$nd.find(".hkled-nc-loc").toggle(ten === "tinh");
+		if (this.page.btn_primary) this.page.btn_primary.toggle(ten === "tinh");
 	}
 
 	// ── Chạy ─────────────────────────────────────────────────────────────────
@@ -233,6 +276,8 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 
 	ve(kq) {
 		if (kq.loi) {
+			this.kq = null;
+			this.doi_tab("tinh");
 			this.$nd
 				.find(".hkled-nc-canhbao")
 				.removeAttr("hidden")
@@ -240,10 +285,12 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 			return;
 		}
 
+		this.kq = kq;
 		this.ve_tomtat(kq);
 		this.ve_canhbao(kq.canh_bao || []);
 		this.ve_bang(kq);
 		this.ve_phu_luc(kq);
+		this.ve_ke_hoach(kq);
 	}
 
 	ve_tomtat(kq) {
@@ -379,6 +426,298 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 				)}</div>`
 			);
 		}
+	}
+
+	// ── Tab Lập kế hoạch (bước 4) ────────────────────────────────────────────
+	//
+	// 🔒 Anh Thắng chốt 08/09 08:49: tích mặt hàng ➜ bấm Lập đơn hàng ➜ **rồi mới** chọn nhà cung
+	// cấp; một đơn mua nhiều dòng hàng. Bản mockup trước để cột Nhà cung cấp ngay trong lưới —
+	// sai luồng, đã bỏ. Đừng đưa lại vào đây.
+
+	ve_ke_hoach(kq) {
+		const ds = kq.lap_ke_hoach || [];
+		const $k = this.$nd.find(".hkled-nc-ke").empty();
+		// Lưới dựng lại từ đầu mỗi lần tính, nên trạng thái tích/sửa số cũng phải mới hoàn toàn.
+		// Giữ lại số cũ trên bộ dữ liệu mới là để người dùng đặt mua theo một con số đã hết hạn.
+		this.dong_ke = ds.map((d) => Object.assign({ chon: false, dat: flt(d.so_luong_dat) }, d));
+		this.da_lap = {};
+
+		if (!ds.length) {
+			$k.html(
+				`<div class="hkled-nc-trong">${
+					kq.co_nhu_cau === false
+						? __("Kỳ đã chọn không có đơn hàng nào — chưa có gì để lập kế hoạch mua.")
+						: __("Mọi vật tư đều đủ trong khoảng đã chọn — không phải lập đơn mua nào.")
+				}</div>`
+			);
+			return;
+		}
+
+		let dau = `<tr>
+			<th class="o-tich"><input type="checkbox" class="tich-tat-ca"></th>
+			<th>${__("Mã")}</th><th>${__("Tên")}</th><th>${__("ĐVT")}</th>
+			<th class="s">${__("Tồn khả dụng")}</th><th class="s">${__("Tối thiểu")}</th>
+			<th class="s">${__("Thiếu hụt")}</th>
+			<th class="s">${__("Số lượng đặt")}</th>
+			<th class="s">${__("Ngày cần hàng")}</th>
+		</tr>`;
+
+		let than = "";
+		this.dong_ke.forEach((d, i) => {
+			than += `<tr data-i="${i}">`;
+			than += `<td class="o-tich"><input type="checkbox" class="tich"></td>`;
+			than += `<td class="ma">${frappe.utils.escape_html(d.ma)}</td>`;
+			than += `<td>${frappe.utils.escape_html(d.ten || "")}</td>`;
+			than += `<td>${frappe.utils.escape_html(d.don_vi || "")}</td>`;
+			than += `<td class="s${d.ton_kha_dung < 0 ? " am" : ""}">${this.so(d.ton_kha_dung)}</td>`;
+			than += d.da_khai_toi_thieu
+				? `<td class="s">${this.so(d.ton_toi_thieu)}</td>`
+				: `<td class="s chua-khai" title="${__("Chưa khai Tồn Kho Khả Dụng Tối Thiểu cho công ty này")}">${__("chưa khai")}</td>`;
+			than += `<td class="s">${this.so(d.thieu_hut)}</td>`;
+			// Ô SỬA ĐƯỢC — mặc định bằng thiếu hụt. Người dùng sửa để mua tròn thùng, mua theo lô
+			// tối thiểu, hoặc cho về 0 để bỏ dòng. Lúc lập đơn dùng số này, không dùng thiếu hụt.
+			than += `<td class="s"><input type="number" class="o-dat" min="0" step="any" value="${flt(d.so_luong_dat)}"></td>`;
+			// Chỉ đọc — chốt của anh 08/09. Đây là ngày ĐẦU của kỳ bị thiếu, không phải đầu khoảng
+			// đang xem; hai vật tư thiếu ở hai kỳ khác nhau thì ra hai ngày khác nhau.
+			//
+			// ⚠ Ngày này RẤT HAY nằm ở quá khứ — kỳ bị thiếu là kỳ đã trôi qua. Phải nói ra tại
+			// đây chứ không đợi tới lúc bấm: ERPNext không nhận ngày trước ngày lập đơn, nên đơn
+			// sẽ ghi ngày hôm nay, và người mua cần biết phần hàng này đã trễ.
+			const tre = this.qua_han(d.ngay_can_hang);
+			than += `<td class="s ngay${tre ? " qua-han" : ""}"${
+				tre ? ` title="${__("Đã quá hạn — đơn sẽ ghi ngày hôm nay")}"` : ""
+			}>${frappe.datetime.str_to_user(d.ngay_can_hang) || "—"}${
+				tre ? ` <span class="nhan-tre">${__("đã trễ")}</span>` : ""
+			}</td>`;
+			than += "</tr>";
+
+			// Hai chỗ hở đã biết, đặt NGAY DƯỚI dòng hàng chứ không gom vào một khối riêng: gom lại
+			// thì người bấm không nối được con số cảnh báo với dòng mình đang định mua.
+			const nhac = [];
+			if (flt(d.ycm_dang_cho) > 0) {
+				nhac.push(
+					__("còn {0} đang chờ trong Yêu Cầu Mặt Hàng đã duyệt chưa thành đơn mua", [
+						this.so(d.ycm_dang_cho),
+					])
+				);
+			}
+			if (flt(d.po_nhap) > 0) {
+				nhac.push(__("còn {0} nằm trong đơn mua CÒN NHÁP", [this.so(d.po_nhap)]));
+			}
+			if (nhac.length) {
+				than += `<tr class="nhac" data-nhac="${i}"><td></td><td colspan="8">⚠ ${
+					frappe.utils.escape_html(d.ma)
+				} — ${nhac.join(" · ")}. ${__("Số bên trên CHƯA trừ phần đó.")}</td></tr>`;
+			}
+		});
+
+		$k.html(`
+			<div class="hkled-nc-khung"><table class="hkled-nc-t ke">
+				<thead>${dau}</thead><tbody>${than}</tbody>
+			</table></div>
+			<div class="hkled-nc-chan">
+				<div class="dem"></div>
+				<button class="btn btn-primary btn-sm nut-lap">${__("Lập đơn hàng")}</button>
+			</div>
+		`);
+
+		$k.find(".tich-tat-ca").on("change", (e) => {
+			const bat = e.currentTarget.checked;
+			// Dòng đã lập đơn trong phiên này thì không tích lại — xem chú thích ở `tao_don`.
+			this.dong_ke.forEach((d, i) => (d.chon = bat && !this.da_lap[i] && flt(d.dat) > 0));
+			$k.find("tbody tr[data-i]").each((i, tr) => {
+				$(tr).find(".tich").prop("checked", this.dong_ke[$(tr).data("i")].chon);
+			});
+			this.dem_chon();
+		});
+		$k.find(".tich").on("change", (e) => {
+			const $tr = $(e.currentTarget).closest("tr");
+			this.dong_ke[$tr.data("i")].chon = e.currentTarget.checked;
+			this.dem_chon();
+		});
+		$k.find(".o-dat").on("input", (e) => {
+			const $tr = $(e.currentTarget).closest("tr");
+			const d = this.dong_ke[$tr.data("i")];
+			d.dat = flt(e.currentTarget.value);
+			// Cho về 0 là bỏ dòng — bỏ tích luôn, thay vì để một dòng tích sẵn với số 0 đi vào hộp
+			// thoại rồi bị chặn ở server. Chặn được thì tốt, nhưng bắt người dùng bấm hai lần mới
+			// biết mình sai thì không.
+			if (flt(d.dat) <= 0 && d.chon) {
+				d.chon = false;
+				$tr.find(".tich").prop("checked", false);
+			}
+			this.dem_chon();
+		});
+		$k.find(".nut-lap").on("click", () => this.hop_thoai_lap_don());
+		this.dem_chon();
+	}
+
+	// Một chỗ duy nhất trả lời "ngày này đã trôi qua chưa" — lưới và hộp thoại phải cùng câu trả
+	// lời, nếu không thì lưới bảo trễ mà hộp thoại bảo không, và không ai biết cái nào đúng.
+	qua_han(ngay) {
+		return !!ngay && ngay < frappe.datetime.get_today();
+	}
+
+	dem_chon() {
+		const chon = (this.dong_ke || []).filter((d) => d.chon && flt(d.dat) > 0);
+		const $k = this.$nd.find(".hkled-nc-ke");
+		const tong = chon.reduce((a, d) => a + flt(d.dat), 0);
+		$k.find(".dem").html(
+			chon.length
+				? __("{0} dòng đã chọn · tổng {1}", [chon.length, this.so(tong)])
+				: `<span class="mo">${__("Chưa chọn dòng nào")}</span>`
+		);
+		$k.find(".nut-lap").prop("disabled", !chon.length);
+		return chon;
+	}
+
+	// ── Hộp thoại: giờ mới hỏi nhà cung cấp ──────────────────────────────────
+
+	hop_thoai_lap_don() {
+		const chon = this.dem_chon();
+		if (!chon.length) return;
+
+		let bang = `<table class="hkled-nc-t nho"><thead><tr>
+			<th>${__("Mã")}</th><th class="s">${__("Số lượng đặt")}</th><th class="s">${__("Ngày cần hàng")}</th>
+		</tr></thead><tbody>`;
+		chon.forEach((d) => {
+			bang += `<tr><td class="ma">${frappe.utils.escape_html(d.ma)}</td>`;
+			bang += `<td class="s">${this.so(d.dat)}</td>`;
+			bang += `<td class="s${this.qua_han(d.ngay_can_hang) ? " qua-han" : ""}">${
+				frappe.datetime.str_to_user(d.ngay_can_hang) || "—"
+			}${this.qua_han(d.ngay_can_hang) ? ` <span class="nhan-tre">${__("đã trễ")}</span>` : ""}</td></tr>`;
+		});
+		bang += "</tbody></table>";
+
+		// 🔴 Chốt (B) của anh Thắng 08/09 09:12 — Phần V KHÔNG trừ Yêu Cầu Mặt Hàng đang chờ, nên
+		// màn hình phải nói ra, kèm SỐ ĐO của đúng rổ hàng đang định mua. Đặt ngay trong hộp thoại
+		// vì đây là giây cuối cùng trước khi tiền đi ra.
+		const cho = chon.filter((d) => flt(d.ycm_dang_cho) > 0 || flt(d.po_nhap) > 0);
+		const tre = chon.filter((d) => this.qua_han(d.ngay_can_hang));
+		let canh = "";
+		if (tre.length) {
+			canh += `<div class="hkled-nc-cb-hop">⚠ ${__(
+				"{0} dòng có Ngày cần hàng đã ở quá khứ. Đơn mua sẽ ghi ngày hôm nay — phần hàng này đã TRỄ so với kế hoạch.",
+				[tre.length]
+			)}</div>`;
+		}
+		if (cho.length) {
+			canh = `<div class="hkled-nc-cb-hop">${cho
+				.map((d) => {
+					const v = [];
+					if (flt(d.ycm_dang_cho) > 0)
+						v.push(__("{0} chờ trong Yêu Cầu Mặt Hàng", [this.so(d.ycm_dang_cho)]));
+					if (flt(d.po_nhap) > 0)
+						v.push(__("{0} trong đơn mua còn nháp", [this.so(d.po_nhap)]));
+					return `<div>⚠ ${frappe.utils.escape_html(d.ma)} — ${v.join(" · ")}</div>`;
+				})
+				.join("")}<div class="ghi">${__(
+				"Số lượng đặt bên dưới CHƯA trừ những phần đó. Kiểm lại trước khi tạo đơn, kẻo mua trùng."
+			)}</div></div>`;
+		}
+
+		const hop = new frappe.ui.Dialog({
+			title: __("Lập đơn mua hàng"),
+			fields: [
+				{
+					fieldname: "nha_cung_cap",
+					label: __("Nhà cung cấp"),
+					fieldtype: "Link",
+					options: "Supplier",
+					reqd: 1,
+				},
+				{ fieldname: "goi_y", fieldtype: "HTML" },
+				{ fieldname: "ds", fieldtype: "HTML", options: canh + bang },
+			],
+			primary_action_label: __("Tạo đơn mua"),
+			primary_action: (v) => this.tao_don(hop, v.nha_cung_cap, chon),
+		});
+		hop.show();
+
+		// Gợi ý nhà cung cấp (mục 5) — nạp sau khi hộp thoại đã hiện, để việc chọn tay không phải
+		// chờ một truy vấn thống kê. Gợi ý hỏng thì hộp thoại vẫn dùng được.
+		const $gy = hop.fields_dict.goi_y.$wrapper.html(
+			`<div class="hkled-nc-goiy dang-cho">${__("Đang xem lịch sử mua…")}</div>`
+		);
+		frappe
+			.xcall("mbwnext_hkled.api.nhu_cau_vat_tu.goi_y_nha_cung_cap", {
+				ma_hang: chon.map((d) => d.ma),
+			})
+			.then((ds) => this.ve_goi_y($gy, ds, hop))
+			.catch(() => $gy.html(`<div class="hkled-nc-goiy">${__("Chưa xem được lịch sử mua")}</div>`));
+	}
+
+	// Ba tiêu chí có thể trỏ về ba nhà cung cấp khác nhau — hiện cả ba, KHÔNG tự ép chọn và không
+	// chấm điểm tổng hợp. Người mua biết mình đang ưu tiên giá hay tiến độ; máy thì không.
+	ve_goi_y($gy, ds, hop) {
+		if (!(ds || []).length) return $gy.empty();
+		let h = `<div class="hkled-nc-goiy"><div class="dau">${__("Gợi ý từ lịch sử mua")}</div>
+			<table class="hkled-nc-t nho"><thead><tr>
+			<th>${__("Tiêu chí")}</th><th>${__("Nhà cung cấp")}</th><th>${__("Căn cứ")}</th>
+			</tr></thead><tbody>`;
+		ds.forEach((t) => {
+			h += `<tr class="${t.du_lieu ? "" : "chua"}"><td>${frappe.utils.escape_html(t.tieu_chi)}</td>`;
+			h += t.du_lieu
+				? `<td><a class="chon-ncc" data-ncc="${frappe.utils.escape_html(
+						t.nha_cung_cap
+				  )}" href="#">${frappe.utils.escape_html(t.nha_cung_cap)}</a></td>`
+				: `<td class="mo">${__("chưa đủ dữ liệu")}</td>`;
+			h += `<td class="ghi">${frappe.utils.escape_html(t.can_cu || "")}</td></tr>`;
+		});
+		$gy.html(h + "</tbody></table></div>");
+		$gy.find(".chon-ncc").on("click", (e) => {
+			e.preventDefault();
+			hop.set_value("nha_cung_cap", $(e.currentTarget).data("ncc"));
+		});
+	}
+
+	tao_don(hop, ncc, chon) {
+		hop.disable_primary_action();
+		frappe
+			.xcall("mbwnext_hkled.api.nhu_cau_vat_tu.tao_don_mua", {
+				nha_cung_cap: ncc,
+				dong: chon.map((d) => ({
+					ma: d.ma,
+					so_luong: flt(d.dat),
+					ngay_can_hang: d.ngay_can_hang,
+				})),
+				company: this.kq && this.kq.company,
+			})
+			.then((r) => {
+				hop.hide();
+				// Đánh dấu ngay trên lưới các dòng vừa đi vào đơn, và BỎ TÍCH chúng.
+				//
+				// ⚠ Đây không phải chuyện thẩm mỹ. Đơn tạo ra ở trạng thái NHÁP, mà phép tính chỉ
+				// trừ đơn ĐÃ DUYỆT — nên bấm Tính toán lại thì số thiếu vẫn y nguyên. Không đánh
+				// dấu ở đây thì người dùng nhìn lưới không đổi và lập tiếp một đơn nữa cho cùng
+				// phần hàng, bằng tiền thật.
+				chon.forEach((d) => {
+					const i = this.dong_ke.indexOf(d);
+					if (i < 0) return;
+					d.chon = false;
+					this.da_lap[i] = r.name;
+					const $tr = this.$nd.find(`.hkled-nc-ke tbody tr[data-i="${i}"]`);
+					$tr.addClass("da-lap").find(".tich").prop("checked", false).prop("disabled", true);
+					$tr.find(".o-dat").prop("disabled", true);
+					$tr.find("td.ma").append(
+						` <span class="da-lap-nhan">${__("đã vào")} ${frappe.utils.escape_html(r.name)}</span>`
+					);
+				});
+				this.dem_chon();
+
+				const ghi = (r.canh_bao || [])
+					.map((c) => `<div>${frappe.utils.escape_html(c)}</div>`)
+					.join("");
+				frappe.msgprint({
+					title: __("Đã tạo đơn mua nháp"),
+					indicator: "orange",
+					message: `<div><a href="/app/purchase-order/${encodeURIComponent(
+						r.name
+					)}" target="_blank"><b>${frappe.utils.escape_html(r.name)}</b></a></div>
+						<div class="hkled-nc-cb-hop">${ghi}</div>`,
+				});
+			})
+			.finally(() => hop.enable_primary_action());
 	}
 
 	ve_phu_luc(kq) {
