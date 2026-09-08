@@ -11,6 +11,7 @@
 		--danger: #b42318; --danger-bg: #fdf2f1;
 		--new: #1d4ed8; --new-bg: #eef3fe;
 		--btn: #202a33; --btn-ink: #ffffff;
+		--flash: #fff6d8;
 		--serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
 		--sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 		--mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -25,6 +26,7 @@
 			--danger: #f4a5a0; --danger-bg: #2a1a19;
 			--new: #93c5fd; --new-bg: #172538;
 			--btn: #e4e8ec; --btn-ink: #14181c;
+			--flash: #3a3418;
 		}
 	}
 	:root[data-theme="dark"] {
@@ -36,18 +38,20 @@
 		--danger: #f4a5a0; --danger-bg: #2a1a19;
 		--new: #93c5fd; --new-bg: #172538;
 		--btn: #e4e8ec; --btn-ink: #14181c;
+		--flash: #3a3418;
 	}
 
 	body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.55; }
-	.wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 80px; }
-	h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; }
-	h2 { font-family: var(--serif); font-size: 21px; margin: 44px 0 4px; }
-	h3 { font-size: 14px; margin: 26px 0 8px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-soft); }
+	.wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 96px; }
+	h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; text-wrap: balance; }
+	h2 { font-family: var(--serif); font-size: 21px; margin: 44px 0 4px; text-wrap: balance; }
 	p { margin: 8px 0; }
 	.sub { color: var(--ink-soft); margin: 0 0 4px; }
+	.muted { color: var(--ink-faint); }
 	code { font-family: var(--mono); font-size: .88em; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
 
-	.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0; margin: 14px 0 0; overflow: hidden; }
+	.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin: 14px 0 0; overflow: hidden; transition: background .5s; }
+	.card.flash { background: var(--flash); }
 	.card-hd { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); background: var(--sunken); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 	.card-hd strong { font-size: 15px; }
 	.card-bd { padding: 16px; }
@@ -56,20 +60,29 @@
 	.t-decided { color: var(--decided); background: var(--decided-bg); }
 	.t-ask { color: var(--ask); background: var(--ask-bg); }
 	.t-new { color: var(--new); background: var(--new-bg); }
-	.t-danger { color: var(--danger); background: var(--danger-bg); }
 
 	table { width: 100%; border-collapse: collapse; font-size: 13px; }
-	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; }
-	th { background: var(--sunken); font-weight: 600; font-size: 12px; color: var(--ink-soft); }
+	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: middle; }
+	th { background: var(--sunken); font-weight: 600; font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
 	td.num, th.num { text-align: right; font-family: var(--mono); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 	tr.bom td { background: var(--sunken); color: var(--ink-soft); font-size: 12px; }
-	tr.bom td:first-child { padding-left: 34px; }
+	tr.bom td.pad { padding-left: 40px; }
 	.scroll { overflow-x: auto; }
+	tr.off td:not(.keep) { opacity: .45; }
 
-	.btn { display: inline-block; background: var(--btn); color: var(--btn-ink); border-radius: 6px; padding: 6px 13px; font-size: 12.5px; font-weight: 600; }
-	.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+	button { font: inherit; cursor: pointer; }
+	.btn { display: inline-flex; align-items: center; gap: 7px; background: var(--btn); color: var(--btn-ink); border: 1px solid var(--btn); border-radius: 6px; padding: 6px 13px; font-size: 12.5px; font-weight: 600; }
+	.btn:hover { opacity: .87; }
+	.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+	.btn:disabled { opacity: .4; cursor: not-allowed; }
+	.btn .n { font-family: var(--mono); font-size: 11px; background: rgba(127,127,127,.25); border-radius: 20px; padding: 0 6px; }
+
 	.field { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; background: var(--surface); font-size: 13px; }
-	.field b { font-family: var(--mono); }
+	input[type=number] { font-family: var(--mono); font-size: 13px; width: 4.2em; text-align: right; border: 0; border-bottom: 1px dashed var(--new); background: transparent; color: var(--ink); padding: 1px 2px; }
+	input[type=number]:focus { outline: none; border-bottom-style: solid; }
+	td input[type=number] { width: 3.4em; font-size: 12px; }
+	input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--new); cursor: pointer; }
+	.twist { border: 0; background: transparent; color: var(--ink-soft); font-family: var(--mono); font-size: 12px; padding: 0 4px; }
 
 	.note { border-left: 3px solid var(--line); padding: 8px 0 8px 14px; margin: 12px 0; color: var(--ink-soft); }
 	.note.ask { border-color: var(--ask); background: var(--ask-bg); padding-right: 14px; border-radius: 0 6px 6px 0; color: var(--ink); }
@@ -77,19 +90,26 @@
 	.note.decided { border-color: var(--decided); background: var(--decided-bg); padding-right: 14px; border-radius: 0 6px 6px 0; color: var(--ink); }
 
 	.legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 18px 0 0; font-size: 12.5px; color: var(--ink-soft); }
-	.muted { color: var(--ink-faint); }
 	.hr { height: 1px; background: var(--line); margin: 40px 0 0; border: 0; }
-	ol, ul { margin: 8px 0; padding-left: 22px; }
-	:focus-visible { outline: 2px solid var(--new); outline-offset: 2px; border-radius: 3px; }
-	@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+	ul { margin: 8px 0; padding-left: 22px; }
 	li { margin: 4px 0; }
+	.lech { color: var(--ask); font-weight: 600; }
+	.khong { color: var(--danger); }
+
+	#toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(160%); opacity: 0; pointer-events: none; background: var(--btn); color: var(--btn-ink); padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; box-shadow: 0 6px 24px rgba(0,0,0,.22); transition: transform .28s, opacity .28s; z-index: 9; max-width: 90vw; }
+	#toast.on { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+	:focus-visible { outline: 2px solid var(--new); outline-offset: 2px; border-radius: 3px; }
+	@media (prefers-reduced-motion: reduce) { *, #toast, .card { transition: none !important; } }
 </style>
 
 <div class="wrap">
 
-<h1>Xuất bảng giá niêm yết</h1>
-<p class="sub">HKLED · <code>PM-FEAT-00045</code> · bản 1 · 08/09/2026</p>
-<p class="sub"><span class="tag t-new">bản vẽ</span> Trang này là <strong>bản vẽ giao diện để duyệt</strong>, không phải phần mềm đang chạy. Số liệu lấy từ file <em>Tính giá</em> khách gửi.</p>
+<h1>Bảng giá niêm yết HKLED</h1>
+<p class="sub">HKLED · <code>PM-FEAT-00045</code> · bản 2 · 08/09/2026</p>
+<p class="sub"><span class="tag t-new">bản vẽ bấm được</span> Đây là <strong>bản vẽ giao diện để duyệt</strong>,
+không phải phần mềm đang chạy — nhưng <strong>các ô và các nút đều bấm được</strong>, và công thức
+tính là công thức thật. Anh sửa tỷ lệ là cả bảng đổi theo ngay.</p>
 <p class="sub muted">Dựng theo file <em>Tính giá</em> khách gửi, trường <em>Ghi chú</em> của PM Feature,
 và các chốt của anh Thắng lúc 15:36 và 16:21 ngày 08/09.</p>
 
@@ -108,28 +128,41 @@ màn hình cài đặt của app lõi dùng chung.</p>
 <div class="card">
 	<div class="card-hd"><strong>Cài Đặt Giá Niêm Yết</strong> <span class="tag t-decided">đã chốt</span></div>
 	<div class="card-bd">
-		<p><span class="field">Tỷ lệ hao phí <b>3 %</b></span>
-		&nbsp; <span class="field">Tỷ lệ tính giá niêm yết <b>30 %</b></span></p>
+		<p>
+			<label class="field">Tỷ lệ hao phí <input type="number" id="haoPhi" value="3" min="0" max="100" step="0.5"> %</label>
+			&nbsp;
+			<label class="field">Tỷ lệ tính giá niêm yết <input type="number" id="tyLeNY" value="30" min="1" max="100" step="1"> %</label>
+		</p>
 		<p class="sub muted">Hai tỷ lệ này áp cho <strong>toàn hệ thống</strong>. Hai tỷ lệ còn lại
-		(<em>chi phí R&amp;D</em>, <em>lợi nhuận</em>) khai <strong>trên từng mặt hàng</strong>.</p>
+		(<em>chi phí R&amp;D</em>, <em>lợi nhuận</em>) khai <strong>trên từng mặt hàng</strong> — sửa ngay trong bảng dưới.</p>
+		<p class="sub"><strong>Thử đi ạ:</strong> sửa <em>tỷ lệ tính giá niêm yết</em> từ 30 xuống 25 —
+		giá niêm yết dòng 1 nhảy từ <code>2.910.000</code> lên <code>3.490.000</code>, và cột
+		<em>Đang áp dụng</em> đứng yên cho tới khi anh bấm nút cập nhật.</p>
 	</div>
 </div>
 
 <h2>Màn hình 2 — Bảng giá niêm yết</h2>
 
-<div class="card">
+<div class="card" id="cardBang">
 	<div class="card-hd">
 		<strong>Bảng Giá Niêm Yết</strong>
-		<span class="field">Bộ lọc: <b>Nhóm mặt hàng · Mặt hàng cha</b></span>
+		<label class="field">Bộ lọc
+			<select id="boLoc" style="border:0;background:transparent;color:var(--ink);font:inherit">
+				<option value="all">Tất cả mặt hàng</option>
+				<option value="tinh">Chỉ dòng tính được giá</option>
+				<option value="lech">Chỉ dòng đang lệch</option>
+			</select>
+		</label>
 		<span style="margin-left:auto"></span>
-		<span class="btn ghost">Xuất Excel</span>
-		<span class="btn">Cập nhật giá niêm yết</span>
+		<button class="btn ghost" id="btnXuat">Xuất Excel <span class="n" id="nXuat">0</span></button>
+		<button class="btn" id="btnCapNhat">Cập nhật giá niêm yết <span class="n" id="nCapNhat">0</span></button>
 	</div>
 	<div class="scroll">
 	<table>
 		<thead>
 			<tr>
-				<th style="width:26px"></th><th style="width:32px">STT</th>
+				<th style="width:34px"><input type="checkbox" id="tickAll" aria-label="Chọn tất cả"></th>
+				<th style="width:30px">STT</th>
 				<th>Mã mặt hàng</th><th>Tên mặt hàng</th>
 				<th class="num">Giá thành</th><th class="num">Hao phí</th>
 				<th class="num">R&amp;D</th><th class="num">Lợi nhuận</th>
@@ -138,44 +171,7 @@ màn hình cài đặt của app lõi dùng chung.</p>
 				<th class="num">Đang áp dụng</th>
 			</tr>
 		</thead>
-		<tbody>
-			<tr>
-				<td>☑</td><td>1</td>
-				<td><code>DP01S200-6B3HN-AD</code></td>
-				<td>Đèn LED pha P01 SMD 200W | Trắng, Bridgelux 3030, HKLED Nhỏ | Nhôm đùn trắng, Dọc</td>
-				<td class="num">739.300</td><td class="num">3%</td><td class="num">5%</td><td class="num">10%</td>
-				<td class="num">872.374</td><td class="num">30%</td>
-				<td class="num"><strong>2.910.000</strong></td>
-				<td class="num muted">2.850.000</td>
-			</tr>
-			<tr class="bom"><td></td><td></td><td colspan="2">Thành phần định mức — Bộ vỏ (VDP01-…)</td>
-				<td class="num">80.000</td><td colspan="7" class="muted">× 1</td></tr>
-			<tr class="bom"><td></td><td></td><td colspan="2">Module (M30S050-6B3…)</td>
-				<td class="num">480.000</td><td colspan="7" class="muted">120.000 × 4</td></tr>
-			<tr class="bom"><td></td><td></td><td colspan="2">Ốc vít · Dây điện · Hộp carton · Nguồn</td>
-				<td class="num">167.000</td><td colspan="7" class="muted">gộp cho gọn mockup</td></tr>
-			<tr class="bom"><td></td><td></td><td colspan="2">Chi phí sản xuất</td>
-				<td class="num">12.300</td><td colspan="7" class="muted">820 × 15</td></tr>
-			<tr>
-				<td>☑</td><td>2</td>
-				<td><code>DP01S200-6B3DN-AD</code></td>
-				<td>Đèn LED pha P01 SMD 200W | Trắng, Bridgelux 3030, Done Nhỏ | Nhôm đùn trắng, Dọc</td>
-				<td class="num">749.300</td><td class="num">3%</td><td class="num">5%</td><td class="num">10%</td>
-				<td class="num">884.174</td><td class="num">30%</td>
-				<td class="num"><strong>2.945.000</strong></td>
-				<td class="num muted">2.945.000</td>
-			</tr>
-			<tr>
-				<td>☐</td><td>3</td>
-				<td><code>DP01S050-B3HN-B</code></td>
-				<td>Đèn LED pha P01 SMD 50W | Khung xám</td>
-				<td class="num" style="color:var(--danger)">— chưa có</td>
-				<td class="num">3%</td><td class="num">5%</td><td class="num">10%</td>
-				<td class="num">—</td><td class="num">30%</td>
-				<td class="num" style="color:var(--danger)">không tính được</td>
-				<td class="num muted">—</td>
-			</tr>
-		</tbody>
+		<tbody id="tbody"></tbody>
 	</table>
 	</div>
 </div>
@@ -192,30 +188,34 @@ màn hình cài đặt của app lõi dùng chung.</p>
 <div class="note danger">
 	<strong>Dòng 3 là ca thật, không phải ví dụ.</strong> Đo trên cổng 8012 ngày 08/09:
 	mặt hàng <em>Mua hàng</em> có 1.828 mã nhưng chỉ <strong>3 mã</strong> có giá mua gần nhất;
-	mặt hàng <em>Sản xuất</em> có 59.749 mã nhưng chỉ <strong>1 BOM</strong> có giá thành khác 0.
-	Tức hôm nay <strong>gần như mọi dòng sẽ trông như dòng 3</strong>.
-	<br><span class="tag t-ask">cần chốt</span> Dòng không tính được thì hiện <em>“không tính được”</em>
-	như trên, hay ẩn hẳn khỏi bảng? Em nghiêng về <strong>hiện</strong> — ẩn đi thì người dùng tưởng
-	mặt hàng không tồn tại, mà thực ra là thiếu giá vốn.
+	mặt hàng <em>Sản xuất</em> có 59.749 mã nhưng chỉ <strong>1 định mức</strong> có giá thành khác 0.
+	Tức hôm nay <strong>gần như mọi dòng sẽ trông như dòng 3</strong>. Dòng không tính được thì
+	<strong>không tick chọn được</strong>, để không ai lỡ đẩy một ô trống sang cho sales.
+	<br><span class="tag t-ask">cần chốt</span> Hiện như trên, hay ẩn hẳn khỏi bảng? Em nghiêng về
+	<strong>hiện</strong> — ẩn đi thì người dùng tưởng mặt hàng không tồn tại, mà thực ra là thiếu giá vốn.
 </div>
 
 <h2>Màn hình 3 — File Excel xuất ra</h2>
 <p class="sub">Chốt 16:21: 3 cột, cột <em>Giá bán</em> để trống, và file có <strong>công thức sống</strong>.</p>
 
-<div class="card">
-	<div class="card-hd"><strong>bang-gia-niem-yet-2026-09-08.xlsx</strong> <span class="tag t-decided">đã chốt</span></div>
+<div class="card" id="cardExcel">
+	<div class="card-hd"><strong id="tenFile">bang-gia-niem-yet-2026-09-08.xlsx</strong> <span class="tag t-decided">đã chốt</span></div>
 	<div class="card-bd">
-		<p><span class="field">Tỷ lệ chiết khấu <b>68 %</b></span> <span class="muted">← người dùng tự điền, ô duy nhất phải gõ</span></p>
+		<p>
+			<label class="field">Tỷ lệ chiết khấu <input type="number" id="chietKhau" value="68" min="0" max="99" step="1"> %</label>
+			<span class="muted">← ô duy nhất người dùng phải gõ; cột <em>Giá bán</em> tự hiện số</span>
+		</p>
+		<div class="scroll">
 		<table style="margin-top:10px">
 			<thead><tr><th>Mã mặt hàng</th><th class="num">Giá niêm yết</th><th class="num">Giá bán</th></tr></thead>
-			<tbody>
-				<tr><td><code>DP01S200-6B3HN-AD</code></td><td class="num">2.910.000</td><td class="num">931.200</td></tr>
-				<tr><td><code>DP01S200-6B3DN-AD</code></td><td class="num">2.945.000</td><td class="num">942.400</td></tr>
-			</tbody>
+			<tbody id="tbodyExcel"></tbody>
 		</table>
+		</div>
 		<p class="sub muted" style="margin-top:10px">Cột <em>Giá bán</em> xuất ra <strong>rỗng</strong>,
 		mang công thức <code>= Giá niêm yết × (1 − Tỷ lệ chiết khấu)</code>. Gõ 68% vào ô trên là cả cột
 		tự hiện số. Đổi sang 60% thì cả cột đổi theo — không phải xuất lại file.</p>
+		<p class="sub muted">Trong bản vẽ này nút <em>Xuất Excel</em> chỉ nạp đúng những dòng anh đã tick
+		vào bảng trên cho anh xem trước. Bản chạy thật sẽ tải file <code>.xlsx</code> về máy.</p>
 	</div>
 </div>
 
@@ -232,7 +232,7 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 </div></div>
 
 <div class="note decided">
-	<strong>Đã kiểm chéo ba nguồn, cả ba khớp.</strong>
+	<strong>Đã kiểm chéo bốn nguồn, cả bốn khớp.</strong>
 	<br>① Số trong file <em>Tính giá</em>: <code>739.300 × 1,18 = 872.374 ➜ ÷30×100 = 2.907.913 ➜ 2.910.000</code> ✔
 	<br>② Ghi chú của anh Thắng: đúng công thức đó, ví dụ <code>50.000 ➜ 195.000</code> ✔
 	<br>③ Khách đính chính anh Thắng (ảnh 16:21): <em>“giá niêm yết 100k ⇒ trước khi chia là 30k ⇒ đổi tỷ lệ
@@ -243,8 +243,8 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 <div class="note ask">
 	<span class="tag t-ask">cần chốt</span> <strong>Làm tròn tới bội 5.000 GẦN NHẤT, không phải làm tròn lên.</strong>
 	Số trong file khách buộc phải hiểu vậy: <code>2.947.247 ➜ 2.945.000</code> chứ không phải 2.950.000.
-	Ví dụ <em>“197.800 ➜ 200.000”</em> của anh cũng là gần nhất. Xin anh xác nhận một câu — chỗ này
-	lệch là lệch tiền.
+	Ví dụ <em>“197.800 ➜ 200.000”</em> của anh cũng là gần nhất. Bản vẽ này đang chạy theo cách
+	<strong>gần nhất</strong> — xin anh xác nhận một câu, chỗ này lệch là lệch tiền.
 </div>
 
 <h2>Nút <em>Cập nhật giá niêm yết</em> ghi vào đâu</h2>
@@ -274,7 +274,258 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 	<li><span class="muted">để sau</span> Hình ảnh · mô tả · cấu hình sản xuất · bảo hành · kho</li>
 </ul>
 
-<p class="sub muted" style="margin-top:34px">Bản 1 — chờ anh Thắng chốt 3 chỗ gắn thẻ
+<p class="sub muted" style="margin-top:34px">Bản 2 — chờ anh Thắng chốt 3 chỗ gắn thẻ
 <span class="tag t-ask">cần chốt</span> ở trên trước khi code.</p>
 
 </div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+	"use strict";
+
+	var DONG = [
+		{
+			ma: "DP01S200-6B3HN-AD",
+			ten: "Đèn LED pha P01 SMD 200W | Trắng, Bridgelux 3030, HKLED Nhỏ | Nhôm đùn trắng, Dọc",
+			cost: 739300, rnd: 5, loi: 10, dangApDung: 2850000, tick: true,
+			bom: [
+				["Bộ vỏ (VDP01-…)", "80.000 × 1", 80000],
+				["Module (M30S050-6B3…)", "120.000 × 4", 480000],
+				["Ốc vít · Dây điện · Hộp carton · Nguồn", "gộp cho gọn bản vẽ", 167000],
+				["Chi phí sản xuất", "820 × 15", 12300]
+			]
+		},
+		{
+			ma: "DP01S200-6B3DN-AD",
+			ten: "Đèn LED pha P01 SMD 200W | Trắng, Bridgelux 3030, Done Nhỏ | Nhôm đùn trắng, Dọc",
+			cost: 749300, rnd: 5, loi: 10, dangApDung: 2945000, tick: true, bom: []
+		},
+		{
+			ma: "DP01S050-B3HN-B",
+			ten: "Đèn LED pha P01 SMD 50W | Khung xám",
+			cost: null, rnd: 5, loi: 10, dangApDung: null, tick: false, bom: []
+		}
+	];
+
+	var $ = function (id) { return document.getElementById(id); };
+	var so = function (n) { return n === null || n === undefined ? "—" : n.toLocaleString("vi-VN"); };
+
+	// Làm tròn tới bội 5.000 GẦN NHẤT — đúng cách đọc từ số trong file khách.
+	function lamTron5000(x) { return Math.round(x / 5000) * 5000; }
+
+	function tinh(d) {
+		if (d.cost === null) return { cong: null, gia: null };
+		var haoPhi = parseFloat($("haoPhi").value) || 0;
+		var tyLe = parseFloat($("tyLeNY").value) || 0;
+		var cong = d.cost * (100 + haoPhi + d.rnd + d.loi) / 100;
+		if (tyLe <= 0) return { cong: cong, gia: null };
+		return { cong: Math.round(cong), gia: lamTron5000(cong / tyLe * 100) };
+	}
+
+	function hienToast(msg) {
+		var t = $("toast");
+		t.textContent = msg;
+		t.classList.add("on");
+		clearTimeout(t._h);
+		t._h = setTimeout(function () { t.classList.remove("on"); }, 3200);
+	}
+
+	function chonDuoc(d) { return d.cost !== null; }
+
+	function veBang() {
+		var loc = $("boLoc").value;
+		var haoPhi = parseFloat($("haoPhi").value) || 0;
+		var tyLe = parseFloat($("tyLeNY").value) || 0;
+		var tb = $("tbody");
+		tb.textContent = "";
+
+		DONG.forEach(function (d, i) {
+			var kq = tinh(d);
+			var lech = kq.gia !== null && d.dangApDung !== null && kq.gia !== d.dangApDung;
+			if (loc === "tinh" && !chonDuoc(d)) return;
+			if (loc === "lech" && !lech) return;
+
+			var tr = document.createElement("tr");
+			if (!chonDuoc(d)) tr.className = "off";
+
+			var tdTick = document.createElement("td");
+			tdTick.className = "keep";
+			if (chonDuoc(d)) {
+				var cb = document.createElement("input");
+				cb.type = "checkbox";
+				cb.checked = d.tick;
+				cb.setAttribute("aria-label", "Chọn " + d.ma);
+				cb.addEventListener("change", function () { d.tick = cb.checked; capNhatDem(); });
+				tdTick.appendChild(cb);
+			} else {
+				tdTick.innerHTML = '<span class="muted" title="Chưa có giá vốn nên không chọn được">–</span>';
+			}
+			tr.appendChild(tdTick);
+
+			var tdStt = document.createElement("td");
+			tdStt.className = "keep muted";
+			tdStt.textContent = String(i + 1);
+			tr.appendChild(tdStt);
+
+			var tdMa = document.createElement("td");
+			if (d.bom.length) {
+				var bt = document.createElement("button");
+				bt.className = "twist";
+				bt.textContent = d._mo ? "▾" : "▸";
+				bt.setAttribute("aria-expanded", d._mo ? "true" : "false");
+				bt.addEventListener("click", function () { d._mo = !d._mo; veBang(); });
+				tdMa.appendChild(bt);
+			}
+			var cd = document.createElement("code");
+			cd.textContent = d.ma;
+			tdMa.appendChild(cd);
+			tr.appendChild(tdMa);
+
+			var tdTen = document.createElement("td");
+			tdTen.textContent = d.ten;
+			tr.appendChild(tdTen);
+
+			var tdCost = document.createElement("td");
+			tdCost.className = "num";
+			if (d.cost === null) { tdCost.innerHTML = '<span class="khong">— chưa có</span>'; }
+			else { tdCost.textContent = so(d.cost); }
+			tr.appendChild(tdCost);
+
+			var tdHao = document.createElement("td");
+			tdHao.className = "num muted";
+			tdHao.textContent = haoPhi + "%";
+			tr.appendChild(tdHao);
+
+			["rnd", "loi"].forEach(function (k) {
+				var td = document.createElement("td");
+				td.className = "num";
+				var inp = document.createElement("input");
+				inp.type = "number"; inp.value = d[k]; inp.min = "0"; inp.max = "100"; inp.step = "1";
+				inp.setAttribute("aria-label", (k === "rnd" ? "R&D" : "Lợi nhuận") + " của " + d.ma);
+				inp.addEventListener("input", function () { d[k] = parseFloat(inp.value) || 0; veBang(); });
+				td.appendChild(inp);
+				td.appendChild(document.createTextNode("%"));
+				tr.appendChild(td);
+			});
+
+			var tdCong = document.createElement("td");
+			tdCong.className = "num";
+			tdCong.textContent = so(kq.cong);
+			tr.appendChild(tdCong);
+
+			var tdTyLe = document.createElement("td");
+			tdTyLe.className = "num muted";
+			tdTyLe.textContent = tyLe + "%";
+			tr.appendChild(tdTyLe);
+
+			var tdGia = document.createElement("td");
+			tdGia.className = "num";
+			if (kq.gia === null) { tdGia.innerHTML = '<span class="khong">không tính được</span>'; }
+			else { tdGia.innerHTML = "<strong>" + so(kq.gia) + "</strong>"; }
+			tr.appendChild(tdGia);
+
+			var tdAp = document.createElement("td");
+			tdAp.className = "num";
+			if (d.dangApDung === null) { tdAp.innerHTML = '<span class="muted">—</span>'; }
+			else if (lech) { tdAp.innerHTML = '<span class="lech">' + so(d.dangApDung) + " ▲</span>"; }
+			else { tdAp.innerHTML = '<span class="muted">' + so(d.dangApDung) + "</span>"; }
+			tr.appendChild(tdAp);
+
+			tb.appendChild(tr);
+
+			if (d._mo) {
+				d.bom.forEach(function (b) {
+					var r = document.createElement("tr");
+					r.className = "bom";
+					r.innerHTML = '<td></td><td></td><td class="pad" colspan="2">' + b[0] +
+						'</td><td class="num">' + so(b[2]) + '</td><td colspan="7" class="muted">' + b[1] + "</td>";
+					tb.appendChild(r);
+				});
+			}
+		});
+
+		capNhatDem();
+		veExcel();
+	}
+
+	function daChon() {
+		return DONG.filter(function (d) { return d.tick && chonDuoc(d); });
+	}
+
+	function capNhatDem() {
+		var n = daChon().length;
+		$("nXuat").textContent = n;
+		$("nCapNhat").textContent = n;
+		$("btnXuat").disabled = n === 0;
+		$("btnCapNhat").disabled = n === 0;
+		var ok = DONG.filter(chonDuoc);
+		$("tickAll").checked = ok.length > 0 && ok.every(function (d) { return d.tick; });
+	}
+
+	var xuatRoi = null;
+
+	function veExcel() {
+		var ck = parseFloat($("chietKhau").value);
+		if (isNaN(ck)) ck = 0;
+		var ds = xuatRoi || daChon();
+		var tb = $("tbodyExcel");
+		tb.textContent = "";
+		if (!ds.length) {
+			tb.innerHTML = '<tr><td colspan="3" class="muted">Chưa có dòng nào — tick mặt hàng ở bảng trên rồi bấm <strong>Xuất Excel</strong>.</td></tr>';
+			return;
+		}
+		ds.forEach(function (d) {
+			var kq = tinh(d);
+			if (kq.gia === null) return;
+			var ban = Math.round(kq.gia * (100 - ck) / 100);
+			var tr = document.createElement("tr");
+			tr.innerHTML = "<td><code>" + d.ma + '</code></td><td class="num">' + so(kq.gia) +
+				'</td><td class="num">' + so(ban) + "</td>";
+			tb.appendChild(tr);
+		});
+	}
+
+	function nhay(el) {
+		el.classList.add("flash");
+		setTimeout(function () { el.classList.remove("flash"); }, 700);
+	}
+
+	$("haoPhi").addEventListener("input", veBang);
+	$("tyLeNY").addEventListener("input", veBang);
+	$("boLoc").addEventListener("change", veBang);
+	$("chietKhau").addEventListener("input", veExcel);
+
+	$("tickAll").addEventListener("change", function () {
+		var v = $("tickAll").checked;
+		DONG.forEach(function (d) { if (chonDuoc(d)) d.tick = v; });
+		veBang();
+	});
+
+	$("btnCapNhat").addEventListener("click", function () {
+		var ds = daChon(), n = 0;
+		ds.forEach(function (d) {
+			var kq = tinh(d);
+			if (kq.gia !== null && kq.gia !== d.dangApDung) { d.dangApDung = kq.gia; n += 1; }
+		});
+		veBang();
+		nhay($("cardBang"));
+		hienToast(n
+			? "Đã cập nhật giá niêm yết cho " + n + " mặt hàng — sales mở đơn là thấy ngay."
+			: "Không có gì để cập nhật: " + ds.length + " mặt hàng đã đúng giá.");
+	});
+
+	$("btnXuat").addEventListener("click", function () {
+		xuatRoi = daChon().slice();
+		veExcel();
+		$("cardExcel").scrollIntoView({ behavior: "smooth", block: "center" });
+		nhay($("cardExcel"));
+		hienToast("Đã nạp " + xuatRoi.length + " mặt hàng vào file — bản chạy thật sẽ tải .xlsx về máy.");
+	});
+
+	veBang();
+	xuatRoi = daChon().slice();
+	veExcel();
+})();
+</script>
