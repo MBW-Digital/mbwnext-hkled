@@ -270,3 +270,61 @@ chạy** và **sai lúc đọc lại**, mà không có gì trên bảng báo đi
 
 **Luật rút ra:** ghi ngày chạy vào từng ô là **chưa đủ**. Ô nào đo một hành vi mà mã của hành vi đó
 đã đổi sau ngày chạy thì **phải chạy lại**, không được đọc ô Pass cũ như bằng chứng cho hôm nay.
+
+---
+
+## TC-AN — ẩn ô Đội Sản Xuất trên Kế hoạch sản xuất (08/09)
+
+🔒 **Anh Thắng 08/09 11:44: *"ẩn giúp anh ô đội sản xuất đi nhé"*.** Đây là anh ấy nhận lời đề nghị
+em nêu 07/09 10:40 — *"nếu anh muốn ẩn nó khỏi màn hình ngay thì em ẩn được, chỉ là không xoá"*.
+
+**Ẩn, KHÔNG xoá.** Ô này nằm chung một hàm với đoạn bảo đảm Lệnh sản xuất không ra đời thiếu *Thời
+Gian Bắt Đầu* (lỗi anh Thắng báo 08/08). Xoá là phải mổ vào hàm đó — rủi ro không đáng.
+
+### Ẩn cái nào, và cố ý KHÔNG ẩn cái nào
+
+Site có **ba** ô `custom_work_team`. Lời anh Thắng nói về Kế hoạch sản xuất, nên chỉ hai ô đầu:
+
+| Ô | Ở đâu | Xử lý |
+|---|---|---|
+| `Production Plan Sales Order-custom_work_team` | Kế hoạch → bảng Đơn bán hàng | **ẩn** |
+| `Production Plan Sub Assembly Item-custom_work_team` | Kế hoạch → bảng Bán thành phẩm | **ẩn** |
+| `Employee-custom_work_team` | Hồ sơ Nhân sự | **GIỮ NGUYÊN** |
+
+⚠ Ô thứ ba **không được ẩn**. Chính anh Thắng yêu cầu nó ngày 07/09 10:55: *"khi chọn đội cho nhân
+sự thì phòng ban của đội đó được gán vào nhân sự đó luôn"*. Ẩn nó đi là gỡ mất tính năng anh ấy vừa
+đặt. Ô trên Lệnh sản xuất thì đã gỡ hẳn từ 07/09 11:2x, không còn gì để ẩn.
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-AN-01 | Ô trên bảng Đơn bán hàng | `hidden = 1` | 1 | Pass |
+| TC-AN-02 | Ô trên bảng Bán thành phẩm | `hidden = 1` | 1 | Pass |
+| TC-AN-03 | Ô trên hồ sơ Nhân sự | **vẫn `hidden = 0`** | 0 | Pass |
+| TC-AN-04 | Giá trị đã nhập KHÔNG mất | 1 · 1 · 4 dòng giữ nguyên | 1 · 1 · 4 | Pass |
+| TC-AN-05 | `meta` phản ánh ngay sau khi xoá cache | hidden 1/1/0 | đúng | Pass |
+| TC-AN-06 | 🖱 Lưới Bán thành phẩm không còn cột Đội | Chỉ còn Phòng Ban | đúng | Pass |
+| TC-AN-07 | 🖱 Ô chi tiết dòng cũng không còn | Chỉ còn Phòng Ban | đúng | Pass |
+| TC-AN-08 | 🖱 Lưới Đơn bán hàng không còn cột Đội | Không có | đúng | Pass |
+| TC-AN-09 | 🖱 Hồ sơ Nhân sự VẪN hiện ô Đội, còn giá trị | `Đội 1`, phòng `Phòng kỹ thuật - HKL` | đúng | Pass |
+| TC-AN-10 | 🖱 Nút *Thêm Đội Sản Xuất* trên Lệnh sản xuất còn nguyên | Còn | còn | Pass |
+| TC-AN-11 | Lệnh sản xuất vẫn không có ô Đội | Không có trường | không có | Pass |
+
+🖱 = bấm thật trên cổng 8012, không phải chạy hàm.
+
+### Vì sao sửa ở `fixtures`, không phải `frappe.db.set_value`
+
+Ô này có **hai đường sinh ra**: patch `add_sales_order_schedule_fields` và
+`fixtures/custom_field.json`. Patch có chốt `if frappe.db.exists(...): continue` nên không ghi đè
+`hidden`, và `Patch Log` cho thấy nó đã chạy 02/08 — nên trên site này patch vô hại. Nhưng **site
+mới** thì patch tạo ô với `hidden` mặc định 0, và chỉ fixtures mới kéo về 1.
+
+➜ Sửa fixtures **và** áp lên site đang chạy. Sửa mỗi một đường là lần `bench migrate` sau nó mọc lại.
+
+### Hệ quả đã báo trước và anh Thắng đã chọn
+
+Lệnh sản xuất sinh từ Kế hoạch **không còn tự điền bảng Nhân Công Tham Gia**, vì không ai đặt được
+đội ở Kế hoạch nữa. Đó chính là chỗ em nêu 07/09 10:40 (*"dời thời điểm: lịch sản xuất chuyển từ 'có
+ngay khi lập kế hoạch' sang 'có sau khi trưởng phòng phân đội'"*) và anh ấy vẫn chọn hướng này.
+Việc phân đội đi qua nút **Thêm Đội Sản Xuất**, và nút đó đã lọc theo phòng ban của lệnh.
+
+⚠ Kế hoạch **cũ** đã điền đội thì vẫn chạy như trước — ẩn không xoá giá trị (`TC-AN-04`).
