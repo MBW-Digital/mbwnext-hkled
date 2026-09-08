@@ -194,3 +194,76 @@ Các rule `Mọi biến thể đều chọn` liệt kê sẵn mọi giá trị c
 giá trị mới (màu sơn mới, mức công suất mới) thì rule **không tự phủ** — phải mở BOM
 Template tích thêm. Đã đề xuất dùng *Cố Định* để tránh, Thắng chọn *Theo Rule* vì còn cần
 chạy công thức số lượng ở Server Script.
+
+---
+
+## PM-TASK-00185 — bản khách gửi 07/09: nhiều khối `Còn lại` trên một cột
+
+Khách gửi bản mới (20 sheet, `spec.json` trong git có 7). Chạy `doc_bom_sheet.py` lần đầu:
+**`DP01S` và `DP03S` — hai sheet vốn đọc được — bị TỪ CHỐI.**
+
+### Nguyên nhân: bộ đọc chỉ nhận **một** mốc `Còn lại` cho mỗi cột
+
+Đo khối *Module* của `DP01S`, cột *Công suất*:
+
+```
+so o "Con lai"                    : 2      -> dong Excel 111 va 207
+dong TRONG nam TRUOC o dau tien   : 0
+dong CO GIA TRI nam SAU o cuoi    : 0
+tong dong cua khoi                : 192    (130 co gia tri + 62 trong)
+```
+
+Hai chốt *"mọi dòng trước đều có giá trị"* và *"mọi dòng sau đều trống"* **đều thoả**; chỉ
+`len(vt) == 1` gãy. **File khách không mơ hồ** — khách chia sheet thành **hai đoạn theo
+`Kiểu nguồn`**, mỗi đoạn tự có phần *"còn lại"* của riêng nó:
+
+```
+dong 111   Còn lại | Còn lại | … | Nguồn nhỏ / Nguồn to điện áp thấp
+dong 207   Còn lại | Còn lại | … | Nguồn to điện áp cao
+```
+
+Trong từng đoạn thì đúng y khuôn bộ đọc đã hỗ trợ. Cái mới là **có nhiều đoạn**.
+
+### Đã nới luật, giữ nguyên chốt chặn
+
+> Dòng `j` thuộc `Còn lại` ⟺ **ô CÓ GIÁ TRỊ gần nhất tại-hoặc-trước `j` là một mốc `Còn lại`.**
+> Ô có giá trị thật thì đóng khối đang mở.
+
+⚠ **Giữ nguyên** chốt: ô **trống mà không nằm dưới mốc nào** thì vẫn `raise`. Đó là ca *ô trống
+rải rác* (vd `DP01S`/Cầu đấu, cột `Nguồn` chỉ điền 1/56) — không suy được ý, và đoán hộ là dựng
+rule sai cho hàng chục tổ hợp.
+
+### Kết quả
+
+| | Trước | Sau |
+|---|---|---|
+| Sheet đọc được | 9 | **11** (thêm `DP01S`, `DP03S`) |
+| Sheet bị từ chối | 8 | **6** |
+
+**Phép thử không-hồi-quy:** chạy **luật cũ** và **luật mới** trên cùng file, 9 sheet mà cả hai
+đọc được cho kết quả **GIỐNG HỆT** (so JSON đã sắp khoá). Luật mới chỉ *thêm*, không *đổi*.
+
+⚠ *Giới hạn của phép thử, nói rõ:* không còn file `.xlsx` **cũ** nên **không** chứng minh được
+luật mới sinh lại đúng `spec.json` đang nằm trong git. Thứ đã chứng minh là *luật cũ và luật mới
+cho cùng kết quả trên cùng một file*. Muốn chắc hơn thì cần bản `.xlsx` khách gửi đợt trước.
+
+### 6 sheet còn bị từ chối — lý do khác hẳn, chốt chặn đang làm đúng việc
+
+`DP01C` · `DP02C` · `DP03C` (Công suất 32/48) · `DP02S` (Loại tản nhiệt 192/200) ·
+`CM30S030` (Màu ánh sáng 16/17) · `CM30S050` (Mạch 5/16) — ô trống **rải rác**, không theo khuôn
+`Còn lại`. Đây mới là chỗ cần khách xác nhận, không phải chỗ nới bộ đọc.
+
+### Ba chặn cứng còn lại — chưa động tới, chờ khách
+
+1. **94/146 mã NVL rule trỏ tới không tồn tại trên site** (site có 52). Đây là *"linh kiện mới"*
+   trong lời anh Thắng, nhưng chưa được tạo.
+2. **`VDP0X` / *Quai*: điều kiện dạng SO SÁNH** `Công suất < 200` và `>= 200`. `variant_matches`
+   chỉ so khớp **thành viên tập hợp** (`variant_attrs.get(name) not in values`), không có toán
+   tử — 4 rule đó **không tìm được NVL**, làm hỏng một mã đang chạy.
+3. **6/10 mã cha mới chưa có bộ công thức số lượng** trong `bom_qty.py` (`M30C050`, cả nhóm
+   `CM*`, `VDP02`). Nó **throw nêu đích danh** nên gãy ồn ào chứ không ra số sai âm thầm —
+   đừng "sửa" cho nó chạy trơn.
+
+⚠ **`spec.json` trong git CHƯA cập nhật.** Cả 5 sheet cũ đọc được đều **đổi nội dung** (thêm đặc
+tính điều kiện `Mạch`, `Kiểu nguồn`; đổi mã NVL) — đây là *đổi định mức hàng đang chạy*, không
+phải *thêm mã mới*, nên chờ khách trả lời rồi mới ghi.

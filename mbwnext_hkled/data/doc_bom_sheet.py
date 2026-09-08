@@ -214,13 +214,39 @@ def _doc_khoi(ten_sheet, tp, dac_tinh, khoi, doi_dt):
 			# Cột có tiêu đề nhưng không dòng nào điền -> đặc tính không được dùng ở khối này.
 			bo_cot.add(k)
 			continue
-		# Dạng (1): 'Còn lại' ghi đúng một lần, mọi dòng TRƯỚC nó đều có giá trị và mọi
-		# dòng SAU nó đều trống -> cả phần đuôi thuộc về 'Còn lại'.
-		vt = [j for j, r in enumerate(khoi) if _la(r[k], CON_LAI, *CON_LAI_KHAC)]
-		if len(vt) == 1:
-			p = vt[0]
-			if all(khoi[j][k] for j in range(p)) and not any(khoi[j][k] for j in range(p + 1, so_dong)):
-				con_lai_tu[k] = p
+		# Dạng (1): ô 'Còn lại' mở một khối, các dòng sau nó bỏ trống thì **kế thừa** nó.
+		#
+		# Luật: dòng `j` thuộc 'Còn lại' ⟺ **ô CÓ GIÁ TRỊ gần nhất tại-hoặc-trước `j` là một
+		# mốc 'Còn lại'**. Ô có giá trị thật thì đóng khối đang mở lại.
+		#
+		# ⚠ Trước 07/09 luật này chỉ nhận **đúng một** mốc cho cả cột (`len(vt) == 1`, mọi dòng
+		#   trước đều có giá trị, mọi dòng sau đều trống). Bản khách gửi ở PM-TASK-00185 chia
+		#   sheet thành **nhiều đoạn theo `Kiểu nguồn`**, mỗi đoạn tự có phần 'Còn lại' của
+		#   riêng nó — `DP01S`/Module có **2 mốc** (dòng Excel 111 và 207) nên bị từ chối, dù
+		#   6 sheet `DP0*` đều viết đúng khuôn đó. Nới ra đây, KHÔNG nới chốt chặn bên dưới.
+		#
+		# 📌 Đây là **tập cha thật sự** của luật cũ: một mốc ở `p` với mọi dòng trước có giá
+		#    trị và mọi dòng sau trống thì vòng lặp dưới đánh dấu đúng các dòng `>= p`. Đã
+		#    kiểm bằng cách sinh lại spec cho 5 sheet cũ và so **giống hệt** bản trong git.
+		vt = {j for j, r in enumerate(khoi) if _la(r[k], CON_LAI, *CON_LAI_KHAC)}
+		if vt:
+			thuoc_con_lai, dang_mo, hong = set(), False, False
+			for j in range(so_dong):
+				if khoi[j][k]:
+					# Ô có giá trị: mở khối mới nếu là mốc, ngược lại đóng khối đang mở.
+					dang_mo = j in vt
+					if dang_mo:
+						thuoc_con_lai.add(j)
+				elif dang_mo:
+					thuoc_con_lai.add(j)
+				else:
+					# ⚠ Ô TRỐNG mà không nằm dưới mốc nào — giữ nguyên chốt chặn cũ. Đây là ca
+					#   'ô trống rải rác' (vd `DP01S`/Cầu đấu, cột `Nguồn` chỉ điền 1/56):
+					#   không suy được ý, và đoán hộ ở đây là dựng rule sai cho hàng chục tổ hợp.
+					hong = True
+					break
+			if not hong:
+				con_lai_tu[k] = thuoc_con_lai
 				continue
 		raise ValueError(
 			f"{ten_sheet}: khối {tp!r}, cột điều kiện {dt!r} chỉ điền {co}/{so_dong} dòng"
@@ -234,7 +260,7 @@ def _doc_khoi(ten_sheet, tp, dac_tinh, khoi, doi_dt):
 			ten = doi_dt.get(dt, dt)
 			if k in bo_cot:
 				continue
-			if k in con_lai_tu and j >= con_lai_tu[k]:
+			if k in con_lai_tu and j in con_lai_tu[k]:
 				cond[ten] = CON_LAI
 				continue
 			gt = r[k]

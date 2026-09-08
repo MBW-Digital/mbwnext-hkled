@@ -312,7 +312,14 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 			$b.html(
 				`<div class="hkled-nc-trong">${
 					kq.co_nhu_cau === false
-						? __("Kỳ đã chọn không có đơn hàng nào — chưa tính được gì. Chọn khoảng khác hoặc kiểm lại ô Thời Gian Bắt Đầu trên đơn bán.")
+						? __(
+								// 🔒 Chốt anh Thắng 08/09: đơn tính vào KỲ NÓ KHỞI CÔNG. Hệ quả trực
+								// tiếp — đơn khởi công trước khoảng đang xem thì không hiện ở đây, dù
+								// nó vẫn đang thiếu hàng thật. Nói luôn cách gỡ, vì trạng thái này là
+								// mặc định trên site (mọi đơn đã duyệt đều khởi công trước hôm nay),
+								// không phải ngoại lệ hiếm.
+								"Kỳ đã chọn không có đơn hàng nào — chưa tính được gì.<br>Đơn được xếp theo <b>Thời Gian Bắt Đầu</b>, nên đơn khởi công <b>trước</b> khoảng này không hiện ở đây dù vẫn đang thiếu hàng. Thử <b>kéo ngày bắt đầu về trước</b>, hoặc kiểm lại ô Thời Gian Bắt Đầu trên đơn bán."
+						  )
 						: __("Mọi vật tư đều đủ trong khoảng đã chọn — không phải mua gì thêm")
 				}</div>`
 			);

@@ -484,3 +484,57 @@ bấm Duyệt nhánh nháp không chạy. Câu này chỉ nổ khi thật sự l
 
 Bảng 1 báo **thiếu 10 Thành phẩm 1** trong khi kho có **31** — vì cả 31 đang bị đơn khác giữ,
 khả dụng bằng 0. Không phải lỗi đếm.
+
+---
+
+## Nút *Tạo Yêu Cầu Mặt Hàng* — thêm câu về phần ĐANG CHỜ của cả nhà máy (08/09)
+
+### Vì sao
+
+Anh Thắng giải thích 08/09 rằng không sợ mua trùng, vì *"số lượng mua kỳ này nó cũng đã được tự
+trừ đi số lượng trên đơn hàng mua kia rồi"*. Đúng với **Đơn mua hàng** — nhưng **Yêu Cầu Mặt Hàng
+thì không ai trừ**, và đó chính là loại phiếu nút này đẻ ra:
+
+```
+Phan V doc Material Request  ->  0 dong (grep ca file)
+Bang 2 doc Material Request  ->  chi de TAO phieu va de canh bao, khong tru
+```
+
+Đo 08/09, phiếu **đã duyệt mà chưa thành đơn mua**:
+
+| Mã | Đang chờ | Đơn mua chưa về |
+|---|---|---|
+| `NVL 3` | **99** | 10 |
+| `NVL 2` | **70** | — |
+| `NVL 1` | **20** | — |
+
+`YCM-26-00001` từ **13/08** giữ 60 `NVL 3` suốt một tháng, không ai đụng.
+
+### Chỗ hở: câu cảnh báo cũ chỉ nhìn thấy đơn đang mở
+
+Câu cảnh báo trùng phiếu lọc `filters={"sales_order": don.name}` — nên **chỉ thấy phiếu của chính
+đơn đó**. Phiếu của đơn khác, hoặc phiếu không gắn đơn nào (như `YCM-26-00001`), **vô hình**.
+
+Lúc chốt 03/09 16:51 anh Thắng cân trên **một đơn**: sales tự xin đủ phần mình thiếu, ai muốn
+nhường thì xin sau — hợp lý ở mức đó. Thứ chưa nằm trong tầm cân là **cộng dồn ở mức nhà máy**.
+Cùng một luật, hai quy mô, hai hệ quả.
+
+### Đã thêm — chỉ NÓI RA, không trừ
+
+⚠ **Giữ nguyên chốt 03/09**: không tự trừ gì cả. Trừ hay không là quyết định nghiệp vụ của anh
+Thắng; **giấu số thì không phải quyết định của ai cả.**
+
+| Ca | Cảnh báo hiện ra | P/F |
+|---|---|---|
+| `SO-26-00026` (cần mua `NVL 3` 17) | [1] *đơn này đã xin `NVL 3` 27* · [2] **toàn nhà máy đang chờ `NVL 3` 99** | Pass |
+| `SO-26-00030` (cần `NVL 2` 2, `NVL 3` 30) | [1] *đơn này đã xin `NVL 2` 10 · `NVL 3` 30* · [2] **toàn nhà máy `NVL 2` 70 · `NVL 3` 99** | Pass |
+| Không tạo phiếu thật | `Material Request` **10 → 10** | Pass |
+| `kiem_bat_bien()` | sạch | Pass |
+
+Hai câu bổ sung nhau: câu [1] trả lời *"đơn này đã xin gì chưa"*, câu [2] trả lời *"chỗ khác đã
+xin gì chưa"*. Trước đây chỉ có câu [1].
+
+⚠ **Chưa chốt, có thể phải sửa lại:** phiên `cozy-dev-10` đã hỏi anh Thắng chọn **(A)** cho Phần V
+trừ luôn phiếu đang chờ, hay **(B)** giữ nguyên + cảnh báo. Nếu anh ấy chọn **(A)** thì Bảng 2
+cũng phải trừ theo, kẻo hai màn hình nói ngược nhau — lúc đó câu [2] này thành thừa. Thêm bây giờ
+vì nó **đúng dưới cả hai lựa chọn** và không đảo chốt nào.

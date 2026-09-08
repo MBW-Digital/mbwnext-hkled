@@ -1091,6 +1091,43 @@ def tao_yeu_cau_mua_hang(sales_order):
 			) + ". Kiểm lại trước khi gửi để khỏi mua trùng."
 		canh_bao.append(cau)
 
+	# ── Phần ĐANG CHỜ của CẢ NHÀ MÁY, không riêng đơn này ────────────────────────────
+	#
+	# 🔴 Câu cảnh báo phía trên lọc `sales_order = đơn này`, nên nó **chỉ thấy phiếu của chính
+	#   đơn đang mở**. Phiếu của đơn khác — hoặc phiếu không gắn đơn nào — thì vô hình.
+	#
+	#   Đo 08/09: `NVL 3` có **99** cái đã duyệt mà chưa thành đơn mua, trong đó `YCM-26-00001`
+	#   từ **13/08** giữ 60 cái suốt một tháng. Người bấm nút hôm nay không thấy con số đó ở
+	#   đâu cả, nên xin thêm là chuyện tất nhiên.
+	#
+	# ⚠ **KHÔNG tự trừ** — giữ nguyên chốt 03/09 16:51 của anh Thắng (*"em cứ cho tạo dựa theo
+	#   số lượng ở cột thiếu, không cần phải tính trừ các đơn đã đặt mua đâu"*). Chỗ này chỉ
+	#   **nói ra**, để người mua tự quyết. Trừ hay không là quyết định nghiệp vụ của anh ấy;
+	#   giấu số thì không phải quyết định của ai cả.
+	#
+	#   Lúc chốt 03/09 anh ấy cân trên **một đơn** — sales tự xin đủ phần mình thiếu, ai muốn
+	#   nhường thì xin sau. Hợp lý ở mức đó. Thứ chưa nằm trong tầm cân là **cộng dồn ở mức nhà
+	#   máy**: cùng một luật, hai quy mô, hai hệ quả.
+	dang_cho = frappe.db.sql(
+		"""select mri.item_code, sum(mri.qty - ifnull(mri.ordered_qty, 0)) as con
+		from `tabMaterial Request` mr
+		join `tabMaterial Request Item` mri on mri.parent = mr.name
+		where mr.docstatus = 1
+		  and mr.status not in ('Stopped', 'Cancelled')
+		  and mri.item_code in %(ma)s
+		  and (mri.qty - ifnull(mri.ordered_qty, 0)) > 0
+		group by mri.item_code""",
+		{"ma": tuple(can_mua) or ("",)},
+		as_dict=True,
+	)
+	if dang_cho:
+		canh_bao.append(
+			"Toàn nhà máy đang có phiếu yêu cầu ĐÃ DUYỆT mà chưa thành đơn mua: "
+			+ " · ".join(f"{d['item_code']} {_so(d['con'])}" for d in sorted(dang_cho, key=lambda x: x["item_code"]))
+			+ ". Số này KHÔNG được trừ vào phiếu đang tạo (chốt 03/09) — nếu phần đó sắp về thì "
+			"cân nhắc giục mua thay vì xin thêm."
+		)
+
 	return {
 		"co_phieu": True,
 		"phieu": mr.as_dict(),
