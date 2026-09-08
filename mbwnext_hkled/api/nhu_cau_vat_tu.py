@@ -190,6 +190,58 @@ def _po_chua_ve(ma_hang, cac_ky):
 # ── Nổ định mức: BOM -> BOM Template -> liệt kê (đầu bài mục 4.2) ─────────────
 
 
+def _ycm_dang_cho(ma_hang):
+	"""{mã: số lượng đã xin mua nhưng CHƯA thành đơn mua} — Yêu Cầu Mặt Hàng đã duyệt.
+
+	🔒 **Anh Thắng chốt 08/09/2026 09:12 — phương án (B): KHÔNG trừ phần này khỏi số cần mua**,
+	nhưng **phải nói ra**. Hàm này chỉ để dựng câu cảnh báo, không tham gia phép tính.
+
+	Vì sao đáng nói: nút *Tạo Yêu Cầu Mặt Hàng* ở Bảng 2 (Phần IV) đẻ ra đúng loại phiếu này, và
+	`_po_chua_ve` **không thấy chúng** — nó chỉ đọc Đơn Mua Hàng. Nên quãng từ lúc kinh doanh xin
+	mua tới lúc người mua lập đơn, màn hình này mù hoàn toàn. Đo 08/09: **99 NVL 3 · 70 NVL 2 ·
+	20 NVL 1** đang nằm ở quãng đó — bấm mua thêm là mua trùng bằng tiền thật.
+
+	Anh Thắng biết và vẫn chọn không trừ, vì hợp với chốt 03/09 16:51 cho Bảng 2 (*"không cần
+	tính trừ các đơn đã đặt mua đâu"*). Việc của hàm này là làm cho chỗ hở đó **nhìn thấy được**.
+
+	⚠ `qty - ordered_qty` chứ không phải `qty`: phần đã chuyển thành đơn mua thì `_po_chua_ve` lo
+	rồi, cộng cả vào đây là đếm hai lần rồi cảnh báo một con số phóng đại.
+	"""
+	if not ma_hang:
+		return {}
+
+	dong = frappe.get_all(
+		"Material Request Item",
+		filters={
+			"item_code": ["in", list(ma_hang)],
+			"docstatus": 1,
+		},
+		fields=["item_code", "qty", "ordered_qty", "parent"],
+	)
+	if not dong:
+		return {}
+
+	# Phiếu đã dừng/huỷ thì không còn ai chờ nữa. Lọc ở đây thay vì trong `filters` vì trạng thái
+	# nằm ở tài liệu cha.
+	cha = {
+		r["name"]: r["status"]
+		for r in frappe.get_all(
+			"Material Request",
+			filters={"name": ["in", list({d["parent"] for d in dong})]},
+			fields=["name", "status"],
+		)
+	}
+
+	cho = {}
+	for d in dong:
+		if cha.get(d["parent"]) in ("Stopped", "Cancelled"):
+			continue
+		con = flt(d["qty"]) - flt(d["ordered_qty"])
+		if con > 0:
+			cho[d["item_code"]] = flt(cho.get(d["item_code"], 0)) + con
+	return {m: round(v, 4) for m, v in cho.items() if v > 0}
+
+
 def _bom_mac_dinh(ma_hang):
 	"""{mã: tên BOM mặc định} — một query cho cả tập."""
 	if not ma_hang:
@@ -705,6 +757,21 @@ def tinh_nhu_cau(
 		})
 
 	dong.sort(key=lambda d: (-flt(d["con_phai_mua"]), d["ma"]))
+
+	# 🔒 Chốt (B) của anh Thắng 08/09 09:12: KHÔNG trừ Yêu Cầu Mặt Hàng đang chờ khỏi số cần mua,
+	# nhưng phải nói ra. Gắn vào từng dòng để màn hình đặt số ngay cạnh con số đi mua — nói ở một
+	# chỗ khác thì người bấm không nối được hai số với nhau.
+	cho_ycm = _ycm_dang_cho([d["ma"] for d in dong])
+	for d in dong:
+		d["ycm_dang_cho"] = flt(cho_ycm.get(d["ma"], 0))
+	if cho_ycm:
+		chi_tiet = ", ".join(
+			"%s (%s)" % (m, round(cho_ycm[m], 4)) for m in sorted(cho_ycm) if cho_ycm[m] > 0
+		)
+		canh_bao.append(
+			_("Đang có phiếu Yêu Cầu Mặt Hàng ĐÃ DUYỆT mà chưa thành đơn mua: {0}. Số cần mua bên"
+			  " dưới CHƯA trừ phần đó — kiểm lại trước khi đặt thêm, kẻo mua trùng.").format(chi_tiet)
+		)
 
 	# Nói ra chỗ con số bị kẹp, thay vì lặng lẽ đổi kết quả. Ghim vượt tồn là dấu hiệu dữ liệu
 	# đang lệch — người dùng cần biết để đi tìm nguyên nhân, không phải chỉ nhận một con số đẹp.

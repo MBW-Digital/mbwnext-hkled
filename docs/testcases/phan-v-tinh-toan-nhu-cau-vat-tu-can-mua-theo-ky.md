@@ -133,3 +133,47 @@ lúc viết file này, sửa trước khi đăng.
 | Nhánh **định mức lặp vòng** trừ tồn hai lần | Mã Sản xuất đã tiêu bể tồn rồi rơi vào nhánh lặp vòng sẽ vào tập lá, và bước 3 trừ `da_dung` lần nữa. **Hiện không tới được** (0 mã lặp vòng). Sai về phía **mua dư**, không phải thiếu hàng — hướng an toàn hơn. Ghi lại chứ không vá |
 | `be[m]` gọi `_ton_thuc_te([m], kho)` **từng mã một** | Hôm nay 4 lần / 6 mã / 0,09s vì site ít bán thành phẩm, và nhớ theo mã nên không nhân theo số kỳ. Nhưng **nhân theo số bán thành phẩm phân biệt** — ở quy mô anh Thắng nêu (>2.000 đơn/năm) thành vài trăm truy vấn lẻ. Gom theo lô được, như `bom.py` đã làm (43,9s → 12,8s) |
 | Bảng **chưa khai tồn tối thiểu** | Chỉ **6 / 62.055** dòng *Mặc định của mặt hàng* có giá trị. Phần V **phụ thuộc PM-FEAT-00037**; cột đó đổi thì mọi mức tối thiểu tụt về 0 **mà không báo gì** |
+
+---
+
+## TC-YCM — nói ra phần Yêu Cầu Mặt Hàng đang chờ (08/09)
+
+🔒 **Anh Thắng chốt 08/09 09:12 — phương án (B):** *"Giữ nguyên em nhé"*. Tức Phần V **KHÔNG trừ**
+phiếu Yêu Cầu Mặt Hàng đang chờ khỏi số cần mua, nhưng **phải nói ra**.
+
+Vì sao chỗ này đáng có bộ ca riêng: anh Thắng chấp nhận (B) dựa trên một lý do — *"số lượng mua kỳ
+này nó cũng đã được tự trừ đi số lượng trên đơn hàng mua kia rồi nên không sợ bị trùng"* — mà lý do
+đó **chỉ đúng khi phiếu đã thành Đơn Mua Hàng**. `_po_chua_ve` đọc Đơn Mua; **không** đọc Yêu Cầu
+Mặt Hàng. Quãng giữa hai thứ đó là quãng màn hình mù, và nút *Tạo Yêu Cầu Mặt Hàng* của Phần IV đẻ
+ra đúng loại phiếu nằm trong quãng ấy.
+
+Đo 08/09 trên site: **NVL 3 99 · NVL 2 70 · NVL 1 20** đang chờ — **cả ba đều lớn hơn số hệ thống
+bảo mua** (72 · 58 · 15). Không nói ra thì mỗi lần bấm là mua trùng bằng tiền thật.
+
+| Mã | Tình huống | KQ mong đợi | KQ thực tế | Đạt |
+|---|---|---|---|---|
+| TC-YCM-01 | Đọc phần **đã duyệt, chưa thành đơn mua** | Đúng ba mã, đúng số | `{NVL 3: 99, NVL 2: 70, NVL 1: 20}` | ✅ Pass |
+| TC-YCM-02 | Mã không có phiếu nào | Không sinh khoá rỗng | không có khoá | ✅ Pass |
+| TC-YCM-03 | Danh sách rỗng | `{}`, không truy vấn | `{}` | ✅ Pass |
+| TC-YCM-04 | Truyền `None` | `{}`, không nổ | `{}` | ✅ Pass |
+| TC-YCM-05 | Phiếu còn **nháp** không được cộng vào | Bỏ qua | site có 15 NVL 3 đang nháp; kết quả vẫn 99, không gồm | ✅ Pass |
+| TC-YCM-06 | Phần **đã thành đơn mua** không đếm lại | Trừ `ordered_qty` | có 30 đã đặt, không cộng lần hai | ✅ Pass |
+| TC-YCM-07 | Mọi dòng kết quả mang trường `ycm_dang_cho` | Có | có | ✅ Pass |
+| TC-YCM-08 | Đúng **một** câu cảnh báo, không lặp | 1 câu | 1 câu | ✅ Pass |
+| TC-YCM-09 | 🔒 **Số cần mua KHÔNG bị trừ** — đúng chốt (B) | Giữ nguyên 72 | 72, không thành −27 | ✅ Pass |
+
+> Chạy bằng cách gọi thẳng hàm, **không lưu tài liệu nào**. Kiểm sau: `Material Request` **10 → 10**.
+
+⚠ `TC-YCM-09` là ca dễ bị "sửa hộ" nhất. Người sau đọc code thấy đo được phần đang chờ mà không
+trừ sẽ tưởng quên, rồi trừ vào cho "đúng". **Đó là đảo chốt của khách.** Muốn đổi thì phải hỏi anh
+Thắng lại, không tự sửa.
+
+### Câu ở màn hình trống — hệ quả của chốt "tính vào kỳ khởi công"
+
+Anh Thắng chốt 08/09: đơn tính vào **kỳ nó khởi công**. Hệ quả: đơn khởi công **trước** khoảng đang
+xem thì không hiện, dù vẫn thiếu hàng thật — và vì mọi đơn đã duyệt trên site đều khởi công trước
+hôm nay, **khoảng mặc định ra màn hình trống**. Đây là trạng thái *thường gặp*, không phải ngoại lệ.
+
+Nên câu ở màn hình trống nay nói thêm **cách gỡ** thay vì chỉ báo trống: giải thích đơn xếp theo
+*Thời Gian Bắt Đầu*, và gợi ý **kéo ngày bắt đầu về trước**. Cần người test xem câu đó có đọc hiểu
+được không — máy không thay được phần này.
