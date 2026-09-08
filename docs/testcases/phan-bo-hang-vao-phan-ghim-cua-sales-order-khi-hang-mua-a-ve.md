@@ -398,3 +398,72 @@ tên handler, câu chữ nói ngược, cảnh báo không hiện — **đều �
 ba đúng. Hai ca `TC-EDGE-11` và `TC-EDGE-18` vẫn **chưa chạy được** vì thiếu dữ liệu (cần một đơn
 không vướng Kế hoạch sản xuất để huỷ + sửa đổi; cần một phiếu nhập vào kho ngoài tập tính tồn).
 `TC-PERM-02` vẫn **Fail**, ngoài phạm vi, đã chốt giữ nguyên.
+
+---
+
+## 🔴 Anh Thắng báo 08/09 00:27 — huỷ phiếu nhập tự tích ô *Giữ Nguyên*
+
+> *"anh huỷ phiếu nhập nó thu hồi lại phần ghim của `SO-26-00033`, nhưng sao nó lại tự tích nút
+> giữ nguyên ở đây nhỉ"*
+
+Ô anh ấy nói là `HKLed Pinned Material.sua_tay`, **nhãn hiển thị *Giữ Nguyên***. Nghĩa của nó là
+*"người dùng tự sửa tay, đừng ghi đè"*. Hệ thống tự tích vào đó là **kể sai chuyện cho người đọc**.
+
+### Đo trên dữ liệu thật
+
+`PNK-26-00008` huỷ lúc `00:25:22`, nhật ký chia cho `SO-26-00033`: `Test NVL 1` 2 · `Test NVL 2` 2
+· `Test NVL 3` 2. Sau khi thu hồi, cả ba về 0 — nhưng:
+
+```
+Test NVL 1   ghim 0   GIU NGUYEN = 1
+Test NVL 2   ghim 0   GIU NGUYEN = 0
+Test NVL 3   ghim 0   GIU NGUYEN = 0
+```
+
+Ba mã cùng cảnh, một mã bị tích. `SO-26-00034` y hệt — cũng chỉ `Test NVL 1`.
+
+### Hai nguyên nhân, và nguyên nhân thật KHÔNG phải chỗ nhìn thấy đầu tiên
+
+**(1) Chỗ dễ thấy** — `_cat_ghim` có hẳn dòng `r.sua_tay = 1` kèm chú thích *"đã bị can thiệp —
+đừng tự ghim lại"*. Nhưng nó chỉ chạy khi thật sự cắt được (`bot > 0`). Hàm lưu **theo từng mã**;
+lần lưu đầu kích `dong_bo_doc` **dựng lại cả bảng**, nên hai mã sau đã bị đưa về 0 ngay lúc đó,
+tới lượt chúng thì `bot = 0` → `continue`. Cờ vì thế bám vào **mã được xử lý trước** (thứ tự chữ
+cái), không theo việc gì thật sự xảy ra.
+
+**(2) Nguyên nhân THẬT** — gỡ dòng trên **vẫn chưa hết**. Dựng lại đúng ca rồi chạy:
+
+```
+go dong `r.sua_tay = 1`  ->  Test NVL 1 VAN bi tich
+```
+
+Vì `dong_bo_doc` có **bộ dò sửa tay** riêng: nó so số trên form với số dưới database, thấy lệch
+thì kết luận *"người dùng vừa gõ"*. Mà số lệch đó do **chính `_cat_ghim` vừa cắt**.
+
+### Cách sửa — dùng lại đúng cơ chế đã có
+
+Nút *Phân Bổ* đã giải bài này rồi: `phan_bo` đặt `doc.flags.phan_bo_lai = True` trước khi lưu,
+`dong_bo_ghim_vat_tu` đọc cờ đó và truyền `bo_qua_sua_tay=True`. Đường **thu hồi** là phép nghịch
+của phép chia, nên phải dùng **cùng cờ**. Đã thêm vào `_cat_ghim`, và gỡ luôn dòng `sua_tay = 1`
+(thừa: lượt dựng lại bảng đã tự cho ra 0 vì tồn thật sự hết).
+
+### Kiểm — dựng lại đúng ca của anh Thắng, trong giao dịch rồi `rollback`
+
+| Ca | Kết quả | P/F |
+|---|---|---|
+| Đặt 3 mã = 2 rồi gọi `_cat_ghim` từng mã (đúng thứ tự `thu_hoi_phan_bo` đi) | `Test NVL 1` cắt −2; hai mã kia trả `[]` vì đã về 0 — **tái hiện đúng cơ chế** | — |
+| Sau khi sửa: số dòng bị tích *Giữ Nguyên* | **0** (trước khi sửa: 1) | Pass |
+| **Người dùng sửa tay THẬT** (giảm 1 dòng rồi Lưu, không cờ nào) | **đúng 1 dòng** bị tích — đúng dòng vừa sửa; sổ tính lại đúng (`NVL 1` 4 → 5) | Pass |
+| `kiem_bat_bien()` | sạch ở cả hai lượt | Pass |
+| `rollback` | bảng về đúng trạng thái trước | Pass |
+
+⚠ Ca thứ ba là ca quan trọng nhất: sửa chỗ này mà làm hỏng nó thì **mất luôn tính năng anh Thắng
+xin ngày 05/09 09:20** (*"anh muốn sửa được, vì có thể có trường hợp các bạn nhường nhau"*).
+
+### Dọn dữ liệu
+
+Hai dòng đang bị tích nhầm đã gỡ: `SO-26-00033` và `SO-26-00034`, cùng mã `Test NVL 1`, cả hai
+đều `ghim = 0`. Dùng `update_modified=False` nên **không đụng dấu thời gian** của hai đơn
+(vẫn `00:25:22` và `00:25:23` — giờ của anh Thắng). Toàn site nay **0/35 dòng** bật cờ.
+
+📌 Cố ý **chỉ gỡ dòng có `ghim = 0`**: dòng đang ghim > 0 mà bật cờ thì có thể là người dùng thật
+sự sửa tay, gỡ hộ là xoá ý định của họ.

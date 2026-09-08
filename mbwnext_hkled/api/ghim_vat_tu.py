@@ -744,7 +744,27 @@ def _cat_ghim(ten_don, ma, so_luong, ly_do):
 		if bot <= 0:
 			continue
 		r.so_luong_ghim = flt(r.so_luong_ghim) - bot
-		r.sua_tay = 1        # đã bị can thiệp — đừng tự ghim lại ở lần đồng bộ kế tiếp
+		# ⚠ KHÔNG đặt `sua_tay = 1` ở đây. Bản trước có, kèm lý do *"đã bị can thiệp — đừng tự
+		#   ghim lại ở lần đồng bộ kế tiếp"*. Ý đồ đúng nhưng thừa VÀ đặt sai chỗ:
+		#
+		#   • **Thừa** — lượt `dong_bo_doc` chạy ngay sau `doc.save()` bên dưới đã tự cho ra 0
+		#     rồi, vì tồn thật sự đã hết. Không cần cờ nào giữ hộ.
+		#
+		#   • **Sai chỗ** — hàm này lưu theo TỪNG MÃ. Lần lưu đầu tiên kích `dong_bo_doc`, hàm
+		#     đó **dựng lại cả bảng**, nên các mã còn lại bị đưa về 0 ngay lúc ấy; tới lượt
+		#     chúng thì `so_luong_ghim` đã là 0, `bot = 0`, `continue` — không bao giờ chạm
+		#     dòng gán cờ. Kết quả: cờ chỉ bám vào **mã được xử lý trước** (thứ tự chữ cái),
+		#     không theo việc gì thật sự xảy ra.
+		#     Đo 08/09 trên dữ liệu thật: huỷ `PNK-26-00008` thu hồi 3 mã của `SO-26-00033`,
+		#     cả 3 về 0 nhưng **chỉ `Test NVL 1`** bị tích. `SO-26-00034` y hệt.
+		#
+		#   • **Hệ quả** — dòng bị tích **không bao giờ tự ghim lại** kể cả khi hàng về sau,
+		#     nên cùng một đơn có mã tự ghim lại được và mã thì không.
+		#
+		# 🔒 Anh Thắng báo 08/09 00:27 (PM-FEAT-00036): *"anh huỷ phiếu nhập nó thu hồi lại
+		#    phần ghim … nhưng sao nó lại tự tích nút giữ nguyên ở đây nhỉ"*. Ô đó nhãn là
+		#    **Giữ Nguyên** và nghĩa của nó là *người dùng tự sửa tay*; hệ thống tự tích vào
+		#    là kể sai chuyện cho người đọc.
 		con -= bot
 		doi = True
 		viec.append(f"{ten_don} · {ma}: vật tư −{_so(bot)} ({ly_do})")
@@ -762,6 +782,15 @@ def _cat_ghim(ten_don, ma, so_luong, ly_do):
 
 	if doi:
 		doc.flags.ignore_version = True
+		# 🔴 BẮT BUỘC — cùng cờ mà nút *Phân Bổ* dùng (xem `phan_bo`). Thiếu nó thì lượt
+		#    `dong_bo_doc` chạy ngay sau `save()` sẽ so số trên form với số dưới database,
+		#    thấy lệch, và kết luận **"người dùng vừa sửa tay"** ➜ tự tích ô *Giữ Nguyên*.
+		#    Mà số lệch đó là do CHÍNH HÀM NÀY vừa cắt, không phải người gõ.
+		#
+		#    Đây là chỗ hỏng thật anh Thắng báo 08/09 00:27, không phải dòng `sua_tay = 1`
+		#    trong vòng lặp trên (dòng đó đã gỡ, nhưng gỡ một mình **không đủ** — đã dựng lại
+		#    ca thật và kiểm: vẫn bị tích cho tới khi có cờ này).
+		doc.flags.phan_bo_lai = True
 		doc.save(ignore_permissions=True)
 	return viec
 
