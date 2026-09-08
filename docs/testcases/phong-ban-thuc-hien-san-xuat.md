@@ -328,3 +328,34 @@ ngay khi lập kế hoạch' sang 'có sau khi trưởng phòng phân đội'"*)
 Việc phân đội đi qua nút **Thêm Đội Sản Xuất**, và nút đó đã lọc theo phòng ban của lệnh.
 
 ⚠ Kế hoạch **cũ** đã điền đội thì vẫn chạy như trước — ẩn không xoá giá trị (`TC-AN-04`).
+
+### 🔒 Chốt cuối — anh Thắng xác nhận 08/09 15:25
+
+Câu chốt lúc **15:09** của anh ấy dùng chữ **"lệnh sản xuất"**, đọc được hai kiểu và một kiểu thì phải
+gỡ khá nhiều thứ. Hỏi lại, và anh ấy **tự đính chính lúc 15:25**:
+
+> *"à anh xin lỗi nhé, anh viết nhầm, họ không cần chọn đội ở **kế hoạch sản xuất** nữa rồi, nên em
+> cứ giữ ẩn trường đội sản xuất ở trong kế hoạch sản xuất đi giúp anh nhé"*
+
+➜ **Giữ ẩn, và chỉ ẩn ở Kế hoạch sản xuất.** Nút *Thêm Đội Sản Xuất* trên Lệnh sản xuất **giữ nguyên**
+— nó vẫn là đường phân đội chính thức, đúng chốt 07/09 11:13.
+
+⚠ **Vì sao đáng hỏi lại thay vì tự suy:** nếu hiểu theo nghĩa đen chữ *"lệnh sản xuất"* thì phải bỏ
+luôn nút kia — và bảng `custom_work_order_employee` chỉ có **đúng hai đường được ghi vào**: hộp thoại
+của nút đó (`controllers/js/work_order.js:134`) và khối đọc đội từ Kế hoạch
+(`controllers/python_hook/work_order.py:269`, đã chết vì ẩn ô). Mất nốt đường đầu là bảng nhân công
+không còn nguồn nào, kéo theo `api/work_order_schedule.py:241` chặn cứng:
+
+```python
+if not wo.custom_work_order_employee:
+    frappe.throw(_("Chưa có nhân sự nào trong Bảng Nhân Công Tham Gia"))
+```
+
+Tức **không tính được lịch sản xuất, Gantt rỗng, Bảng 3 nguồn lực mất đầu vào** — nghĩa là tắt
+PM-FEAT-00008 và PM-FEAT-00009, hai tính năng khách đã nghiệm thu. Một chữ viết nhầm, và khoảng cách
+giữa hai cách hiểu là hai tính năng.
+
+📌 **Cách hỏi đã dùng, dùng lại được:** không hỏi *"anh chọn (a) hay (b)"* mà **hỏi bằng cái giá** —
+nêu rõ bỏ nút đó thì mất tính lịch và Gantt, rồi xin trả lời bằng một trong hai **câu chữ** cụ thể.
+Nhãn chữ cái tự nó vô nghĩa với người đọc, và cùng buổi sáng đã có một lần suýt nhầm vì hai cặp
+(A)/(B) ngược nhau cùng treo.
