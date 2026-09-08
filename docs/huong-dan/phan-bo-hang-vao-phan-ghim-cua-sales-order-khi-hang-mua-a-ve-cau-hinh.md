@@ -32,6 +32,45 @@ Phần thao tác hằng ngày xem
 ⚠ Mặt hàng *Sản xuất* mà **thiếu định mức** thì hệ thống không im lặng bỏ qua — nó hiện cảnh báo
 dạng thông báo nhanh khi lưu đơn. Đây là dữ liệu khách phải khai, không phải lỗi.
 
+### ⚠ Dựng site MỚI: câu lỗi chỉ sai chỗ
+
+Bảng **Ghim Vật Tư** là một DocType riêng của app (`HKLed Pinned Material`). DocType đi theo
+`bench migrate`, **fixtures không mang nó** — nên site mới chỉ chạy `sync_fixtures()` sẽ có đủ
+Custom Field mà vẫn thiếu bảng này, và **vỡ ngay lúc lưu Đơn Bán Hàng đầu tiên**:
+
+```
+ImportError: Module import failed for HKLed Pinned Material, the DocType you're trying to
+open might be deleted.
+Error: No module named 'frappe.core.doctype.hkled_pinned_material'
+```
+
+🔴 **Chữ `frappe.core` trong câu lỗi KHÔNG có nghĩa là lỗi nằm ở app lõi.** Đó chỉ là đường dẫn
+Frappe suy ra khi không tìm thấy doctype ở đâu cả. Người đọc câu này gần như chắc chắn sẽ đi tìm
+sai chỗ — đó là lý do nó được chép nguyên văn vào đây.
+
+Cách chữa, **không cần** `bench migrate` (tránh kéo theo các patch nạp lại danh mục):
+
+```python
+from frappe.modules.import_file import import_file_by_path
+import_file_by_path(
+    "apps/mbwnext_hkled/mbwnext_hkled/mbwnext_hkled/doctype/"
+    "hkled_pinned_material/hkled_pinned_material.json",
+    force=True,
+    reset_permissions=True,
+)
+```
+
+Kiểm lại sau khi nạp — cả hai phải đúng:
+
+```python
+frappe.db.table_exists("HKLed Pinned Material")                       # True
+len(frappe.get_all("DocType", filters={"module": "MBWNext HKLed"}))   # 13
+```
+
+Đếm ra **12** nghĩa là vẫn thiếu đúng bảng này. Đo trên cổng 8012 ngày 08/09: `True` và `13`.
+
+*(Phát hiện bởi phiên `HKLed 3` khi dựng bãi test `test.com` ngày 08/09.)*
+
 ---
 
 ## 2. Kho nào được tính là tồn dùng được
