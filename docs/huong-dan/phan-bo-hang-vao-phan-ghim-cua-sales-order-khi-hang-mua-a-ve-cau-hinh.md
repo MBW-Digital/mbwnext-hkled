@@ -53,6 +53,25 @@ nhóm đều có thật trên site (`Nhóm kho lỗi - HKL`, `Nhóm kho trung ch
 hàng vào một kho mới, kiểm xem kho đó có vô tình nằm dưới hai nhóm trên không. Hộp thoại **Phân
 Bổ** có cảnh báo riêng cho ca này — *"Có mặt hàng nhập vào kho không được tính tồn"*.
 
+### Cách tự kiểm một kho cụ thể có bị loại không
+
+1. Mở **Warehouse** (*Kho*) cần kiểm.
+2. Xem trường **Parent Warehouse** (*Kho cha*).
+3. Bấm vào kho cha đó, xem tiếp kho cha của nó — **lần ngược lên tới nhóm gốc**.
+4. Nếu đường đi ngược đó chạm `Nhóm kho lỗi` hoặc `Nhóm kho trung chuyển` thì kho này **bị loại**,
+   hàng nằm trong đó không giữ chỗ và không chia được.
+
+Kiểm nhanh cả site bằng `bench console`:
+
+```python
+from mbwnext_hkled.api.kiem_tra_ton_kho import _kho_hop_le
+import frappe
+ok = set(_kho_hop_le())
+tat_ca = set(frappe.get_all("Warehouse", filters={"is_group": 0}, pluck="name"))
+print("Được tính tồn:", len(ok))
+print("BỊ LOẠI:", sorted(tat_ca - ok))
+```
+
 Tên hai nhóm kho **khớp theo tên nhóm**, nên đổi tên nhóm kho trên site là đổi hành vi. Muốn thêm
 nhóm bị loại thì sửa hằng số `NHOM_KHO_LOAI` trong `api/kiem_tra_ton_kho.py`, không có màn hình
 cấu hình cho việc này.

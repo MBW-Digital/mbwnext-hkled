@@ -49,11 +49,16 @@ thiếu.
 
 ## 3. Các bước thực hiện
 
+> 📌 **Màn hình của bạn có thể đang chạy tiếng Anh.** Site HKLED đặt ngôn ngữ mặc định là
+> **English**, và hiện **8/10 tài khoản** để tiếng Anh. Nên các ô **do MBWNext thêm** hiện tiếng
+> Việt (*Ghim Tồn Khả Dụng*, *Đã Ghim*…), còn **nút và tên màn hình của hệ thống** hiện tiếng
+> Anh. Dưới đây ghi kèm cả hai ở lần nhắc đầu.
+
 ### Bước 1 — Bật giữ chỗ cho đơn hàng
 
-1. Mở **Đơn Bán Hàng** cần giữ chỗ.
-2. Tích ô **Ghim Tồn Khả Dụng**.
-3. Bấm **Lưu**, rồi **Duyệt** đơn.
+1. Mở **Đơn Bán Hàng** (*Sales Order*) cần giữ chỗ.
+2. Tích ô **Ghim Tồn Khả Dụng** — nằm ở **phần đầu đơn, ngay dưới ô *Set Source Warehouse***.
+3. Bấm **Lưu** (*Save*), rồi **Duyệt** (*Submit*) đơn.
 
 > ⚠️ **Đơn chưa duyệt thì chưa giữ chỗ được.** Tích ô rồi bấm Lưu trên đơn nháp, bảng
 > **Ghim Vật Tư** sẽ để trống và hệ thống hiện câu nhắc:
@@ -73,6 +78,9 @@ Ngay dưới lưới hàng hoá của đơn có bảng **Ghim Vật Tư**:
 | **Nhu Cầu** | tổng vật tư cần cho phần phải làm đó |
 | **Đã Ghim** | phần đã giữ được — **luôn ≤ phần kho đang còn rảnh** |
 | **Giữ Nguyên** | xem [Bước 4](#bước-4--nhường-bớt-hàng-cho-đơn-khác) |
+
+> 📌 Mở một dòng ra (bấm vào dòng) sẽ thấy thêm ba ô: **Định Mức**, **Định Mức Sửa Lúc**,
+> **Cập Nhật Lúc**. Đó là **dấu vết kỹ thuật** để đối chiếu khi cần, **không phải đụng tới**.
 
 Hệ thống **chỉ giữ phần kho thật sự đang rảnh**, đã trừ phần các đơn khác giữ trước. Nên *Đã Ghim*
 nhỏ hơn *Nhu Cầu* là bình thường — phần chênh là phần phải đi mua.
@@ -118,8 +126,16 @@ tự ghim lại"*. Phần nhả ra thành hàng rảnh, đơn khác dùng đư�
 > ⚠️ Ô **Giữ Nguyên** chỉ nên do **người dùng** làm cho bật lên. Nếu thấy nó tự bật mà không ai
 > sửa gì thì báo lại — đó là lỗi.
 
-> 📌 Bấm **Phân Bổ** sau đó thì hệ thống **chia lại bình thường** theo thứ tự cần gấp, kể cả các
-> dòng đang tích **Giữ Nguyên**. Đây là chủ ý: hàng mới về thì chia lại từ đầu cho công bằng.
+> 🔴 **Giữ Nguyên chống cái gì, và KHÔNG chống cái gì — đọc kỹ chỗ này.**
+>
+> Ô **Giữ Nguyên** giữ số bạn vừa đặt qua các lần **Lưu đơn** — hệ thống sẽ không tự ghim lại.
+>
+> Nó **không** giữ qua lần **Phân Bổ** kế tiếp. Hàng mới về thì chia lại từ đầu theo thứ tự cần
+> gấp, kể cả dòng đang tích Giữ Nguyên (chốt của anh Thắng 05/09 09:39).
+>
+> **Nghĩa là:** nếu bạn vừa nhường hàng cho đơn khác mà sau đó có người bấm **Phân Bổ**, phần
+> bạn nhường **có thể quay lại đơn bạn** — và bạn **phải nhường lại**. Muốn chắc thì báo người
+> mua hàng biết trước khi họ bấm.
 
 ### Bước 5 — Huỷ phiếu nhập mua
 
@@ -147,17 +163,22 @@ của đơn ít gấp nhất** và ghi rõ đã cắt của ai bao nhiêu.
 
 | Thông báo | Nguyên nhân | Cách xử lý |
 |---|---|---|
-| *Dòng **N** — **mã hàng**: chỉ giữ chỗ được tối đa **X**, không được **Y**. Tồn khả dụng còn **Z** (đã trừ phần các đơn khác đang giữ), đơn này cần **W**.* | Gõ vào ô **Số Lượng Giữ Chỗ** một số lớn hơn phần kho đang rảnh | Sửa lại ô đó xuống tối đa **X** rồi Lưu. Muốn nhiều hơn thì phải đợi hàng về, hoặc xin đơn khác nhường |
+| *Dòng **N** — **mã hàng**: chỉ giữ chỗ được tối đa **X**, không được **Y**. Tồn khả dụng còn **Z** (đã trừ phần các đơn khác đang giữ), đơn này cần **W**.* | Gõ một số lớn hơn phần kho đang rảnh vào cột **Số Lượng Giữ Chỗ** — cột này nằm **trong lưới hàng hoá, ngay cạnh cột Số Lượng**, không phải ở đầu đơn | Sửa lại cột đó xuống tối đa **X** rồi Lưu. Muốn nhiều hơn thì phải đợi hàng về, hoặc xin đơn khác nhường |
 | **Không đủ quyền phân bổ** — *Nút Phân Bổ chia hàng cho **tất cả** Đơn Bán đang ghim theo thứ tự cần gấp, nên chỉ người xem được toàn bộ đơn mới bấm được. Tài khoản của anh/chị đang xem được **a** trên **b** đơn đang ghim.* | Tài khoản bị giới hạn chỉ xem được một phần Đơn Bán Hàng | Nhờ quản trị bỏ giới hạn xem Đơn Bán Hàng cho tài khoản này, hoặc nhờ người khác bấm |
 | **Chưa duyệt phiếu** — *Phiếu nhập mua chưa được duyệt nên hàng chưa vào kho — chưa phân bổ được.* | Bấm Phân Bổ trên phiếu còn nháp | Duyệt phiếu nhập mua trước, rồi bấm lại |
 
-Ba câu dưới đây **không phải lỗi**, chỉ là thông báo:
+### Không phải lỗi — đọc cho biết
 
 | Thông báo | Nghĩa |
 |---|---|
 | *Đơn chưa duyệt nên chưa giữ chỗ được vật tư…* | Đúng, duyệt đơn xong sẽ có số |
 | *Không chia được gì thêm — hoặc các đơn đã ghim đủ, hoặc hàng vừa về đã có chủ.* | Không còn hàng rảnh để chia, không phải hỏng |
-| *Toàn nhà máy đang có phiếu yêu cầu ĐÃ DUYỆT mà chưa thành đơn mua…* | Nhắc để khỏi xin mua trùng — xem [Câu hỏi thường gặp](#6-câu-hỏi-thường-gặp) |
+
+### 🔴 Không phải lỗi — nhưng PHẢI đọc trước khi bấm gửi
+
+| Thông báo | Vì sao phải dừng lại đọc |
+|---|---|
+| *Toàn nhà máy đang có phiếu yêu cầu **ĐÃ DUYỆT** mà chưa thành đơn mua: …* | Đây là **tiền thật**. Hệ thống **không tự trừ** phần đang chờ đó, nên nếu bạn xin thêm mà không nhìn con số này thì nhà máy **mua thừa**. Đo ngày 08/09: `NVL 3` đang chờ **99**, `NVL 2` **70**, `NVL 1` **20** — trong đó một phiếu từ **13/08** giữ 60 `NVL 3` suốt một tháng. Thấy phần mình cần đã nằm trong đó thì **giục mua**, đừng xin thêm |
 
 ---
 
