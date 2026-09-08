@@ -3,7 +3,8 @@
 > **Khách hàng:** HKLED
 > **App:** `mbwnext_hkled` (tầng 4 — chỉ khách này dùng)
 > **PM Project:** `PM-PRJ-00003` · **PM Feature:** `PM-FEAT-00045`
-> **Trạng thái:** Analysis — đặc tả đã rõ, **chặn ở dữ liệu đầu vào**, xem mục 4b
+> **Trạng thái:** **Đặc tả đã chốt đủ 08/09 16:39 — sẵn sàng code.** Dữ liệu đầu vào còn thiếu
+> nhưng anh Thắng đã quyết cứ dựng màn hình trước, xem mục 4b.
 > **Ngày lập:** 2026-09-08
 
 ⚠ Tên trên PM đang là *"Phần IV.3 - Tạo bảng giá niêm yết"*. Đề nghị đổi thành **Xuất bảng giá
@@ -290,33 +291,77 @@ riêng, không nằm trong tính năng này.
 
 ---
 
-## 7. Còn phải hỏi — năm câu
+## 7. Năm câu đã hỏi — anh Thắng trả lời đủ
 
-**Câu 1 🔴 — Ai nạp dữ liệu giá đầu vào, và bao giờ?**
-Xem mục 4b. Nếu chưa có thì đợt 1 nên làm gì: dựng màn hình để sẵn (chấp nhận bảng gần như trống),
-hay chờ dữ liệu?
+| Câu | Trả lời | Lúc |
+|---|---|---|
+| **1** Ai nạp dữ liệu giá đầu vào, bao giờ? | *"Em cứ dựng màn hình để sẵn nhé, rồi anh sẽ test trên dữ liệu đã có thôi, hoặc anh tự tạo dữ liệu để test"* — **dựng trước, không chờ dữ liệu** | 16:21 |
+| **2** "Cập nhật cho sales" ghi vào đâu? | Ghi vào `Item Price`, bảng giá **`Standard Selling`** | 16:21 + 16:39 |
+| **3** Hai tỷ lệ cấp hệ thống đặt ở đâu? | *"nên tạo 1 màn hình cài đặt riêng cho HKLED"* — **không** đụng màn hình cài đặt của app lõi | 16:21 |
+| **4** Đợt 1 gồm mấy tính năng? | **Cả ba**; chỉ riêng **file xuất** rút gọn còn 3 cột (mã · giá niêm yết · giá bán để trống) | 16:21 |
+| **5** File Excel có công thức sống không? | *"em thêm 1 trường tỷ lệ chiết khấu trên file… file xuất sẽ có công thức sống"* — **có** | 16:21 |
 
-**Câu 2 — "Cập nhật sang cho sales nhìn thấy" là ghi vào đâu?**
-Ô *Standard Selling Rate* trên mặt hàng, hay một `Item Price` trong một bảng giá cụ thể? Câu này
-quyết định chỗ sales đọc giá, nên phải chốt trước khi code.
+### Ba chỗ hỏi thêm ở mockup — cũng đã chốt
 
-**Câu 3 — Hai tỷ lệ cấp hệ thống đặt ở đâu?**
-`MBWNext System Setting` là của app lõi dùng chung nhiều khách — thêm trường vào đó phải xin phép.
-Đề nghị dựng một màn hình cài đặt riêng của HKLED. Anh duyệt hướng nào?
+> **1. Làm tròn** — *"Làm tròn gần nhất em nhé"* ➜ bội **5.000 gần nhất**, không phải làm tròn lên.
+> Đúng cách tôi suy từ số trong file khách.
+>
+> **2. Bảng giá** — *"ghi vào bảng giá Standard Selling em nhé"* ➜ đúng đề xuất của tôi. Khớp luồng
+> đang chạy: cả 40 đơn bán trên cổng 8012 đều dùng bảng giá này.
+>
+> **3. Dòng không tính được** — *"Em có hiện kèm chữ không tính được nhé"* ➜ **hiện, không ẩn**.
+> Đúng đề xuất của tôi.
+>
+> **4. Cột *Đang áp dụng*** (tôi tự thêm) — *"ok em theo cột Đang áp dụng đó nhé"* ➜ **được duyệt**.
 
-**Câu 4 — Đợt 1 gồm mấy trong ba tính năng ở mục 6.4?**
-Anh nói *"chỉ cần xuất 2 trường trước"* — em hiểu là **cả ba** tính năng đều làm, chỉ **file xuất**
-là rút gọn còn 2 cột. Đúng không, hay đợt 1 chỉ làm mỗi phần xuất?
-
-**Câu 5 — File Excel xuất ra có cần công thức sống không?**
-Mục 6.4 nói người dùng điền tỷ lệ chiết khấu thì Excel *tự tính* ra giá bán. Vậy file phải chứa
-công thức, không phải số chết. Xác nhận giúp em, vì hai cách làm khác nhau.
+*(Tất cả ở bình luận `rnor4mk16o`, 08/09/2026 16:39.)*
 
 ---
 
-## 8. Việc chưa làm, và vì sao
+## 8. Chốt kỹ thuật rút ra từ các câu trả lời
 
-- **Chưa dựng mockup.** Khách đã gửi mockup dạng Google Sheet — em sẽ dựng bản HTML theo đúng bố
-  cục đó sau khi có đáp án Câu 2 và Câu 3, vì hai câu đó đổi phần *cài đặt* của màn hình.
-- **Chưa tick `intake_ready`.** Đặc tả đã rõ, nhưng Câu 1 và Câu 2 còn treo, và đây là quyết định
-  của người.
+**Cost — rẽ nhánh theo `Phương pháp bổ sung`:**
+
+| Phương pháp bổ sung | Nguồn cost |
+|---|---|
+| `Mua hàng` | giá của **đơn mua gần nhất** của mặt hàng đó |
+| `Sản xuất` · `Gia công` | **giá thành của BOM mặc định** |
+
+**Bốn tỷ lệ, hai cấp:**
+
+| Tỷ lệ | Khai ở | Ghi vào |
+|---|---|---|
+| Hao phí | toàn hệ thống | màn hình *Cài Đặt Giá Niêm Yết* (Single riêng của HKLED) |
+| Tính giá niêm yết | toàn hệ thống | như trên |
+| Chi phí R&D | **từng mặt hàng** | Custom Field trên `Item` |
+| Lợi nhuận | **từng mặt hàng** | Custom Field trên `Item` |
+
+⚠ **Không thêm trường vào `MBWNext System Setting`** — đó là màn hình của app lõi dùng chung nhiều
+khách, sửa phải xin phép. Anh Thắng đã chốt dựng màn hình riêng.
+
+**Công thức:**
+
+```
+Cộng          = cost × (100 + hao phí + R&D + lợi nhuận) / 100
+Giá niêm yết  = làm_tròn_5000_gần_nhất( Cộng / tỷ lệ tính giá niêm yết × 100 )
+```
+
+**Nút *Cập nhật giá niêm yết*:** ghi `Item Price` của bảng giá `Standard Selling` cho **đúng những
+mặt hàng người dùng tick**. Không tự động — chốt trong `notes`: *"không được tự ý cập nhật"*.
+
+Kiểm trên cổng 8012 (08/09): `Sales Order Item.price_list_rate` là trường **chỉ đọc**, chảy từ
+`Item Price`; `rate` thì sales sửa được. Cơ chế sẵn có, không phải viết thêm.
+
+**Xuất Excel:** 3 cột — mã mặt hàng · giá niêm yết · **giá bán (rỗng, mang công thức)** — cộng một
+ô *tỷ lệ chiết khấu*. Công thức trong file: `giá bán = giá niêm yết × (1 − tỷ lệ chiết khấu)`.
+
+---
+
+## 9. Việc còn lại
+
+- **Mockup bản 3** đã dựng, bấm được, mọi chỗ đều đã chốt:
+  `docs/mockups/xuat-bang-gia-niem-yet.html`.
+- **Chưa tick `intake_ready`** — đủ điều kiện rồi, nhưng đó là quyết định của người, không phải
+  của tôi. ⚠ Lưu ý: tải file mockup vào thư mục `03-mockup` trên PM sẽ **tự tích cổng này** và đẩy
+  Analysis ➜ Dev, và code app PM ghi rõ *"chỉ tích một lần, không tự bỏ tích lại"*.
+- **Chưa viết test case** — thuộc giai đoạn sau, sau khi code xong.
