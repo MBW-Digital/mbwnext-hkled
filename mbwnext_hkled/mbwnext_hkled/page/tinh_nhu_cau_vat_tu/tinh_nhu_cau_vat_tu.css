@@ -326,3 +326,179 @@
 .hkled-nc-t.nho {
 	max-width: 760px;
 }
+
+/* ── Hai tab: Tính toán / Lập kế hoạch ──────────────────────────────────────
+   Ranh giới giữa hai tab là ranh giới GHI DỮ LIỆU, nên nó phải nhìn thấy được, không phải một
+   cái gạch mờ. Tab đang mở lấy màu chữ chính + gạch chân đậm. */
+
+.hkled-nc-tab {
+	display: flex;
+	gap: 4px;
+	border-bottom: 1px solid var(--border-color);
+	margin-bottom: 4px;
+}
+
+.hkled-nc-tab .t {
+	background: none;
+	border: none;
+	border-bottom: 2px solid transparent;
+	padding: 10px 14px;
+	font-size: var(--text-md);
+	font-weight: 500;
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.hkled-nc-tab .t:hover {
+	color: var(--text-color);
+}
+
+.hkled-nc-tab .t.dang {
+	color: var(--text-color);
+	font-weight: 600;
+	border-bottom-color: var(--text-color);
+}
+
+/* ── Lưới lập kế hoạch ──────────────────────────────────────────────────── */
+
+.hkled-nc-t.ke .o-tich {
+	width: 34px;
+	text-align: center;
+}
+
+.hkled-nc-t.ke .o-dat {
+	width: 96px;
+	padding: 4px 8px;
+	text-align: right;
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+	background: var(--control-bg);
+	color: var(--text-color);
+}
+
+.hkled-nc-t.ke .o-dat:focus {
+	outline: none;
+	border-color: var(--primary);
+}
+
+.hkled-nc-t.ke td.ngay {
+	color: var(--text-muted);
+}
+
+/* Dòng nhắc nằm NGAY DƯỚI dòng hàng nó nói về — gom vào một khối riêng thì người bấm không nối
+   được con số cảnh báo với dòng mình đang định mua. */
+.hkled-nc-t.ke tr.nhac td {
+	padding-top: 0;
+	border-bottom: 1px solid var(--border-color);
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+	white-space: normal;
+}
+
+/* Dòng đã đi vào một đơn nháp trong phiên này. Khoá lại để không lập đơn thứ hai cho cùng phần
+   hàng — phép tính chỉ trừ đơn ĐÃ DUYỆT nên lưới sẽ không tự đổi. */
+.hkled-nc-t.ke tr.da-lap {
+	opacity: 0.55;
+}
+
+.hkled-nc-t.ke .da-lap-nhan {
+	font-size: var(--text-xs);
+	font-weight: 500;
+	color: var(--text-muted);
+	background: var(--bg-color);
+	border-radius: var(--border-radius);
+	padding: 1px 6px;
+}
+
+.hkled-nc-chan {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 0 0;
+}
+
+.hkled-nc-chan .dem {
+	font-size: var(--text-sm);
+	color: var(--text-color);
+}
+
+.hkled-nc-chan .dem .mo {
+	color: var(--text-muted);
+}
+
+/* ── Hộp thoại lập đơn ──────────────────────────────────────────────────── */
+
+.hkled-nc-goiy {
+	margin: 4px 0 14px;
+}
+
+.hkled-nc-goiy .dau {
+	font-size: var(--text-xs);
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	margin-bottom: 6px;
+}
+
+.hkled-nc-goiy .dang-cho,
+.hkled-nc-goiy .mo {
+	color: var(--text-muted);
+}
+
+.hkled-nc-goiy .ghi {
+	white-space: normal;
+	font-size: var(--text-xs);
+	color: var(--text-muted);
+}
+
+/* Tiêu chí chưa đủ dữ liệu vẫn HIỆN, chỉ mờ đi — bỏ hẳn dòng thì người dùng tưởng hệ thống chỉ
+   biết một tiêu chí, thay vì biết ba mà thiếu số cho hai. */
+.hkled-nc-goiy tr.chua {
+	opacity: 0.7;
+}
+
+.hkled-nc-cb-hop {
+	background: var(--bg-yellow-50, #fdf6e7);
+	border: 1px solid var(--border-color);
+	border-radius: var(--border-radius);
+	padding: 10px 12px;
+	margin-bottom: 12px;
+	font-size: var(--text-sm);
+	color: var(--text-color);
+	white-space: normal;
+}
+
+.hkled-nc-cb-hop .ghi {
+	margin-top: 6px;
+	color: var(--text-muted);
+	font-size: var(--text-xs);
+}
+
+/* Ngày cần hàng đã trôi qua. Không tô đỏ báo động — đây không phải lỗi, mà là một sự thật nghiệp
+   vụ (phần hàng này đã trễ). Nhưng phải nhìn thấy được, vì đơn mua sẽ ghi ngày khác với ngày ghi
+   ở đây và người mua cần biết vì sao. */
+.hkled-nc-t td.qua-han {
+	color: var(--text-color);
+}
+
+.hkled-nc-t .nhan-tre {
+	font-size: var(--text-xs);
+	font-weight: 500;
+	color: var(--red-600, #b42318);
+	background: var(--red-50, #fdf2f1);
+	border-radius: var(--border-radius);
+	padding: 1px 6px;
+	margin-left: 4px;
+}
+
+/* Người xem được bảng nhưng không lập được đơn mua. Câu này đặt cạnh nút, hiện ngay lúc vẽ lưới —
+   để tới lúc bấm mới báo là đã bắt người ta tích dòng, gõ số lượng và chọn nhà cung cấp xong xuôi
+   rồi mới nói không được. */
+.hkled-nc-chan .khong-quyen {
+	font-size: var(--text-sm);
+	color: var(--text-muted);
+	text-align: right;
+	max-width: 420px;
+}

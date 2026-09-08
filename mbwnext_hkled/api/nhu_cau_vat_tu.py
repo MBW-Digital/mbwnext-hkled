@@ -242,6 +242,39 @@ def _ycm_dang_cho(ma_hang):
 	return {m: round(v, 4) for m, v in cho.items() if v > 0}
 
 
+def _po_nhap_cho_duyet(ma_hang):
+	"""{mã: số lượng nằm trong Đơn Mua Hàng CÒN NHÁP} — đã lập nhưng chưa duyệt.
+
+	⚠ Chỗ hở này sinh ra từ chính nút *Lập đơn hàng* của tab Lập kế hoạch. Nút đó cố ý tạo đơn ở
+	trạng thái **nháp** — duyệt là cam kết tiền thật với nhà cung cấp, mà đơn do máy dựng thì đơn
+	giá lấy từ bảng giá, có mã chưa có giá nên ra 0. Người mua phải xem lại rồi mới duyệt.
+
+	Nhưng `_po_chua_ve` lọc `docstatus = 1`, tức **không thấy đơn nháp**. Hệ quả: lập đơn xong,
+	bấm Tính toán lại, số thiếu KHÔNG giảm — người mua tưởng chưa lập gì và lập tiếp. Đúng cái
+	bẫy mua trùng mà `_ycm_dang_cho` sinh ra để chặn, chỉ khác chứng từ.
+
+	Nên hàm này KHÔNG tham gia phép tính (giống `_ycm_dang_cho`), chỉ để dựng câu cảnh báo. Muốn
+	số thiếu giảm thật thì đi duyệt đơn — và đó là việc của người, không phải của máy.
+	"""
+	if not ma_hang:
+		return {}
+
+	cha = frappe.get_all("Purchase Order", filters={"docstatus": 0}, pluck="name")
+	if not cha:
+		return {}
+
+	dong = frappe.get_all(
+		"Purchase Order Item",
+		filters={"item_code": ["in", list(ma_hang)], "parent": ["in", cha]},
+		fields=["item_code", "qty"],
+	)
+	cho = {}
+	for d in dong:
+		if flt(d["qty"]) > 0:
+			cho[d["item_code"]] = flt(cho.get(d["item_code"], 0)) + flt(d["qty"])
+	return {m: round(v, 4) for m, v in cho.items() if v > 0}
+
+
 def _bom_mac_dinh(ma_hang):
 	"""{mã: tên BOM mặc định} — một query cho cả tập."""
 	if not ma_hang:
@@ -773,6 +806,20 @@ def tinh_nhu_cau(
 			  " dưới CHƯA trừ phần đó — kiểm lại trước khi đặt thêm, kẻo mua trùng.").format(chi_tiet)
 		)
 
+	# Cùng loại hở với khối trên, chứng từ khác: đơn mua CÒN NHÁP. `_po_chua_ve` lọc `docstatus=1`
+	# nên không thấy chúng, mà nút *Lập đơn hàng* của tab Lập kế hoạch lại cố ý đẻ ra đúng loại
+	# nháp đó. Không nói ra thì người mua lập đơn xong, tính lại thấy số thiếu y nguyên, và lập
+	# thêm một đơn nữa cho cùng phần hàng.
+	po_nhap = _po_nhap_cho_duyet([d["ma"] for d in dong])
+	for d in dong:
+		d["po_nhap"] = flt(po_nhap.get(d["ma"], 0))
+	if po_nhap:
+		chi_tiet = ", ".join("%s (%s)" % (m, round(po_nhap[m], 4)) for m in sorted(po_nhap))
+		canh_bao.append(
+			_("Đang có Đơn Mua Hàng CÒN NHÁP chứa: {0}. Đơn nháp chưa được trừ khỏi số cần mua —"
+			  " duyệt đơn thì lần tính sau mới trừ.").format(chi_tiet)
+		)
+
 	# Nói ra chỗ con số bị kẹp, thay vì lặng lẽ đổi kết quả. Ghim vượt tồn là dấu hiệu dữ liệu
 	# đang lệch — người dùng cần biết để đi tìm nguyên nhân, không phải chỉ nhận một con số đẹp.
 	if ghim_vuot_ton:
@@ -822,6 +869,23 @@ def _dong_gia_cong(gia_cong, canh_bao):
 	return ket
 
 
+def _ngay_can_hang(theo_ky, cac_ky):
+	"""Ngày ĐẦU của kỳ đầu tiên bị thiếu — 🔒 anh Thắng chốt 08/09.
+
+	Không phải ngày đầu của khoảng đang xem: hai vật tư thiếu ở hai kỳ khác nhau thì phải ra hai
+	ngày khác nhau, nếu không người mua đặt cả hai cùng một hạn và hàng về sớm hơn cần cả tháng.
+
+	Ca không kỳ nào cần mua vẫn tới được đây: dòng lọt vào bảng khi *tổng cần mua nếu chưa đặt gì*
+	> 0 mà *còn phải mua* = 0 (hàng đang trên đường đủ bù). Số lượng đặt mặc định khi đó là 0 nên
+	dòng không được tích, nhưng người dùng vẫn gõ tay số vào được — nên phải có ngày để trả, lấy
+	đầu khoảng.
+	"""
+	for i, k in enumerate(theo_ky):
+		if flt(k.get("can_mua")) > 0:
+			return cac_ky[i]["tu"]
+	return cac_ky[0]["tu"] if cac_ky else None
+
+
 @frappe.whitelist()
 def gop_lap_ke_hoach(kieu=KIEU_THEO_DON, **tham_so):
 	"""Gộp tổng các kỳ thành MỘT dòng mỗi vật tư — đầu vào của tab Lập kế hoạch (mục 7).
@@ -833,8 +897,34 @@ def gop_lap_ke_hoach(kieu=KIEU_THEO_DON, **tham_so):
 	*Số lượng đặt* mặc định bằng phần còn phải mua; người dùng sửa được để mua theo lô tối thiểu,
 	mua tròn thùng, hoặc cho về 0 để bỏ dòng. Lúc lập đơn phải dùng **số người dùng chốt**, không
 	dùng số thiếu hụt gốc.
+
+	⚠ Gộp kỳ làm MẤT thông tin kỳ, nên `ngay_can_hang` phải tính TRƯỚC khi gộp — đó là thứ duy
+	nhất của chiều thời gian còn sống sót sang tab này.
 	"""
 	kq = tinh_nhu_cau(kieu=kieu, **tham_so)
+	_gop_dong(kq)
+	return kq
+
+
+def _gop_dong(kq, nguoi_dung=None):
+	"""Gắn `kq["lap_ke_hoach"]` — gọi từ CẢ hai đường: gọi thẳng và chạy nền.
+
+	Tách ra vì đường thật mà màn hình đi là đường chạy nền (`_chay_nen`); nếu chỉ gộp ở
+	`gop_lap_ke_hoach` thì tab Lập kế hoạch không bao giờ nhận được dữ liệu, mà lỗi lại hiện ra
+	dưới dạng "lưới trống" — trông y hệt "không thiếu gì cả".
+
+	⚠ `nguoi_dung` phải truyền vào ở đường chạy nền: job chạy trong worker, `frappe.session.user`
+	ở đó KHÔNG phải người bấm nút. Hỏi quyền nhầm người thì màn hình khoá nút của người có quyền,
+	hoặc tệ hơn, mở nút cho người không có.
+	"""
+	# Màn hình cần biết TRƯỚC khi vẽ, không phải lúc bấm: xem chú thích ở `tao_don_mua`.
+	kq["duoc_lap_don"] = bool(
+		frappe.has_permission("Purchase Order", "create", user=nguoi_dung or frappe.session.user)
+	)
+	if kq.get("loi") or not kq.get("dong"):
+		kq["lap_ke_hoach"] = []
+		return kq
+	cac_ky = kq.get("cac_ky") or []
 	gop = []
 	for d in kq["dong"]:
 		gop.append({
@@ -846,9 +936,333 @@ def gop_lap_ke_hoach(kieu=KIEU_THEO_DON, **tham_so):
 			"thieu_hut": d["con_phai_mua"],
 			"so_luong_dat": d["con_phai_mua"],
 			"da_khai_toi_thieu": d["da_khai_toi_thieu"],
+			"ngay_can_hang": _ngay_can_hang(d.get("ky") or [], cac_ky),
+			# Hai con số cảnh báo đi kèm từng dòng, để màn hình đặt được ngay cạnh số đi mua.
+			# Nói ở một khối riêng thì người bấm không nối được chúng với dòng nào.
+			"ycm_dang_cho": d.get("ycm_dang_cho", 0),
+			"po_nhap": d.get("po_nhap", 0),
 		})
 	kq["lap_ke_hoach"] = gop
 	return kq
+
+
+# ── Gợi ý nhà cung cấp (mục 5) ────────────────────────────────────────────────
+#
+# 🔒 Anh Thắng chốt 08/09 08:49: nhà cung cấp chọn trong hộp thoại SAU khi bấm *Lập đơn hàng*,
+# không phải từng dòng trong lưới. Nên ba gợi ý cũng nằm trong hộp thoại đó, và phải trả lời cho
+# **cả rổ hàng đang chọn** chứ không cho một mã.
+#
+# Ba tiêu chí trỏ về ba nhà cung cấp khác nhau là chuyện bình thường — hiện cả ba, không tự ép
+# chọn, không tự chấm điểm tổng hợp. Người mua biết thứ mình đang ưu tiên, máy thì không.
+#
+# ⚠ Nguyên tắc: KHÔNG có dữ liệu thì nói "chưa đủ dữ liệu" kèm lý do, tuyệt đối không đoán. Đo
+# 08/09 trên cổng 8012: 3 đơn mua đã duyệt (đều của một nhà cung cấp), 1 phiếu nhập đã duyệt, và
+# phiếu nhập đó KHÔNG trỏ về đơn mua nào — nên tiêu chí giao nhanh không có gì để đo.
+
+def _ncc_tung_ban(ma_hang):
+	"""{nhà cung cấp: {mã: (đơn giá gần nhất, ngày)}} — chỉ từ đơn mua ĐÃ DUYỆT.
+
+	Đây cũng là **tập ứng viên** cho cả ba tiêu chí. Gợi ý một nhà cung cấp chưa từng bán các mặt
+	hàng này là gợi ý vô nghĩa, dù hồ sơ giao hàng của họ có đẹp tới đâu.
+	"""
+	if not ma_hang:
+		return {}
+	dong = frappe.db.sql(
+		"""select po.supplier, poi.item_code, poi.rate, po.transaction_date
+		   from `tabPurchase Order Item` poi
+		   join `tabPurchase Order` po on po.name = poi.parent
+		   where po.docstatus = 1 and poi.item_code in %(ma)s
+		   order by po.transaction_date asc, po.creation asc""",
+		{"ma": list(ma_hang)},
+		as_dict=True,
+	)
+	theo = {}
+	for d in dong:
+		# Duyệt theo thứ tự tăng dần nên bản ghi sau ghi đè bản ghi trước -> còn lại là GẦN NHẤT.
+		theo.setdefault(d.supplier, {})[d.item_code] = (flt(d.rate), d.transaction_date)
+	return theo
+
+
+def _giao_nhanh(ung_vien):
+	"""{nhà cung cấp: số ngày trung bình từ ngày đặt tới ngày nhận} — chỉ nhà cung cấp có số.
+
+	Đo bằng phiếu nhập đã duyệt CÓ trỏ về đơn mua. Phiếu nhập không trỏ về đơn nào thì không nói
+	được gì về tốc độ giao của một đơn cụ thể — bỏ, chứ không lấy ngày tạo phiếu làm thay.
+	"""
+	if not ung_vien:
+		return {}
+	dong = frappe.db.sql(
+		"""select pr.supplier, pr.posting_date, po.transaction_date
+		   from `tabPurchase Receipt Item` pri
+		   join `tabPurchase Receipt` pr on pr.name = pri.parent
+		   join `tabPurchase Order` po on po.name = pri.purchase_order
+		   where pr.docstatus = 1 and ifnull(pri.purchase_order, '') != ''
+		     and pr.supplier in %(ncc)s""",
+		{"ncc": list(ung_vien)},
+		as_dict=True,
+	)
+	gom = {}
+	for d in dong:
+		if not d.posting_date or not d.transaction_date:
+			continue
+		ngay = (getdate(d.posting_date) - getdate(d.transaction_date)).days
+		if ngay < 0:
+			continue                                  # nhận trước ngày đặt -> dữ liệu lệch, bỏ
+		gom.setdefault(d.supplier, []).append(ngay)
+	return {k: (sum(v) / len(v), len(v)) for k, v in gom.items() if v}
+
+
+def _chat_luong(ung_vien):
+	"""{nhà cung cấp: (tỉ lệ nhận được / nhận về, số dòng đo)}.
+
+	🔒 Anh Thắng chốt 03/09: lấy hai ô có sẵn trên bảng mặt hàng Phiếu Nhập Kho Hàng Mua — *Số
+	lượng chấp nhận* (`qty`) và *Số lượng từ chối* (`rejected_qty`). KHÔNG dùng luồng Kiểm tra
+	chất lượng, không dùng KCS. Chỉ cần duyệt phiếu nhập là có số ngay.
+	"""
+	if not ung_vien:
+		return {}
+	dong = frappe.db.sql(
+		"""select pr.supplier, sum(pri.received_qty) nhan, sum(pri.qty) dat, count(*) so_dong
+		   from `tabPurchase Receipt Item` pri
+		   join `tabPurchase Receipt` pr on pr.name = pri.parent
+		   where pr.docstatus = 1 and pr.supplier in %(ncc)s
+		   group by pr.supplier""",
+		{"ncc": list(ung_vien)},
+		as_dict=True,
+	)
+	ket = {}
+	for d in dong:
+		if flt(d.nhan) <= 0:
+			continue
+		ket[d.supplier] = (flt(d.dat) / flt(d.nhan), int(d.so_dong))
+	return ket
+
+
+@frappe.whitelist()
+def goi_y_nha_cung_cap(ma_hang):
+	"""Ba gợi ý cho rổ hàng đang chọn — [{tieu_chi, nha_cung_cap, can_cu, du_lieu}].
+
+	`du_lieu = False` nghĩa là chưa đủ dữ liệu, và `can_cu` nói rõ THIẾU GÌ. Một dòng gợi ý trống
+	mà không nói vì sao thì người dùng chỉ biết là hệ thống hỏng.
+	"""
+	if isinstance(ma_hang, str):
+		ma_hang = frappe.parse_json(ma_hang)
+	ma_hang = [m for m in (ma_hang or []) if m]
+	if not ma_hang:
+		return []
+
+	gia = _ncc_tung_ban(ma_hang)
+	ung_vien = list(gia)
+	nhanh = _giao_nhanh(ung_vien)
+	chat = _chat_luong(ung_vien)
+
+	ket = []
+
+	# 1 — Giá tốt nhất. So theo TỪNG mã rồi đếm số mã mà nhà cung cấp đó rẻ nhất, chứ không cộng
+	# tổng tiền: rổ hàng mỗi mã một đơn vị, cộng lại là cộng táo với cam.
+	if not gia:
+		ket.append({
+			"tieu_chi": _("Giá tốt nhất"), "nha_cung_cap": None, "du_lieu": False,
+			"can_cu": _("Chưa từng mua {0} mặt hàng này từ nhà cung cấp nào trong đơn mua đã duyệt")
+			.format(len(ma_hang)),
+		})
+	else:
+		thang = {}
+		for m in ma_hang:
+			co = [(v[m][0], k) for k, v in gia.items() if m in v]
+			if not co:
+				continue
+			thang.setdefault(min(co)[1], []).append(m)
+		if not thang:
+			ket.append({
+				"tieu_chi": _("Giá tốt nhất"), "nha_cung_cap": None, "du_lieu": False,
+				"can_cu": _("Không mã nào trong rổ có đơn giá đã mua"),
+			})
+		else:
+			ncc = max(thang, key=lambda k: len(thang[k]))
+			mau = thang[ncc][0]
+			ket.append({
+				"tieu_chi": _("Giá tốt nhất"), "nha_cung_cap": ncc, "du_lieu": True,
+				# ⚠ Phải nói ra MẪU SỐ. "Rẻ nhất" khi trong sổ chỉ có một nhà cung cấp thì đúng
+				# về chữ mà rỗng về nghĩa — người mua đọc thành "đã so giá rồi" và thôi hỏi thêm.
+				"can_cu": _("rẻ nhất ở {0}/{1} mặt hàng, so giữa {2} nhà cung cấp từng bán — ví dụ"
+				            " {3}: {4} ngày {5}").format(
+					len(thang[ncc]), len(ma_hang), len(gia), mau,
+					frappe.format_value(gia[ncc][mau][0], {"fieldtype": "Currency"}),
+					frappe.format(gia[ncc][mau][1], {"fieldtype": "Date"}),
+				),
+			})
+
+	# 2 — Giao nhanh nhất.
+	if not nhanh:
+		ket.append({
+			"tieu_chi": _("Giao nhanh nhất"), "nha_cung_cap": None, "du_lieu": False,
+			"can_cu": _("Chưa có phiếu nhập kho nào đã duyệt mà trỏ về đơn mua — không đo được"
+			            " khoảng cách ngày đặt → ngày nhận"),
+		})
+	else:
+		ncc = min(nhanh, key=lambda k: nhanh[k][0])
+		ket.append({
+			"tieu_chi": _("Giao nhanh nhất"), "nha_cung_cap": ncc, "du_lieu": True,
+			"can_cu": _("trung bình {0} ngày từ lúc đặt tới lúc nhận, đo trên {1} lần nhận,"
+			            " so giữa {2} nhà cung cấp có số").format(
+				round(nhanh[ncc][0], 1), nhanh[ncc][1], len(nhanh)),
+		})
+
+	# 3 — Chất lượng tốt nhất.
+	if not chat:
+		ket.append({
+			"tieu_chi": _("Chất lượng tốt nhất"), "nha_cung_cap": None, "du_lieu": False,
+			"can_cu": _("Chưa có phiếu nhập kho đã duyệt của các nhà cung cấp này — không đo được"
+			            " số lượng chấp nhận ÷ số lượng nhận"),
+		})
+	else:
+		ncc = max(chat, key=lambda k: chat[k][0])
+		ket.append({
+			"tieu_chi": _("Chất lượng tốt nhất"), "nha_cung_cap": ncc, "du_lieu": True,
+			"can_cu": _("nhận đủ {0}% số lượng, đo trên {1} dòng hàng đã nhập của nhà cung cấp"
+			            " này (mọi mặt hàng, không riêng rổ đang chọn), so giữa {2} nhà cung cấp"
+			            " có số").format(round(chat[ncc][0] * 100, 1), chat[ncc][1], len(chat)),
+		})
+
+	return ket
+
+
+# ── Lập đơn mua (mục 7 — bước GHI DỮ LIỆU duy nhất của cả Phần V) ─────────────
+
+
+@frappe.whitelist()
+def tao_don_mua(nha_cung_cap, dong, company=None):
+	"""Tạo MỘT Đơn Mua Hàng CÒN NHÁP cho nhiều dòng hàng. Trả {name, canh_bao}.
+
+	🔒 Anh Thắng chốt 08/09 08:49: *"người dùng tích chọn các mặt hàng rồi ấn lập đơn hàng, lúc
+	này người dùng mới chọn nhà cung cấp, 1 đơn mua có thể cho nhiều dòng hàng"*. Nên: một nhà
+	cung cấp → một đơn. Muốn chia hai nhà cung cấp thì bấm hai lần. Hàm này KHÔNG tự gộp, KHÔNG
+	tự tách theo mã.
+
+	⚠ **Để NHÁP, không duyệt.** Duyệt là cam kết tiền thật với nhà cung cấp, mà đơn giá ở đây do
+	ERPNext điền từ bảng giá — mã chưa có giá thì ra 0. Máy không được phép chốt một con số như
+	thế thay người mua. Hệ quả phải nói ra: `_po_chua_ve` chỉ đếm đơn ĐÃ DUYỆT, nên tính lại ngay
+	sau khi lập đơn thì số thiếu **chưa giảm** — `_po_nhap_cho_duyet` sinh ra để cảnh báo đúng
+	quãng đó.
+
+	⚠ Số lượng lấy từ ô người dùng chốt trong lưới, KHÔNG lấy lại `con_phai_mua`: người dùng sửa
+	để mua tròn thùng hoặc theo lô tối thiểu, tính lại là xoá mất quyết định của họ.
+	"""
+	# Kiểm quyền NGAY, không để `insert()` ném câu lỗi của lõi ở dòng cuối cùng.
+	#
+	# ⚠ Vai trò *Quản lý sản xuất* mở được màn hình này (khai ở `page/tinh_nhu_cau_vat_tu.json`)
+	# nhưng mặc định KHÔNG tạo được Đơn Mua Hàng. Màn hình vốn chỉ đọc nên chênh lệch đó vô hại;
+	# từ khi có nút lập đơn thì nó thành cái bẫy: người dùng tích dòng, gõ số lượng, chọn nhà cung
+	# cấp, rồi mới bị chặn ở bước cuối. Đo 08/09 trên cổng 8012 chưa tài khoản nào dính, nhưng
+	# "quản lý sản xuất lập kế hoạch, không đi mua" là cách phân vai rất thường gặp.
+	if not frappe.has_permission("Purchase Order", "create"):
+		frappe.throw(
+			_("Bạn không có quyền tạo Đơn Mua Hàng. Màn hình này mở được cho cả người lập kế hoạch"
+			  " sản xuất, nhưng lập đơn mua thì cần quyền của bộ phận mua hàng."),
+			frappe.PermissionError,
+			title=_("Không đủ quyền lập đơn mua"),
+		)
+
+	if isinstance(dong, str):
+		dong = frappe.parse_json(dong)
+	dong = dong or []
+	if not nha_cung_cap:
+		frappe.throw(_("Chưa chọn nhà cung cấp"))
+	if not frappe.db.exists("Supplier", nha_cung_cap):
+		frappe.throw(_("Không có nhà cung cấp {0}").format(nha_cung_cap))
+	if frappe.db.get_value("Supplier", nha_cung_cap, "disabled"):
+		frappe.throw(_("Nhà cung cấp {0} đang bị khoá").format(nha_cung_cap))
+
+	company = company or frappe.defaults.get_user_default("Company")
+	if not company:
+		frappe.throw(_("Chưa xác định được công ty"))
+
+	# ── Kiểm đầu vào TRƯỚC khi dựng chứng từ ─────────────────────────────────
+	# Gom hết lỗi rồi báo một lần. Báo từng lỗi một thì người dùng phải bấm 5 lần mới biết hết,
+	# mà mỗi lần bấm lại là một lần suýt tạo nhầm đơn.
+	loi, sach = [], []
+	for i, d in enumerate(dong, 1):
+		ma = (d.get("ma") or "").strip()
+		sl = flt(d.get("so_luong"))
+		if not ma:
+			loi.append(_("Dòng {0}: thiếu mã mặt hàng").format(i))
+			continue
+		if sl <= 0:
+			loi.append(_("Dòng {0} ({1}): số lượng phải lớn hơn 0").format(i, ma))
+			continue
+		hang = frappe.db.get_value("Item", ma, ["name", "is_purchase_item", "disabled"], as_dict=True)
+		if not hang:
+			loi.append(_("Dòng {0}: không có mặt hàng {1}").format(i, ma))
+			continue
+		if hang.disabled:
+			loi.append(_("Dòng {0}: mặt hàng {1} đang bị khoá").format(i, ma))
+			continue
+		if not hang.is_purchase_item:
+			loi.append(_("Dòng {0}: mặt hàng {1} không được khai là hàng mua").format(i, ma))
+			continue
+		sach.append({"ma": ma, "so_luong": sl, "ngay": d.get("ngay_can_hang") or nowdate()})
+
+	if loi:
+		frappe.throw("<br>".join(loi), title=_("Không lập được đơn mua"))
+	if not sach:
+		frappe.throw(_("Không có dòng nào để lập đơn"))
+
+	# ⚠ ERPNext CHẶN `schedule_date` sớm hơn `transaction_date` — "Yêu cầu theo ngày không thể
+	# trước ngày giao dịch". Mà *Ngày cần hàng* ở đây là ngày đầu của kỳ bị thiếu, và kỳ bị thiếu
+	# thường đã TRÔI QUA: đo 08/09 trên cổng 8012, kỳ mặc định bắt đầu 01/08 nên MỌI dòng thật đều
+	# bị chặn. Bản đầu của hàm này qua sạch 20/20 ca test chỉ vì mọi ngày trong test đều ở tương
+	# lai; bấm nút thật thì hỏng ngay dòng đầu tiên.
+	#
+	# Nên kẹp về hôm nay — và NÓI RA. Ngày cần hàng nằm ở quá khứ không phải lỗi dữ liệu: nó có
+	# nghĩa là phần hàng đó đã trễ hạn. Kẹp lặng lẽ là bôi mất đúng cái tin người mua cần biết.
+	hom_nay = getdate(nowdate())
+	tre_han = []
+	for d in sach:
+		goc = getdate(d["ngay"])
+		if goc < hom_nay:
+			tre_han.append((d["ma"], goc))
+			d["ngay"] = hom_nay
+		else:
+			d["ngay"] = goc
+
+	don = frappe.new_doc("Purchase Order")
+	don.supplier = nha_cung_cap
+	don.company = company
+	don.transaction_date = hom_nay
+	# Ngày sớm nhất trong rổ làm ngày của cả đơn; từng dòng vẫn giữ ngày riêng của nó.
+	don.schedule_date = min(d["ngay"] for d in sach)
+	for d in sach:
+		don.append("items", {
+			"item_code": d["ma"],
+			"qty": d["so_luong"],
+			"schedule_date": d["ngay"],
+		})
+	don.set_missing_values()
+	don.insert()
+
+	canh_bao = []
+	if tre_han:
+		canh_bao.append(
+			_("{0} dòng có Ngày cần hàng đã ở quá khứ nên đơn ghi ngày hôm nay ({1}) — phần hàng"
+			  " này ĐÃ TRỄ so với kế hoạch: {2}").format(
+				len(tre_han),
+				frappe.format(hom_nay, {"fieldtype": "Date"}),
+				", ".join(
+					"%s (%s)" % (m, frappe.format(ng, {"fieldtype": "Date"})) for m, ng in tre_han
+				),
+			)
+		)
+	khong_gia = [r.item_code for r in don.items if flt(r.rate) <= 0]
+	if khong_gia:
+		canh_bao.append(
+			_("{0} dòng chưa có đơn giá (bảng giá mua chưa khai): {1}. Điền giá trước khi duyệt.")
+			.format(len(khong_gia), ", ".join(sorted(set(khong_gia))))
+		)
+	canh_bao.append(
+		_("Đơn đang ở trạng thái NHÁP. Số cần mua ở tab Tính toán chỉ giảm sau khi đơn được DUYỆT.")
+	)
+	return {"name": don.name, "canh_bao": canh_bao}
 
 
 # ── Chạy nền (đầu bài mục 6.2 — quy mô 250–350 dòng mỗi kỳ) ───────────────────
@@ -917,6 +1331,7 @@ def _chay_nen(ma_phien, tham_so, nguoi_dung):
 
 	try:
 		kq = tinh_nhu_cau(bao_tien_do=bao, **tham_so)
+		_gop_dong(kq, nguoi_dung=nguoi_dung)
 		kq["ma_phien"] = ma_phien
 	except Exception:
 		frappe.log_error(title="Tính nhu cầu vật tư thất bại", message=frappe.get_traceback())

@@ -113,11 +113,14 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | Mã | Vì sao chưa chạy |
 |---|---|
 | TC-EDGE-06 | Site **không có** định mức lặp vòng; dựng một cái là ghi dữ liệu thật |
-| TC-PERM-01 | Chưa kiểm màn hình dưới vai trò hạn chế. Trang là Frappe Page — **cần xác định ai được mở** |
+| TC-PERM-01 | Đã đo vai trò nào mở được (xem `TC-QUYEN`), nhưng **ai NÊN được mở** thì đang chờ anh Thắng |
 | TC-ISO-01 | Chưa kiểm trên site không cài app khách |
-| TC-UI-01 | Tab **Lập kế hoạch** (bước 4) **chưa làm** — chưa có gì để test |
 
-**Tổng: 31 ca · 30 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+**Tổng: 98 ca · 97 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+
+> Đếm bằng `grep -c '^| TC-.*| Pass |'`. Hai cách đếm SAI đã thử: `grep -c '| Pass |'` đếm cả dòng
+> ghi chú này (dòng dặn cách đếm lại chứa chính chuỗi bị đếm), và `grep -c '^| TC-'` đếm cả bảng
+> *lý do chưa chạy* bên dưới — bảng đó cũng mở đầu bằng mã ca.
 
 > Cập nhật 08/09: thêm nhóm `TC-YCM` (9 ca) sau chốt (B) của anh Thắng — xem cuối file.
 > Đếm bằng `grep -c '^| TC-.*| Pass |'` — **phải neo `^| TC-`**. Hai cách sai đã thử:
@@ -183,3 +186,166 @@ hôm nay, **khoảng mặc định ra màn hình trống**. Đây là trạng th
 Nên câu ở màn hình trống nay nói thêm **cách gỡ** thay vì chỉ báo trống: giải thích đơn xếp theo
 *Thời Gian Bắt Đầu*, và gợi ý **kéo ngày bắt đầu về trước**. Cần người test xem câu đó có đọc hiểu
 được không — máy không thay được phần này.
+
+---
+
+## Bước 4 — tab Lập kế hoạch và lập đơn mua (08/09)
+
+Đây là **chỗ duy nhất của cả Phần V ghi dữ liệu**. Mọi ca dưới đây chạy trên site thật, hoặc trong
+giao dịch rồi `rollback`, hoặc tạo thật rồi **xoá và đếm lại**. `Purchase Order` **3 → 3** sau khi
+chạy xong toàn bộ.
+
+### TC-LKH — gộp kỳ và ngày cần hàng
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-LKH-01 | Thiếu ở kỳ 2 | Ngày đầu **kỳ 2** | `2026-09-15` | Pass |
+| TC-LKH-02 | Thiếu ngay kỳ 1 | Ngày đầu kỳ 1 | `2026-09-08` | Pass |
+| TC-LKH-03 | Không kỳ nào thiếu | Đầu khoảng, không vỡ | `2026-09-08` | Pass |
+| TC-LKH-04 | Không có kỳ nào | `None`, không `IndexError` | `None` | Pass |
+| TC-LKH-05 | Cần mua là số lẻ (0,5) | Vẫn tính là thiếu | đúng kỳ 2 | Pass |
+| TC-LKH-06 | Gộp không mất dòng | Bằng số dòng bảng chính | 3 = 3 | Pass |
+| TC-LKH-07 | Mọi dòng có ngày cần hàng | Có | 3/3 | Pass |
+| TC-LKH-08 | Số lượng đặt mặc định = thiếu hụt | Bằng nhau | bằng | Pass |
+| TC-LKH-09 | Ngày cần hàng luôn là ngày **đầu một kỳ** | Thuộc tập ngày đầu kỳ | đúng | Pass |
+| TC-LKH-10 | Kết quả rỗng | Lưới rỗng, không lỗi | `[]` | Pass |
+| TC-LKH-11 | Kết quả lỗi | Lưới rỗng, không lỗi | `[]` | Pass |
+
+⚠ `_gop_dong` phải gọi ở **cả hai** đường — gọi thẳng và chạy nền. Bản đầu chỉ gộp ở
+`gop_lap_ke_hoach`, mà màn hình đi đường chạy nền, nên lưới sẽ **trống** — trông y hệt "không phải
+mua gì".
+
+### TC-NCC — gợi ý nhà cung cấp
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-NCC-01 | Luôn đủ 3 tiêu chí | 3 dòng | 3 | Pass |
+| TC-NCC-02 | Tiêu chí nào cũng có **căn cứ**, kể cả khi trống | Có | có | Pass |
+| TC-NCC-03 | Chưa đủ dữ liệu thì **không đoán tên** | `None` | `None` | Pass |
+| TC-NCC-04 | Rổ rỗng | Không gợi ý | `[]` | Pass |
+| TC-NCC-05 | Nhận chuỗi JSON (đường HTTP) | Như nhận mảng | giống hệt | Pass |
+| TC-NCC-06 | Mã chưa từng mua | Cả 3 đều "chưa đủ dữ liệu" | đúng | Pass |
+
+Đo 08/09 trên cổng 8012: **Giá tốt nhất** = NCC A (rẻ nhất ở 2/3 mã, so giữa **1** nhà cung cấp);
+**Giao nhanh nhất** = chưa đủ dữ liệu (không phiếu nhập nào trỏ về đơn mua); **Chất lượng** = NCC A
+100%, đo trên **1** dòng.
+
+⚠ Câu *căn cứ* bắt buộc nêu **mẫu số**. "Rẻ nhất" khi trong sổ chỉ có một nhà cung cấp thì đúng về
+chữ mà rỗng về nghĩa — người mua đọc thành "đã so giá rồi" và thôi hỏi thêm. Bản đầu thiếu chỗ này.
+
+### TC-PO — lập đơn mua
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-PO-01 | Thiếu nhà cung cấp | Chặn | chặn | Pass |
+| TC-PO-02 | Nhà cung cấp không có thật | Chặn | chặn | Pass |
+| TC-PO-03 | Rổ rỗng | Chặn | chặn | Pass |
+| TC-PO-04 | Số lượng 0 | Chặn | chặn | Pass |
+| TC-PO-05 | Số lượng âm | Chặn | chặn | Pass |
+| TC-PO-06 | Mã không có thật | Chặn | chặn | Pass |
+| TC-PO-07 | Mã rỗng | Chặn | chặn | Pass |
+| TC-PO-08 | Hai dòng sai | Báo **cả hai** một lần | cả hai | Pass |
+| TC-PO-09 | 7 ca chặn ở trên không tạo gì | Số đơn không đổi | 3 → 3 | Pass |
+| TC-PO-10 | Đơn tạo ra ở trạng thái **nháp** | `docstatus = 0` | 0 | Pass |
+| TC-PO-11 | 2 dòng chọn → **một** đơn 2 dòng | 1 đơn | 1 đơn | Pass |
+| TC-PO-12 | Đúng nhà cung cấp đã chọn | NCC A | NCC A | Pass |
+| TC-PO-13 | Dùng **số người dùng chốt**, không tính lại | 62 / 50 | 62 / 50 | Pass |
+| TC-PO-14 | Mỗi dòng giữ **ngày riêng** | 15/09 và 22/09 | đúng | Pass |
+| TC-PO-15 | Ngày của đơn = ngày sớm nhất trong rổ | 15/09 | 15/09 | Pass |
+| TC-PO-16 | Luôn nói ra đơn còn nháp | Có câu | có | Pass |
+| TC-PO-17 | Đơn nháp **được đếm** vào cảnh báo mua trùng | 62 / 50 | đúng | Pass |
+| TC-PO-18 | Mã không có trong đơn nháp | Không bịa số | không có khoá | Pass |
+| TC-PO-19 | Rollback sạch | 3 → 3 | 3 → 3 | Pass |
+| TC-PO-20 | Đơn thử biến mất | Không tồn tại | không | Pass |
+| TC-PO-21 | 🔴 **Ngày cần hàng ở quá khứ** | Vẫn tạo được | tạo được | Pass |
+| TC-PO-22 | Ngày quá khứ kẹp về hôm nay | `08-09-2026` | đúng | Pass |
+| TC-PO-23 | Và **nói ra** rằng phần này đã trễ | Có câu | có | Pass |
+| TC-PO-24 | Nêu đích danh dòng nào, ngày gốc bao nhiêu | Có | `NVL 2 (01-08-2026)` | Pass |
+| TC-PO-25 | Trộn quá khứ + tương lai — dòng quá khứ | Về hôm nay | đúng | Pass |
+| TC-PO-26 | Trộn — dòng tương lai | **Giữ nguyên** | giữ nguyên | Pass |
+| TC-PO-27 | Chỉ kể tên dòng **thật sự** trễ | Không vơ cả rổ | đúng | Pass |
+| TC-PO-28 | Ngày đơn = sớm nhất **sau khi kẹp** | Hôm nay | đúng | Pass |
+| TC-PO-29 | Dòng không có ngày cần hàng | Hôm nay, không vỡ | đúng | Pass |
+| TC-PO-30 | Rollback sạch lần hai | 3 → 3 | 3 → 3 | Pass |
+
+### TC-UI — bấm thật trên cổng 8012
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-UI-01 | Bấm tab **Lập kế hoạch** khi chưa tính | Chặn, nhắc bấm Tính toán | chặn, có nhắc | Pass |
+| TC-UI-02 | Sau khi tính, lưới hiện đủ dòng | 3 dòng | 3 | Pass |
+| TC-UI-03 | Dòng nhắc YCM nằm **ngay dưới** dòng hàng | Đúng vị trí | đúng | Pass |
+| TC-UI-04 | Sửa số lượng đặt | Đếm lại tổng | 150+122 = 272 | Pass |
+| TC-UI-05 | Chưa tích thì nút **Lập đơn hàng** khoá | Khoá | khoá | Pass |
+| TC-UI-06 | Hộp thoại hiện gợi ý, cảnh báo, bảng dòng | Đủ ba khối | đủ | Pass |
+| TC-UI-07 | Bấm tên nhà cung cấp trong gợi ý | Điền vào ô | điền được | Pass |
+| TC-UI-08 | Nhãn **đã trễ** hiện ở lưới và hộp thoại | Cả hai chỗ | cả hai | Pass |
+| TC-UI-09 | Tạo đơn thật | Ra `PO-26-00007`, có link | ra, có link | Pass |
+| TC-UI-10 | Dòng đã lập đơn bị **khoá và đánh dấu** | Mờ đi, ghi "đã vào PO-…" | đúng | Pass |
+| TC-UI-11 | Lần tính sau **nói ra** đơn nháp đó | Có câu, đúng số | `NVL 2 (146), NVL 3 (122)` | Pass |
+| TC-UI-12 | Dọn sạch sau khi thử | 4 → 3 | 4 → 3 | Pass |
+
+> Đơn thử `PO-26-00007` đã **xoá**; ba đơn còn lại (`PO-26-00004/5/6`) là của Administrator, không
+> đụng tới.
+
+### 🔴 Ca mà 20/20 test server không bắt được
+
+`TC-PO-21` sinh ra từ một lỗi **thật, chỉ hiện khi bấm nút**. ERPNext chặn `schedule_date` sớm hơn
+`transaction_date`. Mà *Ngày cần hàng* là ngày đầu của **kỳ bị thiếu**, và kỳ bị thiếu thường đã
+**trôi qua** — đo 08/09, kỳ mặc định bắt đầu 01/08 nên **mọi dòng thật đều bị chặn**.
+
+Bản đầu qua sạch **20/20** ca test chỉ vì mọi ngày trong test đều ở tương lai. Đây đúng là lý do
+anh Tuấn dặn *"test trên giao diện đi đã rồi mới comment"* — lần thứ hai trong hai ngày.
+
+Cách sửa: kẹp về hôm nay **và nói ra**. Ngày cần hàng nằm ở quá khứ không phải lỗi dữ liệu — nó có
+nghĩa là phần hàng đó **đã trễ**. Kẹp lặng lẽ là bôi mất đúng cái tin người mua cần biết.
+
+### ⚠ Chỗ hở còn lại — đơn nháp không được trừ
+
+Nút này cố ý tạo đơn ở trạng thái **nháp**: duyệt là cam kết tiền thật, mà đơn giá do ERPNext điền
+từ bảng giá, mã chưa có giá thì ra 0. Máy không được chốt con số đó thay người mua.
+
+Nhưng `_po_chua_ve` lọc `docstatus = 1`, tức **không thấy đơn nháp**. Nên lập đơn xong, bấm Tính
+toán lại thì số thiếu **y nguyên** — mockup C2 lại hứa *"đơn mua vừa tạo sẽ được lần chạy sau trừ
+đi"*. **Lời hứa đó chỉ đúng sau khi đơn được duyệt.**
+
+Ba lớp che, không lớp nào thay được việc hỏi anh Thắng:
+
+1. `_po_nhap_cho_duyet` đo và **cảnh báo** phần đang nằm trong đơn nháp (`TC-PO-17`, `TC-UI-11`);
+2. dòng đã lập đơn bị **khoá ngay trên lưới**, ghi rõ đã vào đơn nào (`TC-UI-10`);
+3. hộp thoại thành công **nói thẳng** đơn còn nháp nên số chưa giảm (`TC-PO-16`).
+
+➜ **Cần hỏi anh Thắng:** đơn mua do máy lập nên để **nháp** (an toàn, số chưa trừ) hay **tự duyệt**
+(số trừ ngay, nhưng chốt giá thay người mua)? Đừng tự đổi.
+
+### TC-QUYEN — ai lập được đơn mua từ màn hình này (08/09)
+
+Màn hình vốn **chỉ đọc**, nên ai mở được cũng vô hại. Từ bước 4 nó **tạo Đơn Mua Hàng**, mà hai
+danh sách vai trò lệch nhau:
+
+| Vai trò | Mở được màn hình | Tạo được đơn mua |
+|---|---|---|
+| System Manager · Purchase Manager · Purchase User | ✅ | ✅ |
+| **Manufacturing Manager** | ✅ | **❌** |
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-QUYEN-01 | Quản lý sản xuất không tạo được đơn mua | `has_permission` = False | False | Pass |
+| TC-QUYEN-02 | Màn hình nhận cờ `duoc_lap_don` | `False` | `False` | Pass |
+| TC-QUYEN-03 | Người có quyền thì cờ bật | `True` | `True` | Pass |
+| TC-QUYEN-04 | Kết quả lỗi vẫn trả cờ, không vỡ | Có cờ, lưới rỗng | đúng | Pass |
+| TC-QUYEN-05 | Server chặn bằng **câu của mình**, không phải câu lõi | Nêu rõ cần quyền mua hàng | đúng | Pass |
+| TC-QUYEN-06 | Ca bị chặn không tạo đơn nào | 3 → 3 | 3 → 3 | Pass |
+| TC-QUYEN-07 | Rollback sạch | 3 | 3 | Pass |
+| TC-QUYEN-08 | Tài khoản thử biến mất | Không tồn tại | không | Pass |
+
+⚠ **Đo 08/09 trên cổng 8012: 0 tài khoản dính** — cả ba tài khoản mở được màn hình đều có quyền
+mua. Đây là lỗ hổng **tiềm ẩn**, không phải lỗi đang xảy ra. Nhưng *"quản lý sản xuất lập kế hoạch,
+không đi mua"* là cách phân vai rất thường gặp, nên nó sẽ xảy ra.
+
+⚠ `_gop_dong` phải nhận `nguoi_dung` ở đường chạy nền: job chạy trong worker nên
+`frappe.session.user` ở đó **không phải người bấm nút**. Hỏi quyền nhầm người thì hoặc khoá nút của
+người có quyền, hoặc — tệ hơn — mở nút cho người không có.
+
+➜ **Đã hỏi anh Thắng:** quản lý sản xuất có được lập đơn mua từ màn hình này không? Nếu **có** thì
+việc cần làm là cấp quyền `Purchase Order` cho vai trò đó, **không phải** gỡ chốt chặn này.
