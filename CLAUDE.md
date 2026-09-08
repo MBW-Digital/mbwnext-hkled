@@ -852,7 +852,7 @@ nên không qua hàm đó nữa, nhưng **trường `slug` của PM Feature vẫ
 | `chan-xuat-kho-qua-ton-kha-dung` | PM-FEAT-00034 | ✔ | ✔ (.html) | ✔ 39 ca, **chạy hết** | ✔ cấu hình + vận hành — ⚠ **chưa có `anh/`** |
 | `khai-kho-mac-dinh-va-ton-toi-thieu-theo-cong-ty` | PM-FEAT-00037 | ✔ | — | ✔ 22 ca | ✔ cấu hình + vận hành + `anh/` |
 | `phan-v-tinh-toan-nhu-cau-vat-tu-can-mua-theo-ky` | PM-FEAT-00030 | ✔ | — | — | — |
-| `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` | PM-FEAT-00036 | ✔ | — | — | — |
+| `phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve` | PM-FEAT-00036 | ✔ | — | ✔ 67 ca | ✔ cấu hình + vận hành — ⚠ **chưa có `anh/`** |
 | `khai-kho-mac-dinh-va-ton-toi-thieu-theo-cong-ty` | PM-FEAT-00037 | ✔ | — | — | — |
 
 
