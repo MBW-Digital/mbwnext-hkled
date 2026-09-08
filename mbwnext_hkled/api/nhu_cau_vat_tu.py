@@ -906,13 +906,21 @@ def gop_lap_ke_hoach(kieu=KIEU_THEO_DON, **tham_so):
 	return kq
 
 
-def _gop_dong(kq):
+def _gop_dong(kq, nguoi_dung=None):
 	"""Gắn `kq["lap_ke_hoach"]` — gọi từ CẢ hai đường: gọi thẳng và chạy nền.
 
 	Tách ra vì đường thật mà màn hình đi là đường chạy nền (`_chay_nen`); nếu chỉ gộp ở
 	`gop_lap_ke_hoach` thì tab Lập kế hoạch không bao giờ nhận được dữ liệu, mà lỗi lại hiện ra
 	dưới dạng "lưới trống" — trông y hệt "không thiếu gì cả".
+
+	⚠ `nguoi_dung` phải truyền vào ở đường chạy nền: job chạy trong worker, `frappe.session.user`
+	ở đó KHÔNG phải người bấm nút. Hỏi quyền nhầm người thì màn hình khoá nút của người có quyền,
+	hoặc tệ hơn, mở nút cho người không có.
 	"""
+	# Màn hình cần biết TRƯỚC khi vẽ, không phải lúc bấm: xem chú thích ở `tao_don_mua`.
+	kq["duoc_lap_don"] = bool(
+		frappe.has_permission("Purchase Order", "create", user=nguoi_dung or frappe.session.user)
+	)
 	if kq.get("loi") or not kq.get("dong"):
 		kq["lap_ke_hoach"] = []
 		return kq
@@ -1141,6 +1149,21 @@ def tao_don_mua(nha_cung_cap, dong, company=None):
 	⚠ Số lượng lấy từ ô người dùng chốt trong lưới, KHÔNG lấy lại `con_phai_mua`: người dùng sửa
 	để mua tròn thùng hoặc theo lô tối thiểu, tính lại là xoá mất quyết định của họ.
 	"""
+	# Kiểm quyền NGAY, không để `insert()` ném câu lỗi của lõi ở dòng cuối cùng.
+	#
+	# ⚠ Vai trò *Quản lý sản xuất* mở được màn hình này (khai ở `page/tinh_nhu_cau_vat_tu.json`)
+	# nhưng mặc định KHÔNG tạo được Đơn Mua Hàng. Màn hình vốn chỉ đọc nên chênh lệch đó vô hại;
+	# từ khi có nút lập đơn thì nó thành cái bẫy: người dùng tích dòng, gõ số lượng, chọn nhà cung
+	# cấp, rồi mới bị chặn ở bước cuối. Đo 08/09 trên cổng 8012 chưa tài khoản nào dính, nhưng
+	# "quản lý sản xuất lập kế hoạch, không đi mua" là cách phân vai rất thường gặp.
+	if not frappe.has_permission("Purchase Order", "create"):
+		frappe.throw(
+			_("Bạn không có quyền tạo Đơn Mua Hàng. Màn hình này mở được cho cả người lập kế hoạch"
+			  " sản xuất, nhưng lập đơn mua thì cần quyền của bộ phận mua hàng."),
+			frappe.PermissionError,
+			title=_("Không đủ quyền lập đơn mua"),
+		)
+
 	if isinstance(dong, str):
 		dong = frappe.parse_json(dong)
 	dong = dong or []
@@ -1308,7 +1331,7 @@ def _chay_nen(ma_phien, tham_so, nguoi_dung):
 
 	try:
 		kq = tinh_nhu_cau(bao_tien_do=bao, **tham_so)
-		_gop_dong(kq)
+		_gop_dong(kq, nguoi_dung=nguoi_dung)
 		kq["ma_phien"] = ma_phien
 	except Exception:
 		frappe.log_error(title="Tính nhu cầu vật tư thất bại", message=frappe.get_traceback())

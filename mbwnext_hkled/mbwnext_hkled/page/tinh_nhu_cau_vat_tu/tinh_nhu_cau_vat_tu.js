@@ -549,6 +549,19 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 			this.dem_chon();
 		});
 		$k.find(".nut-lap").on("click", () => this.hop_thoai_lap_don());
+
+		// Nói ra NGAY khi vẽ lưới, không đợi tới lúc bấm.
+		//
+		// ⚠ Vai trò Quản lý sản xuất mở được màn hình này nhưng mặc định không tạo được Đơn Mua
+		// Hàng. Hồi trang còn chỉ đọc thì chênh lệch đó vô hại; từ khi có nút lập đơn, để nguyên
+		// là bắt người ta tích dòng, gõ số lượng, chọn nhà cung cấp rồi mới bị chặn ở bước cuối.
+		if (kq.duoc_lap_don === false) {
+			$k.find(".hkled-nc-chan").append(
+				`<div class="khong-quyen">${__(
+					"Bạn xem được bảng này nhưng không lập được đơn mua — việc đó cần quyền của bộ phận mua hàng."
+				)}</div>`
+			);
+		}
 		this.dem_chon();
 	}
 
@@ -567,7 +580,9 @@ mbwnext_hkled.TinhNhuCauVatTu = class TinhNhuCauVatTu {
 				? __("{0} dòng đã chọn · tổng {1}", [chon.length, this.so(tong)])
 				: `<span class="mo">${__("Chưa chọn dòng nào")}</span>`
 		);
-		$k.find(".nut-lap").prop("disabled", !chon.length);
+		// Không có quyền thì khoá hẳn, bất kể đã tích bao nhiêu dòng.
+		const co_quyen = !this.kq || this.kq.duoc_lap_don !== false;
+		$k.find(".nut-lap").prop("disabled", !chon.length || !co_quyen);
 		return chon;
 	}
 

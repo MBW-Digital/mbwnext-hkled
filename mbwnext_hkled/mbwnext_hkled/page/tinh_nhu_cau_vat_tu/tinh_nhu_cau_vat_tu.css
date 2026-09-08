@@ -492,3 +492,13 @@
 	padding: 1px 6px;
 	margin-left: 4px;
 }
+
+/* Người xem được bảng nhưng không lập được đơn mua. Câu này đặt cạnh nút, hiện ngay lúc vẽ lưới —
+   để tới lúc bấm mới báo là đã bắt người ta tích dòng, gõ số lượng và chọn nhà cung cấp xong xuôi
+   rồi mới nói không được. */
+.hkled-nc-chan .khong-quyen {
+	font-size: var(--text-sm);
+	color: var(--text-muted);
+	text-align: right;
+	max-width: 420px;
+}

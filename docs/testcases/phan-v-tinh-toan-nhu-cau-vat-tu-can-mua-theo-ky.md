@@ -113,10 +113,10 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | Mã | Vì sao chưa chạy |
 |---|---|
 | TC-EDGE-06 | Site **không có** định mức lặp vòng; dựng một cái là ghi dữ liệu thật |
-| TC-PERM-01 | Chưa kiểm màn hình dưới vai trò hạn chế. Trang là Frappe Page — **cần xác định ai được mở** |
+| TC-PERM-01 | Đã đo vai trò nào mở được (xem `TC-QUYEN`), nhưng **ai NÊN được mở** thì đang chờ anh Thắng |
 | TC-ISO-01 | Chưa kiểm trên site không cài app khách |
 
-**Tổng: 90 ca · 89 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+**Tổng: 98 ca · 97 Pass · 1 chưa chạy** (`TC-EDGE-06`).
 
 > Đếm bằng `grep -c '^| TC-.*| Pass |'`. Hai cách đếm SAI đã thử: `grep -c '| Pass |'` đếm cả dòng
 > ghi chú này (dòng dặn cách đếm lại chứa chính chuỗi bị đếm), và `grep -c '^| TC-'` đếm cả bảng
@@ -317,3 +317,35 @@ Ba lớp che, không lớp nào thay được việc hỏi anh Thắng:
 
 ➜ **Cần hỏi anh Thắng:** đơn mua do máy lập nên để **nháp** (an toàn, số chưa trừ) hay **tự duyệt**
 (số trừ ngay, nhưng chốt giá thay người mua)? Đừng tự đổi.
+
+### TC-QUYEN — ai lập được đơn mua từ màn hình này (08/09)
+
+Màn hình vốn **chỉ đọc**, nên ai mở được cũng vô hại. Từ bước 4 nó **tạo Đơn Mua Hàng**, mà hai
+danh sách vai trò lệch nhau:
+
+| Vai trò | Mở được màn hình | Tạo được đơn mua |
+|---|---|---|
+| System Manager · Purchase Manager · Purchase User | ✅ | ✅ |
+| **Manufacturing Manager** | ✅ | **❌** |
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-QUYEN-01 | Quản lý sản xuất không tạo được đơn mua | `has_permission` = False | False | Pass |
+| TC-QUYEN-02 | Màn hình nhận cờ `duoc_lap_don` | `False` | `False` | Pass |
+| TC-QUYEN-03 | Người có quyền thì cờ bật | `True` | `True` | Pass |
+| TC-QUYEN-04 | Kết quả lỗi vẫn trả cờ, không vỡ | Có cờ, lưới rỗng | đúng | Pass |
+| TC-QUYEN-05 | Server chặn bằng **câu của mình**, không phải câu lõi | Nêu rõ cần quyền mua hàng | đúng | Pass |
+| TC-QUYEN-06 | Ca bị chặn không tạo đơn nào | 3 → 3 | 3 → 3 | Pass |
+| TC-QUYEN-07 | Rollback sạch | 3 | 3 | Pass |
+| TC-QUYEN-08 | Tài khoản thử biến mất | Không tồn tại | không | Pass |
+
+⚠ **Đo 08/09 trên cổng 8012: 0 tài khoản dính** — cả ba tài khoản mở được màn hình đều có quyền
+mua. Đây là lỗ hổng **tiềm ẩn**, không phải lỗi đang xảy ra. Nhưng *"quản lý sản xuất lập kế hoạch,
+không đi mua"* là cách phân vai rất thường gặp, nên nó sẽ xảy ra.
+
+⚠ `_gop_dong` phải nhận `nguoi_dung` ở đường chạy nền: job chạy trong worker nên
+`frappe.session.user` ở đó **không phải người bấm nút**. Hỏi quyền nhầm người thì hoặc khoá nút của
+người có quyền, hoặc — tệ hơn — mở nút cho người không có.
+
+➜ **Đã hỏi anh Thắng:** quản lý sản xuất có được lập đơn mua từ màn hình này không? Nếu **có** thì
+việc cần làm là cấp quyền `Purchase Order` cho vai trò đó, **không phải** gỡ chốt chặn này.
