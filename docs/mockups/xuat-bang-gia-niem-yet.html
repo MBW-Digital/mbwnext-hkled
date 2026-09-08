@@ -61,7 +61,7 @@
 	table { width: 100%; border-collapse: collapse; font-size: 13px; }
 	th, td { padding: 7px 10px; border-bottom: 1px solid var(--line-soft); text-align: left; vertical-align: top; }
 	th { background: var(--sunken); font-weight: 600; font-size: 12px; color: var(--ink-soft); }
-	td.num, th.num { text-align: right; font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+	td.num, th.num { text-align: right; font-family: var(--mono); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 	tr.bom td { background: var(--sunken); color: var(--ink-soft); font-size: 12px; }
 	tr.bom td:first-child { padding-left: 34px; }
 	.scroll { overflow-x: auto; }
@@ -80,6 +80,8 @@
 	.muted { color: var(--ink-faint); }
 	.hr { height: 1px; background: var(--line); margin: 40px 0 0; border: 0; }
 	ol, ul { margin: 8px 0; padding-left: 22px; }
+	:focus-visible { outline: 2px solid var(--new); outline-offset: 2px; border-radius: 3px; }
+	@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 	li { margin: 4px 0; }
 </style>
 
@@ -87,6 +89,7 @@
 
 <h1>Xuất bảng giá niêm yết</h1>
 <p class="sub">HKLED · <code>PM-FEAT-00045</code> · bản 1 · 08/09/2026</p>
+<p class="sub"><span class="tag t-new">bản vẽ</span> Trang này là <strong>bản vẽ giao diện để duyệt</strong>, không phải phần mềm đang chạy. Số liệu lấy từ file <em>Tính giá</em> khách gửi.</p>
 <p class="sub muted">Dựng theo file <em>Tính giá</em> khách gửi, trường <em>Ghi chú</em> của PM Feature,
 và các chốt của anh Thắng lúc 15:36 và 16:21 ngày 08/09.</p>
 
