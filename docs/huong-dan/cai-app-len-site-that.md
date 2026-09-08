@@ -139,7 +139,7 @@ bench --site hkled.mbwnext.com install-app mbwnext_hkled
 
 ## 5. Kiểm ngay sau khi cài — trước khi làm bất cứ việc gì khác
 
-Đây là bước bắt cách hỏng thứ hai. **Sáu con số phải khớp**, chạy trong `bench console`:
+Đây là bước bắt cách hỏng thứ hai. **Bảy chỉ số phải khớp**, chạy trong `bench console`:
 
 ```python
 import frappe
@@ -162,6 +162,7 @@ print("Bang ghim ton tai   :", frappe.db.table_exists("HKLed Pinned Material"))
 | `DocType cua app` | **13** | ra **12** là thiếu `HKLed Pinned Material` — xem mục 6 |
 | `Custom Field cua app` | **40** | fixtures chưa đồng bộ |
 | `Server Script` | có | engine BOM sẽ không chạy nếu thiếu |
+| `Bang ghim ton tai` | **True** | như dòng `DocType` — xem mục 6 |
 
 ⚠ **Ba con số cố ý khác `cozy_dev`.** Cổng 8012 hiện đếm `Item` **62.061**, `BOM Template` **8**,
 `BOM Rule` **738** — nhiều hơn vì có bản ghi tạo tay tích tụ từ tháng 8. Con số trong bảng trên là
