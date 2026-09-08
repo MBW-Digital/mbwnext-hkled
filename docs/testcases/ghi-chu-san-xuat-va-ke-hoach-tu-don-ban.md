@@ -83,6 +83,64 @@ Kéo theo **MFG-PP-2026-00008** và hai lệnh **MFG-WO-2026-00030 / 00031**.
 
 ---
 
+## TC-THIEU — số lượng kế hoạch = phần CÒN THIẾU (PM-TASK-00188, 08/09/2026)
+
+Anh Thắng 08/09 11:40: *"số lượng trên kế hoạch sản xuất đó chính là số lượng còn bị thiếu. Ví dụ
+tồn khả dụng của A hiện tại là 6, đơn hàng bán 10 → ghim được 6 còn thiếu 4 → tạo kế hoạch sản
+xuất số lượng 4"*.
+
+Dữ liệu thật dùng để chạy: `SO-26-00026` — đặt **40**, giữ chỗ **31**, chưa có lệnh sản xuất,
+chưa giao ➜ còn thiếu **9**. Mọi ca ghi dữ liệu đều chạy trong giao dịch rồi `frappe.db.rollback()`;
+đã kiểm lại sau khi rollback: giữ chỗ về đúng 31, ô Ghim về đúng 1, số Kế hoạch sản xuất về đúng 14.
+
+| Mã | Việc | Bước thực hiện | Mong đợi | Kết quả | Đạt |
+|---|---|---|---|---|---|
+| TC-THIEU-01 | Đúng ví dụ của anh Thắng | Đơn có tích **Ghim Tồn Khả Dụng**, đặt 40, giữ chỗ 31 → **Tạo > Kế Hoạch Sản Xuất** | Số lượng dự kiến = **9**, không phải 40 | Pass — `planned_qty = 9`, `pending_qty = 9` (**giao diện**, đọc từ form chưa lưu) | Pass |
+| TC-THIEU-02 | 🔴 Bỏ tích Ghim thì **không** trừ | Cùng đơn, bỏ tích **Ghim Tồn Khả Dụng** → bấm nút | Giữ nguyên **40** — số giữ chỗ còn đó nhưng không có hiệu lực, trừ theo nó là sản xuất thiếu thật | Pass — `planned_qty = 40` (API server) | Pass |
+| TC-THIEU-03 | Giữ chỗ đủ cả dòng | Đặt giữ chỗ = 40 trên đơn 40 → bấm nút | **Chặn**, nêu rõ mặt hàng đã đủ và cách xử lý; **không** tạo kế hoạch rỗng | Pass — *"đã giữ chỗ đủ hàng cho mọi dòng — không còn gì phải sản xuất"* (API server) | Pass |
+| TC-THIEU-04 | Giữ chỗ **vượt** cả dòng | Đặt giữ chỗ = 50 trên đơn 40 | Vẫn chặn, **không** ra số âm | Pass — chặn, không có dòng nào âm (API server) | Pass |
+| TC-THIEU-05 | Không giữ chỗ gì | Giữ chỗ = 0 | Giữ nguyên **40** | Pass (API server) | Pass |
+| TC-THIEU-06 | Dòng đã đủ thì **biến mất**, số thứ tự đánh lại | Đơn 2 dòng khác mã: dòng 1 giữ đủ, dòng 2 giữ một nửa | Chỉ còn dòng 2, `idx` về **1** | Pass — còn `Bán thành phẩm 1` planned 0,5; idx = 1 (API server) | Pass |
+| TC-THIEU-07 | 🔴 Hai dòng **cùng một mã**, giữ chỗ khác nhau | Đơn có 2 dòng cùng `Thành phẩm 1`: (8, giữ 1) và (10, giữ 9) | Trừ **theo từng dòng**: 7 và 1 | Pass — `[7, 1]`. Cách làm gộp theo mã hàng sẽ ra sai ở đúng ca này (API server) | Pass |
+| TC-THIEU-08 | Đơn vị bán khác đơn vị kho | Dòng qty 8, giữ chỗ 1, `conversion_factor = 2` | `(8×2) − (1×2) = 14` | Pass — `planned_qty = 14`. Cổng 8012 hiện cả 35 dòng đều `cf = 1` nên ca này chưa gặp trong thực tế | Pass |
+| TC-THIEU-09 | Đã có Lệnh sản xuất **và** giữ chỗ | Dòng qty 8, giữ chỗ 1, `work_order_qty = 1` | `8 − 1 − 1 = 6` | Pass — `planned_qty = 6` (API server) | Pass |
+
+### TC-THIEU-1x — lỗ hổng nút *Lấy mặt hàng*, và câu cảnh báo bịt nó
+
+Nút *Tạo > Kế Hoạch Sản Xuất* chỉ trừ **một lần lúc tạo**. Trong màn hình Kế hoạch còn nút *Lấy
+mặt hàng* của ERPNext lõi, và nó tính lại bằng công thức của lõi — không biết gì về giữ chỗ.
+
+**Đo thật trên cổng 8012 trước khi vá:** tạo kế hoạch ➜ `9`; bấm *Lấy mặt hàng* ➜ `40`, **không một
+lời nào**. Đúng loại hỏng cả Phần IV sinh ra để chặn: con số sai trông y hệt con số đúng.
+
+Cách chữa: **nói ra lúc lưu, không tự sửa số** — đặt nhiều hơn phần thiếu là chuyện hợp lệ (làm
+dôi để tồn kho, gộp cho đủ mẻ). Cùng cách anh Thắng đã chọn cho phiếu Yêu Cầu Mặt Hàng.
+
+| Mã | Việc | Bước thực hiện | Mong đợi | Kết quả | Đạt |
+|---|---|---|---|---|---|
+| TC-THIEU-10 | Lỗ hổng có thật | Tạo kế hoạch (ra 9) → bấm *Lấy mặt hàng* | Số quay về 40 — ghi nhận để chứng minh vì sao cần cảnh báo | Pass — `9 → 40` (**giao diện**) | Pass |
+| TC-THIEU-11 | Lưu bản đã bị tính lại thì bị nhắc | Kế hoạch đang đặt 40 trên phần thiếu 9 → **Lưu** | Hộp thoại *Đặt nhiều hơn phần còn thiếu*, có bảng Đang đặt / Đã giữ chỗ / Còn thiếu | Pass — bảng hiện `40 · 31 · 9` (**giao diện**, `KSX-26-00003`; đã xoá phiếu thử sau khi chụp) | Pass |
+| TC-THIEU-12 | Đặt **đúng** phần thiếu thì im | Kế hoạch đặt 9 → Lưu | Không cảnh báo | ⚠ Vòng đầu **Fail** — nổ cảnh báo cả ở ca đúng. Nguyên nhân: lấy `pending_qty` làm mốc, mà nút tạo kế hoạch đã hạ trường đó xuống cùng `planned_qty` ➜ **trừ hai lần**. Đã đổi sang tính lại từ đơn gốc; chạy lại Pass | Pass |
+| TC-THIEU-13 | Đặt **ít hơn** phần thiếu thì im | Kế hoạch đặt 5 trên phần thiếu 9 | Không cảnh báo | Pass (API server) | Pass |
+| TC-THIEU-14 | Hơn đúng 1 cái vẫn nhắc | Kế hoạch đặt 10 trên phần thiếu 9 | Có cảnh báo | Pass (API server) | Pass |
+| TC-THIEU-15 | 🔴 Không được **tự tố cáo chính mình** | Kế hoạch 9 → duyệt → tạo Lệnh sản xuất cho cả 9 → mở kế hoạch, **Lưu lại** | Không cảnh báo. Lúc này `work_order_qty` của đơn đã lên 9 nên phần thiếu về 0, nếu không trừ phần lệnh do **chính kế hoạch này** đẻ ra thì nó sẽ tự báo mình sai | Pass — trừ `ordered_qty` của dòng kế hoạch; không cảnh báo (API server) | Pass |
+| TC-THIEU-16 | Đơn không tích Ghim thì im | Đơn bỏ tích Ghim, kế hoạch đặt 40 | Không cảnh báo | Pass (API server) | Pass |
+
+### Chỗ tài liệu suýt sai
+
+Ảnh chụp màn hình lúc chạy TC-THIEU-11 cho thấy cột số lượng trên lưới **Sản phẩm lắp ráp** mang
+nhãn **Số lượng dự kiến**, không phải *"Số Lượng Kế Hoạch"* như câu cảnh báo bản đầu của tôi viết.
+Đã sửa lại theo đúng chữ hiện trên màn hình khách — cùng loại lỗi đã mắc ở HDSD PM-FEAT-00036
+ngày 08/09 (ghi ô nằm "phần đầu đơn" trong khi nó nằm đầu mục Mặt Hàng).
+
+### Hạn chế còn lại, đã biết và cố ý để lại
+
+Bấm *Lấy mặt hàng* **vẫn** xoá phần trừ — cảnh báo chỉ **nói ra lúc lưu**, không tự đặt lại số.
+Tự đặt lại sẽ đè lên những lần sửa tay có chủ ý, mà theo chốt 03/09 và 08/09 thì anh Thắng chọn
+hướng *hệ thống nói, người quyết*. Muốn đổi thành tự đặt lại thì phải là một chốt mới.
+
+---
+
 ## Kết luận
 
 - Tổng: **27** — Pass: **27** — Fail: **0**

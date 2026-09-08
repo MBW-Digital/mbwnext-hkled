@@ -143,10 +143,21 @@ của lõi và làm **không lưu được đơn**, với câu lỗi nói về m
 | Sản xuất xong thì ghim vật tư **nhả ra**, chuyển thành ghim thành phẩm | 04/09 16:21 |
 | Thủ kho và mua hàng **được** bấm Phân Bổ | 05/09 11:09 |
 | Nút **Tạo Yêu Cầu Mặt Hàng** lấy thẳng cột *Thiếu*, **không** trừ phiếu đã xin trước | 03/09 16:51 |
+| Màn hình *Tính nhu cầu vật tư theo kỳ* cũng **không** trừ phiếu Yêu Cầu Mặt Hàng đang chờ | 08/09 09:12 |
+| Kế hoạch sản xuất tạo từ đơn bán lấy **phần còn thiếu**, đã trừ số giữ chỗ | 08/09 11:40 |
 
-⚠ Luật cuối có hệ quả anh Thắng đã cân nhắc và vẫn chọn: **bấm nút hai lần trên cùng một đơn ra
-hai phiếu cho cùng phần thiếu**. Hệ thống bù lại bằng hai câu cảnh báo — một câu cho phần *đơn
-này* đã xin, một câu cho phần *toàn nhà máy* đang chờ. Đừng gỡ hai câu đó đi.
+⚠ Luật về Yêu Cầu Mặt Hàng có hệ quả anh Thắng đã cân nhắc và vẫn chọn: **bấm nút hai lần trên
+cùng một đơn ra hai phiếu cho cùng phần thiếu**. Hệ thống bù lại bằng hai câu cảnh báo — một câu
+cho phần *đơn này* đã xin, một câu cho phần *toàn nhà máy* đang chờ. Đừng gỡ hai câu đó đi.
+
+Chốt 08/09 09:12 làm hai câu đó **thành bắt buộc, không còn là tạm**: anh Thắng chủ động chọn để
+màn hình Phần V cũng không trừ phiếu đang chờ, nên hai câu cảnh báo là đường **duy nhất** đưa con
+số đang chờ tới mắt người mua.
+
+⚠ Luật cuối (kế hoạch sản xuất) có một chỗ hở đã biết: trong màn hình **Kế hoạch sản xuất** còn nút
+**Lấy mặt hàng** của hệ thống lõi, bấm vào là số lượng bị tính lại theo công thức lõi và **mất phần
+trừ giữ chỗ**. Hệ thống không tự đặt lại số — chỉ hiện cảnh báo *"Đặt nhiều hơn phần còn thiếu"*
+lúc lưu, vì đặt dôi ra là chuyện hợp lệ. Đừng gỡ câu cảnh báo đó.
 
 ---
 
