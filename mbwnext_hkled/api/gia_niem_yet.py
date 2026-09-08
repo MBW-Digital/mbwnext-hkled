@@ -213,7 +213,8 @@ def bang_gia(nhom_hang=None, mat_hang_cha=None, chi_tinh_duoc=0, chi_lech=0, gio
 
 	# ⚠ Lọc "tính được" / "đang lệch" phải vào TRUY VẤN, không được lọc sau khi cắt — xem
 	#   docstring của `ma_co_nguon_cost()`. Cả hai bộ lọc đều chỉ có nghĩa trên tập mã có giá vốn.
-	if frappe.utils.cint(chi_tinh_duoc) or frappe.utils.cint(chi_lech):
+	dang_loc = bool(frappe.utils.cint(chi_tinh_duoc) or frappe.utils.cint(chi_lech))
+	if dang_loc:
 		co_cost = ma_co_nguon_cost()
 		if not co_cost:
 			return {
@@ -227,6 +228,15 @@ def bang_gia(nhom_hang=None, mat_hang_cha=None, chi_tinh_duoc=0, chi_lech=0, gio
 		loc["name"] = ["in", list(co_cost)]
 
 	tong = frappe.db.count("Item", loc)
+
+	# ⚠ Đang lọc thì KHÔNG cắt ở đây. `ma_co_nguon_cost()` mới là điều kiện CẦN — mã có đơn mua
+	#   nhưng chưa khai Phương pháp bổ sung vẫn lọt vào rồi bị `cost_cua()` loại sau. Cắt trước khi
+	#   loại là lại cắt nhầm đúng như lỗi vừa sửa: đo 08/09, tập ứng viên có 6 mã mà chỉ 4 mã tính
+	#   được, nên `gioi_han = 5` làm mất 1 mã tính được mà không có dấu hiệu nào.
+	#
+	#   Lấy hết ở đây là an toàn vì tập này bị chặn bởi số mã TỪNG lên đơn mua hoặc CÓ định mức —
+	#   luôn nhỏ hơn danh mục nhiều bậc. Cắt thật nằm ở cuối hàm, sau khi đã biết dòng nào thật sự
+	#   tính được.
 	ds = frappe.get_all(
 		"Item",
 		filters=loc,
@@ -238,7 +248,7 @@ def bang_gia(nhom_hang=None, mat_hang_cha=None, chi_tinh_duoc=0, chi_lech=0, gio
 			"custom_ty_le_loi_nhuan as loi_nhuan",
 		],
 		order_by="name",
-		limit_page_length=frappe.utils.cint(gioi_han) or 200,
+		limit_page_length=0 if dang_loc else (frappe.utils.cint(gioi_han) or 200),
 	)
 
 	dang_ap = _gia_dang_ap_dung([d.ma_hang for d in ds])
@@ -267,6 +277,21 @@ def bang_gia(nhom_hang=None, mat_hang_cha=None, chi_tinh_duoc=0, chi_lech=0, gio
 		ra = [r for r in ra if r["gia_niem_yet"] is not None]
 	if frappe.utils.cint(chi_lech):
 		ra = [r for r in ra if r["lech"]]
+
+	# Cắt SAU khi đã lọc, và báo lại con số thật để giao diện nói "đang xem N trên M".
+	if dang_loc:
+		tong = len(ra)
+		gh = frappe.utils.cint(gioi_han) or 200
+		bi_cat = tong > gh
+		ra = ra[:gh]
+		return {
+			"dong": ra,
+			"tong": tong,
+			"bi_cat": bi_cat,
+			"hao_phi": hao_phi,
+			"ty_le_niem_yet": ty_le_ny,
+			"bang_gia": BANG_GIA_BAN,
+		}
 
 	return {
 		"dong": ra,
