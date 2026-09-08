@@ -57,14 +57,25 @@ thiếu.
 ### Bước 1 — Bật giữ chỗ cho đơn hàng
 
 1. Mở **Đơn Bán Hàng** (*Sales Order*) cần giữ chỗ.
-2. Tích ô **Ghim Tồn Khả Dụng** — nằm ở **phần đầu đơn, ngay dưới ô *Set Source Warehouse***.
-3. Bấm **Lưu** (*Save*), rồi **Duyệt** (*Submit*) đơn.
+2. Cuộn xuống mục **Items**. Ô **Ghim Tồn Khả Dụng** nằm ở **đầu mục Items**, bên phải —
+   **không phải ở phần đầu đơn**.
+3. Tích ô đó.
+4. Bấm **Lưu** (*Save*), rồi **Duyệt** (*Submit*) đơn.
+
+Ô này có sẵn câu giải thích ngay bên dưới:
+
+![Ô Ghim Tồn Khả Dụng ở đầu mục Items](anh/phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve-01.png)
 
 > ⚠️ **Đơn chưa duyệt thì chưa giữ chỗ được.** Tích ô rồi bấm Lưu trên đơn nháp, bảng
 > **Ghim Vật Tư** sẽ để trống và hệ thống hiện câu nhắc:
 > *"Đơn chưa duyệt nên chưa giữ chỗ được vật tư — bảng cam kết để trống là đúng, không phải lỗi.
 > Duyệt đơn thì phần ghim mới có hiệu lực."*
 > Đây là đúng, không phải hỏng. Duyệt đơn xong bảng sẽ có số.
+
+Trong **lưới hàng hoá** ngay dưới có cột **Số Lượng Giữ Chỗ** — đây là phần **thành phẩm** đơn
+này đang giữ, khác với bảng vật tư ở bước sau:
+
+![Cột Số Lượng Giữ Chỗ trong lưới hàng hoá](anh/phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve-02.png)
 
 ### Bước 2 — Xem hệ thống đã giữ được những gì
 
@@ -79,8 +90,13 @@ Ngay dưới lưới hàng hoá của đơn có bảng **Ghim Vật Tư**:
 | **Đã Ghim** | phần đã giữ được — **luôn ≤ phần kho đang còn rảnh** |
 | **Giữ Nguyên** | xem [Bước 4](#bước-4--nhường-bớt-hàng-cho-đơn-khác) |
 
-> 📌 Mở một dòng ra (bấm vào dòng) sẽ thấy thêm ba ô: **Định Mức**, **Định Mức Sửa Lúc**,
-> **Cập Nhật Lúc**. Đó là **dấu vết kỹ thuật** để đối chiếu khi cần, **không phải đụng tới**.
+![Bảng Ghim Vật Tư với đủ 6 cột](anh/phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve-03.png)
+
+> 📌 Mở một dòng ra (bấm biểu tượng bút chì cuối dòng) sẽ thấy thêm ba ô: **Định Mức**,
+> **Định Mức Sửa Lúc**, **Cập Nhật Lúc**. Đó là **dấu vết kỹ thuật** để đối chiếu khi cần,
+> **không phải đụng tới**.
+>
+> ![Ba ô kỹ thuật khi mở một dòng ghim](anh/phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve-05.png)
 
 Hệ thống **chỉ giữ phần kho thật sự đang rảnh**, đã trừ phần các đơn khác giữ trước. Nên *Đã Ghim*
 nhỏ hơn *Nhu Cầu* là bình thường — phần chênh là phần phải đi mua.
@@ -93,8 +109,10 @@ nhỏ hơn *Nhu Cầu* là bình thường — phần chênh là phần phải �
 
 Hộp thoại liệt kê **đã chia gì cho đơn nào** — mặt hàng, đơn bán, số ghim thêm.
 
-> ⚠️ Nút **Phân Bổ** chỉ hiện trên phiếu **đã duyệt**. Phiếu còn nháp thì chưa có nút, vì hàng
-> chưa vào kho.
+![Nút Phân Bổ trên phiếu nhập đã duyệt](anh/phan-bo-hang-vao-phan-ghim-cua-sales-order-khi-hang-mua-a-ve-04.png)
+
+> ⚠️ Nút **Phân Bổ** chỉ hiện trên phiếu **đã duyệt** — để ý nhãn **SUBMITTED** trong ảnh trên.
+> Phiếu còn nháp thì chưa có nút, vì hàng chưa vào kho.
 
 > ⚠️ Bấm **Phân Bổ** là **chia ngay**, không có bước xác nhận. Nhưng bấm nhiều lần cũng không
 > nhân đôi: lần thứ hai sẽ báo *"Không chia được gì thêm — hoặc các đơn đã ghim đủ, hoặc hàng
