@@ -86,11 +86,23 @@ sau này không chẩn đoán nhầm:
 
 | | `cozy_dev` (nơi test) | `hkled.mbwnext.com` (thật) |
 |---|---|---|
-| frappe / erpnext | 15.77.0 / 15.73.1 | 15.101.0 / 15.95.1 |
+| frappe | **15.120.0** | 15.101.0 |
+| erpnext | **15.73.1** | 15.95.1 |
 | Viết tắt công ty | `HKL` | `HKLED` |
 | `auto_reserve_stock_for_sales_order_on_purchase` | 1 | 0 |
 
-*(Số của site thật do phiên `HKLed 3` đo ngày 08/09/2026, chưa kiểm lại sau ngày đó.)*
+*(Site thật: phiên `HKLed 3` đo 08/09/2026, chưa kiểm lại sau đó. `cozy_dev`: đo lại 08/09 lúc
+16:0x — con số này ĐỔI trong ngày, xem cảnh báo dưới.)*
+
+⚠ **Đừng chép hai dòng phiên bản này đi đâu mà không đo lại.** Sáng 08/09 `cozy_dev` còn ở frappe
+**15.77.0**; 15:47 cùng ngày có người `git pull` lên **15.120.0** và cả ba site trên bench gãy 8
+phút (`sqlparse` thiếu bản `~=0.6.0`). Nghĩa là **frappe của bench thử nghiệm nay CAO HƠN site
+thật, còn erpnext thì THẤP HƠN 22 bản minor** — một tổ hợp không khách nào chạy. Số đo trước và
+sau 15:47 không so trực tiếp với nhau được.
+
+📌 Bench cũng **chưa `bench migrate`** sau lần nâng đó: code 15.120, lược đồ CSDL còn 15.77, 9
+patch của frappe đang chờ. App `mbwnext_hkled` thì **0 patch chờ** (31 dòng khai, 32 dòng trong
+`Patch Log`) — đã kiểm 08/09 16:0x.
 
 **Hệ quả cần biết, không phải việc phải sửa:**
 
@@ -98,8 +110,10 @@ sau này không chẩn đoán nhầm:
   `- HKL` và **cả 3 là chú thích cảnh báo đừng gõ cứng**. Bộ lọc kho khớp theo `warehouse_name`
   — trường này không mang hậu tố công ty. Chỉ **tài liệu** có ghi tên kho đầy đủ, và tài liệu
   thì không chạy.
-- **Chênh phiên bản hơn 20 bản minor.** Bộ test hiện có chạy trên 15.77; "đạt ở cozy_dev" không
-  còn là bằng chứng đủ cho site thật. Chạy lại ít nhất bộ TC-REGR sau khi cài.
+- **Chênh phiên bản theo cả hai chiều.** Bộ test hiện có chạy trên nền frappe 15.77 (trước
+  15:47 ngày 08/09) rồi 15.120 (sau đó), với erpnext 15.73 suốt. Site thật là 15.101 / 15.95.
+  Không chiều nào là "đủ gần" — **"đạt ở cozy_dev" không còn là bằng chứng đủ cho site thật**.
+  Chạy lại ít nhất bộ TC-REGR sau khi cài.
 - **`auto_reserve_stock_for_sales_order_on_purchase`** là cơ chế giữ chỗ của ERPNext lõi, chạy
   song song với cơ chế ghim riêng của HKLED. Spec Phần IV chốt 25/08 viết trong bối cảnh nó
   đang **bật**. Trên site thật nó đang **tắt** — cần chốt bật hay không **trước** khi nghiệm thu
