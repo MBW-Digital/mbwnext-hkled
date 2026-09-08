@@ -592,12 +592,22 @@
 	ngoặc</b>, vì đó mới là số người mua hàng phải hành động.
 </p>
 
-<h2 id="c">C. Tab Lập kế hoạch <span class="gap">CHƯA LÀM — cần anh chốt trước</span></h2>
+<h2 id="c">C. Tab Lập kế hoạch <span class="gap">CHƯA LÀM — anh đã chốt luồng 08/09</span></h2>
 
 <p class="lede">
-	Gộp tổng các kỳ thành <b>một dòng mỗi vật tư</b>, người dùng sửa số rồi bấm tạo đơn mua.
-	Phần gom dữ liệu đã có (<code>gop_lap_ke_hoach</code>); phần màn hình và tạo đơn <b>chưa có</b>.
+	Gộp tổng các kỳ thành <b>một dòng mỗi vật tư</b>, người dùng sửa số, tích chọn, rồi bấm
+	<i>Lập đơn hàng</i>. Phần gom dữ liệu đã có (<code>gop_lap_ke_hoach</code>); phần màn hình
+	và tạo đơn <b>chưa có</b>.
 </p>
+
+<p class="note">
+	🔒 <b>Sửa lại theo chốt của anh 08/09 08:49:</b> <i>"người dùng tích chọn các mặt hàng rồi ấn
+	lập đơn hàng, <b>lúc này người dùng mới chọn nhà cung cấp</b>, 1 đơn mua có thể cho nhiều dòng
+	hàng"</i>. Bản mockup trước em để <b>cột Nhà cung cấp ngay trong lưới</b> — chọn từng dòng
+	trước khi bấm. Sai luồng, đã bỏ cột đó.
+</p>
+
+<h3>C1 · Lưới — chọn mặt hàng và số lượng, chưa dính nhà cung cấp</h3>
 
 <div class="screen">
 	<div class="screen-bar"><span class="crumb">Tính toán · <b>Lập kế hoạch</b></span></div>
@@ -607,7 +617,8 @@
 			<thead><tr>
 				<th style="width:34px"></th><th>Mã</th><th>Tên</th><th>ĐVT</th>
 				<th class="s">Tồn khả dụng</th><th class="s">Tối thiểu</th>
-				<th class="s">Thiếu hụt</th><th class="s">Số lượng đặt</th><th>Nhà cung cấp</th>
+				<th class="s">Thiếu hụt</th><th class="s">Số lượng đặt</th>
+				<th class="s">Ngày cần hàng</th>
 			</tr></thead>
 			<tbody>
 				<tr>
@@ -616,7 +627,7 @@
 					<td class="s">7</td><td class="s">10</td>
 					<td class="s mo">62</td>
 					<td class="s"><input class="val num" value="62" style="width:74px"></td>
-					<td><span class="val pick">— chọn —</span></td>
+					<td class="s">07-09-2026</td>
 				</tr>
 				<tr>
 					<td><span class="tick" aria-checked="true" role="checkbox"></span></td>
@@ -624,7 +635,7 @@
 					<td class="s">32</td><td class="s">40</td>
 					<td class="s mo">44</td>
 					<td class="s"><input class="val num" value="50" style="width:74px"></td>
-					<td><span class="val pick">— chọn —</span></td>
+					<td class="s">14-09-2026</td>
 				</tr>
 			</tbody>
 		</table>
@@ -636,30 +647,65 @@
 </div>
 
 <p class="note">
-	<b>Cột <i>Số lượng đặt</i> sửa được, mặc định bằng <i>Thiếu hụt</i>.</b> Người dùng sửa để mua
-	tròn thùng, mua theo lô tối thiểu, hoặc cho về 0 để bỏ dòng. Bấm <i>Lập đơn hàng</i> thì dùng
-	<b>số người dùng chốt</b>, không dùng số thiếu hụt gốc. Cột <i>Thiếu hụt</i> để cạnh, chỉ đọc,
-	để đối chiếu.
+	<b>Cột <i>Ngày cần hàng</i> là ngày ĐẦU của kỳ bị thiếu</b> — chốt của anh 08/09. Hai vật tư
+	thiếu ở hai kỳ khác nhau thì ra hai ngày khác nhau, như ví dụ trên. Cột này chỉ đọc.
 </p>
 
 <p class="note">
-	<b>Hàng gia công sinh nhiều dòng.</b> Anh chốt 20/08: mặt hàng A bổ sung bằng gia công, thiếu 10
-	thì tạo <b>1 dòng "dịch vụ gia công"</b> (Finished Good = A, SL 10) <b>+ n dòng NVL</b> từ định
-	mức của A — không phải một dòng.
+	<b>Cột <i>Số lượng đặt</i> sửa được, mặc định bằng <i>Thiếu hụt</i>.</b> Người dùng sửa để mua
+	tròn thùng, mua theo lô tối thiểu, hoặc cho về 0 để bỏ dòng. Bấm <i>Lập đơn hàng</i> thì dùng
+	<b>số người dùng chốt</b>, không dùng số thiếu hụt gốc.
+</p>
+
+<h3>C2 · Bấm <i>Lập đơn hàng</i> — giờ mới hỏi nhà cung cấp</h3>
+
+<div class="screen dialog">
+	<div class="screen-bar"><span class="crumb"><b>Lập đơn mua hàng</b></span><span>2 dòng đã chọn</span></div>
+	<div class="screen-body">
+		<div class="fld">
+			<span class="lbl">Nhà cung cấp <b class="mo">*</b></span>
+			<span class="val pick">— chọn —</span>
+		</div>
+		<div class="tw">
+		<table class="res">
+			<thead><tr><th>Mã</th><th class="s">Số lượng đặt</th><th class="s">Ngày cần hàng</th></tr></thead>
+			<tbody>
+				<tr><td>NVL 3</td><td class="s">62</td><td class="s">07-09-2026</td></tr>
+				<tr><td>NVL 2</td><td class="s">50</td><td class="s">14-09-2026</td></tr>
+			</tbody>
+		</table>
+		</div>
+		<div class="actions"><span class="btn">Tạo đơn mua</span></div>
+	</div>
+</div>
+
+<p class="note">
+	<b>Một nhà cung cấp → một đơn mua, nhiều dòng hàng.</b> Muốn chia cho hai nhà cung cấp thì tích
+	nhóm thứ nhất, lập đơn, rồi tích nhóm thứ hai, lập đơn lần nữa. Em <b>không</b> tự gộp hay tự
+	tách theo mã — đúng câu anh chốt.
+</p>
+
+<p class="note">
+	<b>Đơn mua vừa tạo sẽ được lần chạy sau trừ đi.</b> Anh chốt 08/09 <i>"giữ trừ"</i>, và
+	<code>_po_chua_ve</code> đã làm đúng thế — nên bấm lập đơn xong, tính lại là số thiếu giảm
+	tương ứng, không báo trùng. Em cộng theo <b>số lượng thật trên đơn mua</b>, không phải số gợi ý.
 </p>
 
 <p class="note ask">
-	<b>Vòng lặp em phải hỏi:</b> đơn mua vừa tạo ở đây <b>trở thành "đơn mua đang về" của lần chạy
-	sau</b>. Không cộng vào thì lần sau lại báo thiếu và người dùng đặt mua trùng. Em sẽ cộng
-	<b>số lượng thật trên đơn mua đã tạo</b>, không phải số thiếu hụt gợi ý ban đầu — anh xác nhận
-	giúp em.
+	🔴 <b>Câu cảnh báo bắt buộc, theo chốt (B) của anh 08/09 09:12.</b> Phần V <b>không</b> trừ
+	Yêu Cầu Mặt Hàng đang chờ. Nên màn hình phải nói ra, kèm số đo lúc bấm — ví dụ đo 08/09:
+	<b>NVL 3 đang có 99 chờ · NVL 2 có 70 · NVL 1 có 20</b> trong các phiếu đã duyệt chưa thành
+	đơn mua. Không nói ra thì người mua đặt thêm 99 NVL 3 đã có người xin rồi. Câu dự kiến:
+	<i>"Còn <b>99</b> NVL 3 đang chờ trong Yêu Cầu Mặt Hàng chưa thành đơn mua — số bên dưới
+	<b>chưa trừ</b> phần đó."</i>
 </p>
 
 <h2 id="d">D. Gợi ý nhà cung cấp <span class="gap">CHƯA LÀM — làm cuối</span></h2>
 
 <p class="lede">
-	Rê chuột vào một dòng ở tab Lập kế hoạch thì hiện ba gợi ý theo ba tiêu chí. Ba tiêu chí có thể
-	trỏ về <b>ba nhà cung cấp khác nhau</b> — hiện cả ba, không tự ép chọn.
+	Vì nhà cung cấp nay chọn <b>trong hộp thoại C2</b> chứ không phải từng dòng, ba gợi ý cũng
+	chuyển vào đó — hiện ngay dưới ô <i>Nhà cung cấp</i>. Ba tiêu chí có thể trỏ về <b>ba nhà cung
+	cấp khác nhau</b>: hiện cả ba, không tự ép chọn.
 </p>
 
 <div class="screen"><div class="screen-body">
@@ -680,36 +726,53 @@
 
 <p class="note ask">
 	<b>Hai trong ba tiêu chí sẽ hiện "chưa đủ dữ liệu" trong thời gian đầu</b> — em không đoán bừa.
-	Đo 05/09: <b>1 đơn mua</b> còn hàng chưa về, <b>0 phiếu nhập đã duyệt</b>. Tiêu chí <i>chất
+	Đo 08/09: <b>3 đơn mua</b> đã duyệt, trong đó <b>2 đơn còn hàng chưa về</b>. Tiêu chí <i>chất
 	lượng</i> lấy từ hai ô có sẵn trên bảng mặt hàng Phiếu Nhập Kho Hàng Mua — <i>Số lượng chấp
 	nhận</i> và <i>Số lượng từ chối</i> — đúng như anh chốt 03/09; <b>không phải</b> Kiểm tra chất
 	lượng, cũng không phải luồng KCS. Chỉ cần <b>duyệt phiếu nhập</b> là hai tiêu chí kia có số ngay.
 </p>
 
-<h2 id="e">E. Cần anh chốt</h2>
+<p class="note">
+	⚠ Một dòng gộp nhiều kỳ nên <b>mất thông tin kỳ</b>. Với hàng gia công, anh chốt 20/08: mặt hàng
+	A bổ sung bằng gia công, thiếu 10 thì tạo <b>1 dòng "dịch vụ gia công"</b> (Finished Good = A,
+	SL 10) <b>+ n dòng NVL</b> từ định mức của A — không phải một dòng.
+</p>
+
+<h2 id="e">E. Anh đã chốt gì — và còn gì</h2>
 
 <div class="tw">
 <table class="res">
-	<thead><tr><th style="width:52px">#</th><th>Câu hỏi</th><th>Vì sao cần chốt trước khi code</th></tr></thead>
+	<thead><tr><th style="width:52px">#</th><th>Câu</th><th>Chốt của anh</th></tr></thead>
 	<tbody>
-		<tr><td>1</td>
-			<td><b>Duyệt hồi tố mục A và B</b> — màn hình Tính toán đang chạy trên cổng 8012</td>
-			<td>Em code trước mockup, sai thứ tự. Anh xem màn hình thật rồi duyệt thì em mới
-				chuyển tính năng sang <i>Chờ test</i> được</td></tr>
-		<tr><td>2</td>
-			<td><b>Tab Lập kế hoạch bấm xong thì ra một đơn mua hay nhiều?</b> Gộp theo nhà cung cấp,
-				hay mỗi vật tư một đơn?</td>
-			<td>Đầu bài không nói. Chọn sai thì người mua phải gộp tay lại</td></tr>
-		<tr><td>3</td>
-			<td><b>Ngày cần hàng trên đơn mua lấy theo gì?</b> Ngày đầu kỳ thiếu, hay ngày giao của
-				đơn bán sớm nhất?</td>
-			<td>Gộp tổng các kỳ thành một dòng nên mất thông tin kỳ. Đặt sai ngày là hàng về trễ</td></tr>
-		<tr><td>4</td>
-			<td><b>Phần V có cần hạn mới không?</b> Hạn cũ <code>26/08</code> đã qua 10 ngày</td>
-			<td>Còn 2 trong 5 bước chưa làm; em cần biết đường xếp việc</td></tr>
+		<tr><td>1</td><td><b>Một đơn mua hay nhiều?</b> Chọn nhà cung cấp lúc nào?</td>
+			<td>✅ <b>08/09</b> — tích mặt hàng ➜ bấm lập đơn ➜ <b>rồi mới chọn nhà cung cấp</b>;
+				một đơn mua nhiều dòng hàng</td></tr>
+		<tr><td>2</td><td><b>Ngày cần hàng lấy theo gì?</b></td>
+			<td>✅ <b>08/09</b> — <b>ngày đầu của kỳ bị thiếu</b></td></tr>
+		<tr><td>3</td><td><b>Đơn đang sản xuất dở tính vào kỳ nào?</b></td>
+			<td>✅ <b>08/09</b> — <b>kỳ nó khởi công</b>. Hệ thống đang làm đúng, không sửa gì</td></tr>
+		<tr><td>4</td><td><b>Đơn mua chưa về có trừ không?</b></td>
+			<td>✅ <b>08/09</b> — <b>giữ trừ</b></td></tr>
+		<tr><td>5</td><td><b>Yêu Cầu Mặt Hàng đang chờ có trừ không?</b></td>
+			<td>✅ <b>08/09 09:12</b> — <b>(B) giữ nguyên, không trừ</b>; bù lại phải <b>ghi cảnh
+				báo lên màn hình</b> kèm số đang chờ</td></tr>
+		<tr><td>6</td><td><b>Duyệt mục A và B</b> — màn hình Tính toán đang chạy trên 8012</td>
+			<td>✅ <b>08/09 09:12</b> — <i>"còn lại thì anh thấy cơ bản được rồi"</i></td></tr>
 	</tbody>
 </table>
 </div>
+
+<p class="note ask">
+	<b>Còn đúng một việc chờ anh:</b> hạn của Phần V là <b>08/09 — hôm nay</b>, mà bước 4 (tab Lập
+	kế hoạch) và bước 5 (gợi ý nhà cung cấp) chưa làm. Anh cho hạn mới giúp em.
+</p>
+
+<p class="note">
+	⚠ <b>Một hệ quả của chốt số 3 em phải nói rõ:</b> mọi đơn đã duyệt trên hệ thống đều khởi công
+	<b>trước hôm nay</b>, nên bấm <i>Tính toán</i> với khoảng mặc định sẽ ra <b>màn hình trống</b>.
+	Không phải lỗi — muốn thấy chúng thì kéo <i>ngày bắt đầu</i> về trước. Em sẽ ghi câu gợi ý đó
+	ngay trên màn hình rỗng.
+</p>
 
 <p class="note">
 	<b>Đã chốt rồi, ghi lại để khỏi hỏi lại:</b> thứ tự nổ định mức <i>BOM → BOM Template → liệt kê</i>
