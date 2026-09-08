@@ -299,6 +299,8 @@ phòng ban) trong khi bảng nhân sự vẫn đủ 3 dòng.
 
 ### 📌 Hệ quả phải báo anh Thắng
 
+⚠ **HẾT HIỆU LỰC TỪ 08/09/2026** — xem mục *"Đội Sản Xuất trên Kế Hoạch đã bị ẩn"* ở cuối file.
+
 Từ nay Lệnh sản xuất tạo từ Kế Hoạch **bắt đầu tự điền công nhân** — việc lâu nay không xảy ra.
 Kéo theo `Employee Allocation` được sinh, và **số trên Bảng 3 của Phần IV sẽ đổi**. Đây là hành
 vi đã có trong mockup duyệt từ đầu, không phải tính năng mới; nhưng người đang nhìn màn hình thì
@@ -357,3 +359,45 @@ Ca 3 chạy trong giao dịch rồi `rollback`; kiểm sau khi chạy: `Đội 1
 
 **Còn cần người test:** bấm nút thật trên giao diện. Đây đúng loại lỗi mà lượt trước chỉ giao diện
 mới bắt được — đo bằng lệnh thấy đủ 2/2 không có nghĩa ô Link vẽ ra đúng.
+
+
+---
+
+## Đội Sản Xuất trên Kế Hoạch đã bị ẩn — chốt 08/09/2026
+
+Anh Thắng 08/09 lúc 11:44: *"ẩn giúp anh ô đội sản xuất đi nhé"*. Hai ô đã ẩn (`PM-TASK-00143`,
+commit `c9e49a6`): `Production Plan Sales Order` và `Production Plan Sub Assembly Item`.
+
+### Ca test này không còn bấm được nữa
+
+**`TC-EDGE-12`** — bước 1 ghi *"Kế Hoạch có chọn Đội Sản Xuất"*. Ô đó **không còn trên màn hình**,
+nên ca test không thực hiện được theo đúng bước đã viết. Ca vẫn **giữ lại làm hồ sơ**, vì nó ghi
+lỗi anh Thắng báo 03/08 và cách đã sửa; đừng xoá.
+
+### Đường tự điền công nhân đã tắt, và đó là chủ ý của khách
+
+`_plan_row_for` (`python_hook/work_order.py:112-142`) đọc `custom_work_team` từ **đúng hai ô vừa
+ẩn**, không có nguồn thứ ba. Nên với kế hoạch **mới**, `work_team` luôn rỗng và khối GAP-5 ở dòng
+266 không bao giờ chạy. Kế hoạch **cũ** đã điền đội thì vẫn tự điền như trước — ẩn không xoá giá
+trị.
+
+### 🔴 Suýt hiểu nhầm thành chuyện lớn hơn nhiều
+
+Trả lời đầu của anh Thắng lúc 15:09 viết: *"bây giờ họ không cần chọn đội ở **lệnh sản xuất** nữa
+rồi"*. Chữ **lệnh sản xuất** đọc theo nghĩa đen thì là bỏ luôn nút **Thêm Đội Sản Xuất** — mà bỏ
+nút đó thì `custom_work_order_employee` không còn đường nào được điền, `work_order_schedule.py:241`
+chặn cứng *"Chưa có nhân sự nào trong Bảng Nhân Công Tham Gia"*, kéo theo mất luôn lịch sản xuất,
+biểu đồ Gantt và Bảng 3 nguồn lực của Phần IV. Tức **tắt cả PM-FEAT-00008 lẫn 00009**, hai tính
+năng đã nghiệm thu.
+
+Đã hỏi lại lúc 15:20, và anh Thắng đính chính lúc 15:25:
+
+> *"à anh xin lỗi nhé, anh viết nhầm, họ không cần chọn đội ở **kế hoạch sản xuất** nữa rồi, nên
+> em cứ giữ ẩn trường đội sản xuất ở trong kế hoạch sản xuất đi giúp anh nhé"*
+
+**Nút Thêm Đội Sản Xuất trên Lệnh sản xuất giữ nguyên.** Đó là đường phân đội chính thức, đúng
+chốt 07/09 11:13 của chính anh ấy.
+
+**Bài học ghi lại:** câu trả lời gọn của khách có thể dùng nhầm tên màn hình. Hỏi lại bằng **cái
+giá phải trả** (*"bỏ nút đó thì mất tính năng X"*) chứ đừng hỏi *"ý anh là A hay B"* — người trả
+lời không nhìn thấy A và B trong đầu mình.
