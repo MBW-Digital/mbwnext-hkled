@@ -2,7 +2,7 @@
 
 > **Phạm vi:** App `mbwnext_hkled` — dành riêng khách HKLED
 > **Đối tượng:** Quản lý sản xuất, tổ trưởng, nhân viên kế hoạch
-> **Cập nhật:** 2026-08-11
+> **Cập nhật:** 2026-09-08
 > **Mục đích:** Xếp lịch làm việc cho cả đội chỉ bằng vài cú bấm, biết trước lệnh sản xuất bao giờ
 > xong, và ghi nhận sản lượng từng người khi hoàn thành.
 
@@ -115,8 +115,11 @@ Lưu và duyệt đơn.
 
 ### Bước 2 — Trên Kế Hoạch Sản Xuất
 
-Tạo **Production Plan** từ đơn trên. Trong bảng **Sales Orders**, mỗi dòng đơn có thêm ô
-**Đội Sản Xuất** — chọn đội sẽ làm.
+Tạo **Production Plan** từ đơn trên.
+
+> ⚠ **Đổi từ 08/09/2026:** ô **Đội Sản Xuất** trên Kế Hoạch Sản Xuất **đã được ẩn** theo yêu cầu
+> của HKLED — *"họ không cần chọn đội ở kế hoạch sản xuất nữa"*. Việc chọn đội chuyển hẳn sang
+> **Bước 3**, làm trên từng Lệnh sản xuất bằng nút **Thêm Đội Sản Xuất**.
 
 Hệ thống tự tính **Thời Điểm Cần Hoàn Thành** = Ngày Giao Hàng ghép với Giờ Cần Hoàn Thành đã khai
 ở bước 1.
@@ -127,10 +130,11 @@ Lưu và duyệt kế hoạch.
 
 Trên Kế Hoạch bấm **Create** → **Work Order**.
 
-Lệnh sinh ra **tự có sẵn**:
+Lệnh sinh ra **tự có sẵn Thời Gian Bắt Đầu** và **Thời Điểm Cần Hoàn Thành**, lấy từ kế hoạch.
 
-- **Thời Gian Bắt Đầu** và **Thời Điểm Cần Hoàn Thành** lấy từ kế hoạch
-- Bảng nhân công **đã có đủ người của đội**, kèm **Bậc Thợ** và **Nguồn Lực (%)**
+**Bảng nhân công thì trống** — phải tự thêm, xem [mục 5](#5-thêm-người-vào-lệnh-sản-xuất).
+Trước 08/09/2026 bảng này tự điền theo đội chọn ở Kế Hoạch; từ khi ô đội trên Kế Hoạch được ẩn
+thì không còn nguồn để tự điền nữa.
 
 ![Bảng nhân công trên Lệnh Sản Xuất](anh/bac-tho-lich-san-xuat-03-nhan-cong-tren-lenh.jpg)
 
@@ -140,7 +144,14 @@ Lệnh sinh ra **tự có sẵn**:
 
 ## 5. Thêm người vào lệnh sản xuất
 
-Khi cần bổ sung người, hoặc lệnh tạo tay không đi từ kế hoạch:
+⚠ **Từ 08/09/2026 đây là cách DUY NHẤT** đưa công nhân vào lệnh sản xuất — kể cả lệnh tạo từ Kế
+Hoạch. Trước đó mục này chỉ dùng để *bổ sung* thêm người; nay lệnh nào cũng phải làm bước này,
+vì ô Đội Sản Xuất trên Kế Hoạch đã được ẩn theo yêu cầu của HKLED.
+
+Không làm bước này thì bấm **Tính Lại Lịch** sẽ bị chặn với câu *"Chưa có nhân sự nào trong Bảng
+Nhân Công Tham Gia"*.
+
+Các bước:
 
 1. Mở lệnh sản xuất
 2. Bấm **Thêm Đội Sản Xuất** trên thanh công cụ

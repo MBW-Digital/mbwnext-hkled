@@ -32,6 +32,45 @@ Phần thao tác hằng ngày xem
 ⚠ Mặt hàng *Sản xuất* mà **thiếu định mức** thì hệ thống không im lặng bỏ qua — nó hiện cảnh báo
 dạng thông báo nhanh khi lưu đơn. Đây là dữ liệu khách phải khai, không phải lỗi.
 
+### ⚠ Dựng site MỚI: câu lỗi chỉ sai chỗ
+
+Bảng **Ghim Vật Tư** là một DocType riêng của app (`HKLed Pinned Material`). DocType đi theo
+`bench migrate`, **fixtures không mang nó** — nên site mới chỉ chạy `sync_fixtures()` sẽ có đủ
+Custom Field mà vẫn thiếu bảng này, và **vỡ ngay lúc lưu Đơn Bán Hàng đầu tiên**:
+
+```
+ImportError: Module import failed for HKLed Pinned Material, the DocType you're trying to
+open might be deleted.
+Error: No module named 'frappe.core.doctype.hkled_pinned_material'
+```
+
+🔴 **Chữ `frappe.core` trong câu lỗi KHÔNG có nghĩa là lỗi nằm ở app lõi.** Đó chỉ là đường dẫn
+Frappe suy ra khi không tìm thấy doctype ở đâu cả. Người đọc câu này gần như chắc chắn sẽ đi tìm
+sai chỗ — đó là lý do nó được chép nguyên văn vào đây.
+
+Cách chữa, **không cần** `bench migrate` (tránh kéo theo các patch nạp lại danh mục):
+
+```python
+from frappe.modules.import_file import import_file_by_path
+import_file_by_path(
+    "apps/mbwnext_hkled/mbwnext_hkled/mbwnext_hkled/doctype/"
+    "hkled_pinned_material/hkled_pinned_material.json",
+    force=True,
+    reset_permissions=True,
+)
+```
+
+Kiểm lại sau khi nạp — cả hai phải đúng:
+
+```python
+frappe.db.table_exists("HKLed Pinned Material")                       # True
+len(frappe.get_all("DocType", filters={"module": "MBWNext HKLed"}))   # 13
+```
+
+Đếm ra **12** nghĩa là vẫn thiếu đúng bảng này. Đo trên cổng 8012 ngày 08/09: `True` và `13`.
+
+*(Phát hiện bởi phiên `HKLed 3` khi dựng bãi test `test.com` ngày 08/09.)*
+
 ---
 
 ## 2. Kho nào được tính là tồn dùng được
@@ -143,10 +182,21 @@ của lõi và làm **không lưu được đơn**, với câu lỗi nói về m
 | Sản xuất xong thì ghim vật tư **nhả ra**, chuyển thành ghim thành phẩm | 04/09 16:21 |
 | Thủ kho và mua hàng **được** bấm Phân Bổ | 05/09 11:09 |
 | Nút **Tạo Yêu Cầu Mặt Hàng** lấy thẳng cột *Thiếu*, **không** trừ phiếu đã xin trước | 03/09 16:51 |
+| Màn hình *Tính nhu cầu vật tư theo kỳ* cũng **không** trừ phiếu Yêu Cầu Mặt Hàng đang chờ | 08/09 09:12 |
+| Kế hoạch sản xuất tạo từ đơn bán lấy **phần còn thiếu**, đã trừ số giữ chỗ | 08/09 11:40 |
 
-⚠ Luật cuối có hệ quả anh Thắng đã cân nhắc và vẫn chọn: **bấm nút hai lần trên cùng một đơn ra
-hai phiếu cho cùng phần thiếu**. Hệ thống bù lại bằng hai câu cảnh báo — một câu cho phần *đơn
-này* đã xin, một câu cho phần *toàn nhà máy* đang chờ. Đừng gỡ hai câu đó đi.
+⚠ Luật về Yêu Cầu Mặt Hàng có hệ quả anh Thắng đã cân nhắc và vẫn chọn: **bấm nút hai lần trên
+cùng một đơn ra hai phiếu cho cùng phần thiếu**. Hệ thống bù lại bằng hai câu cảnh báo — một câu
+cho phần *đơn này* đã xin, một câu cho phần *toàn nhà máy* đang chờ. Đừng gỡ hai câu đó đi.
+
+Chốt 08/09 09:12 làm hai câu đó **thành bắt buộc, không còn là tạm**: anh Thắng chủ động chọn để
+màn hình Phần V cũng không trừ phiếu đang chờ, nên hai câu cảnh báo là đường **duy nhất** đưa con
+số đang chờ tới mắt người mua.
+
+⚠ Luật cuối (kế hoạch sản xuất) có một chỗ hở đã biết: trong màn hình **Kế hoạch sản xuất** còn nút
+**Lấy mặt hàng** của hệ thống lõi, bấm vào là số lượng bị tính lại theo công thức lõi và **mất phần
+trừ giữ chỗ**. Hệ thống không tự đặt lại số — chỉ hiện cảnh báo *"Đặt nhiều hơn phần còn thiếu"*
+lúc lưu, vì đặt dôi ra là chuyện hợp lệ. Đừng gỡ câu cảnh báo đó.
 
 ---
 

@@ -297,9 +297,12 @@ doc_events = {
 	"Production Plan": {
 		# GAP-4: Thời Điểm Cần Hoàn Thành phải ghép delivery_date + custom_time nên không fetch_from được.
 		# PM-TASK-00046: Ghi Chú Sản Xuất cho từng dòng bảng Assembly Items.
+		# PM-TASK-00188: nút *Lấy mặt hàng* của lõi tính lại số lượng và xoá mất phần trừ giữ chỗ
+		# — nói ra chứ không tự sửa số.
 		"validate": [
 			"mbwnext_hkled.controllers.python_hook.production_plan.set_required_completion_time",
 			"mbwnext_hkled.controllers.python_hook.production_plan.set_item_production_note",
+			"mbwnext_hkled.controllers.python_hook.production_plan.canh_bao_vuot_phan_thieu",
 		],
 	},
 	"Sales Order": {
