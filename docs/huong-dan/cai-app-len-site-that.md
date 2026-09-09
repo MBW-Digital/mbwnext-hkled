@@ -87,18 +87,26 @@ sau này không chẩn đoán nhầm:
 | | `cozy_dev` (nơi test) | `hkled.mbwnext.com` (thật) |
 |---|---|---|
 | frappe | **15.120.0** | 15.101.0 |
-| erpnext | **15.73.1** | 15.95.1 |
+| erpnext | **15.112.0** | 15.95.1 |
 | Viết tắt công ty | `HKL` | `HKLED` |
 | `auto_reserve_stock_for_sales_order_on_purchase` | 1 | 0 |
 
-*(Site thật: phiên `HKLed 3` đo 08/09/2026, chưa kiểm lại sau đó. `cozy_dev`: đo lại 08/09 lúc
-16:0x — con số này ĐỔI trong ngày, xem cảnh báo dưới.)*
+*(Site thật: phiên `HKLed 3` đo 08/09/2026, **chưa kiểm lại sau đó** — hai số bên phải có thể đã
+cũ. `cozy_dev`: đo lại **09/09/2026 lúc 09:07** bằng `bench version`. Con số này ĐỔI trong ngày,
+xem cảnh báo dưới.)*
 
-⚠ **Đừng chép hai dòng phiên bản này đi đâu mà không đo lại.** Sáng 08/09 `cozy_dev` còn ở frappe
-**15.77.0**; 15:47 cùng ngày có người `git pull` lên **15.120.0** và cả ba site trên bench gãy 8
-phút (`sqlparse` thiếu bản `~=0.6.0`). Nghĩa là **frappe của bench thử nghiệm nay CAO HƠN site
-thật, còn erpnext thì THẤP HƠN 22 bản minor** — một tổ hợp không khách nào chạy. Số đo trước và
-sau 15:47 không so trực tiếp với nhau được.
+⚠ **Đừng chép hai dòng phiên bản này đi đâu mà không đo lại — bảng này đã sai HAI LẦN trong hai
+ngày.** Sáng 08/09 `cozy_dev` còn ở frappe **15.77.0**; 15:47 cùng ngày có người `git pull` lên
+**15.120.0** và cả ba site trên bench gãy 8 phút (`sqlparse` thiếu bản `~=0.6.0`). Chiều 08/09 đo
+erpnext ra **15.73.1** và ghi con số đó vào chính bảng này; sáng 09/09 đo lại thì đã là
+**15.112.0** — erpnext cũng được nâng, không ai ghi lại lúc nào.
+
+Nghĩa là **kết luận cũ "erpnext của bench thấp hơn site thật 22 bản minor" nay ĐÃ ĐẢO CHIỀU**:
+bench hiện **cao hơn site thật ở cả hai app** — frappe +19, erpnext +17 bản minor. Ai còn trích
+câu "thấp hơn 22 bản" ở đâu thì bỏ đi.
+
+📌 Vì vậy: **mọi con số phiên bản trong tài liệu này đều ghi kèm giờ đo.** Không có giờ đo thì
+coi như không có số — đo lại bằng `bench version` trước khi dùng.
 
 📌 Bench cũng **chưa `bench migrate`** sau lần nâng đó: code 15.120, lược đồ CSDL còn 15.77, 9
 patch của frappe đang chờ. App `mbwnext_hkled` thì **0 patch chờ** (31 dòng khai, 32 dòng trong
@@ -110,10 +118,12 @@ patch của frappe đang chờ. App `mbwnext_hkled` thì **0 patch chờ** (31 d
   `- HKL` và **cả 3 là chú thích cảnh báo đừng gõ cứng**. Bộ lọc kho khớp theo `warehouse_name`
   — trường này không mang hậu tố công ty. Chỉ **tài liệu** có ghi tên kho đầy đủ, và tài liệu
   thì không chạy.
-- **Chênh phiên bản theo cả hai chiều.** Bộ test hiện có chạy trên nền frappe 15.77 (trước
-  15:47 ngày 08/09) rồi 15.120 (sau đó), với erpnext 15.73 suốt. Site thật là 15.101 / 15.95.
-  Không chiều nào là "đủ gần" — **"đạt ở cozy_dev" không còn là bằng chứng đủ cho site thật**.
-  Chạy lại ít nhất bộ TC-REGR sau khi cài.
+- **Chênh phiên bản, và nền đã đo test giờ KHÔNG CÒN Ở ĐÂU.** Bộ test hiện có chạy trên frappe
+  15.77 (trước 15:47 ngày 08/09) rồi 15.120 (sau đó), với **erpnext 15.73 suốt**. Nhưng erpnext
+  của bench nay là **15.112**, và site thật là **15.101 / 15.95** — ba nền, không cặp nào trùng
+  nhau, và cái nền đã sinh ra kết quả "đạt" thì **không còn tồn tại trên máy nào**. Nên
+  **"đạt ở cozy_dev" không còn là bằng chứng đủ cho site thật**; chạy lại ít nhất bộ TC-REGR,
+  và đáng chạy **ngay trên bench sau khi nâng** chứ không đợi tới lúc cài.
 - **`auto_reserve_stock_for_sales_order_on_purchase`** là cơ chế giữ chỗ của ERPNext lõi, chạy
   song song với cơ chế ghim riêng của HKLED. Spec Phần IV chốt 25/08 viết trong bối cảnh nó
   đang **bật**. Trên site thật nó đang **tắt** — cần chốt bật hay không **trước** khi nghiệm thu
@@ -248,8 +258,8 @@ Rồi kiểm bằng mắt: mở một Đơn Bán đã duyệt có tích **Ghim T
 phải có dòng; mở một Phiếu nhập mua đã duyệt → phải thấy nút **Phân Bổ**; phiếu còn nháp thì
 **không** được có nút đó.
 
-Và chạy lại bộ **TC-REGR** của các tính năng đã nghiệm thu — vì nền tảng lệch hơn 20 bản minor
-so với nơi đã test (Bước 3).
+Và chạy lại bộ **TC-REGR** của các tính năng đã nghiệm thu — vì nền tảng lệch gần 20 bản minor
+so với nơi đã test (Bước 3), và lệch theo chiều **bench cao hơn site thật**.
 
 ---
 
