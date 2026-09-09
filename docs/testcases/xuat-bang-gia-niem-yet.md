@@ -3,12 +3,27 @@
 > **Đầu bài:** [`../features/xuat-bang-gia-niem-yet.md`](../features/xuat-bang-gia-niem-yet.md)
 > **Mockup:** [`../mockups/xuat-bang-gia-niem-yet.html`](../mockups/xuat-bang-gia-niem-yet.html)
 > **Chạy trên:** cổng 8012 (`cozy_dev` / `hkled.com`), 08/09/2026 chiều
-> **Nền:** frappe **15.120.0** · erpnext **15.73.1**
+> **Nền:** frappe **15.120.0** · erpnext **15.73.1** — *(số đo lúc chạy test, 08/09 chiều)*
 
-⚠ **Nền chạy test lệch nền site thật theo HAI CHIỀU.** Site thật `hkled.mbwnext.com` là frappe
-15.101 / erpnext 15.95 — tức frappe ở đây **cao hơn**, erpnext **thấp hơn 22 bản minor**. Xem
-[`../huong-dan/cai-app-len-site-that.md`](../huong-dan/cai-app-len-site-that.md) mục 3. Phải chạy
-lại bộ này sau khi cài lên site thật.
+🔴 **NỀN ĐÃ ĐO BỘ TEST NÀY GIỜ KHÔNG CÒN Ở ĐÂU — đọc kỹ trước khi trích kết quả.**
+
+| | frappe | erpnext | |
+|---|---|---|---|
+| Nền lúc chạy bộ test | 15.120.0 | **15.73.1** | 08/09/2026 chiều |
+| `cozy_dev` hiện tại | 15.120.0 | **15.112.0** | đo 09/09/2026 09:07 |
+| `hkled.mbwnext.com` (thật) | 15.101.0 | 15.95.1 | HKLed 3 đo 08/09, chưa kiểm lại |
+
+Erpnext được nâng **39 bản minor** sau khi bộ test này chạy xong, không ai ghi lại lúc nào. Ba
+dòng trên **không cặp nào trùng nhau**, và dòng đầu — cái nền đã sinh ra mọi chữ "Đạt" dưới đây —
+**không còn tồn tại trên máy nào**.
+
+⚠ Bản trước của mục này viết *"erpnext thấp hơn site thật 22 bản minor"*. Câu đó **nay sai và đã
+đảo chiều**: bench hiện **cao hơn** site thật ở cả hai app. Ai đã trích đi đâu thì sửa lại.
+
+➜ **Kết quả dưới đây vẫn dùng được để biết tính năng làm gì và sai ở đâu, nhưng không còn là bằng
+chứng "chạy được" trên bất kỳ nền nào đang tồn tại.** Phải chạy lại bộ này — **trên bench trước**
+(nền đã đổi ngay tại chỗ), rồi **trên site thật sau khi cài**. Xem
+[`../huong-dan/cai-app-len-site-that.md`](../huong-dan/cai-app-len-site-that.md) mục 3.
 
 ## Dữ liệu chuẩn bị
 
