@@ -105,3 +105,27 @@
 	border-color: var(--orange-300, #f0b458);
 	font-weight: 600;
 }
+
+/* ── Bảng thành phần bung ra khi bấm ▸ (PM-FEAT-00045 đợt 4, 09/09) ────────── */
+
+.bgny-bung {
+	border: 0;
+	background: transparent;
+	color: var(--text-muted);
+	font-family: var(--font-stack-mono, monospace);
+	font-size: 12px;
+	padding: 0 5px 0 0;
+	cursor: pointer;
+}
+.bgny-bung:hover { color: var(--text-color); }
+.bgny-bung-trong { display: inline-block; width: 17px; }
+
+.bgny-tb tr.bgny-con td {
+	background: var(--subtle-fg, #f4f5f6);
+	font-size: 12px;
+	border-bottom: 1px solid var(--border-color);
+}
+.bgny-tb tr.bgny-con-dau td { font-weight: 600; }
+.bgny-tb tr.bgny-con-cong td { font-style: italic; }
+.bgny-tb tr.bgny-con-tong td { border-bottom: 2px solid var(--border-color); }
+.bgny-tb tr.bgny-con-lech td { background: var(--yellow-50, #fff8e6); }

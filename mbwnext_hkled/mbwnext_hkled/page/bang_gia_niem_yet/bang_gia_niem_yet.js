@@ -46,6 +46,8 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 		this.dong = [];
 		this.chon = new Set();
 		this.trang = 1;
+		this.mo = new Set();
+		this.bom = {};
 		this.dung_khung();
 		this.tai();
 	}
@@ -244,7 +246,13 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 						? `<input type="checkbox" class="bgny-mot" ${this.chon.has(d.ma_hang) ? "checked" : ""}>`
 						: `<span class="text-muted" title="${__("Chưa tính được giá nên không chọn được")}">–</span>`
 				}</td>
-				<td><a href="/app/item/${encodeURIComponent(d.ma_hang)}" target="_blank">${frappe.utils.escape_html(d.ma_hang)}</a></td>
+				<td>${
+					["Sản xuất", "Gia công"].includes(d.phuong_phap)
+						? `<button class="bgny-bung" title="${__("Xem thành phần")}">${
+								this.mo.has(d.ma_hang) ? "▾" : "▸"
+						  }</button>`
+						: `<span class="bgny-bung-trong"></span>`
+				}<a href="/app/item/${encodeURIComponent(d.ma_hang)}" target="_blank">${frappe.utils.escape_html(d.ma_hang)}</a></td>
 				<td class="bgny-ten">${frappe.utils.escape_html(d.ten_hang || "")}</td>
 				<td class="num">${
 					duoc
@@ -257,6 +265,7 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				<td class="num"><b>${duoc ? this.so(d.gia_niem_yet) : `<span class="bgny-khong">${__("không tính được")}</span>`}</b></td>
 				<td class="num ${d.lech ? "bgny-lech" : "text-muted"}">${this.so(d.dang_ap_dung)}${d.lech ? " ▲" : ""}</td>
 			</tr>`);
+			if (this.mo.has(d.ma_hang)) h.push(this.ve_bom(d.ma_hang));
 		});
 		h.push("</tbody></table></div>");
 		this.$than.find(".bgny-bang").html(h.join(""));
@@ -278,9 +287,91 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			});
 			this.ve();
 		});
+		$b.find(".bgny-bung").on("click", (e) => {
+			const ma = $(e.currentTarget).closest("tr").data("ma");
+			if (this.mo.has(ma)) {
+				this.mo.delete(ma);
+				this.ve();
+				return;
+			}
+			this.mo.add(ma);
+			if (this.bom[ma]) return this.ve();
+			frappe.call({
+				method: "mbwnext_hkled.api.gia_niem_yet.chi_tiet_bom",
+				args: { ma_hang: ma },
+				callback: (r) => {
+					this.bom[ma] = r.message || { dong: [] };
+					this.ve();
+				},
+			});
+		});
+
 		this.gan_chung();
 		this.ve_thanh_trang();
 		this.dem();
+	}
+
+	// ── Bảng thành phần, bung ra khi bấm ▸ ──────────────────────────────────
+	//
+	// Khách vẽ đúng bảng này (ảnh anh Thắng gửi 09/09 17:03): bốn cột, và dòng cuối tên
+	// "Sản xuất" = lương/phút × số phút. Tổng bảng con phải bằng ô Giá thành của dòng cha.
+
+	ve_bom(ma) {
+		const k = this.bom[ma];
+		if (!k) {
+			return `<tr class="bgny-con"><td></td><td colspan="8" class="text-muted">${__(
+				"Đang tải thành phần…"
+			)}</td></tr>`;
+		}
+		if (!k.dong || !k.dong.length) {
+			return `<tr class="bgny-con"><td></td><td colspan="8" class="text-muted">${frappe.utils.escape_html(
+				k.ly_do || __("Không có thành phần")
+			)}</td></tr>`;
+		}
+		const h = [];
+		h.push(`<tr class="bgny-con bgny-con-dau"><td></td>
+			<td class="text-muted">${__("Thành phần BOM")}</td>
+			<td class="text-muted">${
+				k.goc_gia === "Valuation Rate"
+					? __("Giá trị tồn kho")
+					: __("Đơn giá — định mức lấy theo {0}", [frappe.utils.escape_html(k.goc_gia || "?")])
+			}</td>
+			<td class="num text-muted">${__("Số lượng")}</td>
+			<td class="num text-muted">${__("Thành tiền")}</td>
+			<td colspan="4"></td></tr>`);
+		k.dong.forEach((r) => {
+			h.push(`<tr class="bgny-con ${r.la_cong ? "bgny-con-cong" : ""}">
+				<td></td>
+				<td>${frappe.utils.escape_html(r.ten || "")}${
+					r.ma ? ` <span class="text-muted">(${frappe.utils.escape_html(r.ma)})</span>` : ""
+				}</td>
+				<td class="num">${this.so(r.gia)}</td>
+				<td class="num">${this.so(r.so_luong)}${
+					r.la_cong ? ` <span class="text-muted">${__("phút")}</span>` : ""
+				}</td>
+				<td class="num">${this.so(r.thanh_tien)}</td>
+				<td colspan="4" class="text-muted">${
+					r.chua_khai
+						? __("Chưa khai <b>Thời Gian Sản Xuất (Phút)</b> trên mặt hàng nên chi phí sản xuất bằng 0")
+						: ""
+				}</td>
+			</tr>`);
+		});
+		// ⚠ Bảng con và dòng cha phải nói cùng một chuyện. Dòng cha không tính được giá mà bảng con
+		//    vẫn cộng ra số dương thì phải giải thích ngay tại chỗ, đừng để hai số chọi nhau.
+		const ghi_chu = k.ly_do_cha
+			? __(
+					"⚠ Dòng ở trên vẫn ghi <b>không tính được</b>: {0}. Con số này chỉ là phần cộng được, chưa dùng để ra giá niêm yết.",
+					[frappe.utils.escape_html(k.ly_do_cha)]
+			  )
+			: k.co_cong_doan
+			? __("⚠ Định mức này có chi phí công đoạn riêng — đã trừ ra để không tính công hai lần")
+			: "";
+		h.push(`<tr class="bgny-con bgny-con-tong ${k.ly_do_cha ? "bgny-con-lech" : ""}"><td></td>
+			<td colspan="3" class="num"><b>${__("Cộng thành phần")}</b></td>
+			<td class="num"><b>${this.so(k.tong)}</b></td>
+			<td colspan="4" class="text-muted">${ghi_chu}</td></tr>`);
+		return h.join("");
 	}
 
 	// ── Danh sách đang giữ, và thanh chuyển trang ────────────────────────────

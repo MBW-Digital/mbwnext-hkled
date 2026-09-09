@@ -73,6 +73,31 @@ def ty_le_chung():
 	return flt(doc.ty_le_hao_phi), flt(doc.ty_le_tinh_gia_niem_yet)
 
 
+def luong_tren_phut():
+	"""Đơn giá nhân công tính theo phút, khai ở `HKLed Pricing Setting`.
+
+	Chốt của anh Thắng 09/09 17:03: *"bổ sung thêm cho anh ở trong phần cài đặt tỷ lệ 1 trường là
+	Lương trên phút — giá vốn của mặt hàng sản xuất em cộng thêm cho anh phần chi phí sản xuất =
+	lương trên phút x thời gian sản xuất (thiết lập trong item)"*.
+	"""
+	return flt(frappe.db.get_single_value("HKLed Pricing Setting", "luong_tren_phut"))
+
+
+def _chi_phi_san_xuat(ma_hang):
+	"""`(tiền công, lương/phút, số phút)` của một đơn vị thành phẩm.
+
+	⚠ Thời gian lấy từ `custom_time_to_manufacture` — trường **đã có sẵn** trên Mặt hàng từ tính
+	  năng bậc thợ, không dựng trường mới. Nhãn trên form là *Thời Gian Sản Xuất (Phút)*.
+
+	📌 Đo 09/09 trên cổng 8012: **59.749** mặt hàng Sản xuất/Gia công nhưng chỉ **3 mã** khai thời
+	  gian > 0. Nên với gần như mọi mặt hàng, phần này ra **0** và giá vốn không đổi — đó là đúng,
+	  không phải hỏng. Chỗ cần nói ra là màn hình, không phải ở đây.
+	"""
+	phut = frappe.utils.cint(frappe.db.get_value("Item", ma_hang, "custom_time_to_manufacture"))
+	luong = luong_tren_phut()
+	return luong * phut, luong, phut
+
+
 def nguon_gia_von_mac_dinh():
 	"""Cách lấy giá vốn mặc định cho mặt hàng *Mua hàng*, khai ở `HKLed Pricing Setting`.
 
@@ -153,13 +178,22 @@ def _gia_thanh_bom(ma_hang):
 	bom = frappe.db.get_value(
 		"BOM",
 		{"item": ma_hang, "is_default": 1, "is_active": 1, "docstatus": 1},
-		["total_cost", "quantity"],
+		["total_cost", "quantity", "operating_cost", "with_operations"],
 		as_dict=True,
 	)
 	if not bom:
 		return None
 	sl = flt(bom.quantity) or 1
 	tong = flt(bom.total_cost)
+
+	# 🔴 CHỐNG CỘNG ĐÔI. `BOM.total_cost` đã bao gồm `operating_cost` khi định mức bật công đoạn.
+	#    Từ 09/09 giá vốn còn cộng thêm *lương/phút × thời gian sản xuất*, nên định mức nào đã có
+	#    chi phí công đoạn thì phải TRỪ nó ra, không thì tiền công tính hai lần.
+	#    📌 Đo 09/09: 0/13 định mức trên cổng 8012 bật công đoạn, `operating_cost` đều bằng 0 — nên
+	#    hôm nay nhánh này không chạy. Nhưng đó là chuyện của hôm nay; để nguyên là bom hẹn giờ.
+	if bom.with_operations and flt(bom.operating_cost):
+		tong -= flt(bom.operating_cost)
+
 	if tong <= 0:
 		return None
 	return tong / sl
@@ -196,7 +230,8 @@ def cost_cua(ma_hang, phuong_phap, nguon=None):
 		gia = _gia_thanh_bom(ma_hang)
 		if gia is None:
 			return None, _("Chưa có định mức mặc định, hoặc định mức chưa có giá thành")
-		return gia, None
+		cong, _luong, _phut = _chi_phi_san_xuat(ma_hang)
+		return gia + cong, None
 
 	return None, _("Mặt hàng chưa khai Phương pháp bổ sung")
 
@@ -563,3 +598,89 @@ def xuat_excel(ma_hang, ty_le_chiet_khau=0, nguon=None):
 	frappe.local.response.filename = ten_file
 	frappe.local.response.filecontent = buf.getvalue()
 	frappe.local.response.type = "binary"
+
+
+@frappe.whitelist()
+def chi_tiet_bom(ma_hang):
+	"""Bảng thành phần của một mặt hàng **Sản xuất / Gia công** — bung ra khi bấm vào dòng.
+
+	Khách vẽ đúng bảng này trong ảnh anh Thắng gửi 09/09 17:03: bốn cột *Thành phần BOM* ·
+	*Giá trị tồn kho* · *Số lượng* · *Thành tiền*, và **dòng cuối tên là “Sản xuất”** với
+	`lương/phút × số phút`. Tổng của bảng phải bằng đúng ô *Giá thành* của dòng cha.
+
+	⚠ Chia cho `BOM.quantity`. Định mức lập cho một mẻ 10 cái thì `qty`/`amount` của từng dòng con
+	  là của cả mẻ; không chia là bảng con cao gấp `quantity` lần trong khi dòng cha đã chia rồi —
+	  hai con số lệch nhau ngay trên cùng một màn hình.
+
+	⚠ Cột *Giá trị tồn kho* là `BOM Item.rate`. Trên cổng 8012 cả 13 định mức đều đặt
+	  `rm_cost_as_per = 'Valuation Rate'` nên `rate` ĐANG là giá trị tồn kho, đúng như tiêu đề khách
+	  viết. Định mức nào đổi sang *Price List* hay *Last Purchase Rate* thì con số vẫn hiện ra bình
+	  thường mà **không còn đúng tên cột** — nên hàm trả kèm `goc_gia` để màn hình nói ra.
+	"""
+	bom = frappe.db.get_value(
+		"BOM",
+		{"item": ma_hang, "is_default": 1, "is_active": 1, "docstatus": 1},
+		["name", "quantity", "rm_cost_as_per", "operating_cost", "with_operations"],
+		as_dict=True,
+	)
+	if not bom:
+		return {"dong": [], "tong": None, "ly_do": _("Mặt hàng chưa có định mức mặc định")}
+
+	sl = flt(bom.quantity) or 1
+	dong = []
+	for r in frappe.get_all(
+		"BOM Item",
+		filters={"parent": bom.name},
+		fields=["item_code", "item_name", "qty", "rate", "amount", "stock_uom"],
+		order_by="idx",
+		limit_page_length=0,
+	):
+		dong.append(
+			{
+				"ma": r.item_code,
+				"ten": r.item_name or r.item_code,
+				"gia": flt(r.rate),
+				"so_luong": flt(r.qty) / sl,
+				"thanh_tien": flt(r.amount) / sl,
+				"dvt": r.stock_uom,
+				"la_cong": 0,
+			}
+		)
+
+	tien_cong, luong, phut = _chi_phi_san_xuat(ma_hang)
+	# Luôn hiện dòng Sản xuất, kể cả khi bằng 0 — mặt hàng CHƯA khai thời gian trông y hệt mặt
+	# hàng làm xong trong 0 phút. Ẩn đi là giấu mất chỗ cần khai.
+	dong.append(
+		{
+			"ma": None,
+			"ten": _("Sản xuất"),
+			"gia": luong,
+			"so_luong": phut,
+			"thanh_tien": tien_cong,
+			"dvt": _("phút"),
+			"la_cong": 1,
+			"chua_khai": not phut,
+		}
+	)
+
+	# 🔴 Bảng con và dòng cha PHẢI nói cùng một chuyện. Định mức có giá thành 0 (thành phần chưa có
+	#    giá trị tồn kho) mà mặt hàng lại khai thời gian sản xuất thì bảng con cộng ra một số dương
+	#    — trong khi dòng cha ghi "không tính được". Hai con số chọi nhau trên cùng màn hình, và
+	#    người đọc không có cách nào biết bên nào đúng.
+	#    Đo 09/09 với lương thử 820đ/phút: `Bán thành phẩm 1` cho bảng con **4.100** còn dòng cha
+	#    **không tính được** — đúng ca này.
+	#    Giữ nguyên luật cũ (định mức chưa có giá thành ⇒ không tính được) vì giá thành 0 nghĩa là
+	#    *chưa khai giá vật tư*, không phải *vật tư miễn phí*; định giá bán chỉ dựa vào tiền công là
+	#    sai xa hơn nhiều so với việc báo chưa tính được. Nhưng phải NÓI RA, nên trả kèm `ly_do_cha`.
+	cost_cha, ly_do_cha = cost_cua(ma_hang, frappe.db.get_value("Item", ma_hang, "custom_replenishment_method"))
+
+	return {
+		"dong": dong,
+		"tong": sum(flt(d["thanh_tien"]) for d in dong),
+		"cost_cha": cost_cha,
+		"ly_do_cha": ly_do_cha,
+		"bom": bom.name,
+		"goc_gia": bom.rm_cost_as_per,
+		"co_cong_doan": bool(bom.with_operations and flt(bom.operating_cost)),
+		"luong_tren_phut": luong,
+	}

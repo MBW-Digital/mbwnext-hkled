@@ -11,7 +11,9 @@
   "column_break_1",
   "ty_le_tinh_gia_niem_yet",
   "sec_gia_von",
-  "nguon_gia_von_mua_hang"
+  "nguon_gia_von_mua_hang",
+  "col_luong",
+  "luong_tren_phut"
  ],
  "fields": [
   {
@@ -52,6 +54,16 @@
    "fieldtype": "Select",
    "label": "Nguồn Giá Vốn Cho Mặt Hàng Mua Hàng",
    "options": "Đơn mua gần nhất\nGiá vốn tồn kho trung bình"
+  },
+  {
+   "fieldname": "col_luong",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Đơn giá nhân công tính theo phút. Giá vốn mặt hàng <b>Sản xuất / Gia công</b> được cộng thêm <b>lương trên phút × Thời Gian Sản Xuất (Phút)</b> khai trên từng mặt hàng.<br>⚠ Để trống hoặc để 0 thì không cộng gì — giá vốn giữ đúng như trước.",
+   "fieldname": "luong_tren_phut",
+   "fieldtype": "Currency",
+   "label": "Lương Trên Phút"
   }
  ],
  "index_web_pages_for_search": 0,

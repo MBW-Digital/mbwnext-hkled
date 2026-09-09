@@ -271,3 +271,41 @@ Ai thử đúng hai mã đó sẽ kết luận *"hai cách như nhau"*. **Phải
 | TC-NGUON-09 | Đổi trong **Cài đặt tỷ lệ** → mở lại bảng thấy theo cài đặt mới | thao tác giao diện |
 | TC-NGUON-10 | 🔴 Xem tạm theo tồn kho rồi bấm **Cập nhật** → hộp thoại cảnh báo, và **ghi đúng con số đang xem** | **ghi `Item Price` thật** — để anh Thắng chạy |
 | TC-NGUON-11 | Xuất Excel khi đang xem tạm → file mang con số đang xem | tải file |
+
+---
+
+# Đợt 4 — Lương trên phút và bảng thành phần bung ra
+
+> **Chốt:** anh Thắng 09/09/2026 17:03 — *"khách chọn nguồn giá vốn chung cho toàn hệ thống em nhé …
+> bổ sung … 1 trường là Lương trên phút … chi phí sản xuất = lương trên phút x thời gian sản xuất
+> (thiết lập trong item) … khi click vào các dòng mặt hàng sản xuất hoặc gia công thì sẽ hiển thị
+> ra được thông tin như anh khoanh đỏ"*
+> **Chạy trên:** cổng 8012, **09/09/2026 chiều** — erpnext 15.112.0
+
+| ID | Kiểm cái gì | Đo được | KQ |
+|---|---|---|---|
+| TC-CONG-01 | Tiền công = lương/phút × số phút | đặt tạm lương **820**: `Bán thành phẩm 1` 5 phút → **4.100**; `Bán thành phẩm 2` 4 phút → **3.280**; `Thành phẩm 1` 10 phút → **8.200** | ✅ Đạt |
+| TC-CONG-02 | Lương = 0 thì **không cộng gì**, giá giữ nguyên | 6/6 mã thử giữ đúng giá vốn cũ | ✅ Đạt |
+| TC-CONG-03 | 🔴 Tổng bảng con **bằng** giá vốn dòng cha | `Test Tp` 12.000 = 12.000 · `Test BTP 1` 8.500 = 8.500 · `Test Gia Công` 20.000 = 20.000 | ✅ Đạt |
+| TC-CONG-04 | Dùng đúng trường có sẵn, không đẻ trường mới | `custom_time_to_manufacture` — *Thời Gian Sản Xuất (Phút)*, đã có từ tính năng bậc thợ | ✅ Đạt |
+| TC-CONG-05 | Cột *Giá trị tồn kho* đúng tên | 13/13 định mức đặt `rm_cost_as_per = 'Valuation Rate'`; định mức khác thì đầu bảng đổi chữ theo | ✅ Đạt |
+| TC-CONG-06 | 🔴 Không cộng đôi tiền công | 0/13 định mức bật `with_operations`, `operating_cost` đều 0 — nhánh trừ chưa chạy nhưng đã có | ✅ Đạt (chưa có ca thật) |
+| TC-CONG-07 | Dòng *Sản xuất* vẫn hiện khi chưa khai thời gian | `Test Tp`: hiện `0 × 0`, kèm chữ *"Chưa khai Thời Gian Sản Xuất"* | ✅ Đạt |
+| TC-CONG-08 | 🔴 Bảng con **không được chọi** dòng cha | `Bán thành phẩm 1` với lương 820: bảng con cộng ra **4.100** còn dòng cha **không tính được** → bảng con hiện `ly_do_cha` và nói rõ con số đó chưa dùng để ra giá | ✅ Đạt |
+| TC-CONG-09 | Đặt tạm rồi trả lại, không để lại vết | lương về **0**; *Tỷ lệ hao phí* của anh Thắng vẫn **5%** | ✅ Đạt |
+
+🔴 **TC-CONG-08 là ca tôi suýt bỏ sót.** Định mức có giá thành **0** (thành phần chưa có giá trị tồn
+kho) mà mặt hàng lại khai thời gian sản xuất thì bảng con cộng ra một **số dương**, trong khi dòng
+cha ghi *"không tính được"*. **Hai con số chọi nhau trên cùng một màn hình** và người đọc không có
+cách nào biết bên nào đúng. Đã giữ luật cũ — giá thành 0 nghĩa là *chưa khai giá vật tư*, không
+phải *vật tư miễn phí*; định giá bán chỉ dựa vào tiền công thì sai xa hơn nhiều — nhưng **nói ra**
+ngay trong bảng con.
+
+## Chưa chạy — phải bấm nút thật
+
+| ID | Kiểm cái gì |
+|---|---|
+| TC-CONG-10 | Bấm ▸ trên dòng Sản xuất/Gia công → bung bảng bốn cột đúng như ảnh khách |
+| TC-CONG-11 | Mặt hàng *Mua hàng* **không có** nút ▸ |
+| TC-CONG-12 | Khai *Lương trên phút* trong Cài đặt → giá vốn mặt hàng sản xuất đổi ngay, *Đang áp dụng* đứng yên |
+| TC-CONG-13 | Bung nhiều dòng cùng lúc, đổi trang rồi quay lại |
