@@ -116,7 +116,7 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | TC-PERM-01 | Đã đo vai trò nào mở được (xem `TC-QUYEN`), nhưng **ai NÊN được mở** thì đang chờ anh Thắng |
 | TC-ISO-01 | Chưa kiểm trên site không cài app khách |
 
-**Tổng: 98 ca · 97 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+**Tổng: 113 ca · 112 Pass · 1 chưa chạy** (`TC-EDGE-06`).
 
 > Đếm bằng `grep -c '^| TC-.*| Pass |'`. Hai cách đếm SAI đã thử: `grep -c '| Pass |'` đếm cả dòng
 > ghi chú này (dòng dặn cách đếm lại chứa chính chuỗi bị đếm), và `grep -c '^| TC-'` đếm cả bảng
@@ -349,3 +349,51 @@ người có quyền, hoặc — tệ hơn — mở nút cho người không có
 
 ➜ **Đã hỏi anh Thắng:** quản lý sản xuất có được lập đơn mua từ màn hình này không? Nếu **có** thì
 việc cần làm là cấp quyền `Purchase Order` cho vai trò đó, **không phải** gỡ chốt chặn này.
+
+---
+
+## TC-UI2 — bấm lại toàn bộ giao diện trên dữ liệu của ngày 09/09
+
+Chạy trên cổng 8012, kỳ **mặc định** (bắt đầu hôm nay) — tức đúng thứ người dùng thấy khi mở màn
+hình lần đầu, không phải một khoảng ngày chọn riêng cho vừa ca test.
+
+Nền lúc đo **09/09 ~09:0x**: `Purchase Order` 3 · `Material Request` 10 · `Sales Order` 40 ·
+`Work Order` 44 · `Production Plan` 15.
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-UI2-01 | Kỳ mặc định có dữ liệu | Bảng có dòng | 3 vật tư · tổng 62 · 2 cảnh báo | Pass |
+| TC-UI2-02 | Ngày cần hàng là **hôm nay** → **không** nhãn *đã trễ* | Không nhãn | không | Pass |
+| TC-UI2-03 | Tích ô đầu bảng | Chọn hết | 3/3 · tổng **62** = khớp thẻ *Tổng còn phải mua* | Pass |
+| TC-UI2-04 | Sửa một dòng về **0** | Tự bỏ tích dòng đó | còn 2/3 · tổng 56 | Pass |
+| TC-UI2-05 | Sửa số lượng đặt 44 → **50** | Đếm lại theo số mới | tổng 62 | Pass |
+| TC-UI2-06 | Bấm *Tạo đơn mua* khi **chưa chọn** nhà cung cấp | Chặn | *"Giá trị khuyết bắt buộc: Nhà cung cấp"* | Pass |
+| TC-UI2-07 | Bấm tên trong bảng gợi ý | Điền vào ô nhà cung cấp | điền `NCC A` | Pass |
+| TC-UI2-08 | Tạo đơn thật | 1 đơn **nháp**, 2 dòng | `PO-26-00007`, `docstatus = 0` | Pass |
+| TC-UI2-09 | Đơn dùng **số người dùng chốt** | 50 và 12 | 50 và 12 | Pass |
+| TC-UI2-10 | Dòng cho về 0 **không** vào đơn | Vắng mặt | không có `NVL 3` | Pass |
+| TC-UI2-11 | 🆕 Mã **chưa khai giá mua** | Nói ra, không im | *"1 dòng chưa có đơn giá…: NVL 1. Điền giá trước khi duyệt."* · `rate = 0` | Pass |
+| TC-UI2-12 | Dòng đã lập đơn bị khoá + đánh dấu | Mờ, ghi số đơn | *"đã vào PO-26-00007"* | Pass |
+| TC-UI2-13 | Tính lại: cảnh báo đơn nháp xuất hiện | 2 → 3 cảnh báo | *"…CÒN NHÁP chứa: NVL 1 (12), NVL 2 (50)"* | Pass |
+| TC-UI2-14 | Tính lại: số thiếu **KHÔNG** giảm | Giữ nguyên | 44 · 12 · 6 y nguyên | Pass |
+| TC-UI2-15 | Dọn sạch sau test | 5 bảng về đúng số cũ | 3·10·40·44·15, không lệch bảng nào | Pass |
+
+### 🆕 `TC-UI2-11` — nhánh chờ từ hôm qua, nay chạy thật
+
+Ca *"mã chưa khai giá mua"* hôm 08/09 **không chạm tới được**: rổ hàng hôm đó mã nào cũng có lịch
+sử mua nên `rate` luôn > 0, và nhánh cảnh báo nằm im. Hôm nay `NVL 1` lọt vào rổ và nó nổ đúng.
+
+🔴 **Đây là bằng chứng thật cho câu đang hỏi anh Thắng** (đơn mua để **nháp** hay **tự duyệt**):
+đơn tạo ra có một dòng **giá 0 đồng**. Nếu chọn *tự duyệt* thì hệ thống sẽ **tự duyệt một đơn mua
+0 đồng** với nhà cung cấp. Trước hôm nay chỗ này mới chỉ là suy luận từ mã nguồn; giờ có `rate = 0`
+thật kèm câu cảnh báo thật.
+
+⚠ Vì sao đáng ghi thành ca riêng thay vì gộp: nó nhắc rằng **rổ hàng của lần test quyết định nhánh
+nào được chạy**. Hai lượt bấm giống hệt nhau về thao tác, khác nhau về dữ liệu, và chỉ một lượt
+chạm tới nhánh này.
+
+### ⚠ Số nền đổi từng ngày — so sánh phải kèm giờ đo
+
+`Work Order` trên 8012: **42 → 43 → 44** trong hai ngày. `Purchase Order` cũng đổi khi có ai lập
+đơn. Nên mọi câu *"trước/sau không lệch"* chỉ có nghĩa khi hai lần đếm **cùng một buổi** — đừng lấy
+số nền của hôm qua làm chuẩn cho hôm nay.
