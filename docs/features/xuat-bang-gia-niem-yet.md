@@ -420,3 +420,48 @@ báo *"trang 7/12"* rồi mở trang 7 ra rỗng — và **rỗng trông y hệt
 Nhánh có bộ lọc *tính được / đang lệch* vẫn **lấy hết rồi mới cắt trang trong Python**, đúng lý do
 đã ghi ở `ma_co_nguon_cost()`: `ma_co_nguon_cost()` chỉ là điều kiện **cần**, cắt trước khi
 `cost_cua()` loại là cắt nhầm — lỗi đã mắc ngày 08/09.
+
+---
+
+## Đợt 3 — hai cách lấy giá vốn, chốt 09/09/2026 15:56
+
+> *"đối với những mặt hàng có phương pháp bổ sung mua hàng, khách hàng đang muốn có có 2 cách lấy
+> giá vốn: lấy giá trên đơn mua gần nhất và giá vốn tồn kho trung bình, họ muốn có thể lựa chọn
+> được 1 trong 2 cách"*
+
+Chỉ áp cho **Mua hàng**. Sản xuất / Gia công vẫn lấy giá thành định mức mặc định — đã đo, bốn mã
+tự làm ra **cùng một số** ở cả hai cách.
+
+### Chọn ở đâu
+
+| Nơi | Vai trò |
+|---|---|
+| `HKLed Pricing Setting` → *Nguồn Giá Vốn Cho Mặt Hàng Mua Hàng* | **mặc định của cả hệ thống** |
+| Ô *Giá vốn mặt hàng mua* trên màn hình bảng giá | **xem tạm**, không ghi vào cài đặt |
+
+Ô trên màn hình để so hai cách trước khi quyết, khỏi phải sửa cài đặt của cả hệ thống rồi trả lại.
+Khi đang xem tạm khác cài đặt, chip trên bảng đổi màu và ghi *"đang xem tạm"*.
+
+### 🔴 Ba chỗ dễ sai, đều đã chặn
+
+**① Ghi sang sales phải theo nguồn ĐANG XEM.** `cap_nhat_gia` và `xuat_excel` nhận `nguon` từ màn
+hình chứ không tự lấy mặc định. Thiếu chỗ này thì người dùng nhìn thấy **20.000** rồi bấm ghi, mà
+sang sales lại thành **35.000** — đúng hai con số của `Test NVL 1` đo ngày 09/09.
+
+**② Tập ứng viên đổi theo nguồn.** `ma_co_nguon_cost(nguon)` đổi câu truy vấn: theo đơn mua ra
+**9** mã, theo tồn kho ra **13**. Giữ nguyên câu cũ là **bỏ sót 4 mã có tồn mà chưa từng lên đơn
+mua** — bỏ sót thì bảng vẫn trông đầy đủ.
+
+**③ Không tự lấy nguồn kia khi nguồn đã chọn không có số.** Chọn *tồn kho* mà mã chưa có tồn thì
+báo **"không tính được"** kèm lý do, chứ không lặng lẽ trả giá đơn mua. Một con số sai kiểu đó
+trông y hệt một con số đúng.
+
+### Bình quân **gia quyền**, không phải trung bình cộng
+
+`Σ(tồn × giá vốn) / Σ(tồn)` trên mọi kho, bỏ dòng tồn ≤ 0. Trung bình cộng của `valuation_rate`
+là sai: kho A 1.000 cái giá 10.000 và kho B 1 cái giá 50.000 → trung bình cộng 30.000, gia quyền
+10.040.
+
+📌 Đo 09/09: mỗi mã hiện chỉ nằm ở **một kho** nên hôm nay hai cách ra số y hệt. **Đừng lấy "đo
+thấy giống nhau" làm bằng chứng rằng trung bình cộng cũng được** — chỗ khác nhau chỉ lộ khi khách
+dựng nhiều kho.

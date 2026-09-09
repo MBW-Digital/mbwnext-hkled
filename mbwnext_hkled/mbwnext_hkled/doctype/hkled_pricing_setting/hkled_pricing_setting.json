@@ -9,7 +9,9 @@
   "gioi_thieu",
   "ty_le_hao_phi",
   "column_break_1",
-  "ty_le_tinh_gia_niem_yet"
+  "ty_le_tinh_gia_niem_yet",
+  "sec_gia_von",
+  "nguon_gia_von_mua_hang"
  ],
  "fields": [
   {
@@ -37,6 +39,19 @@
    "in_list_view": 1,
    "label": "Tỷ Lệ Tính Giá Niêm Yết",
    "reqd": 1
+  },
+  {
+   "fieldname": "sec_gia_von",
+   "fieldtype": "Section Break",
+   "label": "Cách lấy giá vốn"
+  },
+  {
+   "default": "Đơn mua gần nhất",
+   "description": "Chỉ áp cho mặt hàng có Phương pháp bổ sung là <b>Mua hàng</b>. Mặt hàng Sản xuất / Gia công luôn lấy giá thành của định mức mặc định. ⚠ Đổi ô này là <b>giá niêm yết của mọi mặt hàng mua đổi theo ngay</b> — nhưng giá sales đang thấy thì không đổi cho tới khi bấm nút cập nhật trong màn hình Bảng giá niêm yết.",
+   "fieldname": "nguon_gia_von_mua_hang",
+   "fieldtype": "Select",
+   "label": "Nguồn Giá Vốn Cho Mặt Hàng Mua Hàng",
+   "options": "Đơn mua gần nhất\nGiá vốn tồn kho trung bình"
   }
  ],
  "index_web_pages_for_search": 0,

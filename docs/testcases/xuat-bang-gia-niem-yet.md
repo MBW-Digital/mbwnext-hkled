@@ -236,3 +236,38 @@ tổng số vẫn ra một con số trông hợp lý.
 
 🔴 **TC-TICK-07 cố ý để anh Thắng chạy.** Nó ghi `Item Price` thật trên dữ liệu thật; tôi tự bấm là
 đổi giá sales nhìn thấy mà không ai yêu cầu.
+
+---
+
+# Đợt 3 — Hai cách lấy giá vốn cho mặt hàng Mua hàng
+
+> **Yêu cầu:** anh Thắng chuyển ý khách 09/09/2026 15:56 — *"đối với những mặt hàng có phương pháp
+> bổ sung mua hàng, khách hàng đang muốn có 2 cách lấy giá vốn: lấy giá trên đơn mua gần nhất và
+> giá vốn tồn kho trung bình, họ muốn có thể lựa chọn được 1 trong 2 cách"*
+> **Chạy trên:** cổng 8012, **09/09/2026 chiều** — erpnext 15.112.0
+
+| ID | Kiểm cái gì | Đo được | KQ |
+|---|---|---|---|
+| TC-NGUON-01 | Hai cách ra số **khác nhau** trên cùng một mã | `Test NVL 1`: đơn mua **10.000** → niêm yết **35.000**; tồn kho **6.000** → niêm yết **20.000** | ✅ Đạt |
+| TC-NGUON-02 | Mã chỉ có một nguồn thì hai cách ra **cùng** một số | `Test NVL 2`, `Test NVL 3`: 10.000 cả hai cách | ✅ Đạt |
+| TC-NGUON-03 | 🔴 Tập ứng viên **đổi theo nguồn** | `ma_co_nguon_cost`: **9** mã theo đơn mua, **13** mã theo tồn kho | ✅ Đạt |
+| TC-NGUON-04 | Mặt hàng Sản xuất/Gia công **không bị ảnh hưởng** | `Test BTP 1/2`, `Test Gia Công`, `Test Tp` giữ nguyên số ở cả hai cách | ✅ Đạt |
+| TC-NGUON-05 | Chưa khai cài đặt thì giữ hành vi cũ | Single rỗng → `nguon_gia_von_mac_dinh()` = *Đơn mua gần nhất* | ✅ Đạt |
+| TC-NGUON-06 | Ba hàm đều nhận `nguon` | `bang_gia`, `cap_nhat_gia`, `xuat_excel` — chữ ký có `nguon=None` | ✅ Đạt |
+| TC-NGUON-07 | Patch của tính năng đã vào `Patch Log` | sau `bench migrate`: **0 patch chờ** | ✅ Đạt |
+
+⚠ **TC-NGUON-03 là ca đáng giá nhất.** Nếu để nguyên câu lọc theo đơn mua trong khi người dùng đã
+chuyển sang *giá vốn tồn kho*, thì **4 mã có tồn mà chưa từng lên đơn mua bị bỏ sót hẳn** — và bỏ
+sót không có dấu hiệu nào, bảng vẫn ra một danh sách trông đầy đủ.
+
+⚠ **TC-NGUON-02 là cái bẫy khi test.** Hai trong ba mã *Mua hàng* ra **cùng một số** ở cả hai cách.
+Ai thử đúng hai mã đó sẽ kết luận *"hai cách như nhau"*. **Phải thử trên `Test NVL 1`.**
+
+## Chưa chạy — phải bấm nút thật
+
+| ID | Kiểm cái gì | Vì sao chưa chạy |
+|---|---|---|
+| TC-NGUON-08 | Đổi ô *Giá vốn mặt hàng mua* trên màn hình → bảng tính lại, chip hiện *"đang xem tạm"* | thao tác giao diện |
+| TC-NGUON-09 | Đổi trong **Cài đặt tỷ lệ** → mở lại bảng thấy theo cài đặt mới | thao tác giao diện |
+| TC-NGUON-10 | 🔴 Xem tạm theo tồn kho rồi bấm **Cập nhật** → hộp thoại cảnh báo, và **ghi đúng con số đang xem** | **ghi `Item Price` thật** — để anh Thắng chạy |
+| TC-NGUON-11 | Xuất Excel khi đang xem tạm → file mang con số đang xem | tải file |

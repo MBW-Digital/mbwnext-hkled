@@ -82,6 +82,20 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			default: "tat_ca",
 			change: () => this.tai(1),
 		});
+		// Ô chọn nguồn giá vốn — chỉ đổi CÁCH XEM, không ghi vào Cài đặt. Để người dùng so hai cách
+		// trước khi quyết, mà không phải sửa cài đặt của cả hệ thống rồi trả lại.
+		this.f_nguon = p.add_field({
+			fieldname: "nguon",
+			label: __("Giá vốn mặt hàng mua"),
+			fieldtype: "Select",
+			options: [
+				{ value: "", label: __("Theo cài đặt") },
+				{ value: "Đơn mua gần nhất", label: __("Đơn mua gần nhất") },
+				{ value: "Giá vốn tồn kho trung bình", label: __("Giá vốn tồn kho trung bình") },
+			],
+			default: "",
+			change: () => this.tai(1),
+		});
 		this.f_tim = p.add_field({
 			fieldname: "tim",
 			label: __("Tìm mã hoặc tên"),
@@ -132,6 +146,7 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				chi_tinh_duoc: loc === "tinh_duoc" ? 1 : 0,
 				chi_lech: loc === "lech" ? 1 : 0,
 				tim: this.f_tim.get_value() || null,
+				nguon: this.f_nguon.get_value() || null,
 				trang: this.trang,
 				moi_trang: this.f_so_dong.get_value() || 100,
 			},
@@ -164,6 +179,11 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				<span class="bgny-chip">${__("Hao phí")} <b>${k.hao_phi}%</b></span>
 				<span class="bgny-chip">${__("Tỷ lệ tính giá niêm yết")} <b>${k.ty_le_niem_yet}%</b></span>
 				<span class="bgny-chip">${__("Ghi vào bảng giá")} <b>${frappe.utils.escape_html(k.bang_gia)}</b></span>
+				<span class="bgny-chip ${
+					k.nguon !== k.nguon_mac_dinh ? "bgny-chip-tam" : ""
+				}">${__("Giá vốn mặt hàng mua")} <b>${frappe.utils.escape_html(k.nguon || "")}</b>${
+					k.nguon !== k.nguon_mac_dinh ? ` — ${__("đang xem tạm")}` : ""
+				}</span>
 				<span class="bgny-chip ${lech ? "bgny-chip-lech" : ""}">${__("Đang lệch")} <b>${lech}</b></span>
 				${
 					this.chon.size
@@ -397,7 +417,18 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 					}</div>`
 			)
 			.join("");
+		// 🔴 Đang xem TẠM theo nguồn khác cài đặt mà bấm ghi thì con số đẩy sang sales là con số
+		//    của cách đang xem — phải nói ra, vì mở lại màn hình nó sẽ hiện theo cài đặt và trông
+		//    như hệ thống tự đổi giá.
+		const tam =
+			this.kq.nguon !== this.kq.nguon_mac_dinh
+				? `<br><div class="bgny-canh bgny-canh-do">${__(
+						"Bảng đang xem TẠM theo <b>{0}</b>, khác cài đặt chung (<b>{1}</b>). Giá đẩy sang sales sẽ là giá của cách đang xem.",
+						[this.kq.nguon, this.kq.nguon_mac_dinh]
+				  )}</div>`
+				: "";
 		frappe.confirm(
+			tam +
 			__(
 				"Đẩy giá niêm yết mới của <b>{0}</b> mặt hàng sang bảng giá <b>{1}</b>?<br><br>Sau khi đẩy, sales lập đơn sẽ thấy giá mới ở cột <i>Đơn giá theo bảng giá</i>. Giá của những đơn đã lập <b>không</b> bị ảnh hưởng.",
 				[ds.length, this.kq.bang_gia]
@@ -412,7 +443,9 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			() => {
 				frappe.call({
 					method: "mbwnext_hkled.api.gia_niem_yet.cap_nhat_gia",
-					args: { ma_hang: ds },
+					// Gửi kèm nguồn ĐANG XEM, không để server tự lấy mặc định — nếu không, con số
+					// ghi sang sales sẽ khác con số người dùng vừa nhìn thấy.
+					args: { ma_hang: ds, nguon: this.kq.nguon },
 					freeze: true,
 					freeze_message: __("Đang cập nhật giá niêm yết…"),
 					callback: (r) => {
@@ -480,7 +513,10 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 					"?ma_hang=" +
 					encodeURIComponent(JSON.stringify(ds)) +
 					"&ty_le_chiet_khau=" +
-					encodeURIComponent(v.ty_le_chiet_khau || 0);
+					encodeURIComponent(v.ty_le_chiet_khau || 0) +
+					// Kèm nguồn ĐANG XEM: file xuất ra phải mang đúng con số trên màn hình.
+					"&nguon=" +
+					encodeURIComponent(this.kq.nguon || "");
 				window.open(url, "_blank");
 			},
 		});

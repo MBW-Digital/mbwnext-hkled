@@ -98,3 +98,10 @@
 	background: var(--control-bg, transparent);
 	color: inherit;
 }
+
+/* Đang xem tạm theo nguồn giá vốn khác cài đặt chung */
+.bgny-chip-tam {
+	background: var(--orange-50, #fff5e6);
+	border-color: var(--orange-300, #f0b458);
+	font-weight: 600;
+}
