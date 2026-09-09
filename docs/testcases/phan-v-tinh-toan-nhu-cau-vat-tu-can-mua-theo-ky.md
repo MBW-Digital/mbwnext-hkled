@@ -397,3 +397,45 @@ chạm tới nhánh này.
 `Work Order` trên 8012: **42 → 43 → 44** trong hai ngày. `Purchase Order` cũng đổi khi có ai lập
 đơn. Nên mọi câu *"trước/sau không lệch"* chỉ có nghĩa khi hai lần đếm **cùng một buổi** — đừng lấy
 số nền của hôm qua làm chuẩn cho hôm nay.
+## 🔒 Anh Thắng chốt ba câu — 09/09/2026 09:20
+
+Nguyên văn (`69lk5kd75e` trên PM-FEAT-00030):
+
+> *1. đơn tạo ra ở dạng nháp em nhé, **vì sau này họ cài luồng duyệt trên đơn nữa***
+> *2. người mua hàng được lập em nhé, vì chức năng này phục vụ cho phòng mua hàng*
+> *3. hạn là 11/09 em nhé*
+
+**Không phải sửa dòng code nào — hành vi đang chạy đã khớp cả ba.** Đo lại sau khi có chốt:
+
+| Chốt | Code hiện tại | Khớp |
+|---|---|---|
+| Đơn ra dạng **nháp** | `tao_don_mua` chỉ `insert()`, **không** `submit()` | ✅ |
+| Chỉ **người mua hàng** được lập | chặn bằng `has_permission("Purchase Order", "create")`; vai trò tạo được đơn = `Purchase Manager` · `Purchase User` | ✅ |
+| Hạn 11/09 | — | ✅ đã cập nhật trên PM |
+
+### 🔑 Lý do của anh Thắng MẠNH HƠN lý do của em — ghi lại kẻo người sau đảo ngược
+
+Em lập luận giữ nháp vì **đơn giá ra 0 đồng** khi mã chưa khai giá (xem `TC-UI2-11`, có ca thật).
+Anh Thắng cho một lý do khác và bền hơn: ***"vì sau này họ cài luồng duyệt trên đơn nữa"***.
+
+Khác biệt quan trọng ở chỗ **lý do của em sẽ hết hạn, lý do của anh ấy thì không**. Ngày nào khách
+khai đủ giá cho mọi mặt hàng, người đọc code sẽ nghĩ *"hết đơn 0 đồng rồi, cho tự duyệt cho nhanh"*
+— và vẫn **sai**, vì tự duyệt sẽ nhảy qua luồng duyệt mà khách sắp dựng.
+
+➜ **Đừng đổi `tao_don_mua` thành tự duyệt, kể cả khi mọi mặt hàng đã có giá.** Muốn đổi thì phải
+hỏi lại anh Thắng, vì lý do thật nằm ở luồng duyệt chứ không ở giá.
+
+### ⚠ Một chỗ anh Thắng KHÔNG nói tới — cố ý để nguyên
+
+Anh ấy nói *"người mua hàng **được lập**"*, không nói ai **được mở** màn hình. Hiện *Quản lý sản
+xuất* vẫn **xem được** bảng nhưng **không lập được đơn** (có câu giải thích ngay khi vẽ lưới, xem
+nhóm `TC-QUYEN`). Hành vi này khớp đúng lời anh ấy, nên **giữ nguyên**, không tự thắt thêm.
+
+Nếu sau này khách muốn giấu hẳn màn hình khỏi *Quản lý sản xuất* thì đó là một chốt mới, sửa ở
+`page/tinh_nhu_cau_vat_tu.json`.
+
+### Còn lại đúng một việc để đóng `testcase_passed`
+
+**Người bên khách bấm thử.** Bộ test hiện **113 ca · 112 Pass**, nhưng toàn bộ do bên làm tự chạy.
+`testcase_passed` là cổng của **người test**, không phải của tác giả — đã nêu rõ với anh Thắng
+trong `r9ehtjv95m`, anh ấy chưa trả lời phần này.
