@@ -38,12 +38,26 @@ from frappe import _
 from frappe.utils import flt, get_datetime, getdate, nowdate
 
 
-# Hai nhóm kho bị loại khỏi mọi phép tính tồn (mục 3 của đầu bài).
+# Các nhóm kho bị loại khỏi mọi phép tính tồn (mục 3 của đầu bài).
 #
 # ⚠ Lấy kho con bằng `lft/rgt` của cây Warehouse, KHÔNG so tên: tên có hậu tố công ty
 # ("- HKL") và sẽ khác khi lên site khác. Tên ở đây chỉ để TÌM nút gốc; tìm không thấy thì
 # bỏ qua nhóm đó chứ không throw — site mới chưa dựng cây kho vẫn phải chạy được.
-NHOM_KHO_LOAI = ("Nhóm kho lỗi", "Nhóm kho trung chuyển")
+#
+# ☢️ ĐÂY LÀ HẰNG SỐ TRONG CODE, KHÔNG PHẢI DANH SÁCH CẤU HÌNH ĐƯỢC.
+# Người vận hành dựng một nhóm kho tên khác ba chuỗi dưới đây rồi chuyển kho vào đó thì
+# **không có gì xảy ra và cũng không có thông báo lỗi nào** — kho vẫn được tính vào tồn
+# bán được như cũ. Sai kiểu này chỉ lộ ra khi kho đã âm. Muốn thêm nhóm thì sửa ở đây.
+#
+# Khớp theo `warehouse_name` (không mang hậu tố công ty) và phải khớp ĐÚNG TỪNG KÝ TỰ —
+# lệch một dấu là nhóm đó coi như không tồn tại.
+#
+# "Nhóm kho khác" là nhóm hứng chung anh Thắng chốt 09/09/2026 10:21 (PM-FEAT-00034):
+# *"em thêm giúp anh 1 nhóm tên là 'Nhóm kho khác' nhé, nhóm này cũng loại khỏi tồn bán
+# được, sau này những kho nào không được tính tồn thì anh sẽ chuyển vào nhóm đó"*.
+# Nhờ nó, từ nay muốn loại thêm kho nào thì chuyển kho vào nhóm này là xong, không phải
+# sửa code nữa — kể cả Kho ký gửi, thứ anh ấy chốt cùng ngày là VẪN tính vào tồn bán được.
+NHOM_KHO_LOAI = ("Nhóm kho lỗi", "Nhóm kho trung chuyển", "Nhóm kho khác")
 
 
 TRANG_THAI_DON_CHET = ("Closed", "Completed", "Cancelled")
