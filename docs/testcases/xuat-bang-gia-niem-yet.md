@@ -190,3 +190,49 @@ tính được. Tập ứng viên bị chặn bởi số mã từng lên đơn m
 - **Đủ điều kiện nghiệm thu: CÓ** cho vòng tự kiểm. Chờ vòng test tay của anh Thắng.
 - ⚠ Phải **chạy lại toàn bộ** sau khi cài lên site thật: nền lệch hai chiều (frappe cao hơn,
   erpnext thấp hơn 22 bản minor).
+
+---
+
+# Đợt 2 — Chuyển trang, ô tìm kiếm, tick sống qua trang
+
+> **Chốt:** anh Thắng 09/09/2026 14:55 — *"Câu 1: đúng em nhé / Câu 2: a) tìm theo cả 2 b) có em nhé /
+> R&D và Lợi nhuận không sửa trên bảng em nhé, chỉ được sửa ở bản ghi mặt hàng"*
+> **Chạy trên:** cổng 8012, **09/09/2026 chiều** — frappe 15.120.0 · erpnext **15.112.0**
+> **Bản vẽ:** [`../mockups/xuat-bang-gia-niem-yet.html`](../mockups/xuat-bang-gia-niem-yet.html) bản 4
+
+## Chạy bằng lệnh — đã chạy
+
+| ID | Kiểm cái gì | Cách đo | Mong đợi | Đo được | KQ |
+|---|---|---|---|---|---|
+| TC-TRANG-01 | Phân trang chia đúng | `bang_gia()` mặc định | `so_trang` khớp `tong / moi_trang` | 61.612 mã, **617 trang** × 100 | ✅ Đạt |
+| TC-TRANG-02 | Trang 2 khác trang 1 | so mã đầu hai trang | khác nhau | `trang1[0] ≠ trang2[0]` | ✅ Đạt |
+| TC-TRANG-03 | 🔴 Số đếm và số lấy **không được lệch nhau** | cộng dồn số dòng của tất cả các trang, so với `tong` | bằng nhau | tìm `Test`, 3 dòng/trang: **5 trang = 14 dòng, `tong` báo 14** | ✅ Đạt |
+| TC-TRANG-04 | Trang vượt quá thì kẹp về trang cuối | `trang=99999` | trả trang cuối, không rỗng | trả `trang=617/617`, **12 dòng** | ✅ Đạt |
+| TC-TIM-01 | Tìm khớp **đoạn giữa** của mã | `tim="64LED"` | ra mọi mã chứa chuỗi đó | **66 mã**, vd `CM30S050-3B3-5C-64LED` | ✅ Đạt |
+| TC-TIM-02 | Tìm theo **cả tên hàng**, không chỉ mã | `tim="Test"` | ra cả mã lẫn tên khớp | **14 mã**, có `Module test`, `Nguồn test`, `Ốc vít test` — ba mã này khớp **TÊN**, không khớp mã | ✅ Đạt |
+| TC-TIM-03 | 🔴 Tìm + bộ lọc chạy chung, lọc **trong** truy vấn | `tim="Test", chi_tinh_duoc=1` | giao của hai tập | **7 mã**, đúng bằng tập tính được | ✅ Đạt |
+| TC-TIM-04 | Tham số cũ `gioi_han` vẫn gọi được | `gioi_han=200` | hiểu là 200 dòng/trang | `moi_trang=200`, 200 dòng | ✅ Đạt |
+
+⚠ **TC-TRANG-03 là ca đáng giá nhất của đợt này.** Câu đếm và câu lấy dữ liệu dùng **chung một hàm
+`_dieu_kien()`** đúng vì lý do đó: viết WHERE hai lần thì màn hình báo *"trang 7/12"*, mở trang 7
+ra rỗng — và **rỗng trông y hệt "hết dữ liệu"**, không có dấu hiệu nào để nghi.
+
+⚠ **TC-TIM-02 kiểm được điều mà đếm số không kiểm được.** Ba mã `Module test` / `Nguồn test` /
+`Ốc vít test` khớp **tên** chứ không khớp **mã** — nếu chỉ tìm theo mã thì chúng biến mất, mà
+tổng số vẫn ra một con số trông hợp lý.
+
+## Chưa chạy — phải bấm nút thật
+
+| ID | Kiểm cái gì | Vì sao chưa chạy |
+|---|---|---|
+| TC-TICK-01 | Tick mã A, tìm mã B, tick B → **cả hai còn tick** | thao tác giao diện |
+| TC-TICK-02 | Ô *"đang giữ N mã"* mở ra danh sách, bỏ được từng mã | thao tác giao diện |
+| TC-TICK-03 | Có mã ngoài trang đang xem → hiện dòng cảnh báo | thao tác giao diện |
+| TC-TICK-04 | Hộp thoại xác nhận **liệt kê từng mã**, đánh dấu mã ngoài trang | thao tác giao diện |
+| TC-TICK-05 | Nút *Bỏ chọn tất cả* xoá sạch tick | thao tác giao diện |
+| TC-TICK-06 | Ô tick đầu bảng chỉ tác động **trang đang xem** | thao tác giao diện |
+| TC-TICK-07 | Bấm *Cập nhật* ghi đúng cả mã ngoài trang | **ghi `Item Price` thật** — để anh Thắng làm |
+| TC-XEM-01 | R&D / Lợi nhuận trên bảng **không sửa được** | thao tác giao diện |
+
+🔴 **TC-TICK-07 cố ý để anh Thắng chạy.** Nó ghi `Item Price` thật trên dữ liệu thật; tôi tự bấm là
+đổi giá sales nhìn thấy mà không ai yêu cầu.

@@ -195,62 +195,122 @@ def ma_co_nguon_cost():
 	return set(mua) | set(tu_lam)
 
 
-@frappe.whitelist()
-def bang_gia(nhom_hang=None, mat_hang_cha=None, chi_tinh_duoc=0, chi_lech=0, gioi_han=200):
-	"""Dữ liệu cho màn hình **Bảng Giá Niêm Yết**.
+def _dieu_kien(nhom_hang, mat_hang_cha, tim, ma_gioi_han=None):
+	"""WHERE dùng CHUNG cho cả câu đếm lẫn câu lấy dữ liệu.
 
-	⚠ `gioi_han` có mặc định và **màn hình phải nói ra khi bị cắt**. Site có 62.061 mặt hàng; dựng
-	  hết một lượt là treo trình duyệt. Nhưng một bảng bị cắt trông y hệt một bảng đầy đủ — nên
-	  hàm trả kèm `tong` và `bi_cat` để giao diện hiện *"đang xem N trên tổng M"*.
+	🔴 Phải dùng chung, không được viết hai lần. Đếm một kiểu mà lấy một kiểu là ra
+	*"trang 7/12"* rồi mở trang 7 thấy rỗng — lệch kiểu đó không có dấu hiệu nào, và trông y hệt
+	*"hết dữ liệu"*.
+	"""
+	dk = ["it.has_variants = 0", "it.disabled = 0"]
+	gt = {}
+	if nhom_hang:
+		dk.append("it.item_group = %(nhom)s")
+		gt["nhom"] = nhom_hang
+	if mat_hang_cha:
+		dk.append("it.variant_of = %(cha)s")
+		gt["cha"] = mat_hang_cha
+	if tim:
+		# Anh Thắng chốt 09/09 14:55: tìm theo CẢ mã lẫn tên, và gõ ĐOẠN GIỮA phải ra
+		# ("b) có em nhé"). Nên là `%tim%` hai đầu chứ không phải `tim%` — mã của khách dạng
+		# M30S050-…-8C-64LED-DD-…, gõ `64LED` phải ra hết.
+		dk.append("(it.name like %(tim)s or it.item_name like %(tim)s)")
+		gt["tim"] = "%" + str(tim).strip() + "%"
+	if ma_gioi_han is not None:
+		dk.append("it.name in %(ma_gh)s")
+		gt["ma_gh"] = tuple(ma_gioi_han) or ("",)
+	return " and ".join(dk), gt
+
+
+def _dong_tho(dk, gt, limit_start=None, limit=None):
+	sql = """
+		select it.name as ma_hang, it.item_name as ten_hang,
+		       it.custom_replenishment_method as phuong_phap,
+		       it.custom_ty_le_rnd as rnd, it.custom_ty_le_loi_nhuan as loi_nhuan
+		from `tabItem` it
+		where {dk}
+		order by it.name
+	""".format(dk=dk)
+	if limit is not None:
+		sql += " limit %(_start)s, %(_len)s"
+		gt = dict(gt, _start=frappe.utils.cint(limit_start), _len=frappe.utils.cint(limit))
+	return frappe.db.sql(sql, gt, as_dict=True)
+
+
+@frappe.whitelist()
+def bang_gia(
+	nhom_hang=None,
+	mat_hang_cha=None,
+	chi_tinh_duoc=0,
+	chi_lech=0,
+	tim=None,
+	trang=1,
+	moi_trang=100,
+	gioi_han=None,
+):
+	"""Dữ liệu cho màn hình **Bảng Giá Niêm Yết**, có phân trang và ô tìm kiếm.
+
+	⚠ Site có hơn 61 nghìn mặt hàng; dựng hết một lượt là treo trình duyệt. Nhưng một bảng bị cắt
+	  trông y hệt một bảng đầy đủ — nên hàm luôn trả kèm `tong` / `trang` / `so_trang` để giao
+	  diện nói ra *"đang xem trang X trên Y, tổng M"*.
+
+	⚠ `gioi_han` là tên cũ, giữ lại cho script và tài liệu cũ gọi được; nó chính là `moi_trang`.
 	"""
 	hao_phi, ty_le_ny = ty_le_chung()
+	if gioi_han:
+		moi_trang = gioi_han
+	moi_trang = frappe.utils.cint(moi_trang) or 100
+	trang = max(1, frappe.utils.cint(trang) or 1)
 
-	loc = {"has_variants": 0, "disabled": 0}
-	if nhom_hang:
-		loc["item_group"] = nhom_hang
-	if mat_hang_cha:
-		loc["variant_of"] = mat_hang_cha
+	def tra(dong, tong):
+		so_trang = max(1, -(-tong // moi_trang))
+		return {
+			"dong": dong,
+			"tong": tong,
+			"trang": min(trang, so_trang),
+			"moi_trang": moi_trang,
+			"so_trang": so_trang,
+			"bi_cat": tong > len(dong),
+			"hao_phi": hao_phi,
+			"ty_le_niem_yet": ty_le_ny,
+			"bang_gia": BANG_GIA_BAN,
+		}
 
 	# ⚠ Lọc "tính được" / "đang lệch" phải vào TRUY VẤN, không được lọc sau khi cắt — xem
 	#   docstring của `ma_co_nguon_cost()`. Cả hai bộ lọc đều chỉ có nghĩa trên tập mã có giá vốn.
 	dang_loc = bool(frappe.utils.cint(chi_tinh_duoc) or frappe.utils.cint(chi_lech))
+
 	if dang_loc:
 		co_cost = ma_co_nguon_cost()
 		if not co_cost:
-			return {
-				"dong": [],
-				"tong": 0,
-				"bi_cat": False,
-				"hao_phi": hao_phi,
-				"ty_le_niem_yet": ty_le_ny,
-				"bang_gia": BANG_GIA_BAN,
-			}
-		loc["name"] = ["in", list(co_cost)]
+			return tra([], 0)
+		# ⚠ KHÔNG cắt trang ở đây. `ma_co_nguon_cost()` mới là điều kiện CẦN — mã có đơn mua nhưng
+		#   chưa khai Phương pháp bổ sung vẫn lọt vào rồi bị `cost_cua()` loại sau. Cắt trước khi
+		#   loại là cắt nhầm đúng như lỗi đã sửa 08/09: tập ứng viên 6 mã mà chỉ 4 mã tính được.
+		#   Tập này luôn nhỏ (số mã TỪNG lên đơn mua hoặc CÓ định mức) nên lấy hết là an toàn.
+		dk, gt = _dieu_kien(nhom_hang, mat_hang_cha, tim, ma_gioi_han=list(co_cost))
+		ds = _dong_tho(dk, gt)
+		ra = _tinh_cac_dong(ds, hao_phi, ty_le_ny)
+		if frappe.utils.cint(chi_tinh_duoc):
+			ra = [r for r in ra if r["gia_niem_yet"] is not None]
+		if frappe.utils.cint(chi_lech):
+			ra = [r for r in ra if r["lech"]]
+		tong = len(ra)
+		dau = (min(trang, max(1, -(-tong // moi_trang))) - 1) * moi_trang
+		return tra(ra[dau : dau + moi_trang], tong)
 
-	tong = frappe.db.count("Item", loc)
+	dk, gt = _dieu_kien(nhom_hang, mat_hang_cha, tim)
+	tong = frappe.db.sql(
+		"select count(*) from `tabItem` it where {dk}".format(dk=dk), gt
+	)[0][0]
+	so_trang = max(1, -(-tong // moi_trang))
+	dau = (min(trang, so_trang) - 1) * moi_trang
+	ds = _dong_tho(dk, gt, limit_start=dau, limit=moi_trang)
+	return tra(_tinh_cac_dong(ds, hao_phi, ty_le_ny), tong)
 
-	# ⚠ Đang lọc thì KHÔNG cắt ở đây. `ma_co_nguon_cost()` mới là điều kiện CẦN — mã có đơn mua
-	#   nhưng chưa khai Phương pháp bổ sung vẫn lọt vào rồi bị `cost_cua()` loại sau. Cắt trước khi
-	#   loại là lại cắt nhầm đúng như lỗi vừa sửa: đo 08/09, tập ứng viên có 6 mã mà chỉ 4 mã tính
-	#   được, nên `gioi_han = 5` làm mất 1 mã tính được mà không có dấu hiệu nào.
-	#
-	#   Lấy hết ở đây là an toàn vì tập này bị chặn bởi số mã TỪNG lên đơn mua hoặc CÓ định mức —
-	#   luôn nhỏ hơn danh mục nhiều bậc. Cắt thật nằm ở cuối hàm, sau khi đã biết dòng nào thật sự
-	#   tính được.
-	ds = frappe.get_all(
-		"Item",
-		filters=loc,
-		fields=[
-			"name as ma_hang",
-			"item_name as ten_hang",
-			"custom_replenishment_method as phuong_phap",
-			"custom_ty_le_rnd as rnd",
-			"custom_ty_le_loi_nhuan as loi_nhuan",
-		],
-		order_by="name",
-		limit_page_length=0 if dang_loc else (frappe.utils.cint(gioi_han) or 200),
-	)
 
+def _tinh_cac_dong(ds, hao_phi, ty_le_ny):
+	"""Tính giá cho một tập dòng đã lấy sẵn — tách ra để hai nhánh phân trang dùng chung."""
 	dang_ap = _gia_dang_ap_dung([d.ma_hang for d in ds])
 	ra = []
 	for d in ds:
@@ -272,35 +332,7 @@ def bang_gia(nhom_hang=None, mat_hang_cha=None, chi_tinh_duoc=0, chi_lech=0, gio
 				"lech": gia is not None and ap is not None and gia != ap,
 			}
 		)
-
-	if frappe.utils.cint(chi_tinh_duoc):
-		ra = [r for r in ra if r["gia_niem_yet"] is not None]
-	if frappe.utils.cint(chi_lech):
-		ra = [r for r in ra if r["lech"]]
-
-	# Cắt SAU khi đã lọc, và báo lại con số thật để giao diện nói "đang xem N trên M".
-	if dang_loc:
-		tong = len(ra)
-		gh = frappe.utils.cint(gioi_han) or 200
-		bi_cat = tong > gh
-		ra = ra[:gh]
-		return {
-			"dong": ra,
-			"tong": tong,
-			"bi_cat": bi_cat,
-			"hao_phi": hao_phi,
-			"ty_le_niem_yet": ty_le_ny,
-			"bang_gia": BANG_GIA_BAN,
-		}
-
-	return {
-		"dong": ra,
-		"tong": tong,
-		"bi_cat": tong > len(ds),
-		"hao_phi": hao_phi,
-		"ty_le_niem_yet": ty_le_ny,
-		"bang_gia": BANG_GIA_BAN,
-	}
+	return ra
 
 
 @frappe.whitelist()

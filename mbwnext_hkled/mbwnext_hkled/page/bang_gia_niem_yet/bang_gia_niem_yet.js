@@ -15,9 +15,19 @@
 //   3. Mặt hàng KHÔNG tính được giá thì hiện kèm chữ "không tính được" (anh Thắng chốt 16:39),
 //      và KHÔNG tick chọn được — để không ai lỡ đẩy một ô trống sang cho sales.
 //
-// ⚠ Vì sao có giới hạn số dòng và vì sao phải NÓI RA: site có hơn 61 nghìn mặt hàng. Dựng hết một
+//   4. Tick chọn ĐƯỢC GIỮ khi đổi trang, đổi bộ lọc, đổi từ khoá tìm (anh Thắng chốt 09/09
+//      14:55: "Câu 1: đúng em nhé"). Nghĩa là bấm Cập nhật sẽ ghi cho cả mã KHÔNG còn hiện trên
+//      màn hình — nên bắt buộc có ba lớp che: ô "đang giữ N mã" xem/bỏ được, hộp thoại xác nhận
+//      LIỆT KÊ TỪNG MÃ chứ không chỉ nói số lượng, và nút bỏ chọn tất cả luôn nhìn thấy.
+//      ⚠ Trước 09/09 mã rời khỏi lưới bị bỏ tick tự động. Đừng khôi phục hành vi đó.
+//
+//   5. R&D và Lợi nhuận CHỈ ĐỂ XEM ở đây; sửa thì vào bản ghi Mặt hàng (anh Thắng chốt 09/09
+//      14:55: "không sửa trên bảng em nhé, chỉ được sửa ở bản ghi mặt hàng"). Một con số chỉ có
+//      một chỗ sửa thì không ai phải hỏi "sửa ở đâu thì thắng".
+//
+// ⚠ Vì sao phải phân trang và vì sao phải NÓI RA: site có hơn 61 nghìn mặt hàng. Dựng hết một
 //   lượt là treo trình duyệt. Nhưng một bảng bị cắt trông y hệt một bảng đầy đủ — nên luôn hiện
-//   "đang xem N trên tổng M".
+//   "đang xem trang X trên Y, tổng M".
 
 frappe.pages["bang-gia-niem-yet"].on_page_load = function (wrapper) {
 	const page = frappe.ui.make_app_page({
@@ -35,6 +45,7 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 		this.page = page;
 		this.dong = [];
 		this.chon = new Set();
+		this.trang = 1;
 		this.dung_khung();
 		this.tai();
 	}
@@ -49,7 +60,7 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			label: __("Nhóm mặt hàng"),
 			fieldtype: "Link",
 			options: "Item Group",
-			change: () => this.tai(),
+			change: () => this.tai(1),
 		});
 		this.f_cha = p.add_field({
 			fieldname: "mat_hang_cha",
@@ -57,7 +68,7 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			fieldtype: "Link",
 			options: "Item",
 			get_query: () => ({ filters: { has_variants: 1 } }),
-			change: () => this.tai(),
+			change: () => this.tai(1),
 		});
 		this.f_loc = p.add_field({
 			fieldname: "loc",
@@ -69,15 +80,23 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				{ value: "lech", label: __("Chỉ dòng đang lệch") },
 			],
 			default: "tat_ca",
-			change: () => this.tai(),
+			change: () => this.tai(1),
+		});
+		this.f_tim = p.add_field({
+			fieldname: "tim",
+			label: __("Tìm mã hoặc tên"),
+			fieldtype: "Data",
+			// Tìm cả mã lẫn tên, khớp ĐOẠN GIỮA — anh Thắng chốt 09/09 14:55.
+			description: __("Gõ một đoạn bất kỳ, ví dụ 64LED"),
+			change: () => this.tai(1),
 		});
 		this.f_so_dong = p.add_field({
-			fieldname: "gioi_han",
-			label: __("Số dòng tối đa"),
+			fieldname: "moi_trang",
+			label: __("Số dòng mỗi trang"),
 			fieldtype: "Select",
-			options: ["100", "200", "500", "1000"],
-			default: "200",
-			change: () => this.tai(),
+			options: ["50", "100", "200", "500"],
+			default: "100",
+			change: () => this.tai(1),
 		});
 
 		p.set_primary_action(__("Cập nhật giá niêm yết"), () => this.cap_nhat());
@@ -91,13 +110,15 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			<div class="bgny">
 				<div class="bgny-tom"></div>
 				<div class="bgny-bang"></div>
+				<div class="bgny-trang"></div>
 			</div>
 		`).appendTo(p.main);
 	}
 
 	// ── Nạp ──────────────────────────────────────────────────────────────────
 
-	tai() {
+	tai(trang) {
+		if (trang) this.trang = trang;
 		const loc = this.f_loc.get_value() || "tat_ca";
 		this.$than.find(".bgny-bang").html(
 			`<div class="bgny-trong">${__("Đang tính…")}</div>`
@@ -110,16 +131,18 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				mat_hang_cha: this.f_cha.get_value() || null,
 				chi_tinh_duoc: loc === "tinh_duoc" ? 1 : 0,
 				chi_lech: loc === "lech" ? 1 : 0,
-				gioi_han: this.f_so_dong.get_value() || 200,
+				tim: this.f_tim.get_value() || null,
+				trang: this.trang,
+				moi_trang: this.f_so_dong.get_value() || 100,
 			},
 			callback: (r) => {
 				if (!r.message) return;
 				this.kq = r.message;
 				this.dong = r.message.dong;
-				// Bỏ khỏi danh sách chọn những mã không còn trong lưới, nếu không thì bấm Cập nhật
-				// sẽ ghi cho cả mặt hàng người dùng không còn nhìn thấy.
-				const co = new Set(this.dong.map((d) => d.ma_hang));
-				this.chon = new Set([...this.chon].filter((m) => co.has(m)));
+				this.trang = r.message.trang;
+				// ⚠ KHÔNG cắt bớt `this.chon` ở đây. Tick phải sống qua trang và qua lần tìm khác
+				//   — luật 4 ở đầu file. Chỗ che an toàn nằm ở ô "đang giữ N mã" và ở hộp thoại
+				//   xác nhận liệt kê từng mã, KHÔNG phải ở chỗ này.
 				this.ve();
 			},
 		});
@@ -142,13 +165,25 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				<span class="bgny-chip">${__("Tỷ lệ tính giá niêm yết")} <b>${k.ty_le_niem_yet}%</b></span>
 				<span class="bgny-chip">${__("Ghi vào bảng giá")} <b>${frappe.utils.escape_html(k.bang_gia)}</b></span>
 				<span class="bgny-chip ${lech ? "bgny-chip-lech" : ""}">${__("Đang lệch")} <b>${lech}</b></span>
+				${
+					this.chon.size
+						? `<span class="bgny-chip bgny-chip-chon bgny-xem-chon" title="${__(
+								"Bấm để xem và bỏ bớt"
+						  )}">${__("Đang giữ")} <b>${this.chon.size}</b> ${__("mã đã tick")}</span>
+						   <a class="bgny-bo-het" href="#">${__("Bỏ chọn tất cả")}</a>`
+						: ""
+				}
 			</div>`;
 
-		// ⚠ Bảng bị cắt phải NÓI RA. Xem docstring đầu file.
-		if (k.bi_cat) {
+		// ⚠ Tick giữ qua trang nghĩa là có thể đang giữ mã KHÔNG hiện trên màn hình. Phải nói ra,
+		//   không được để người dùng tự đoán — xem luật 4 đầu file.
+		const ngoai = [...this.chon].filter(
+			(m) => !this.dong.some((d) => d.ma_hang === m)
+		).length;
+		if (ngoai) {
 			tom += `<div class="bgny-canh">${__(
-				"Đang xem <b>{0}</b> trên tổng <b>{1}</b> mặt hàng. Lọc theo nhóm hoặc mặt hàng cha để xem đúng phần cần, hoặc tăng số dòng tối đa.",
-				[this.dong.length, format_number(k.tong, null, 0)]
+				"Trong <b>{0}</b> mã đang tick, có <b>{1}</b> mã <b>không nằm trên trang này</b>. Bấm Cập nhật là ghi cho cả chúng.",
+				[this.chon.size, ngoai]
 			)}</div>`;
 		}
 		if (tinh_duoc === 0 && this.dong.length) {
@@ -162,6 +197,8 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			this.$than.find(".bgny-bang").html(
 				`<div class="bgny-trong">${__("Không có mặt hàng nào khớp bộ lọc.")}</div>`
 			);
+			this.gan_chung();
+			this.ve_thanh_trang();
 			this.dem();
 			return;
 		}
@@ -211,6 +248,7 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			else this.chon.delete(ma);
 			this.dem();
 		});
+		// ⚠ Ô tick ở đầu bảng chỉ tác động lên TRANG ĐANG XEM, không phải toàn bộ 61 nghìn mã.
 		$b.find(".bgny-all").on("change", (e) => {
 			const v = e.currentTarget.checked;
 			this.dong.forEach((d) => {
@@ -220,7 +258,93 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			});
 			this.ve();
 		});
+		this.gan_chung();
+		this.ve_thanh_trang();
 		this.dem();
+	}
+
+	// ── Danh sách đang giữ, và thanh chuyển trang ────────────────────────────
+
+	gan_chung() {
+		const $b = this.$than;
+		$b.find(".bgny-bo-het").off("click").on("click", (e) => {
+			e.preventDefault();
+			this.chon.clear();
+			this.ve();
+		});
+		$b.find(".bgny-xem-chon").off("click").on("click", () => this.xem_chon());
+	}
+
+	xem_chon() {
+		if (!this.chon.size) return;
+		const d = new frappe.ui.Dialog({
+			title: __("{0} mã đang tick", [this.chon.size]),
+			size: "large",
+			primary_action_label: __("Xong"),
+			primary_action: () => d.hide(),
+		});
+		const ve = () => {
+			const ds = [...this.chon].sort();
+			d.$body.html(
+				ds.length
+					? `<p class="text-muted">${__(
+							"Đây là toàn bộ mã sẽ được ghi giá khi bấm Cập nhật, kể cả mã không nằm trên trang đang xem."
+					  )}</p>
+					   <div class="bgny-ds-chon">${ds
+							.map(
+								(m) =>
+									`<div class="bgny-ds-dong"><span>${frappe.utils.escape_html(
+										m
+									)}</span><a href="#" data-bo="${frappe.utils.escape_html(
+										m
+									)}">${__("bỏ")}</a></div>`
+							)
+							.join("")}</div>`
+					: `<p>${__("Không còn mã nào.")}</p>`
+			);
+			d.$body.find("[data-bo]").on("click", (e) => {
+				e.preventDefault();
+				this.chon.delete($(e.currentTarget).data("bo"));
+				ve();
+				this.ve();
+			});
+		};
+		ve();
+		d.show();
+	}
+
+	ve_thanh_trang() {
+		const k = this.kq;
+		const $t = this.$than.find(".bgny-trang");
+		if (!k || k.so_trang <= 1) {
+			$t.html(
+				k && k.tong
+					? `<div class="bgny-trang-tin">${__("Tổng <b>{0}</b> mặt hàng.", [
+							format_number(k.tong, null, 0),
+					  ])}</div>`
+					: ""
+			);
+			return;
+		}
+		$t.html(`
+			<div class="bgny-trang-tin">${__(
+				"Đang xem trang <b>{0}</b> trên <b>{1}</b> — tổng <b>{2}</b> mặt hàng.",
+				[k.trang, k.so_trang, format_number(k.tong, null, 0)]
+			)}</div>
+			<div class="bgny-trang-nut">
+				<button class="btn btn-default btn-xs" data-di="1" ${k.trang <= 1 ? "disabled" : ""}>« ${__("Đầu")}</button>
+				<button class="btn btn-default btn-xs" data-di="${k.trang - 1}" ${k.trang <= 1 ? "disabled" : ""}>‹ ${__("Trước")}</button>
+				<input type="number" class="bgny-toi-trang" min="1" max="${k.so_trang}" value="${k.trang}">
+				<button class="btn btn-default btn-xs" data-di="${k.trang + 1}" ${k.trang >= k.so_trang ? "disabled" : ""}>${__("Sau")} ›</button>
+				<button class="btn btn-default btn-xs" data-di="${k.so_trang}" ${k.trang >= k.so_trang ? "disabled" : ""}>${__("Cuối")} »</button>
+			</div>`);
+		$t.find("[data-di]").on("click", (e) =>
+			this.tai(parseInt($(e.currentTarget).data("di"), 10))
+		);
+		$t.find(".bgny-toi-trang").on("change", (e) => {
+			const n = parseInt(e.currentTarget.value, 10);
+			if (n >= 1 && n <= k.so_trang) this.tai(n);
+		});
 	}
 
 	dem() {
@@ -259,11 +383,32 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 
 		// 🔴 Hỏi lại trước khi ghi. Nút này đổi con số SALES NHÌN THẤY lúc lập đơn — không phải
 		//    thao tác hoàn tác được bằng Ctrl+Z. Nêu rõ số lượng và tên bảng giá trong câu hỏi.
+		// 🔴 Từ 09/09 tick sống qua trang, nên danh sách này có thể chứa mã KHÔNG hiện trên màn
+		//    hình. Vì vậy hộp thoại phải LIỆT KÊ TỪNG MÃ — nói "12 mặt hàng" thì người dùng không
+		//    có cách nào biết mình đang ghi cho cái gì.
+		const ngoai = ds.filter((m) => !this.dong.some((d) => d.ma_hang === m));
+		const ke = ds
+			.map(
+				(m) =>
+					`<div class="bgny-ds-dong"><span>${frappe.utils.escape_html(m)}</span>${
+						ngoai.includes(m)
+							? `<i class="text-muted">${__("không trên trang này")}</i>`
+							: ""
+					}</div>`
+			)
+			.join("");
 		frappe.confirm(
 			__(
 				"Đẩy giá niêm yết mới của <b>{0}</b> mặt hàng sang bảng giá <b>{1}</b>?<br><br>Sau khi đẩy, sales lập đơn sẽ thấy giá mới ở cột <i>Đơn giá theo bảng giá</i>. Giá của những đơn đã lập <b>không</b> bị ảnh hưởng.",
 				[ds.length, this.kq.bang_gia]
-			),
+			) +
+				(ngoai.length
+					? `<br><div class="bgny-canh">${__(
+							"Trong đó <b>{0}</b> mã <b>không nằm trên trang đang xem</b>.",
+							[ngoai.length]
+					  )}</div>`
+					: "") +
+				`<div class="bgny-ds-chon bgny-ds-xac-nhan">${ke}</div>`,
 			() => {
 				frappe.call({
 					method: "mbwnext_hkled.api.gia_niem_yet.cap_nhat_gia",

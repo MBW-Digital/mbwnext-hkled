@@ -365,3 +365,58 @@ Kiểm trên cổng 8012 (08/09): `Sales Order Item.price_list_rate` là trườ
   của tôi. ⚠ Lưu ý: tải file mockup vào thư mục `03-mockup` trên PM sẽ **tự tích cổng này** và đẩy
   Analysis ➜ Dev, và code app PM ghi rõ *"chỉ tích một lần, không tự bỏ tích lại"*.
 - **Chưa viết test case** — thuộc giai đoạn sau, sau khi code xong.
+
+---
+
+## Đợt 2 — chốt 09/09/2026
+
+Anh Thắng nêu yêu cầu lúc **14:41**, trả lời ba câu chốt lúc **14:55**.
+
+**Nguyên văn yêu cầu:**
+
+> *"Em bổ sung thêm cho anh phần chuyển trang nhé, và ô tìm kiếm mã mặt hàng nữa, ví dụ anh tìm
+> kiếm mã A, tích chọn rồi tìm kiếm mã B tích chọn"*
+
+**Nguyên văn ba câu trả lời:**
+
+> *"Câu 1: đúng em nhé — Câu 2: a) tìm theo cả 2 — b) có em nhé — R&D và Lợi nhuận không sửa trên
+> bảng em nhé, chỉ được sửa ở bản ghi mặt hàng"*
+
+### Điều quan trọng nhất không nằm trong chữ "chuyển trang"
+
+Ví dụ của anh Thắng — *tìm A tick, tìm B tick* — **không phải yêu cầu thêm giao diện, mà là đổi
+cách chạy**. Bản đợt 1 cố ý **bỏ tick của mã rời khỏi lưới** (`bang_gia_niem_yet.js`, cũ):
+
+```js
+const co = new Set(this.dong.map((d) => d.ma_hang));
+this.chon = new Set([...this.chon].filter((m) => co.has(m)));
+```
+
+Lý do khi đó: để không ai ghi giá cho mặt hàng mình không nhìn thấy. Bỏ đoạn này đi thì
+**bấm *Cập nhật* sẽ ghi `Item Price` cho cả mã không còn hiện trên màn hình** — với 61.612 mặt
+hàng, sau vài lượt tìm rất dễ quên mình đang giữ gì.
+
+Nên đã hỏi lại trước khi làm, và anh Thắng xác nhận *"đúng em nhé"* kèm chấp nhận **ba lớp che**:
+
+1. Ô **"đang giữ N mã đã tick"** — bấm vào mở danh sách đầy đủ, bỏ được từng mã.
+2. Dòng cảnh báo khi có mã **không nằm trên trang đang xem**, nêu rõ bao nhiêu mã.
+3. Hộp thoại xác nhận **liệt kê từng mã**, đánh dấu mã ngoài trang — không chỉ nói số lượng.
+
+Thêm nút **Bỏ chọn tất cả** luôn nhìn thấy khi đang giữ tick.
+
+### Ba quyết định còn lại
+
+| Chỗ | Chốt | Ghi chú kỹ thuật |
+|---|---|---|
+| Ô tìm kiếm tìm theo gì | **Cả mã lẫn tên** | `it.name like %x% or it.item_name like %x%` |
+| Khớp kiểu nào | **Chứa** (gõ đoạn giữa ra được) | mã khách dạng `M30S050-…-8C-64LED-DD-…`; gõ `64LED` ra 66 mã |
+| R&D / Lợi nhuận sửa ở đâu | **Chỉ ở bản ghi Mặt hàng** | bảng giá để **chỉ đọc**; bản vẽ 3 cho sửa tại chỗ, bản 4 đã bỏ |
+
+### 🔴 Luật kỹ thuật của phân trang
+
+Câu **đếm** và câu **lấy dữ liệu** dùng chung hàm `_dieu_kien()`. Viết WHERE hai lần là màn hình
+báo *"trang 7/12"* rồi mở trang 7 ra rỗng — và **rỗng trông y hệt "hết dữ liệu"**.
+
+Nhánh có bộ lọc *tính được / đang lệch* vẫn **lấy hết rồi mới cắt trang trong Python**, đúng lý do
+đã ghi ở `ma_co_nguon_cost()`: `ma_co_nguon_cost()` chỉ là điều kiện **cần**, cắt trước khi
+`cost_cua()` loại là cắt nhầm — lỗi đã mắc ngày 08/09.

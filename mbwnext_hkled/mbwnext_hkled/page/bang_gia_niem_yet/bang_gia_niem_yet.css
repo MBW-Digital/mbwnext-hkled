@@ -47,3 +47,54 @@
 .bgny-lech { color: var(--yellow-700); font-weight: 600; }
 
 .bgny-trong { padding: 28px 12px; color: var(--text-muted); text-align: center; }
+
+/* ── Giữ tick qua trang: ô đếm, danh sách, thanh chuyển trang (PM-FEAT-00045, 09/09) ── */
+
+.bgny-chip-chon {
+	cursor: pointer;
+	background: var(--blue-50, #eef4ff);
+	border-color: var(--blue-300, #8fb4ff);
+}
+.bgny-chip-chon:hover { text-decoration: underline; }
+
+.bgny-bo-het { margin-left: 8px; font-size: 12px; }
+
+.bgny-ds-chon {
+	max-height: 320px;
+	overflow-y: auto;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	margin-top: 8px;
+}
+.bgny-ds-dong {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 5px 10px;
+	border-bottom: 1px solid var(--border-color);
+	font-family: var(--font-stack-mono, monospace);
+	font-size: 12px;
+}
+.bgny-ds-dong:last-child { border-bottom: 0; }
+.bgny-ds-xac-nhan { max-height: 200px; }
+
+.bgny-trang {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 12px;
+}
+.bgny-trang-tin { color: var(--text-muted); font-size: 12px; }
+.bgny-trang-nut { display: flex; align-items: center; gap: 6px; }
+.bgny-toi-trang {
+	width: 72px;
+	text-align: center;
+	padding: 2px 6px;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background: var(--control-bg, transparent);
+	color: inherit;
+}

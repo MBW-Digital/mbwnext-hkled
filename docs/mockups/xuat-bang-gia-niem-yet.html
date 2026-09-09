@@ -101,12 +101,29 @@
 
 	:focus-visible { outline: 2px solid var(--new); outline-offset: 2px; border-radius: 3px; }
 	@media (prefers-reduced-motion: reduce) { *, #toast, .card { transition: none !important; } }
+
+/* ── Thanh chuyển trang + ô đang giữ (bổ sung 09/09) ────────────────────── */
+.card-ft {
+	display: flex; align-items: center; justify-content: space-between;
+	flex-wrap: wrap; gap: 10px;
+	padding: 10px 14px; border-top: 1px solid var(--line);
+	font-size: 12px;
+}
+.card-ft .note { flex: 1 1 100%; }
+.trang-nut { display: flex; gap: 6px; }
+.trang-nut .btn { padding: 3px 9px; font-size: 12px; }
+.trang-nut .btn[disabled] { opacity: .4; cursor: not-allowed; }
+#chipChon:hover { text-decoration: underline; }
+input[type="search"] {
+	border: 1px solid var(--line); border-radius: 6px;
+	padding: 3px 8px; background: transparent; color: var(--ink); font: inherit;
+}
 </style>
 
 <div class="wrap">
 
 <h1>Bảng giá niêm yết HKLED</h1>
-<p class="sub">HKLED · <code>PM-FEAT-00045</code> · bản 3 · 08/09/2026 — <strong>đã chốt hết, không còn chỗ nào chờ</strong></p>
+<p class="sub">HKLED · <code>PM-FEAT-00045</code> · bản 4 · 09/09/2026 — <strong>thêm chuyển trang, ô tìm kiếm, và tick sống qua trang</strong></p>
 <p class="sub"><span class="tag t-new">bản vẽ bấm được</span> Đây là <strong>bản vẽ giao diện để duyệt</strong>,
 không phải phần mềm đang chạy — nhưng <strong>các ô và các nút đều bấm được</strong>, và công thức
 tính là công thức thật. Anh sửa tỷ lệ là cả bảng đổi theo ngay.</p>
@@ -116,7 +133,7 @@ và các chốt của anh Thắng lúc 15:36 và 16:21 ngày 08/09.</p>
 <div class="legend">
 	<span><span class="tag t-decided">đã chốt</span> anh Thắng / khách đã trả lời</span>
 	<span><span class="tag t-new">đề xuất</span> em nghĩ thêm — cả hai chỗ đều đã được anh Thắng duyệt</span>
-	<span class="muted">Tính tới <strong>16:39 ngày 08/09</strong>: không còn chỗ nào chờ.</span>
+	<span class="muted">Tính tới <strong>14:55 ngày 09/09</strong>: không còn chỗ nào chờ.</span>
 </div>
 
 <hr class="hr">
@@ -153,6 +170,9 @@ màn hình cài đặt của app lõi dùng chung.</p>
 				<option value="lech">Chỉ dòng đang lệch</option>
 			</select>
 		</label>
+		<label class="field">Tìm <input type="search" id="oTim" placeholder="mã hoặc tên, ví dụ 64LED" style="min-width:190px"></label>
+		<span id="chipChon" class="tag t-decided" hidden style="cursor:pointer"></span>
+		<a href="#" id="boHet" hidden style="font-size:12px">Bỏ chọn tất cả</a>
 		<span style="margin-left:auto"></span>
 		<button class="btn ghost" id="btnXuat">Xuất Excel <span class="n" id="nXuat">0</span></button>
 		<button class="btn" id="btnCapNhat">Cập nhật giá niêm yết <span class="n" id="nCapNhat">0</span></button>
@@ -174,6 +194,24 @@ màn hình cài đặt của app lõi dùng chung.</p>
 		<tbody id="tbody"></tbody>
 	</table>
 	</div>
+	<div class="card-ft" id="thanhTrang"></div>
+</div>
+
+<div class="note decided">
+	<strong>Tick chọn sống qua trang và qua lần tìm khác.</strong>
+	<span class="tag t-decided">chốt 09/09 14:55</span> Anh Thắng: <em>“Câu 1: đúng em nhé”</em> —
+	tìm mã A tick, tìm mã B tick, cả hai đều được giữ. Hệ quả là bấm <em>Cập nhật</em> sẽ ghi cho
+	cả mã <strong>không còn hiện trên màn hình</strong>, nên có ba lớp che: ô
+	<em>“đang giữ N mã”</em> bấm vào xem/bỏ được, dòng cảnh báo khi có mã nằm ngoài trang đang xem,
+	và hộp thoại xác nhận <strong>liệt kê từng mã</strong> chứ không chỉ nói số lượng.
+	<br>Thử ngay: gõ <code>64LED</code> vào ô Tìm, tick một dòng, xoá ô tìm đi — tick vẫn còn.
+</div>
+
+<div class="note decided">
+	<strong>Tìm theo cả mã lẫn tên, khớp đoạn giữa.</strong>
+	<span class="tag t-decided">chốt 09/09 14:55</span> Anh Thắng: <em>“a) tìm theo cả 2 — b) có em nhé”</em>.
+	Mã của khách dạng <code>M30S050-…-8C-64LED-DD-…</code> nên gõ <code>64LED</code> phải ra hết,
+	không bắt nhớ nguyên mã.
 </div>
 
 <div class="note decided">
@@ -273,8 +311,11 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 	<li><span class="muted">để sau</span> Hình ảnh · mô tả · cấu hình sản xuất · bảo hành · kho</li>
 </ul>
 
-<p class="sub muted" style="margin-top:34px">Bản 3 — anh Thắng đã chốt đủ lúc 16:39 ngày 08/09.
-<strong>Không còn chỗ nào chờ; sẵn sàng code.</strong></p>
+<p class="sub muted" style="margin-top:34px"><strong>Bản 4 — 09/09/2026.</strong> Ba thay đổi so với bản 3, đều theo chốt của anh Thắng lúc 14:55:
+chuyển trang; ô tìm kiếm theo cả mã lẫn tên khớp đoạn giữa; và tick chọn sống qua trang, qua lần tìm khác.
+Kèm theo: <em>R&amp;D</em> và <em>Lợi nhuận</em> ở bảng này <strong>đã chuyển thành chỉ để xem</strong> —
+bản 3 cho sửa tại chỗ, anh Thắng chốt <em>“không sửa trên bảng em nhé, chỉ được sửa ở bản ghi mặt hàng”</em>.
+Bản vẽ để <strong>4 dòng mỗi trang</strong> cho thấy được thanh chuyển trang; bản chạy thật mặc định 100.</p>
 
 </div>
 
@@ -305,8 +346,32 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 			ma: "DP01S050-B3HN-B",
 			ten: "Đèn LED pha P01 SMD 50W | Khung xám",
 			cost: null, rnd: 5, loi: 10, dangApDung: null, tick: false, bom: []
+		},
+		{
+			ma: "CM30S050-3B3-8C-64LED",
+			ten: "Module M30 50W | Bridgelux 3030, 8 chuỗi 64 LED",
+			cost: 120000, rnd: 3, loi: 12, dangApDung: 500000, tick: false, bom: []
+		},
+		{
+			ma: "CM30S050-3B3-5C-64LED",
+			ten: "Module M30 50W | Bridgelux 3030, 5 chuỗi 64 LED",
+			cost: 115000, rnd: 3, loi: 12, dangApDung: null, tick: false, bom: []
+		},
+		{
+			ma: "M30S050-6B3-8C-64LED-DD-X",
+			ten: "Module M30 50W | Done 3030, 8 chuỗi 64 LED, đế dày",
+			cost: 128000, rnd: 3, loi: 12, dangApDung: 545000, tick: false, bom: []
+		},
+		{
+			ma: "VDP01-200-AD-T",
+			ten: "Bộ vỏ đèn pha P01 200W | Nhôm đùn trắng",
+			cost: 80000, rnd: 0, loi: 20, dangApDung: null, tick: false, bom: []
 		}
 	];
+
+	// Bản vẽ để 4 dòng/trang cho thấy được thanh chuyển trang. Bản chạy thật mặc định 100.
+	var MOI_TRANG = 4;
+	var trang = 1;
 
 	var $ = function (id) { return document.getElementById(id); };
 	var so = function (n) { return n === null || n === undefined ? "—" : n.toLocaleString("vi-VN"); };
@@ -333,18 +398,38 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 
 	function chonDuoc(d) { return d.cost !== null; }
 
-	function veBang() {
+	// Lọc + tìm, KHÔNG cắt trang ở đây — cắt sau, đúng như bản chạy thật: lọc trước rồi mới cắt,
+	// cắt trước là bộ lọc chỉ soi trong phần đã cắt và trả về rỗng, trông y hệt "không có dữ liệu".
+	function locDong() {
 		var loc = $("boLoc").value;
+		var tim = ($("oTim").value || "").trim().toLowerCase();
+		return DONG.filter(function (d) {
+			var kq = tinh(d);
+			var lech = kq.gia !== null && d.dangApDung !== null && kq.gia !== d.dangApDung;
+			if (loc === "tinh" && !chonDuoc(d)) return false;
+			if (loc === "lech" && !lech) return false;
+			// Tìm cả mã lẫn tên, khớp đoạn giữa — chốt 09/09 14:55.
+			if (tim && d.ma.toLowerCase().indexOf(tim) < 0 && d.ten.toLowerCase().indexOf(tim) < 0)
+				return false;
+			return true;
+		});
+	}
+
+	function veBang() {
 		var haoPhi = parseFloat($("haoPhi").value) || 0;
 		var tyLe = parseFloat($("tyLeNY").value) || 0;
 		var tb = $("tbody");
 		tb.textContent = "";
 
-		DONG.forEach(function (d, i) {
+		var tatCa = locDong();
+		var soTrang = Math.max(1, Math.ceil(tatCa.length / MOI_TRANG));
+		if (trang > soTrang) trang = soTrang;
+		var dau = (trang - 1) * MOI_TRANG;
+		var hien = tatCa.slice(dau, dau + MOI_TRANG);
+
+		hien.forEach(function (d, i) {
 			var kq = tinh(d);
 			var lech = kq.gia !== null && d.dangApDung !== null && kq.gia !== d.dangApDung;
-			if (loc === "tinh" && !chonDuoc(d)) return;
-			if (loc === "lech" && !lech) return;
 
 			var tr = document.createElement("tr");
 			if (!chonDuoc(d)) tr.className = "off";
@@ -365,7 +450,7 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 
 			var tdStt = document.createElement("td");
 			tdStt.className = "keep muted";
-			tdStt.textContent = String(i + 1);
+			tdStt.textContent = String(dau + i + 1);
 			tr.appendChild(tdStt);
 
 			var tdMa = document.createElement("td");
@@ -397,15 +482,13 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 			tdHao.textContent = haoPhi + "%";
 			tr.appendChild(tdHao);
 
+			// R&D và Lợi nhuận CHỈ ĐỂ XEM — anh Thắng chốt 09/09 14:55: "không sửa trên bảng em
+			// nhé, chỉ được sửa ở bản ghi mặt hàng". Bản vẽ trước cho sửa tại đây; đã bỏ.
 			["rnd", "loi"].forEach(function (k) {
 				var td = document.createElement("td");
-				td.className = "num";
-				var inp = document.createElement("input");
-				inp.type = "number"; inp.value = d[k]; inp.min = "0"; inp.max = "100"; inp.step = "1";
-				inp.setAttribute("aria-label", (k === "rnd" ? "R&D" : "Lợi nhuận") + " của " + d.ma);
-				inp.addEventListener("input", function () { d[k] = parseFloat(inp.value) || 0; veBang(); });
-				td.appendChild(inp);
-				td.appendChild(document.createTextNode("%"));
+				td.className = "num muted";
+				td.title = "Sửa ở bản ghi Mặt hàng, không sửa được tại đây";
+				td.textContent = d[k] + "%";
 				tr.appendChild(td);
 			});
 
@@ -445,22 +528,53 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 			}
 		});
 
-		capNhatDem();
+		veTrang(tatCa.length, soTrang, hien);
+		capNhatDem(hien);
 		veExcel();
+	}
+
+	function veTrang(tong, soTrang, hien) {
+		var t = $("thanhTrang");
+		var ngoai = daChon().filter(function (d) { return hien.indexOf(d) < 0; }).length;
+		var canh = ngoai
+			? '<div class="note danger" style="margin:8px 0 0">Trong <strong>' + daChon().length +
+			  '</strong> mã đang tick, có <strong>' + ngoai +
+			  '</strong> mã <strong>không nằm trên trang này</strong>. Bấm Cập nhật là ghi cho cả chúng.</div>'
+			: "";
+		if (soTrang <= 1) { t.innerHTML = '<span class="muted">Tổng ' + tong + ' mặt hàng.</span>' + canh; return; }
+		t.innerHTML =
+			'<span class="muted">Đang xem trang <strong>' + trang + '</strong> trên <strong>' +
+			soTrang + '</strong> — tổng <strong>' + tong + '</strong> mặt hàng.</span>' +
+			'<span class="trang-nut">' +
+			'<button class="btn ghost" data-di="1"' + (trang <= 1 ? " disabled" : "") + '>« Đầu</button>' +
+			'<button class="btn ghost" data-di="' + (trang - 1) + '"' + (trang <= 1 ? " disabled" : "") + '>‹ Trước</button>' +
+			'<button class="btn ghost" data-di="' + (trang + 1) + '"' + (trang >= soTrang ? " disabled" : "") + '>Sau ›</button>' +
+			'<button class="btn ghost" data-di="' + soTrang + '"' + (trang >= soTrang ? " disabled" : "") + '>Cuối »</button>' +
+			"</span>" + canh;
+		Array.prototype.forEach.call(t.querySelectorAll("[data-di]"), function (b) {
+			b.addEventListener("click", function () {
+				trang = parseInt(b.getAttribute("data-di"), 10);
+				veBang();
+			});
+		});
 	}
 
 	function daChon() {
 		return DONG.filter(function (d) { return d.tick && chonDuoc(d); });
 	}
 
-	function capNhatDem() {
+	function capNhatDem(hien) {
 		var n = daChon().length;
 		$("nXuat").textContent = n;
 		$("nCapNhat").textContent = n;
 		$("btnXuat").disabled = n === 0;
 		$("btnCapNhat").disabled = n === 0;
-		var ok = DONG.filter(chonDuoc);
+		// Ô tick đầu bảng chỉ nói về TRANG ĐANG XEM, không phải toàn bộ danh mục.
+		var ok = (hien || []).filter(chonDuoc);
 		$("tickAll").checked = ok.length > 0 && ok.every(function (d) { return d.tick; });
+		var chip = $("chipChon"), bo = $("boHet");
+		chip.hidden = bo.hidden = n === 0;
+		chip.textContent = "Đang giữ " + n + " mã đã tick";
 	}
 
 	var xuatRoi = null;
@@ -496,9 +610,27 @@ Cộng&nbsp;=&nbsp;cost × (100 + hao phí + R&amp;D + lợi nhuận) / 100<br>
 	$("boLoc").addEventListener("change", veBang);
 	$("chietKhau").addEventListener("input", veExcel);
 
+	$("oTim").addEventListener("input", function () { trang = 1; veBang(); });
+	$("boLoc").addEventListener("change", function () { trang = 1; });
+
+	$("boHet").addEventListener("click", function (e) {
+		e.preventDefault();
+		DONG.forEach(function (d) { d.tick = false; });
+		veBang();
+	});
+
+	$("chipChon").addEventListener("click", function () {
+		var ds = daChon().map(function (d) { return d.ma; });
+		alert("Đang giữ " + ds.length + " mã:\n\n" + ds.join("\n") +
+			"\n\n(Bản chạy thật mở hộp thoại có nút bỏ từng mã.)");
+	});
+
+	// ⚠ Chỉ tick những dòng của TRANG ĐANG XEM — không quét cả 61 nghìn mã.
 	$("tickAll").addEventListener("change", function () {
 		var v = $("tickAll").checked;
-		DONG.forEach(function (d) { if (chonDuoc(d)) d.tick = v; });
+		var tatCa = locDong();
+		var dau = (trang - 1) * MOI_TRANG;
+		tatCa.slice(dau, dau + MOI_TRANG).forEach(function (d) { if (chonDuoc(d)) d.tick = v; });
 		veBang();
 	});
 
