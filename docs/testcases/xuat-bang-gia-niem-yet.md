@@ -153,7 +153,9 @@ tính được. Tập ứng viên bị chặn bởi số mã từng lên đơn m
 |---|---|---|---|---|
 | TC-REGR-01 | Cập nhật một mã **không đụng** `Item Price` của mã khác | Chỉ mã được chọn thay đổi | Bấm cho `Test NVL 1`: mã bị đổi `[]`, mã mới `[]` — vì giá đã đúng sẵn | Pass |
 | TC-REGR-02 | Đơn bán đã lập không đổi giá | `price_list_rate` của đơn cũ giữ nguyên | Không đụng `Sales Order Item`; trường đó của lõi chỉ lấy giá lúc chọn mặt hàng | Pass |
-| TC-REGR-03 | Không cần `bench migrate` để chạy | Nạp DocType + Page riêng, chạy patch tay | Chạy được; app **0 patch chờ** trước và sau | Pass |
+| TC-REGR-03 | Không cần `bench migrate` để chạy | Nạp DocType + Page riêng, chạy patch tay | Chạy được — nhưng **"0 patch chờ" là SAI** | ⚠ Sửa 09/09 |
+
+🔴 **TC-REGR-03 ghi sai, đã đo lại 09/09 trên nền erpnext 15.112: app có `1` patch chờ, chính là `mbwnext_hkled.patches.them_ty_le_gia_niem_yet` của tính năng này.** Hai Custom Field của nó CÓ trên site — nhưng vì hồi làm tôi gọi `execute()` **bằng tay**, mà gọi tay thì **không ghi vào `Patch Log`**. Vế "không cần `bench migrate` để chạy" vẫn đúng (tính năng chạy được ngay); vế "0 patch chờ" thì sai. ➜ **Merge tính năng này lên site khác BẮT BUỘC `bench migrate`.** Patch an toàn khi chạy lại: `create_custom_fields(update=True)`, phần khai mặc định có rào `if not …` nên không đè số của khách. Xem [`chay-lai-tc-regr-nen-15112.md`](chay-lai-tc-regr-nen-15112.md).
 
 ---
 
