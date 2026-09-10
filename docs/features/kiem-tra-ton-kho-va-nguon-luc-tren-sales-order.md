@@ -365,7 +365,8 @@ Cột *Ngày hàng về* tính theo mục 8.2.
 Kèm danh sách **mặt hàng Sản xuất/Gia công chưa khai Thời Gian Sản Xuất hoặc = 0** (anh Thắng
 chốt 5.2) — đây là cách duy nhất khiến R2 không im lặng.
 
-**Chân popup — ba lối ra.** Hai nút đầu chỉ đóng popup. Nút **Hẹn lại ngày giao** trả về ngày
+**Chân popup — ba lối ra.** *(🔴 Bản đang chạy chỉ có MỘT nút — xem cảnh báo ở mục 8.3.)*
+Hai nút đầu chỉ đóng popup. Nút **Hẹn lại ngày giao** trả về ngày
 gợi ý theo mục 8.3.
 
 **Dòng kết luận gộp** ở đầu popup: gom dòng thiếu của Bảng 2 theo *Nguồn nhu cầu*, cộng trạng
@@ -567,6 +568,15 @@ khai `lead_time_days` — trường đó không dùng được. Cách của anh 
 cột này sẽ toàn *"chưa có đơn mua"* — cần vài PO thật trước khi test.
 
 ### 8.3 Ngày gợi ý cho nút *Hẹn lại ngày giao* (anh Thắng chốt 24/08, `ssvcj7q0rq`)
+
+> 🔴 **CHƯA LÀM — kiểm 10/09/2026.** Mã nguồn chỉ có một nút ở chân popup:
+> `NHAN_NUT_PHIEU = "Tạo Yêu Cầu Mặt Hàng"` (`controllers/js/sales_order.js:110`). Nút
+> *Hẹn lại ngày giao* **chưa bao giờ tồn tại trong mã nguồn** — `git log -S "Hẹn lại ngày giao"`
+> trả về rỗng, tức không phải bị gỡ mà là **chưa từng được viết**.
+>
+> ⚠ **Đừng xoá mục này khỏi đặc tả.** Nó là **yêu cầu anh Thắng đã chốt** (nguyên văn ở dưới), đã
+> vẽ trong mockup bản 5, chỉ là chưa ai làm. Xoá đi thì yêu cầu biến mất không dấu vết, và tính
+> năng bàn giao thiếu một nút mà khách tưởng đã có. Giữ nguyên, đánh dấu chưa làm.
 
 > *"Ở phần cuối có nút Hẹn lại ngày giao, em cho nó hiện 1 ngày gợi ý em nhé, dựa vào phần 7.4"*
 
