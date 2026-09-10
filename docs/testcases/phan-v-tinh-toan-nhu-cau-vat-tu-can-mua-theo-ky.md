@@ -439,3 +439,79 @@ Nếu sau này khách muốn giấu hẳn màn hình khỏi *Quản lý sản xu
 **Người bên khách bấm thử.** Bộ test hiện **113 ca · 112 Pass**, nhưng toàn bộ do bên làm tự chạy.
 `testcase_passed` là cổng của **người test**, không phải của tác giả — đã nêu rõ với anh Thắng
 trong `r9ehtjv95m`, anh ấy chưa trả lời phần này.
+
+---
+
+## TC-UI3 — bấm lại trên **nền code đã đổi**, và đi bằng **đường người dùng thật**
+
+Chạy 10/09 ~10:2x trên cổng 8012. Hai lý do phải chạy lại chứ không dựa vào `TC-UI2` của 09/09:
+
+1. **Code đang chạy đã đổi.** `main` gộp vào nhánh đang deploy (PR #28/#29) ➜ `kiem_tra_ton_kho.py`
+   thêm *"Nhóm kho khác"* vào nhóm bị loại, mà Phần V **có** ăn theo (import `_kho_hop_le`).
+   `nhu_cau_vat_tu.py` và JS/CSS **không đổi**.
+2. **Lần đầu đi bằng lối vào thật.** Trước nay mọi lượt test đều gọi `frappe.set_route(...)` — tức
+   tôi **chưa bao giờ đi con đường người dùng có**. Xem mục cuối.
+
+Nền lúc đo: `Purchase Order` 5 · `Material Request` 10 · `Sales Order` 41 · `Work Order` 44 ·
+`Production Plan` 15.
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-UI3-01 | Vào từ **workspace HKLed** (không gõ địa chỉ) | Mở được màn hình | mở được, breadcrumb *HKLed* | Pass |
+| TC-UI3-02 | Tính toán, kỳ mặc định (bắt đầu **hôm nay**) | Có dòng | 3 vật tư · tổng 62 · 2 cảnh báo | Pass |
+| TC-UI3-03 | Ngày cần hàng = hôm nay ➜ **không** nhãn *đã trễ* | Không nhãn | không | Pass |
+| TC-UI3-04 | Tích ô đầu bảng | Chọn hết, khớp thẻ | 3 dòng · tổng **62** | Pass |
+| TC-UI3-05 | Sửa một dòng về **0** | Tự bỏ tích dòng đó | 2 dòng · tổng **56** | Pass |
+| TC-UI3-06 | Bảng gợi ý nhà cung cấp | 3 tiêu chí, có mẫu số | cả 3 đều có số + mẫu số | Pass |
+| TC-UI3-07 | Tạo đơn thật | 1 đơn **nháp**, 2 dòng | `PO-26-00009`, `docstatus = 0` | Pass |
+| TC-UI3-08 | Mã chưa khai giá ➜ nói ra | Cảnh báo nêu tên mã | *"1 dòng chưa có đơn giá…: NVL 1"* | Pass |
+| TC-UI3-09 | Hộp báo thành công nói rõ **nháp** | Có | tiêu đề *"Đã tạo đơn mua nháp"* + câu giải thích | Pass |
+| TC-UI3-10 | Dòng đã lập đơn bị khoá + đánh dấu | Mờ, ghi số đơn | *"đã vào PO-26-00009"* | Pass |
+| TC-UI3-11 | Tính lại ➜ cảnh báo đơn nháp | 2 ➜ 3 cảnh báo | *"…CÒN NHÁP chứa: NVL 1 (12.0), NVL 2 (44.0)"* | Pass |
+| TC-UI3-12 | Tính lại ➜ số thiếu **KHÔNG** giảm | Giữ nguyên | 44 · 12 · 6 y nguyên | Pass |
+| TC-UI3-13 | Đổi ngày bắt đầu về **01-08** ➜ nhãn *đã trễ* | Hiện nhãn đỏ | cả 3 dòng có *đã trễ* | Pass |
+| TC-UI3-14 | Dọn sạch sau test | 5 bảng về đúng số cũ | 5·10·41·44·15, không lệch bảng nào | Pass |
+
+### Hai nhánh hôm qua chưa chạm tới, nay chạm được
+
+- **Nhãn *đã trễ*** — kỳ mặc định bắt đầu **hôm nay** nên *Ngày cần hàng* không bao giờ ở quá khứ.
+  Phải **tự đổi ngày bắt đầu** mới tới được. Nghĩa là ca này **không tự nhiên rơi vào tay người
+  test** — ai nghiệm thu bằng cách bấm mặc định sẽ không thấy nó. Cần nói trước khi nhờ test.
+- **Tiêu chí *Giao nhanh nhất*** — 09/09 còn *"chưa đủ dữ liệu"*; nay khách đã duyệt phiếu nhập nên
+  tính được.
+
+### 🔴 `TC-UI3-06` — "trung bình 0.0 ngày" đọc như một lỗi
+
+Tiêu chí *Giao nhanh nhất* nay hiện: *"trung bình **0.0 ngày** từ lúc đặt tới lúc nhận, đo trên 4
+lần nhận"*. **Số đúng** — đơn được đặt và nhận trong cùng một ngày. Nhưng `0.0` là đúng cái hình
+dạng mà người đọc quy cho **lỗi** hoặc **"không đo được"**, chứ không đọc thành *"giao ngay"*.
+
+➜ Đề xuất: khi bằng 0 thì ghi **"nhận ngay trong ngày"** thay vì *"0.0 ngày"*. **Chưa sửa** — đang
+chờ chốt.
+
+Đáng ghi vì đây đúng loại thứ bên làm không tự thấy: câu do mình viết thì mình luôn đọc ra nghĩa
+mình định nói. Lần này bắt được chỉ vì dữ liệu thật đổi khiến nhánh đó chạy lần đầu.
+
+### ⚠ Một lỗi tôi suýt báo mà không có thật
+
+Đọc trên ảnh chụp màn hình thấy *"Yêu Cầu **Mật** Hàng"* và đã định báo lỗi chính tả. Grep mã nguồn
+ra **0 chỗ**; phóng to vùng đó ra thì đúng là *"Mặt Hàng"* — cỡ chữ nhỏ làm `ặ` trông như `ậ`.
+
+**Ảnh chụp là một phép đo có sai số**, nhất là với dấu tiếng Việt. Kết luận rút từ ảnh phải đối
+chiếu mã nguồn trước khi báo — báo một lỗi không tồn tại cho khách còn tệ hơn không báo.
+
+### 📌 Vì sao mãi tới hôm nay mới đi đường người dùng
+
+Trang này **không có lối vào nào từ giao diện** từ 08/08 tới 10/09 — hơn một tháng. Tôi không phát
+hiện ra vì mọi lượt test đều `frappe.set_route("tinh-nhu-cau-vat-tu")`, tức **đường tôi tự chọn,
+không phải đường người dùng có**. Phiên khác tìm ra khi rà workspace và đã bổ sung.
+
+Cùng hình dạng với lỗi ngày quá khứ hôm 08/09: ở đó tôi tự chọn **ngày** cho test và luôn chọn ngày
+tương lai; ở đây tôi tự chọn **đường vào**. Bài học chung: **thứ gì trong test do mình tự chọn thì
+chỗ đó không được kiểm.** Đường vào, ngày tháng, dữ liệu mẫu — đều phải có ít nhất một lượt đi
+đúng như người dùng đi.
+
+### Vẫn còn đúng một việc: `testcase_passed`
+
+**Anh Thắng test lại rồi tự tích** — Tuấn chốt 10/09. Bộ test nay **127 ca · 126 Pass**, nhưng toàn
+bộ do bên làm chạy, kể cả lượt hôm nay. Cổng này là của **người test**, không phải của tác giả.
