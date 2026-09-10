@@ -352,9 +352,33 @@ vẽ, và **bấm thử lại trên giao diện để xác nhận hộp thoại 
 lỗi tìm được nằm ở ca **không có phép đo nào bằng lệnh bắt được**: cả hai hàm đều trả về đúng dữ
 liệu, chỉ là một hàm không gọi hàm kia.
 
+## TC-TICK-07 — đã bấm nút ghi thật, 10/09 lúc 09:46
+
+Tuấn cho phép nên đã bấm **Cập nhật giá niêm yết** trên giao diện, chọn **đúng một mã** để đổi ít
+nhất và khôi phục được.
+
+**Hộp thoại xác nhận đúng như đã hứa với anh Thắng:** nêu số lượng, nêu tên bảng giá
+`Standard Selling`, giải thích *"Giá của những đơn đã lập không bị ảnh hưởng"*, và **liệt kê từng
+mã** — dòng `Bán thành phẩm 1` hiện rõ trong hộp thoại, không phải chỉ đếm số.
+
+| Kiểm | Đo được | KQ |
+|---|---|---|
+| Ghi đúng giá | `Bán thành phẩm 1`: **1.000 → 325.000** | ✅ |
+| `Version` log xác nhận | `price_list_rate: VND 1.000,00 → VND 325.000,00`, 09:46:10 | ✅ |
+| **TC-REGR-01** — không đụng mã khác | so cả **14 mã còn lại** với bản chụp trước khi bấm: **0 mã bị đổi** | ✅ |
+| Không đẻ dòng thừa | `Item Price` trên `Standard Selling`: **15 → 15** | ✅ |
+| Màn hình tự cập nhật | cột *Đang áp dụng* nhảy `1.000 ▲` → `325.000`, thẻ *Đang lệch* về **0**, toast *"Đã cập nhật 1 mặt hàng"* | ✅ |
+
+📌 **Giá này để nguyên, không hoàn tác.** 325.000 là giá niêm yết đúng theo công thức đã chốt;
+hoàn tác lại là một lượt ghi nữa không ai yêu cầu. Muốn trả về thì một lệnh:
+`frappe.db.set_value("Item Price", "sq4u5tf9q8", "price_list_rate", 1000)`.
+
+⚠ Còn **6 mã khác đang lệch** (`Test BTP 1`, `Test Gia Công`, `Test NVL 1`, `Test NVL 2`,
+`Test Tp`, `Thành phẩm 1`) — **cố ý không đụng**, để anh Thắng tự bấm trong vòng test của anh ấy.
+
 ## Vẫn chưa chạy
 
 | ID | Vì sao |
 |---|---|
-| TC-TICK-07 · TC-NGUON-10 | bấm **Cập nhật giá niêm yết** — **ghi `Item Price` thật** trên dữ liệu anh Thắng đang test; chưa được phép thì không bấm |
+| TC-NGUON-10 | bấm Cập nhật khi **đang xem tạm** theo nguồn giá vốn khác cài đặt |
 | TC-NGUON-11 | tải file Excel về máy |
