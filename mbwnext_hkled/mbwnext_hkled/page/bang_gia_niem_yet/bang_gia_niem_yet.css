@@ -129,26 +129,48 @@
 	font-weight: 600;
 }
 
-/* ── Bảng thành phần bung ra khi bấm ▸ (PM-FEAT-00045 đợt 4, 09/09) ────────── */
+/* ── Bảng thành phần bung ra khi bấm ▸ (PM-FEAT-00045) ───────────────────────
+   Bảng con có lưới RIÊNG, không ăn theo 9 cột của bảng cha — xem chú thích ở `ve_bom()`.
+   Thụt vào và đổi nền để thấy ngay đây là phần con của dòng ngay trên. */
 
 .bgny-bung {
-	border: 0;
-	background: transparent;
-	color: var(--text-muted);
-	font-family: var(--font-stack-mono, monospace);
-	font-size: 12px;
-	padding: 0 5px 0 0;
-	cursor: pointer;
+	border: 0; background: transparent; color: var(--text-muted);
+	font-family: var(--font-stack-mono, monospace); font-size: 12px;
+	padding: 0 5px 0 0; cursor: pointer;
 }
 .bgny-bung:hover { color: var(--text-color); }
 .bgny-bung-trong { display: inline-block; width: 17px; }
 
-.bgny-tb tr.bgny-con td {
-	background: var(--subtle-fg, #f4f5f6);
-	font-size: 12px;
+.bgny-tb td.bgny-con-o {
+	padding: 0 !important;
+	background: var(--bg-light-gray);
 	border-bottom: 1px solid var(--border-color);
+	white-space: normal;
 }
-.bgny-tb tr.bgny-con-dau td { font-weight: 600; }
-.bgny-tb tr.bgny-con-cong td { font-style: italic; }
-.bgny-tb tr.bgny-con-tong td { border-bottom: 2px solid var(--border-color); }
-.bgny-tb tr.bgny-con-lech td { background: var(--yellow-50, #fff8e6); }
+.bgny-con-khoi { padding: 12px 16px 14px 52px; }
+.bgny-con-tin { padding: 10px 16px 10px 52px; color: var(--text-muted); font-size: 12.5px; }
+
+.bgny-con-tb {
+	width: auto; min-width: 520px; max-width: 780px;
+	border-collapse: collapse; font-size: 12.5px;
+	background: var(--card-bg, var(--fg-color));
+	border: 1px solid var(--border-color); border-radius: 6px;
+}
+.bgny-con-tb th, .bgny-con-tb td {
+	padding: 6px 14px; border-bottom: 1px solid var(--border-color);
+	text-align: left; white-space: nowrap;
+}
+.bgny-con-tb th {
+	font-size: 11px; text-transform: uppercase; letter-spacing: .02em;
+	color: var(--text-muted); font-weight: 600;
+}
+.bgny-con-tb td.num, .bgny-con-tb th.num {
+	text-align: right; font-variant-numeric: tabular-nums;
+	font-family: var(--font-stack-mono, monospace);
+}
+.bgny-con-tb tbody tr:last-child td { border-bottom: 1px solid var(--border-color); }
+.bgny-con-tb tfoot td { border-bottom: 0; font-weight: 600; }
+.bgny-con-tb tr.bgny-cong td { font-style: italic; color: var(--text-muted); }
+.bgny-con-ma { color: var(--text-light, var(--text-muted)); font-size: 11.5px; }
+.bgny-con-dvt { color: var(--text-muted); font-style: normal; }
+.bgny-con-ghi { margin: 10px 0 0; max-width: 780px; }

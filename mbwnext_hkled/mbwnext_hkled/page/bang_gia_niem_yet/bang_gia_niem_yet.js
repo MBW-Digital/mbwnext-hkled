@@ -337,62 +337,77 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 	// Khách vẽ đúng bảng này (ảnh anh Thắng gửi 09/09 17:03): bốn cột, và dòng cuối tên
 	// "Sản xuất" = lương/phút × số phút. Tổng bảng con phải bằng ô Giá thành của dòng cha.
 
+	// ⚠ Bảng con KHÔNG dùng lưới cột của bảng cha. Bản đầu (09/09) nhét từng ô vào đúng 9 cột của
+	//   bảng cha bằng `colspan`, nên tiêu đề "Giá trị tồn kho" rơi vào cột *Tên mặt hàng* còn con
+	//   số lại nằm ở cột *Giá vốn* — tiêu đề và số không thẳng cột, mà giữa chúng là một khoảng
+	//   trống cả nghìn pixel. Hai bảng có cấu trúc khác hẳn nhau thì đừng ép chung một lưới.
+	//   Cách đúng: một ô `colspan` phủ hết hàng, bên trong dựng bảng riêng, hẹp, tự căn cột.
 	ve_bom(ma) {
 		const k = this.bom[ma];
-		if (!k) {
-			return `<tr class="bgny-con"><td></td><td colspan="8" class="text-muted">${__(
-				"Đang tải thành phần…"
-			)}</td></tr>`;
-		}
+		const boc = (ben_trong) =>
+			`<tr class="bgny-con"><td class="bgny-con-o" colspan="9">${ben_trong}</td></tr>`;
+
+		if (!k) return boc(`<div class="bgny-con-tin">${__("Đang tải thành phần…")}</div>`);
 		if (!k.dong || !k.dong.length) {
-			return `<tr class="bgny-con"><td></td><td colspan="8" class="text-muted">${frappe.utils.escape_html(
-				k.ly_do || __("Không có thành phần")
-			)}</td></tr>`;
+			return boc(
+				`<div class="bgny-con-tin">${frappe.utils.escape_html(
+					k.ly_do || __("Không có thành phần")
+				)}</div>`
+			);
 		}
-		const h = [];
-		h.push(`<tr class="bgny-con bgny-con-dau"><td></td>
-			<td class="text-muted">${__("Thành phần BOM")}</td>
-			<td class="text-muted">${
-				k.goc_gia === "Valuation Rate"
-					? __("Giá trị tồn kho")
-					: __("Đơn giá — định mức lấy theo {0}", [frappe.utils.escape_html(k.goc_gia || "?")])
-			}</td>
-			<td class="num text-muted">${__("Số lượng")}</td>
-			<td class="num text-muted">${__("Thành tiền")}</td>
-			<td colspan="4"></td></tr>`);
-		k.dong.forEach((r) => {
-			h.push(`<tr class="bgny-con ${r.la_cong ? "bgny-con-cong" : ""}">
-				<td></td>
-				<td>${frappe.utils.escape_html(r.ten || "")}${
-					r.ma ? ` <span class="text-muted">(${frappe.utils.escape_html(r.ma)})</span>` : ""
-				}</td>
-				<td class="num">${this.so(r.gia)}</td>
-				<td class="num">${this.so(r.so_luong)}${
-					r.la_cong ? ` <span class="text-muted">${__("phút")}</span>` : ""
-				}</td>
-				<td class="num">${this.so(r.thanh_tien)}</td>
-				<td colspan="4" class="text-muted">${
-					r.chua_khai
-						? __("Chưa khai <b>Thời Gian Sản Xuất (Phút)</b> trên mặt hàng nên chi phí sản xuất bằng 0")
+
+		const cot_gia =
+			k.goc_gia === "Valuation Rate"
+				? __("Giá trị tồn kho")
+				: __("Đơn giá — lấy theo {0}", [frappe.utils.escape_html(k.goc_gia || "?")]);
+
+		const dong = k.dong
+			.map(
+				(r) => `<tr class="${r.la_cong ? "bgny-cong" : ""}">
+					<td>${frappe.utils.escape_html(r.ten || "")}${
+					// Chỉ hiện mã khi nó KHÁC tên. Nhiều mặt hàng của khách đặt tên trùng mã
+					// (`NVL 1`), hiện cả hai thành ra "NVL 1 NVL 1" — nhiễu chứ không thêm tin.
+					r.ma && r.ma !== r.ten
+						? ` <span class="bgny-con-ma">${frappe.utils.escape_html(r.ma)}</span>`
 						: ""
 				}</td>
-			</tr>`);
-		});
-		// ⚠ Bảng con và dòng cha phải nói cùng một chuyện. Dòng cha không tính được giá mà bảng con
-		//    vẫn cộng ra số dương thì phải giải thích ngay tại chỗ, đừng để hai số chọi nhau.
+					<td class="num">${this.so(r.gia)}</td>
+					<td class="num">${this.so(r.so_luong)}${
+					r.la_cong ? ` <span class="bgny-con-dvt">${__("phút")}</span>` : ""
+				}</td>
+					<td class="num">${this.so(r.thanh_tien)}</td>
+				</tr>`
+			)
+			.join("");
+
 		const ghi_chu = k.ly_do_cha
-			? __(
-					"⚠ Dòng ở trên vẫn ghi <b>không tính được</b>: {0}. Con số này chỉ là phần cộng được, chưa dùng để ra giá niêm yết.",
+			? `<div class="bgny-canh bgny-canh-do bgny-con-ghi">${__(
+					"Dòng ở trên vẫn ghi <b>không tính được</b>: {0}. Con số này chỉ là phần cộng được, chưa dùng để ra giá niêm yết.",
 					[frappe.utils.escape_html(k.ly_do_cha)]
-			  )
+			  )}</div>`
 			: k.co_cong_doan
-			? __("⚠ Định mức này có chi phí công đoạn riêng — đã trừ ra để không tính công hai lần")
+			? `<div class="bgny-canh bgny-con-ghi">${__(
+					"Định mức này có chi phí công đoạn riêng — đã trừ ra để không tính công hai lần."
+			  )}</div>`
 			: "";
-		h.push(`<tr class="bgny-con bgny-con-tong ${k.ly_do_cha ? "bgny-con-lech" : ""}"><td></td>
-			<td colspan="3" class="num"><b>${__("Cộng thành phần")}</b></td>
-			<td class="num"><b>${this.so(k.tong)}</b></td>
-			<td colspan="4" class="text-muted">${ghi_chu}</td></tr>`);
-		return h.join("");
+
+		return boc(`
+			<div class="bgny-con-khoi">
+				<table class="bgny-con-tb">
+					<thead><tr>
+						<th>${__("Thành phần định mức")}</th>
+						<th class="num">${frappe.utils.escape_html(cot_gia)}</th>
+						<th class="num">${__("Số lượng")}</th>
+						<th class="num">${__("Thành tiền")}</th>
+					</tr></thead>
+					<tbody>${dong}</tbody>
+					<tfoot><tr>
+						<td colspan="3" class="num">${__("Cộng thành phần")}</td>
+						<td class="num"><b>${this.so(k.tong)}</b></td>
+					</tr></tfoot>
+				</table>
+				${ghi_chu}
+			</div>`);
 	}
 
 	// ── Danh sách đang giữ, và thanh chuyển trang ────────────────────────────
