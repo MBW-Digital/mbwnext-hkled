@@ -184,20 +184,12 @@ phiếu mới** cho bạn xem lại.
 
 Khối vàng dưới Bảng 3 nêu tên **từng mặt hàng** có vấn đề về khai báo. Các câu hay gặp:
 
-| Câu | Nên làm gì |
-|---|---|
-| *"chưa có định mức, tạm coi như phải mua"* | Khai BOM cho mặt hàng đó, hoặc xác nhận đúng là hàng mua |
-| *"Phương pháp bổ sung đang là … nên coi như phải mua, nhưng mặt hàng này CÓ định mức"* | Kiểm lại *Phương pháp bổ sung* trên mặt hàng |
-| *"định mức lặp vòng, dừng bóc tại đây"* | Xem ghi chú bên dưới |
-
-> ⚠️ **Ghi chú 10/09/2026 — hai câu cuối có thể hiện SAI trong một tình huống bình thường.**
-> Nếu trên cùng một đơn bạn bán **cả thành phẩm lẫn bán thành phẩm nằm bên trong nó**,
-> màn hình sẽ báo *"định mức lặp vòng"* và khuyên kiểm lại *Phương pháp bổ sung* — trong
-> khi định mức **không hề lặp vòng** và thiết lập **vẫn đúng**. Lúc đó Bảng 2 cũng liệt
-> bán thành phẩm đó vào diện **phải mua** thay vì bóc tiếp xuống nguyên vật liệu.
->
-> **Đang được kiểm tra và sửa.** Trong lúc chờ: gặp hai câu này thì kiểm xem đơn có rơi
-> vào tình huống trên không trước khi đi sửa khai báo mặt hàng.
+| Câu | Nghĩa | Nên làm gì |
+|---|---|---|
+| *"chưa có định mức, tạm coi như phải mua"* | Mặt hàng khai là Sản xuất/Gia công nhưng chưa có BOM | Khai định mức cho nó, hoặc sửa *Phương pháp bổ sung* thành Mua hàng |
+| *"Phương pháp bổ sung đang là … nên coi như phải mua, nhưng mặt hàng này CÓ định mức"* | Khai báo mâu thuẫn: có định mức nhưng không khai là hàng sản xuất | Sửa *Phương pháp bổ sung* trên mặt hàng. **Không sửa thì hệ thống đi mua chính nó thay vì mua nguyên vật liệu** |
+| *"định mức lặp vòng (mặt hàng này nằm trong định mức của chính nó), dừng bóc tại đây"* | Định mức bị khai vòng — A cần B, B lại cần A | Sửa định mức. Câu này **nêu đủ tên mọi mặt hàng trong vòng** để biết sửa ở đâu |
+| *"định mức lồng quá N cấp, dừng bóc"* | Cây định mức quá sâu | Kiểm lại dữ liệu định mức của những mã được nêu tên |
 
 ---
 
