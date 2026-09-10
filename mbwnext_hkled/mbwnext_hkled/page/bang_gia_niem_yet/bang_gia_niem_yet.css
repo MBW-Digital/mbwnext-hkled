@@ -174,3 +174,8 @@
 .bgny-con-ma { color: var(--text-light, var(--text-muted)); font-size: 11.5px; }
 .bgny-con-dvt { color: var(--text-muted); font-style: normal; }
 .bgny-con-ghi { margin: 10px 0 0; max-width: 780px; }
+
+/* ⚠ Đơn vị tiền đặt ở TIÊU ĐỀ CỘT, không đặt vào từng ô: bảng 100 dòng × 4 cột tiền là 400 lần
+   lặp chữ "₫" — thành nhiễu, và số bị đẩy xa nhau nên không so theo cột được nữa.
+   Chip trên đầu nói rõ một lần đó là VND, vì bản ghi Currency của site không khai ký hiệu. */
+.bgny-dv { font-weight: 400; opacity: .55; font-size: 11px; }

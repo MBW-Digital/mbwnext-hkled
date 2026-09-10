@@ -67,6 +67,16 @@ def lam_tron_5000(x):
 	return int((flt(x) + BOI_LAM_TRON / 2) // BOI_LAM_TRON) * BOI_LAM_TRON
 
 
+def tien_te_bang_gia():
+	"""Loại tiền của bảng giá đang ghi vào — đọc từ chính `Price List`, không đoán theo công ty.
+
+	⚠ Màn hình đặt đơn vị ở **tiêu đề cột**, và con số thì để trần. Nên nếu bảng giá đổi sang loại
+	  tiền khác mà chỗ này vẫn trả "VND" thì cả bảng hiện sai đơn vị **mà không con số nào đổi** —
+	  đúng loại sai trông y hệt đúng.
+	"""
+	return frappe.db.get_value("Price List", BANG_GIA_BAN, "currency") or "VND"
+
+
 def ty_le_chung():
 	"""Hai tỷ lệ dùng chung toàn hệ thống. Trả `(hao_phi, ty_le_niem_yet)`."""
 	doc = frappe.get_cached_doc("HKLed Pricing Setting")
@@ -386,6 +396,7 @@ def bang_gia(
 			"hao_phi": hao_phi,
 			"ty_le_niem_yet": ty_le_ny,
 			"bang_gia": BANG_GIA_BAN,
+			"tien_te": tien_te_bang_gia(),
 			"nguon": nguon,
 			"nguon_mac_dinh": nguon_gia_von_mac_dinh(),
 		}
@@ -554,7 +565,8 @@ def xuat_excel(ma_hang, ty_le_chiet_khau=0, nguon=None):
 	ws["C1"] = "← gõ số vào ô bên trái, cột Giá bán tự tính"
 	ws["C1"].font = Font(italic=True, color="888888")
 
-	tieu_de = ["Mã mặt hàng", "Giá niêm yết", "Giá bán"]
+	tien = tien_te_bang_gia()
+	tieu_de = ["Mã mặt hàng", f"Giá niêm yết ({tien})", f"Giá bán ({tien})"]
 	for i, t in enumerate(tieu_de, start=1):
 		o = ws.cell(row=3, column=i, value=t)
 		o.font = Font(bold=True)

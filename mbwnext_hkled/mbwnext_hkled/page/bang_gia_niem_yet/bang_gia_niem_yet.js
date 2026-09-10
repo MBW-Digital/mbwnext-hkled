@@ -186,6 +186,9 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				<span class="bgny-chip">${__("Hao phí")} <b>${k.hao_phi}%</b></span>
 				<span class="bgny-chip">${__("Tỷ lệ tính giá niêm yết")} <b>${k.ty_le_niem_yet}%</b></span>
 				<span class="bgny-chip">${__("Ghi vào bảng giá")} <b>${frappe.utils.escape_html(k.bang_gia)}</b></span>
+				<span class="bgny-chip">${__("Đơn vị tiền")} <b>${frappe.utils.escape_html(
+					k.tien_te || "VND"
+				)}</b></span>
 				<span class="bgny-chip ${
 					k.nguon !== k.nguon_mac_dinh ? "bgny-chip-tam" : ""
 				}">${__("Giá vốn mặt hàng mua")} <b>${frappe.utils.escape_html(k.nguon || "")}</b>${
@@ -243,12 +246,12 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			<th class="bgny-tick"><input type="checkbox" class="bgny-all"></th>
 			<th>${__("Mã mặt hàng")}</th>
 			<th>${__("Tên mặt hàng")}</th>
-			<th class="num">${__("Giá vốn")}</th>
+			<th class="num">${__("Giá vốn")} <span class="bgny-dv">₫</span></th>
 			<th class="num">${__("R&D")}</th>
 			<th class="num">${__("Lợi nhuận")}</th>
-			<th class="num">${__("Cộng")}</th>
-			<th class="num bgny-ket bgny-ny">${__("Giá niêm yết")}</th>
-			<th class="num bgny-ket">${__("Đang áp dụng")}</th>
+			<th class="num">${__("Cộng")} <span class="bgny-dv">₫</span></th>
+			<th class="num bgny-ket bgny-ny">${__("Giá niêm yết")} <span class="bgny-dv">₫</span></th>
+			<th class="num bgny-ket">${__("Đang áp dụng")} <span class="bgny-dv">₫</span></th>
 		</tr></thead><tbody>`);
 
 		this.dong.forEach((d) => {
@@ -396,9 +399,9 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 				<table class="bgny-con-tb">
 					<thead><tr>
 						<th>${__("Thành phần định mức")}</th>
-						<th class="num">${frappe.utils.escape_html(cot_gia)}</th>
+						<th class="num">${frappe.utils.escape_html(cot_gia)} <span class="bgny-dv">₫</span></th>
 						<th class="num">${__("Số lượng")}</th>
-						<th class="num">${__("Thành tiền")}</th>
+						<th class="num">${__("Thành tiền")} <span class="bgny-dv">₫</span></th>
 					</tr></thead>
 					<tbody>${dong}</tbody>
 					<tfoot><tr>
