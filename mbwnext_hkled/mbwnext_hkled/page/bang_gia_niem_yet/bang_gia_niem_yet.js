@@ -256,7 +256,11 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 
 		this.dong.forEach((d) => {
 			const duoc = d.gia_niem_yet !== null;
-			h.push(`<tr class="${duoc ? "" : "bgny-mo"}" data-ma="${frappe.utils.escape_html(d.ma_hang)}">
+			// Lớp cho thanh chỉ báo bên trái: xanh = tính được, cam = tính được nhưng đang lệch.
+			// Đây là THÔNG TIN, không phải trang trí — nó là thứ duy nhất cho thấy 4 dòng đáng
+			// nhìn nằm ở đâu giữa 61.608 dòng còn lại.
+			const lop = !duoc ? "bgny-mo" : d.lech ? "bgny-co bgny-co-lech" : "bgny-co";
+			h.push(`<tr class="${lop}" data-ma="${frappe.utils.escape_html(d.ma_hang)}">
 				<td class="bgny-tick">${
 					duoc
 						? `<input type="checkbox" class="bgny-mot" ${this.chon.has(d.ma_hang) ? "checked" : ""}>`

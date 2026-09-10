@@ -179,3 +179,77 @@
    lặp chữ "₫" — thành nhiễu, và số bị đẩy xa nhau nên không so theo cột được nữa.
    Chip trên đầu nói rõ một lần đó là VND, vì bản ghi Currency của site không khai ký hiệu. */
 .bgny-dv { font-weight: 400; opacity: .55; font-size: 11px; }
+
+/* ══ Lớp sống động ══════════════════════════════════════════════════════════
+   Luật tự đặt: mỗi thứ thêm vào phải MANG MỘT THÔNG TIN. Màn hình này có 61.612
+   dòng; màu vô nghĩa ở đây còn hại hơn không màu, vì nó ăn mất sự chú ý mà đúng
+   4 dòng tính được giá đang cần. */
+
+/* ── ① Thanh chỉ báo bên trái mỗi dòng ─────────────────────────────────────
+   Cả bảng gần như một màu xám vì 61.608/61.612 dòng chưa tính được giá. Thanh
+   này biến bức tường xám thành bản đồ quét được: có màu = dòng đáng nhìn.
+      xanh = tính được giá   ·   cam = tính được NHƯNG đang lệch   ·   không = chưa tính được */
+.bgny-tb tbody tr:not(.bgny-con) > td:first-child {
+	position: relative;
+	border-left: 3px solid transparent;
+}
+/* ⚠ Dùng bậc 500/600, KHÔNG dùng 400. Thang màu của Frappe đi ngược Tailwind: `--green-400` là
+   `#b6dec5` — màu bạc hà nhạt, trên nền trắng gần như vô hình. Bản đầu tôi đặt 400 và thanh chỉ
+   báo coi như không có; phải mở `getComputedStyle` ra đo mới biết, vì CSS vẫn áp dụng đúng, chỉ là
+   màu không nhìn thấy được. Đo 10/09: 300 `#cae5d4` · 400 `#b6dec5` · 500 `#59ba8b` · 600 `#30a66d`. */
+.bgny-tb tbody tr.bgny-co > td:first-child { border-left-color: var(--green-600, #30a66d); }
+.bgny-tb tbody tr.bgny-co-lech > td:first-child { border-left-color: var(--orange-500, #e86c13); }
+
+/* ── ② Dải nền cho cụm KẾT QUẢ ──────────────────────────────────────────────
+   Hai cột cuối là thứ người ta mở màn hình này để xem. Một dải nền rất nhạt kéo
+   mắt về đúng đó mà không cần tô đậm chữ. */
+/* ⚠ Chỉ tô cột *Giá niêm yết*, không tô cả hai cột. Bản đầu tô cả cụm thì hai cột cuối thành một
+   mảng xanh chiếm một phần tư màn hình — mà phần lớn ô trong đó đang là "không tính được", tức là
+   đang tôn vinh chỗ trống. Và nhạt hơn nhiều: dải nền để KÉO mắt, không phải để giành mắt. */
+.bgny-tb td.bgny-ny, .bgny-tb th.bgny-ny { background: rgba(2, 137, 247, .035); }
+.bgny-tb tbody tr:hover:not(.bgny-con) td.bgny-ny { background: transparent; }
+
+/* ── ③ Chuyển động rất nhẹ khi rê chuột ────────────────────────────────────
+   Chỉ đủ để mắt biết mình đang ở dòng nào trong bảng 100 dòng. */
+.bgny-tb tbody tr:not(.bgny-con) { transition: background .12s ease; }
+.bgny-bung { transition: transform .15s ease, color .15s ease; }
+.bgny-bung:hover { transform: scale(1.25); }
+
+/* ── ④ Bảng thành phần: nổi lên như một thẻ, có đường nối về dòng cha ───────*/
+.bgny-con-tb {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .07), 0 0 0 1px var(--border-color);
+	border: 0;
+	overflow: hidden;
+}
+.bgny-con-khoi { position: relative; }
+.bgny-con-khoi::before {
+	content: ""; position: absolute; left: 30px; top: 0; bottom: 18px;
+	width: 1px; background: var(--border-color);
+}
+.bgny-con-khoi::after {
+	content: ""; position: absolute; left: 30px; top: 22px;
+	width: 14px; height: 1px; background: var(--border-color);
+}
+.bgny-con-tb tfoot td { background: var(--bg-light-gray); }
+
+/* ── ⑤ Chip: phân biệt CÀI ĐẶT với TÌNH TRẠNG ───────────────────────────────
+   Bốn chip đầu là cài đặt đang áp dụng (đứng yên), hai chip sau là tình trạng
+   của dữ liệu (thay đổi theo thao tác). Khác vai thì đừng vẽ giống nhau. */
+.bgny-chip { transition: background .12s ease, border-color .12s ease; }
+.bgny-chip-lech, .bgny-chip-chon { font-weight: 500; }
+.bgny-chip-chon:hover { background: var(--blue-100, #dbeafe); }
+.bgny-bo-het:hover { text-decoration: underline; }
+
+/* ── ⑥ Thanh chuyển trang ───────────────────────────────────────────────────*/
+.bgny-trang { padding-top: 4px; border-top: 1px solid var(--border-color); }
+.bgny-trang-nut .btn { transition: background .12s ease; }
+.bgny-toi-trang:focus { outline: 2px solid var(--blue-400, #63b3ed); outline-offset: 1px; }
+
+/* ── ⑦ Ô tick của dòng chưa tính được ──────────────────────────────────────
+   Dấu gạch để rất nhạt: nó chỉ nói "không chọn được", không cần giành chú ý. */
+.bgny-tick .text-muted { opacity: .45; }
+
+@media (prefers-reduced-motion: reduce) {
+	.bgny-tb tbody tr, .bgny-bung, .bgny-chip, .bgny-trang-nut .btn { transition: none; }
+	.bgny-bung:hover { transform: none; }
+}
