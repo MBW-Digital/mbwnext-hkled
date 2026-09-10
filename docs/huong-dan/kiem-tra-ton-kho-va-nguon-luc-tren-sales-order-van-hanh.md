@@ -16,8 +16,9 @@
 4. [Đọc ba bảng](#4-đọc-ba-bảng)
 5. [Bung ra xem đơn nào đang giữ hàng](#5-bung-ra-xem-đơn-nào-đang-giữ-hàng)
 6. [Tạo Yêu Cầu Mặt Hàng cho phần thiếu](#6-tạo-yêu-cầu-mặt-hàng-cho-phần-thiếu)
-7. [Khối "Cần để ý"](#7-khối-cần-để-ý)
-8. [Câu hỏi thường gặp](#8-câu-hỏi-thường-gặp)
+7. [Hẹn lại ngày giao](#7-hẹn-lại-ngày-giao)
+8. [Khối "Cần để ý"](#8-khối-cần-để-ý)
+9. [Câu hỏi thường gặp](#9-câu-hỏi-thường-gặp)
 
 ---
 
@@ -180,7 +181,7 @@ phiếu mới** cho bạn xem lại.
 
 ### Bốn câu chỉ hiện khi bấm nút này
 
-Khác với khối *Cần để ý* ở mục 7 — bốn câu dưới đây **chỉ xuất hiện lúc bấm nút**, không có
+Khác với khối *Cần để ý* ở mục 8 — bốn câu dưới đây **chỉ xuất hiện lúc bấm nút**, không có
 trên màn hình kiểm tra.
 
 | Câu | Nghĩa | Nên làm gì |
@@ -196,7 +197,56 @@ trên màn hình kiểm tra.
 
 ---
 
-## 7. Khối "Cần để ý"
+## 7. Hẹn lại ngày giao
+
+Nút **Hẹn lại ngày giao** ở chân hộp thoại trả lời câu **"bao giờ giao được?"** — khác với nút
+bên cạnh vốn trả lời **"đặt mua phần thiếu"**.
+
+Ngày gợi ý ghép **hai vế nối tiếp nhau**, không phải lấy cái muộn hơn trong hai cái:
+
+1. **Chờ vật tư** — lấy **ngày hàng về muộn nhất** trong số vật tư còn thiếu (Bảng 2).
+2. **Rồi mới làm** — từ ngày đó mới xếp khối lượng sản xuất vào lịch làm việc.
+
+Thợ rảnh cả tháng cũng không sản xuất được trước khi hàng về, nên hai vế phải nối tiếp. Ghép
+kiểu khác sẽ ra ngày **sớm hơn thực tế** — tức hứa sớm rồi trễ hẹn.
+
+> ⚠️ **Ngày này chỉ để tham khảo.** Bấm nút **không** sửa *Ngày Giao Hàng* trên đơn. Muốn đổi
+> thì tự sửa ô đó.
+
+### Bốn kiểu trả lời — hai trong bốn cố ý KHÔNG có ngày
+
+| Kiểu | Khi nào | Nên làm gì |
+|---|---|---|
+| **Có ngày** (nền xanh) | Đủ dữ liệu | Dùng được. Câu bên dưới ghi rõ **cách ra ngày đó**: hàng về ngày nào, cộng bao nhiêu phút, trên mấy người |
+| **Có ngày, nền vàng** | Có mặt hàng chưa khai *Thời Gian Sản Xuất* | **Ngày thật sẽ MUỘN HƠN** — mới cộng được phần công của những mặt hàng đã khai. Màn hình nêu tên mặt hàng còn thiếu |
+| **Không có ngày** — *"chưa có đơn mua nào đang mở"* | Vật tư thiếu mà chưa ai đặt mua | Đặt mua trước (nút *Tạo Yêu Cầu Mặt Hàng* ngay cạnh), rồi bấm lại |
+| **Không có ngày** — *"lịch làm việc hiện có không đủ"* | Dữ liệu đủ nhưng lịch không kham nổi khối lượng | Xếp thêm ca hoặc thêm người, rồi bấm lại |
+
+> 🔴 **Không ra ngày KHÔNG phải là nút hỏng.** Chưa ai đặt mua thì không có căn cứ nào để đoán
+> ngày hàng về — máy có đưa ra một ngày thì cũng là bịa. **Một ô trống có giải thích thì bạn còn
+> đi hỏi bộ phận mua; một ngày sai thì bạn hứa thẳng với khách rồi trễ hẹn.**
+
+### Hai kiểu "không có ngày" khác nhau ở việc bạn phải làm
+
+Đọc kỹ câu giải thích, đừng chỉ nhìn màu nền:
+
+- *"chưa có đơn mua nào đang mở"* ➜ đi **giục mua hàng**.
+- *"lịch làm việc hiện có không đủ"* ➜ đi **xếp thêm ca hoặc thêm người**.
+
+Hai việc khác hẳn nhau, làm nhầm thì mất thời gian mà đơn vẫn kẹt.
+
+### ⚠️ Lịch làm việc phải được khai tới đủ xa
+
+Nút chỉ xếp việc trong phạm vi **lịch làm việc đã khai**. Hết lịch thì nó trả lời *"chưa có nhân
+sự nào được xếp lịch làm việc"* — không phải lỗi, mà là **chưa có dữ liệu để tính**.
+
+> **Đo ngày 10/09/2026:** lịch làm việc trên hệ thống mới khai **tới 30/09**. Nghĩa là từ
+> **01/10**, đơn nào có hàng về sau ngày đó sẽ không ra ngày cho tới khi có người khai thêm lịch.
+> Nên khai lịch trước, đừng đợi tới lúc bấm không ra.
+
+---
+
+## 8. Khối "Cần để ý"
 
 Khối vàng dưới Bảng 3 nêu tên **từng mặt hàng** có vấn đề về khai báo. Các câu hay gặp:
 
@@ -216,7 +266,7 @@ Hai câu nữa **không nói về khai báo định mức mà nói về con số
 
 ---
 
-## 8. Câu hỏi thường gặp
+## 9. Câu hỏi thường gặp
 
 **Bấm nút này có làm gì trên đơn không?**
 Không. Không ghim, không sinh chứng từ, không sửa gì. Chỉ đọc và tính.
@@ -238,7 +288,15 @@ Bảng 3 tính trên **lịch làm việc đã khai** và phần **đã phân b�
 nhận ngoài hệ thống thì nó không thấy.
 
 **Đơn chưa lưu có bấm được không?**
-Được.
+Được — cả *Kiểm Tra Tồn Kho* lẫn *Hẹn lại ngày giao*. Riêng *Tạo Yêu Cầu Mặt Hàng* thì phải lưu
+đơn trước, vì phiếu phải trỏ về số đơn.
+
+**Bấm Hẹn lại ngày giao mà không ra ngày nào — hỏng à?**
+Không. Đọc câu giải thích: hoặc **chưa ai đặt mua** phần vật tư còn thiếu, hoặc **lịch làm việc
+không đủ**. Cả hai đều là "chưa đủ căn cứ để hẹn", chứ không phải tính sai. Xem mục 7.
+
+**Ngày gợi ý có tự điền vào Ngày Giao Hàng không?**
+Không. Nó chỉ hiện ra để bạn cân nhắc; muốn đổi thì tự sửa ô *Ngày Giao Hàng*.
 
 **Màn hình báo "toàn nhà máy đang có phiếu yêu cầu đã duyệt…" — vậy tôi bớt số đi à?**
 **Không.** Câu đó nói về **cả nhà máy**, và số đó **chưa được trừ** vào phiếu bạn đang tạo. Bớt
