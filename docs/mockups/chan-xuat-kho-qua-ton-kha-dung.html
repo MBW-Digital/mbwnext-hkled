@@ -879,7 +879,7 @@
 	<!-- ══════════════════════════ D ══════════════════════════ -->
 	<h2 id="d">D. Kho nào vào pool tồn khả dụng <span class="gap">mới</span></h2>
 	<p class="lede">
-		Tồn khả dụng gộp <b>toàn bộ kho</b>, trừ hai nhóm. Đây chính là chỗ cơ chế có sẵn của ERPNext
+		Tồn khả dụng gộp <b>toàn bộ kho</b>, trừ các nhóm loại trừ. Đây chính là chỗ cơ chế có sẵn của ERPNext
 		không đáp được — nó chỉ tính theo từng kho một.
 	</p>
 
@@ -905,10 +905,28 @@
 		<b>Kho ký gửi</b> và <b>Kho khuyến mãi/hàng mẫu</b> <b>CÓ</b> tính vào pool — em hỏi vì tự
 		suy đoán, nay khách xác nhận.
 		<br><br>
-		Và một chốt hay hơn: quy tắc trong hệ thống chỉ loại trừ <b>đúng hai nhóm</b>
-		<i>Nhóm kho lỗi</i> và <i>Nhóm kho trung chuyển</i>. Kho nào về sau không muốn tính vào pool
-		thì <b>chuyển kho đó vào một trong hai nhóm</b> — không phải sửa phần mềm. Thêm kho mới cũng
-		không phải sửa gì.
+		Và một chốt hay hơn: quy tắc trong hệ thống chỉ loại trừ <b>một số nhóm kho</b>. Kho nào về
+		sau không muốn tính vào pool thì <b>chuyển kho đó vào nhóm loại trừ</b> — không phải sửa
+		phần mềm. Thêm kho mới cũng không phải sửa gì.
+	</p>
+
+	<p class="note">
+		<span class="tag">Cập nhật 09/09</span>
+		Nay có <b>ba</b> nhóm loại trừ, thêm <b><i>Nhóm kho khác</i></b> theo yêu cầu của anh Thắng
+		(09/09 10:21): <i>"những kho nào không được tính tồn thì anh sẽ chuyển vào nhóm đó"</i>.
+		<br><br>
+		<b>Vì sao đáng thêm:</b> trước đó, muốn loại một kho thì bắt buộc phải xếp nó vào
+		<i>Nhóm kho lỗi</i> hoặc <i>Nhóm kho trung chuyển</i> — hai cái tên mang nghĩa nghiệp vụ
+		hẳn hoi. Xếp <i>Kho ký gửi</i> vào "kho lỗi" cho hệ thống hiểu là sai nghĩa với người đọc.
+		<i>Nhóm kho khác</i> là chỗ hứng chung, không mang nghĩa gì, nên xếp vào đó không gây hiểu nhầm.
+		<br><br>
+		⚠ <b>Hệ thống nhận đúng ba cái tên đó, không hơn.</b> Dựng một nhóm tên khác — kể cả
+		<i>"Nhóm kho ký gửi"</i> nghe rất hợp lý — rồi chuyển kho vào thì <b>không có gì xảy ra và
+		cũng không báo lỗi</b>: kho vẫn được tính vào tồn bán được. Cần một nhóm tên khác thì báo
+		bên em, thêm vào mất vài phút.
+		<br><br>
+		📌 <b>Kho ký gửi</b> vẫn giữ nguyên là <b>CÓ</b> tính vào pool — anh Thắng chốt lại
+		09/09 09:40.
 	</p>
 
 	<!-- ══════════════════════════ E ══════════════════════════ -->

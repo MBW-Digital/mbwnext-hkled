@@ -23,7 +23,7 @@ kỹ thuật, không phải việc cấu hình.
 Con số *tồn khả dụng* chỉ cộng hàng nằm trong **tập kho hợp lệ**. Hàng ngoài tập đó
 không được tính là hàng dùng được, nên rút đi cũng không bị chặn.
 
-Luật hiện tại — anh Thắng chốt 03/09 15:33: **tất cả kho, trừ hai nhóm**.
+Luật hiện tại — anh Thắng chốt 03/09 15:33, bổ sung 09/09 10:21: **tất cả kho, trừ ba nhóm**.
 
 **Đang được tính (5 kho):**
 
@@ -35,8 +35,27 @@ Luật hiện tại — anh Thắng chốt 03/09 15:33: **tất cả kho, trừ 
 | **Kho ký gửi - HKL** |
 | **Kho khuyến mãi/hàng mẫu - HKL** |
 
-**Bị loại trừ:** nhóm **Kho trung chuyển** và nhóm **Kho lỗi** — hàng đang đi đường
-và hàng hỏng không phải hàng bán được.
+**Bị loại trừ — ba nhóm:**
+
+| Nhóm | Vì sao loại |
+|---|---|
+| **Nhóm kho lỗi** | Hàng hỏng, không bán được |
+| **Nhóm kho trung chuyển** | Hàng đang đi đường, chưa nằm yên ở đâu |
+| **Nhóm kho khác** | **Nhóm hứng chung** — anh Thắng chốt 09/09 10:21: *"những kho nào không được tính tồn thì anh sẽ chuyển vào nhóm đó"* |
+
+📌 **`Nhóm kho khác` là chỗ để bạn tự loại thêm kho về sau mà không cần ai sửa code.**
+Trước 09/09, muốn loại một kho thì bắt buộc phải nhét nó vào *Nhóm kho lỗi* hoặc
+*Nhóm kho trung chuyển* — hai cái tên mang nghĩa nghiệp vụ hẳn hoi, xếp kho ký gửi hay
+kho khuyến mãi vào đó là sai nghĩa. Từ nay cứ chuyển vào *Nhóm kho khác*.
+
+☢️ **Hệ thống nhận đúng BA cái tên trên, không hơn.** Dựng một nhóm tên khác — kể cả
+*"Nhóm kho ký gửi"* nghe rất hợp lý — rồi chuyển kho vào đó thì **không có gì xảy ra và
+cũng không có thông báo lỗi nào**: kho vẫn được tính vào tồn bán được như cũ. Sai kiểu
+này chỉ lộ ra khi kho đã âm. Cần một nhóm tên khác thì **báo bên phát triển**, thêm tên
+vào mất vài phút.
+
+⚠ Tên nhóm phải khớp **từng ký tự**, kể cả dấu. Gõ vào ô *Tên kho*, **đừng gõ hậu tố
+công ty** (`- HKL` / `- HKLED`) — hệ thống tự thêm.
 
 ---
 
@@ -47,7 +66,9 @@ và hàng hỏng không phải hàng bán được.
 Nhìn cây kho thì hai kho này trông như bị bỏ quên ngoài nhóm, rất dễ tưởng là thiếu
 sót rồi kéo vào **Nhóm kho trung chuyển** cho gọn.
 
-**Đừng.** Anh Thắng chốt 03/09 15:59 rằng hai kho đó **vẫn tính là hàng dùng được**.
+**Đừng.** Anh Thắng chốt 03/09 15:59 rằng hai kho đó **vẫn tính là hàng dùng được**,
+và chốt lại lần nữa 09/09 09:40 cho riêng Kho ký gửi: *"Kho ký gửi có tính vào tồn bán
+được em nhé, sau này nếu sửa lại thì anh chuyển nhóm kho cho nó thôi"*.
 Kéo chúng vào nhóm loại trừ là **tồn khả dụng tụt xuống trên toàn hệ thống**: đơn
 đang giữ chỗ hợp lệ bỗng thành vượt tồn, phiếu xuất bị chặn oan, và Bảng 2 của tính
 năng Kiểm tra tồn kho báo thiếu hàng không có thật.
@@ -56,8 +77,11 @@ Không có thông báo nào khi việc này xảy ra. Số chỉ đơn giản l�
 
 ### Thêm kho mới
 
-Kho mới **tự động** được tính, trừ khi bạn đặt nó dưới hai nhóm loại trừ. Không phải
-khai báo gì thêm — nhưng hãy cân nhắc đúng nhóm ngay lúc tạo.
+Kho mới **tự động** được tính, trừ khi bạn đặt nó dưới một trong **ba nhóm loại trừ**.
+Không phải khai báo gì thêm — nhưng hãy cân nhắc đúng nhóm ngay lúc tạo.
+
+Không chắc xếp vào đâu thì cứ để dưới `Kho Tổng` (được tính). Muốn loại về sau chỉ cần
+đổi *Kho cha* sang **`Nhóm kho khác`** — không phải sửa code, không phải chờ ai.
 
 ---
 
