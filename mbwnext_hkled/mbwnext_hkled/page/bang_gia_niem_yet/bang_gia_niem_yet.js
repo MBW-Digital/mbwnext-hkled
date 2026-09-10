@@ -247,8 +247,8 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			<th class="num">${__("R&D")}</th>
 			<th class="num">${__("Lợi nhuận")}</th>
 			<th class="num">${__("Cộng")}</th>
-			<th class="num">${__("Giá niêm yết")}</th>
-			<th class="num">${__("Đang áp dụng")}</th>
+			<th class="num bgny-ket bgny-ny">${__("Giá niêm yết")}</th>
+			<th class="num bgny-ket">${__("Đang áp dụng")}</th>
 		</tr></thead><tbody>`);
 
 		this.dong.forEach((d) => {
@@ -259,24 +259,32 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 						? `<input type="checkbox" class="bgny-mot" ${this.chon.has(d.ma_hang) ? "checked" : ""}>`
 						: `<span class="text-muted" title="${__("Chưa tính được giá nên không chọn được")}">–</span>`
 				}</td>
-				<td>${
+				<td class="bgny-ma">${
 					["Sản xuất", "Gia công"].includes(d.phuong_phap)
 						? `<button class="bgny-bung" title="${__("Xem thành phần")}">${
 								this.mo.has(d.ma_hang) ? "▾" : "▸"
 						  }</button>`
 						: `<span class="bgny-bung-trong"></span>`
 				}<a href="/app/item/${encodeURIComponent(d.ma_hang)}" target="_blank">${frappe.utils.escape_html(d.ma_hang)}</a></td>
-				<td class="bgny-ten">${frappe.utils.escape_html(d.ten_hang || "")}</td>
+				<td class="bgny-ten"><div class="bgny-ten-in" title="${frappe.utils.escape_html(
+					d.ten_hang || ""
+				)}">${frappe.utils.escape_html(d.ten_hang || "")}</div></td>
 				<td class="num">${
 					duoc
 						? this.so(d.cost)
 						: `<span class="bgny-khong" title="${frappe.utils.escape_html(d.ly_do || "")}">${__("chưa có")}</span>`
 				}</td>
-				<td class="num text-muted">${d.rnd}%</td>
-				<td class="num text-muted">${d.loi_nhuan}%</td>
-				<td class="num">${this.so(d.cong)}</td>
-				<td class="num"><b>${duoc ? this.so(d.gia_niem_yet) : `<span class="bgny-khong">${__("không tính được")}</span>`}</b></td>
-				<td class="num ${d.lech ? "bgny-lech" : "text-muted"}">${this.so(d.dang_ap_dung)}${d.lech ? " ▲" : ""}</td>
+				<td class="num bgny-phu">${d.rnd}%</td>
+				<td class="num bgny-phu">${d.loi_nhuan}%</td>
+				<td class="num bgny-phu">${this.so(d.cong)}</td>
+				<td class="num bgny-ket bgny-ny">${
+					duoc
+						? `<b>${this.so(d.gia_niem_yet)}</b>`
+						: `<span class="bgny-khong">${__("không tính được")}</span>`
+				}</td>
+				<td class="num bgny-ket ${d.lech ? "bgny-lech" : "bgny-phu"}">${this.so(d.dang_ap_dung)}${
+					d.lech ? " ▲" : ""
+				}</td>
 			</tr>`);
 			if (this.mo.has(d.ma_hang)) h.push(this.ve_bom(d.ma_hang));
 		});
