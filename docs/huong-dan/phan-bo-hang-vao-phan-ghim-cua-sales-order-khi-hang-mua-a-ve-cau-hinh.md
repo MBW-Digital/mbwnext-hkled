@@ -75,21 +75,33 @@ len(frappe.get_all("DocType", filters={"module": "MBWNext HKLed"}))   # 13
 
 ## 2. Kho nào được tính là tồn dùng được
 
-Hệ thống **loại bỏ** mọi kho nằm dưới hai nhóm kho sau khi tính tồn khả dụng:
+Hệ thống **loại bỏ** mọi kho nằm dưới ba nhóm kho sau khi tính tồn khả dụng:
 
 ```
 Nhóm kho lỗi
 Nhóm kho trung chuyển
+Nhóm kho khác          ← bổ sung 09/09, nhóm hứng chung
 ```
 
-Kho nằm dưới hai nhóm này thì hàng **có thật trong kho nhưng không được coi là dùng được**, nên
+Kho nằm dưới ba nhóm này thì hàng **có thật trong kho nhưng không được coi là dùng được**, nên
 không giữ chỗ được và không chia được.
 
-Đo trên site HKLED ngày 08/09: **5 / 9** kho lá được tính tồn — tức **4 kho đang bị loại**. Cả hai
-nhóm đều có thật trên site (`Nhóm kho lỗi - HKL`, `Nhóm kho trung chuyển - HKL`).
+📌 **`Nhóm kho khác` là chỗ để tự loại thêm kho về sau** — anh Thắng chốt 09/09 10:21: *"những kho
+nào không được tính tồn thì anh sẽ chuyển vào nhóm đó"*. Không phải sửa code.
+
+☢️ Hệ thống nhận **đúng ba cái tên trên**. Dựng nhóm tên khác rồi chuyển kho vào thì **im lặng
+không có tác dụng** — kho vẫn được tính, không báo lỗi gì.
+
+Đo trên cổng 8012 ngày 08/09: **5 / 9** kho lá được tính tồn — tức **4 kho đang bị loại**. Hai
+nhóm cũ đều có thật trên site đó (`Nhóm kho lỗi - HKL`, `Nhóm kho trung chuyển - HKL`); `Nhóm kho
+khác` mới có từ 09/09 nên số đo trên chưa phản ánh nó.
+
+⚠ **Hậu tố công ty khác nhau giữa các site** — cổng 8012 là `- HKL`, cổng thật
+`hkled.mbwnext.com` là `- HKLED`. Hệ thống khớp theo **tên trần** (không hậu tố) nên không sao,
+nhưng đừng chép nguyên tên đầy đủ từ tài liệu này sang site khác.
 
 ⚠ **Đây là nguyên nhân số một của câu hỏi "hàng về rồi mà sao không chia được".** Nếu khách nhập
-hàng vào một kho mới, kiểm xem kho đó có vô tình nằm dưới hai nhóm trên không. Hộp thoại **Phân
+hàng vào một kho mới, kiểm xem kho đó có vô tình nằm dưới ba nhóm trên không. Hộp thoại **Phân
 Bổ** có cảnh báo riêng cho ca này — *"Có mặt hàng nhập vào kho không được tính tồn"*.
 
 ### Cách tự kiểm một kho cụ thể có bị loại không
@@ -97,8 +109,8 @@ Bổ** có cảnh báo riêng cho ca này — *"Có mặt hàng nhập vào kho 
 1. Mở **Warehouse** (*Kho*) cần kiểm.
 2. Xem trường **Parent Warehouse** (*Kho cha*).
 3. Bấm vào kho cha đó, xem tiếp kho cha của nó — **lần ngược lên tới nhóm gốc**.
-4. Nếu đường đi ngược đó chạm `Nhóm kho lỗi` hoặc `Nhóm kho trung chuyển` thì kho này **bị loại**,
-   hàng nằm trong đó không giữ chỗ và không chia được.
+4. Nếu đường đi ngược đó chạm `Nhóm kho lỗi`, `Nhóm kho trung chuyển` **hoặc `Nhóm kho khác`**
+   thì kho này **bị loại**, hàng nằm trong đó không giữ chỗ và không chia được.
 
 Kiểm nhanh cả site bằng `bench console`:
 
@@ -111,9 +123,14 @@ print("Được tính tồn:", len(ok))
 print("BỊ LOẠI:", sorted(tat_ca - ok))
 ```
 
-Tên hai nhóm kho **khớp theo tên nhóm**, nên đổi tên nhóm kho trên site là đổi hành vi. Muốn thêm
-nhóm bị loại thì sửa hằng số `NHOM_KHO_LOAI` trong `api/kiem_tra_ton_kho.py`, không có màn hình
-cấu hình cho việc này.
+Tên ba nhóm kho **khớp theo tên nhóm**, nên đổi tên nhóm kho trên site là đổi hành vi.
+
+➜ **Muốn loại thêm một kho: chuyển kho đó vào `Nhóm kho khác`** — đây là cách đã chốt 09/09, làm
+được ngay trên màn hình, không cần ai sửa code.
+
+➜ Muốn thêm một **nhóm mới tên khác** thì phải sửa hằng số `NHOM_KHO_LOAI` trong
+`api/kiem_tra_ton_kho.py`. **Không có màn hình cấu hình cho việc này**, và dựng nhóm tên lạ rồi
+chờ nó tự có tác dụng là hỏng im lặng.
 
 ---
 
