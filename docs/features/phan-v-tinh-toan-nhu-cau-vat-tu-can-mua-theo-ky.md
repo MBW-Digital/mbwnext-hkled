@@ -201,9 +201,9 @@ Tài liệu gốc có checklist "chốt trước khi code". Đây là kết qu�
 | # | Mục | Hiện trạng đo được |
 |---|---|---|
 | 1 | Trường *Tồn kho tối thiểu* | ✅ **ĐÃ CÓ** — `Item Default.custom_ton_kho_kha_dung_toi_thieu` (Float), HkLed2 thêm ở PM-FEAT-00037. ⚠ Anh Thắng chốt 03/09: lưu **theo từng công ty** trong bảng *Mặc định của mặt hàng*, **không** phải một ô phẳng trên Mặt hàng. ERPNext lõi chỉ có `Item Reorder` theo **từng kho** nên không dùng được |
-| 2 | Hai nhóm kho loại trừ | ✅ `Nhóm kho lỗi - HKL` và `Nhóm kho trung chuyển - HKL` **đã có**, đúng tên tài liệu |
+| 2 | Nhóm kho loại trừ | ✅ `Nhóm kho lỗi - HKL` và `Nhóm kho trung chuyển - HKL` **đã có**, đúng tên tài liệu. ⚠ Số đo này từ 03/09; **từ 09/09 có nhóm thứ ba `Nhóm kho khác`** (nhóm hứng chung, anh Thắng chốt 10:21) — cổng 8012 chưa dựng nhóm này nên số đo trên chưa gồm nó |
 | 3 | Cây kho đã xếp đúng chưa | ⚠ Lỗi: `Kho hàng lỗi cần sửa chữa`, `Kho hàng lỗi/trả`. Trung chuyển: `Kho đang sản xuất`, `Kho trung chuyển`. **Nhưng `Kho ký gửi` và `Kho khuyến mãi/hàng mẫu` đang treo thẳng dưới `Kho Tổng`** → sẽ được tính vào tồn khả dụng. Xem câu hỏi Q1 |
-| 4 | Chuẩn tồn hiện tại | Lấy `Bin.actual_qty`, loại kho lá của 2 nhóm trên |
+| 4 | Chuẩn tồn hiện tại | Lấy `Bin.actual_qty`, loại kho lá của các nhóm trên |
 | 5 | Ô *Ghim Tồn Khả Dụng* trên đơn bán | ✅ `custom_ghim_ton_kha_dung` (Check) **đã có** — HkLed2 vừa thêm cho Phần IV. Hiện **0 đơn** đã tích |
 | 6 | Cách lấy *PO chưa về* + ngày nhận | `Purchase Order Item`: SL chưa nhận + ngày dự kiến nhận, dùng để xếp kỳ |
 | 7 | Nguồn nhu cầu Kiểu 1 duy nhất | Chốt: đơn bán nổ định mức. **Không** cộng thêm từ Lệnh sản xuất |

@@ -202,14 +202,21 @@ Ai đo tồn khả dụng bằng cách cộng `Stock Reservation Entry.reserved_
 > có tồn), nên hai cách cho ra con số y hệt. Chốt luật trước khi có hàng lỗi phát sinh thì sau này
 > không ai phải sửa lại.
 
-Tồn (cả thực tế lẫn khả dụng) **loại trừ** kho con của hai nhóm:
+Tồn (cả thực tế lẫn khả dụng) **loại trừ** kho con của ba nhóm:
 
-- `Nhóm kho lỗi - HKL`
-- `Nhóm kho trung chuyển - HKL`
+- `Nhóm kho lỗi`
+- `Nhóm kho trung chuyển`
+- `Nhóm kho khác` — bổ sung 09/09/2026, nhóm **hứng chung** để khách tự loại thêm kho về sau
+  mà không phải sửa code (anh Thắng chốt 10:21)
 
-Hai nhóm này là `Warehouse` có `is_group = 1`, con của `Kho Tổng - HKL`. Lấy kho hợp lệ bằng
-`lft/rgt` của cây Warehouse chứ **đừng so tên**: tên có hậu tố công ty (`- HKL`) và sẽ đổi khi
-lên site khác.
+Ba nhóm này là `Warehouse` có `is_group = 1`, con của `Kho Tổng`. Lấy kho hợp lệ bằng
+`lft/rgt` của cây Warehouse chứ **đừng so tên đầy đủ**: tên có hậu tố công ty và hậu tố đó
+**khác nhau giữa các site** (`- HKL` trên 8012, `- HKLED` trên cổng thật). Code khớp theo
+`warehouse_name` — trường này không mang hậu tố.
+
+☢️ Danh sách ba tên trên là **hằng số trong code** (`api/kiem_tra_ton_kho.py`,
+`NHOM_KHO_LOAI`), **không phải cấu hình đọc từ database**. Nhóm tên khác thì không được nhận
+và **không có thông báo lỗi nào** — tồn chỉ đơn giản là tính cao hơn thực tế.
 
 ⚠ `MBWNext System Setting` có sẵn `warehouse_error` / `bad_stock_warehouse` nhưng **đang để
 trống**. Đừng đọc hai trường đó — hiện không mang giá trị nào.

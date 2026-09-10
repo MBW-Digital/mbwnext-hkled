@@ -234,13 +234,29 @@ riêng:
 | Cần khai | Vì sao |
 |---|---|
 | **Company** | mọi phép tính tồn đều lọc theo công ty |
-| **Cây kho**, gồm hai nhóm tên **chính xác** `Nhóm kho lỗi` và `Nhóm kho trung chuyển` | hai tên này là **một phần của logic**, không phải nhãn — xem dưới |
+| **Cây kho**, gồm ba nhóm tên **chính xác** `Nhóm kho lỗi`, `Nhóm kho trung chuyển`, `Nhóm kho khác` | ba tên này là **một phần của logic**, không phải nhãn — xem dưới |
 | Khách hàng · Nhà cung cấp · Nhân sự · Đội Sản Xuất · Bậc Thợ | các tính năng sản xuất đọc từ đây |
 
-🔴 **Tên hai nhóm kho là logic.** `api/kiem_tra_ton_kho.NHOM_KHO_LOAI` loại mọi kho nằm dưới hai
+🔴 **Tên ba nhóm kho là logic.** `api/kiem_tra_ton_kho.NHOM_KHO_LOAI` loại mọi kho nằm dưới ba
 nhóm đó khỏi tồn khả dụng, khớp theo đúng chuỗi `warehouse_name`. Đặt tên lệch một chữ thì toàn
 bộ phép tính tồn khả dụng, ghim và phân bổ ra **số khác — mà không có lỗi nào**, chỉ là số
 khác. Đây là nguyên nhân số một của câu hỏi *"hàng về rồi sao không chia được"*.
+
+📌 **`Nhóm kho khác` là nhóm hứng chung**, anh Thắng chốt 09/09/2026 10:21: kho nào về sau không
+muốn tính tồn thì chuyển vào đó, **không phải sửa code**. Dựng đủ cả ba ngay lúc bàn giao, kể cả
+khi hôm đó chưa có kho nào cần loại — thiếu nó thì người vận hành sẽ tự dựng một nhóm tên khác và
+nhóm đó **im lặng không có tác dụng**.
+
+✅ **Cổng thật `hkled.mbwnext.com`:** bốn bản ghi này do bên phát triển dựng (anh Thắng chốt
+09/09 10:49 *"cách 2 em nhé"*), khách chỉ dựng các kho lá bên dưới:
+
+	Kho Tổng
+	├── Nhóm kho lỗi
+	├── Nhóm kho trung chuyển
+	└── Nhóm kho khác
+
+⚠ Gõ tên vào ô *Tên kho*, **đừng gõ hậu tố công ty** — Frappe tự thêm, và hậu tố khác nhau giữa
+các site (`- HKL` ở 8012, `- HKLED` ở cổng thật).
 
 ⚠ Bản kho mặc định của `mbwnext_localization` sinh ra 15 kho **khác hẳn** (Kho Hà Nội / Đà Nẵng
 / HCM, **không** có tầng `Nhóm kho …`). Đừng tưởng nó giống cấu trúc đang chạy ở `cozy_dev`.

@@ -169,7 +169,7 @@ Site chỉ 6 mặt hàng có tồn ➜ bật lên là phần lớn đơn giữ c
 không, hay là hệ quả của đợt nạp danh mục (PM-TASK-00061/67).
 
 ⚠ Thêm một chỗ phải khớp: SRE giữ chỗ theo **đúng kho ghi trên dòng Đơn Bán**, và **không nhận
-kho nhóm**. Phần IV §3 lại loại trừ *Nhóm kho lỗi* / *Nhóm kho trung chuyển* khỏi tập kho. Nếu
+kho nhóm**. Phần IV §3 lại loại trừ *Nhóm kho lỗi* / *Nhóm kho trung chuyển* / *Nhóm kho khác* khỏi tập kho. Nếu
 dòng đơn trỏ vào kho trung chuyển thì Phần IV không đếm mà SRE vẫn giữ — hai số lệch nhau.
 
 ---
@@ -189,7 +189,7 @@ trong code ERPNext thì cả hai lý do anh ấy nêu đều đứng:
 
 | Yêu cầu của HKLED | Vì sao cơ chế lõi không đáp được |
 |---|---|
-| Tồn khả dụng gộp **toàn bộ kho**, trừ Nhóm kho lỗi và Nhóm kho trung chuyển | `get_available_qty_to_reserve(item_code, warehouse)` tính cho **đúng một kho**. Trỏ đơn vào **kho nhóm** để gộp thì lõi chặn thẳng ở 3 chỗ: `Stock cannot be reserved in group warehouse` |
+| Tồn khả dụng gộp **toàn bộ kho**, trừ Nhóm kho lỗi, Nhóm kho trung chuyển và Nhóm kho khác | `get_available_qty_to_reserve(item_code, warehouse)` tính cho **đúng một kho**. Trỏ đơn vào **kho nhóm** để gộp thì lõi chặn thẳng ở 3 chỗ: `Stock cannot be reserved in group warehouse` |
 | Ghim phải bóc BOM giữ chỗ NVL / bán thành phẩm | `Stock Reservation Entry.voucher_type` là `DF.Literal["", "Sales Order"]` — bản ghi giữ chỗ chỉ trỏ được về Đơn Bán, không trỏ được về NVL |
 
 Hai giới hạn này chính là hai chỗ đã ghi ở §3 bên trên, lúc đó mới coi là "chỗ phải khớp".
@@ -317,7 +317,7 @@ tại"*. Việc tạo BOM là **tác dụng phụ cho sản xuất**, không ph�
 | Câu chặn xuất kho | **Chỉ báo tồn không đủ.** Không nêu tên đơn đang giữ chỗ |
 | Cách gọi | **"Tồn khả dụng"** |
 | `Kho ký gửi`, `Kho khuyến mãi/hàng mẫu` | **CÓ** tính vào pool |
-| Quy tắc kho | Loại trừ **đúng hai nhóm** `Nhóm kho lỗi` và `Nhóm kho trung chuyển`. Kho nào cần loại về sau thì **khách chuyển kho đó vào một trong hai nhóm** — code không hard-code danh sách kho |
+| Quy tắc kho | Loại trừ **đúng ba nhóm** `Nhóm kho lỗi`, `Nhóm kho trung chuyển`, `Nhóm kho khác` (bổ sung 09/09/2026). Kho nào cần loại về sau thì **khách chuyển kho đó vào `Nhóm kho khác`** — code không hard-code danh sách kho, nhưng **có** hard-code ba tên nhóm |
 
 Ý cuối là chốt tốt: quy tắc trong code không bao giờ phải sửa khi khách thêm kho mới.
 
