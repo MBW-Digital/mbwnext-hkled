@@ -585,3 +585,49 @@ phải sửa định mức nào. Đã sửa để gom đủ mọi mã trên vòn
 
 📌 Số cộng lại đúng cả hai đường: 5 `Bán thành phẩm 1` từ dòng đơn + 6 sinh từ `Thành phẩm 1` = 11
 ⇒ `NVL 1` 11, `NVL 2` 22; và 6 `Bán thành phẩm 2` ⇒ `NVL 3` 18.
+
+---
+
+# Sửa 10/09/2026 — hệ số năng lực khai đúng bằng 0 bị hiểu thành 100%
+
+> **Phát hiện:** phiên `cozy-dev-10`. **Mã:** `_nang_luc()` trong `kiem_tra_ton_kho.py`.
+
+`flt(r.get("custom_performance_factor_")) or 100.0` — `flt(0)` ra `0`, mà `0` là **falsy**, nên nó
+rơi vào nhánh `or` và **hệ số 0 thành 100%**. Hai giá trị nói hai điều ngược nhau lại cho cùng
+một kết quả:
+
+| Ô Năng Lực | Nghĩa | Trước | Sau |
+|---|---|---|---|
+| để trống | *chưa ai khai* → coi là bình thường | 100% ✅ | 100% ✅ |
+| ghi `0` | *người này không tham gia sản xuất* | **100%** ❌ | **0%** ✅ |
+
+**Vì sao không dừng ở một ô sai:** hệ số này nhân vào **toàn bộ vế cung của Bảng 3** và mọi phép
+tính ngày giao. Một người khai 0 mà được tính đủ năng lực là **cộng năng lực ảo cho cả nhà máy** —
+Bảng 3 báo *Đủ nhân lực* trong khi thực tế không đủ. Đúng loại rủi ro R2 mà chính
+`nguon_luc_nhan_su()` sinh ra để chống.
+
+| ID | Kiểm | Đo được | KQ |
+|---|---|---|---|
+| TC-NL-01 | Khai `0` ra hệ số `0` | `Thắng`: `khai=0 → 0.0` (trước: `1.0`) | ✅ |
+| TC-NL-02 | Khai `90` không đổi | `Anh C`: `0.9` | ✅ |
+| TC-NL-03 | Khai `100` không đổi | `Anh A`, `Anh B`: `1.0` | ✅ |
+| TC-NL-04 | Để trống vẫn là 100% | không có ca thật trên site — **chưa chạy**, đã chặn bằng `gt is None or gt == ""` | ⏳ |
+| TC-NL-05 | Không đơn nào nổ lỗi | **32/32** đơn `docstatus < 2` chạy sạch | ✅ |
+
+## 🔴 Bản sửa này KHÔNG đổi con số nào hôm nay — và đó là điều phải đo, không phải đoán
+
+Lý do tôi hoãn sửa ban đầu: sợ `Thắng` tụt 100% → 0% làm **đổi số Bảng 3 ngay giữa vòng nghiệm
+thu**. Đo lại thì điều đó **không xảy ra**:
+
+```
+Lịch làm việc từ hôm nay:  Anh A 36 dòng · Anh B 36 · Anh C 36
+Thắng:  0 dòng lịch · 0 Employee Allocation
+```
+
+`tong_theo_lich` chỉ cộng từ người **có dòng lịch**, mà `Thắng` không có dòng nào — nên hệ số của
+anh ấy chưa từng được nhân vào đâu cả. Kiểm chéo trên `SO-26-00026`: `tổng theo lịch 9.135 phút`,
+`đơn cần 400`, kết luận *đủ* — y như trước.
+
+⚠ **Nhưng nó sẽ cắn ngay khi người khai hệ số 0 được xếp lịch.** Đây là lỗi ngủ, không phải lỗi
+vô hại: sửa lúc chưa ai dính là lúc rẻ nhất, và cũng là lúc **an toàn nhất để sửa giữa vòng
+nghiệm thu** — vì không con số nào trên màn hình người test nhúc nhích.
