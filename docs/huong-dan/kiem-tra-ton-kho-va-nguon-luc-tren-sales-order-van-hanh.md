@@ -178,6 +178,22 @@ phiếu mới** cho bạn xem lại.
 - Phần **đã có người lo** (đã nằm trong đơn mua hoặc phiếu yêu cầu khác) được trừ ra,
   để không đặt trùng.
 
+### Bốn câu chỉ hiện khi bấm nút này
+
+Khác với khối *Cần để ý* ở mục 7 — bốn câu dưới đây **chỉ xuất hiện lúc bấm nút**, không có
+trên màn hình kiểm tra.
+
+| Câu | Nghĩa | Nên làm gì |
+|---|---|---|
+| *"…: có ở cả Bảng 1 và Bảng 2 nên số cần mua là **tổng hai dòng Thiếu**…"* | Mặt hàng vừa bán thẳng trên đơn, vừa là vật tư của mặt hàng khác | Kiểm lại số trước khi gửi. Phần tồn đang có **đã được trừ ở cả hai bảng**, nên cộng thẳng có thể xin dôi ra |
+| *"N mã không có trong danh mục hoặc thiếu đơn vị tính, **đã bỏ khỏi phiếu**: …"* | Những mã đó **không** vào phiếu | Khai lại mặt hàng cho đủ đơn vị tính rồi bấm lại, nếu thật sự cần mua |
+| *"…đã xin rồi: … Kiểm lại trước khi gửi để khỏi mua trùng"* | **Chính đơn này** đã từng sinh phiếu yêu cầu | Mở phiếu cũ ra xem trước; bấm nữa là ra thêm phiếu cho cùng phần thiếu |
+| *"**Toàn nhà máy** đang có phiếu yêu cầu ĐÃ DUYỆT mà chưa thành đơn mua: …"* | Xem ghi chú đỏ bên dưới | Phần đó sắp về thì **giục mua** thay vì xin thêm |
+
+> 🔴 **Câu cuối dễ hiểu nhầm nhất — đọc kỹ.** Nó nói về **toàn nhà máy**, không phải đơn đang
+> mở, và **số đó KHÔNG được trừ vào phiếu đang tạo**. Rất dễ tưởng phần đó đã được tính hộ rồi
+> nên bớt đi — bớt là thiếu hàng thật. Câu trên màn hình có ghi rõ vế này, đừng đọc lướt qua nó.
+
 ---
 
 ## 7. Khối "Cần để ý"
@@ -190,6 +206,13 @@ Khối vàng dưới Bảng 3 nêu tên **từng mặt hàng** có vấn đề v
 | *"Phương pháp bổ sung đang là … nên coi như phải mua, nhưng mặt hàng này CÓ định mức"* | Khai báo mâu thuẫn: có định mức nhưng không khai là hàng sản xuất | Sửa *Phương pháp bổ sung* trên mặt hàng. **Không sửa thì hệ thống đi mua chính nó thay vì mua nguyên vật liệu** |
 | *"định mức lặp vòng (mặt hàng này nằm trong định mức của chính nó), dừng bóc tại đây"* | Định mức bị khai vòng — A cần B, B lại cần A | Sửa định mức. Câu này **nêu đủ tên mọi mặt hàng trong vòng** để biết sửa ở đâu |
 | *"định mức lồng quá N cấp, dừng bóc"* | Cây định mức quá sâu | Kiểm lại dữ liệu định mức của những mã được nêu tên |
+
+Hai câu nữa **không nói về khai báo định mức mà nói về con số**, ít gặp hơn nhưng quan trọng hơn:
+
+| Câu | Nghĩa | Nên làm gì |
+|---|---|---|
+| *"…: bảng chi tiết cộng ra X nhưng phần đang trừ là Y — báo đội kỹ thuật, **đừng dựa vào bảng bung ra** của mã này"* | Bảng bung ra (mục 5) và con số đang trừ **không khớp nhau** | **Đừng dùng bảng bung ra của mã đó** để đi thương lượng nhả hàng, và báo kỹ thuật. Con số *Tồn khả dụng* ở bảng chính vẫn dùng được |
+| *"…: đơn khác đang ghim A nhưng kho chỉ có B — chỉ trừ được B. Phần C còn lại **KHÔNG cộng vào đơn này**"* | Các đơn khác giữ nhiều hơn số thật có trong kho | Không phải lỗi. Đây là lý do *Tồn khả dụng* hiện **0** chứ không hiện số âm, và vì sao dòng **Cộng** ở bảng bung ra có thể lớn hơn phần đã trừ |
 
 ---
 
@@ -216,6 +239,10 @@ nhận ngoài hệ thống thì nó không thấy.
 
 **Đơn chưa lưu có bấm được không?**
 Được.
+
+**Màn hình báo "toàn nhà máy đang có phiếu yêu cầu đã duyệt…" — vậy tôi bớt số đi à?**
+**Không.** Câu đó nói về **cả nhà máy**, và số đó **chưa được trừ** vào phiếu bạn đang tạo. Bớt
+đi là xin thiếu. Nó chỉ để bạn cân nhắc **giục mua** phần đang chờ thay vì xin thêm.
 
 **Muốn giữ hàng thật sự cho đơn này thì làm sao?**
 Tích ô *Ghim Tồn Khả Dụng* trong mục Items, hoặc sửa cột *Số Lượng Giữ Chỗ* trên từng
