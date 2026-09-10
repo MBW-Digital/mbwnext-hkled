@@ -376,9 +376,44 @@ hoàn tác lại là một lượt ghi nữa không ai yêu cầu. Muốn trả 
 ⚠ Còn **6 mã khác đang lệch** (`Test BTP 1`, `Test Gia Công`, `Test NVL 1`, `Test NVL 2`,
 `Test Tp`, `Thành phẩm 1`) — **cố ý không đụng**, để anh Thắng tự bấm trong vòng test của anh ấy.
 
-## Vẫn chưa chạy
+## TC-NGUON-08 · 10 — xem tạm rồi bấm ghi, 10/09 lúc 09:49
 
-| ID | Vì sao |
+Ca này là **phép thử sắc nhất của cả tính năng**, vì nó phân biệt được đúng chỗ dễ sai nhất:
+`Test NVL 1` đang áp dụng **20.000**; theo *đơn mua* ra **35.000**, theo *tồn kho* ra **20.000**.
+Nếu nút Cập nhật lấy nguồn từ **cài đặt** thay vì từ **màn hình đang xem**, nó sẽ ghi **35.000** —
+và không có gì trên giao diện cho thấy điều đó.
+
+| Kiểm | Đo được | KQ |
+|---|---|---|
+| Đổi ô *Giá vốn mặt hàng mua* → bảng tính lại | giá vốn `10.000 → 6.000`, niêm yết `35.000 → 20.000` | ✅ |
+| Chip báo đang xem tạm | *"Giá vốn mặt hàng mua **Giá vốn tồn kho trung bình** — đang xem tạm"*, đổi màu | ✅ |
+| Thẻ *Đang lệch* tính lại | `1 → 0` (vì 20.000 = 20.000) | ✅ |
+| 🔴 Hộp thoại cảnh báo trước khi ghi | *"Bảng đang xem **TẠM** theo Giá vốn tồn kho trung bình, khác cài đặt chung (Đơn mua gần nhất). Giá đẩy sang sales sẽ là giá của cách đang xem."* | ✅ |
+| 🔴 **Ghi theo nguồn ĐANG XEM, không theo cài đặt** | báo *"Không có gì phải đổi — các mặt hàng đã chọn đang đúng giá"*; CSDL: `Test NVL 1` vẫn **20.000**, `modified` vẫn **09/09 16:49** — **không có lượt ghi nào** | ✅ |
+
+📌 Nếu truyền nguồn sai thì kết quả đã là **35.000** và `modified` nhảy sang hôm nay. Cả hai đều
+không xảy ra.
+
+## TC-NGUON-11 — file Excel: server đạt, bước lưu về máy chưa xác nhận
+
+Hộp thoại *Xuất bảng giá niêm yết* mở đúng: nêu 3 cột, giải thích **công thức sống**, ô *Tỷ lệ
+chiết khấu* điền sẵn **68%**. Bấm **Xuất file** → mở tab tải rồi tự đóng.
+
+**Nội dung file thì đã kiểm bằng cách gọi thẳng hàm xuất và mở workbook ra đọc:**
+
+| Ô | Giá trị |
 |---|---|
-| TC-NGUON-10 | bấm Cập nhật khi **đang xem tạm** theo nguồn giá vốn khác cài đặt |
-| TC-NGUON-11 | tải file Excel về máy |
+| A1 · B1 | `Tỷ lệ chiết khấu` · **0,68** |
+| A3 · B3 · C3 | `Mã mặt hàng` · `Giá niêm yết` · `Giá bán` |
+| A4 · B4 · C4 | `Test NVL 1` · **20000** · **`=B4*(1-$B$1)`** |
+
+Ba điều đáng nói: ô C4 chứa **công thức thật**, không phải số đã tính sẵn (mở bằng `data_only=True`
+ra `None`, đúng dấu hiệu của công thức chưa được Excel tính) — nên sửa ô B1 là cả cột đổi theo,
+đúng *"công thức sống"* anh Thắng chốt. Đúng **3 cột**. Và **20000** chứ không phải 35000 — file
+mang giá của **nguồn đang xem tạm**, giống nút Cập nhật.
+
+⚠ **Chỗ chưa xác nhận được:** sau khi bấm *Xuất file*, **không có file nào xuất hiện** trong
+`~/Downloads` hay bất kỳ đâu trong thư mục nhà (quét mọi file tạo trong 15 phút). Chrome không khai
+thư mục tải riêng. Tôi **không kết luận** đây là lỗi tính năng — hàm xuất trả về đủ
+`filename` / `type: binary` / **5.260 byte** hợp lệ, đúng cơ chế tải của Frappe; nhiều khả năng do
+cấu hình tải của trình duyệt đang tự động hoá. **Người test thật cần bấm và xác nhận file về máy.**
