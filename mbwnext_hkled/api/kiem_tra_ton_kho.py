@@ -660,7 +660,22 @@ def _phut_giao_nhau(a1, a2, b1, b2):
 def _nang_luc():
 	"""{tên nhân sự: hệ số năng lực} — chỉ nhân sự đang làm việc.
 
-	Không khai Năng Lực thì coi là 100%: đó là mức "bình thường", đoán thấp hơn sẽ báo thiếu ảo.
+	**Chưa khai** Năng Lực thì coi là 100%: đó là mức "bình thường", đoán thấp hơn sẽ báo thiếu ảo.
+
+	🔴 **Khai đúng bằng 0 KHÁC với chưa khai — đừng gộp lại.** Bản trước viết
+	`flt(...) or 100.0`; `flt(0)` là `0`, mà `0` là *falsy*, nên nó rơi vào nhánh `or` và **hệ số 0
+	thành 100%**. Hai giá trị nói hai điều ngược nhau lại cho cùng một kết quả:
+
+	  - ô trống  ⇒ *"chưa ai khai"*        ⇒ coi là 100%, đúng.
+	  - ô ghi 0  ⇒ *"người này không tham gia sản xuất"* ⇒ phải là **0**, nhưng lại thành 100%.
+
+	Hậu quả không dừng ở một ô sai: hệ số này nhân vào **toàn bộ vế cung của Bảng 3** và mọi phép
+	tính ngày giao. Một người khai 0 mà được tính đủ năng lực là **cộng thêm năng lực ảo** cho cả
+	nhà máy — Bảng 3 báo *Đủ nhân lực* trong khi thực tế không đủ, đúng loại rủi ro R2 mà chính
+	hàm `nguon_luc_nhan_su()` bên dưới sinh ra để chống.
+
+	📌 Đo 10/09/2026 trên cổng 8012: nhân sự `Thắng` khai `0` và được `_nang_luc` trả về `1.0`.
+	  Đây là ca thật, không phải giả định.
 	"""
 	rows = frappe.get_all(
 		"Employee",
@@ -669,7 +684,9 @@ def _nang_luc():
 	)
 	ra = {}
 	for r in rows:
-		he_so = flt(r.get("custom_performance_factor_")) or 100.0
+		gt = r.get("custom_performance_factor_")
+		# ⚠ Phân biệt bằng `None`/rỗng, KHÔNG bằng tính falsy — xem docstring.
+		he_so = 100.0 if gt is None or gt == "" else flt(gt)
 		# Employee Schedule/Allocation nối bằng `employee_name`, không phải mã nhân sự.
 		ra[r.get("employee_name") or r["name"]] = he_so / 100.0
 	return ra
