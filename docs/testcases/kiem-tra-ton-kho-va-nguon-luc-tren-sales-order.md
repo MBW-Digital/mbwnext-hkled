@@ -538,3 +538,50 @@ xin gì chưa"*. Trước đây chỉ có câu [1].
 trừ luôn phiếu đang chờ, hay **(B)** giữ nguyên + cảnh báo. Nếu anh ấy chọn **(A)** thì Bảng 2
 cũng phải trừ theo, kẻo hai màn hình nói ngược nhau — lúc đó câu [2] này thành thừa. Thêm bây giờ
 vì nó **đúng dưới cả hai lựa chọn** và không đảo chốt nào.
+
+---
+
+# Sửa 10/09/2026 — "định mức lặp vòng" báo nhầm, và tính sai thứ cần mua
+
+> **Phát hiện:** phiên `cozy-dev-10` bắt được khi viết HDSD; tôi đo lại rồi mới sửa.
+> **Đơn dính:** `SO-26-00009` — chính đơn anh Thắng dùng để test.
+
+## Lỗi
+
+Đơn có hai dòng: `Bán thành phẩm 1` (5) và `Thành phẩm 1` (6). Mà `Bán thành phẩm 1` **cũng là
+con** trong định mức của `Thành phẩm 1`. Nó bị bóc ở tầng 0 (vì là dòng trên đơn) rồi gặp lại ở
+tầng 1 (vì là con) — tập `da_tham` coi đó là **lặp vòng**.
+
+**Không có vòng nào.** Đã kiểm từng định mức: không cái nào chứa chính nó.
+
+| Hậu quả | Nặng dần |
+|---|---|
+| Câu *"định mức lặp vòng"* | sai — đây là cùng một mã ở hai tầng, không phải chu trình |
+| Câu *"Phương pháp bổ sung đang là **Sản xuất** nên coi như phải mua"* | tự mâu thuẫn, và bảo người dùng đi sửa một khai báo **vốn đã đúng** |
+| 🔴 **Tính sai** | 6 `Bán thành phẩm 1` sinh từ `Thành phẩm 1` rơi vào *cần mua* thay vì bóc xuống NVL |
+
+## Sửa
+
+Thay `da_tham` (*"đã bóc ở tầng trước"*) bằng `_ma_trong_vong()` (*"nằm trên đường đi của chính
+nó"*). Chốt chặn vòng vô hạn vốn **không nằm ở đây** mà ở `CAP_BOC_TOI_DA`; `da_tham` chỉ là chốt
+thứ hai, và nó thô đến mức chặn nhầm cây hợp lệ.
+
+| ID | Kiểm | Đo được | KQ |
+|---|---|---|---|
+| TC-VONG-01 | Cây hợp lệ 2 tầng không bị coi là vòng | `_ma_trong_vong` trên cây thật → **rỗng** | ✅ |
+| TC-VONG-02 | Vòng trực tiếp `A→A` | `{A}` | ✅ |
+| TC-VONG-03 | Vòng 2 bước `A→B→A` | `{A, B}` — **đủ cả hai mã**, không chỉ mã vào cửa | ✅ |
+| TC-VONG-04 | Vòng 3 bước `A→B→C→A` | `{A, B, C}` | ✅ |
+| TC-VONG-05 | Kim cương `A→B→D`, `A→C→D` — KHÔNG vòng | rỗng | ✅ |
+| TC-VONG-06 | Vòng ở nhánh con `A→B→C→B` | `{B, C}` — không lôi `A` vào | ✅ |
+| TC-VONG-07 | Cùng mã ở hai tầng, KHÔNG vòng | rỗng | ✅ |
+| TC-VONG-08 | `SO-26-00009` sau khi sửa | **0 cảnh báo**; Bảng 2 chỉ còn NVL: `11 · 22 · 18` | ✅ |
+| TC-VONG-09 | Không đơn nào nổ lỗi | **32/32 đơn** `docstatus < 2` chạy sạch | ✅ |
+
+⚠ **TC-VONG-03 bắt được thiếu sót trong chính bản sửa đầu của tôi:** hàm chỉ đánh dấu **một** mã
+của vòng (mã vừa gặp lại), trong khi docstring nói *"tập mã nằm trong chu trình"*. Chặn thì một mã
+là đủ — cắt ở đâu vòng cũng đứt — nhưng **câu cảnh báo sẽ nêu thiếu**, và người đi sửa không biết
+phải sửa định mức nào. Đã sửa để gom đủ mọi mã trên vòng.
+
+📌 Số cộng lại đúng cả hai đường: 5 `Bán thành phẩm 1` từ dòng đơn + 6 sinh từ `Thành phẩm 1` = 11
+⇒ `NVL 1` 11, `NVL 2` 22; và 6 `Bán thành phẩm 2` ⇒ `NVL 3` 18.

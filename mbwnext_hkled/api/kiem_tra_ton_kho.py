@@ -191,6 +191,62 @@ def _bom_mac_dinh(ma_hang):
 	return {r["item"]: r["name"] for r in rows}
 
 
+def _ma_trong_vong(goc):
+	"""Tập mã **thật sự nằm trong một chu trình định mức**, đi từ `goc` xuống.
+
+	🔴 Vì sao phải có hàm này thay vì dùng "đã bóc ở tầng trước". Trước 10/09/2026 vòng bóc dùng
+	một tập `da_tham` gom mọi mã đã bóc ở các tầng trên, rồi coi mã gặp lại là *"định mức lặp
+	vòng"*. Hai chuyện đó **khác nhau**:
+
+	  - *nằm trên đường đi của chính nó* — A cần B, B cần A. Đây là vòng thật, bóc tiếp là lặp
+	    vô hạn, phải dừng.
+	  - *cùng một mã xuất hiện ở hai tầng* — đơn bán có cả `Thành phẩm 1` lẫn `Bán thành phẩm 1`,
+	    mà `Bán thành phẩm 1` cũng là con của `Thành phẩm 1`. **Hoàn toàn hợp lệ**, và là chuyện
+	    rất thường: khách bán kèm thành phẩm với bán thành phẩm nằm trong nó.
+
+	Gộp hai ca làm một gây ra ba hậu quả, đo được trên `SO-26-00009` ngày 10/09:
+	  ① báo *"định mức lặp vòng"* trong khi **không BOM nào chứa chính nó**;
+	  ② báo *"Phương pháp bổ sung đang là Sản xuất nên coi như phải mua"* — câu tự mâu thuẫn, và
+	     nó bảo người dùng đi sửa một khai báo **vốn đã đúng**;
+	  ③ nặng nhất: **tính sai**. 6 `Bán thành phẩm 1` sinh từ `Thành phẩm 1` rơi vào *cần mua*
+	     thay vì bóc tiếp xuống nguyên vật liệu — sai đúng thứ người mua hàng cần biết.
+
+	⚠ Chốt chặn vòng vô hạn **không nằm ở đây** mà ở `CAP_BOC_TOI_DA`. Hàm này chỉ để **gọi đúng
+	tên** cái nó chặn, và để không chặn nhầm cây hợp lệ.
+	"""
+	con_cua, xong, trong_vong = {}, set(), set()
+
+	def con(m):
+		if m not in con_cua:
+			ten = _bom_mac_dinh([m]).get(m)
+			con_cua[m] = [c for c, _sl in _dong_bom(ten)] if ten else []
+		return con_cua[m]
+
+	def di(m, duong, tren_duong):
+		if m in tren_duong:
+			# ⚠ Đánh dấu MỌI mã trên vòng, không chỉ mã vừa gặp lại. Chặn thì một mã là đủ (cắt
+			#   ở đâu vòng cũng đứt), nhưng câu cảnh báo phải nêu đúng những mã đang tạo ra vòng —
+			#   nêu mỗi một cái thì người đi sửa không biết phải sửa định mức nào.
+			trong_vong.update(duong[duong.index(m):])
+			return
+		if m in xong:
+			return
+		duong.append(m)
+		tren_duong.add(m)
+		for c in con(m):
+			di(c, duong, tren_duong)
+		duong.pop()
+		tren_duong.discard(m)
+		# ⚠ Chỉ đánh "xong" khi mã KHÔNG nằm trong vòng: mã trong vòng còn phải gặp lại từ nhánh
+		#   khác để gom đủ các mã còn lại của vòng đó.
+		if m not in trong_vong:
+			xong.add(m)
+
+	for m in goc:
+		di(m, [], set())
+	return trong_vong
+
+
 def _dong_bom(ten_bom):
 	"""[(mã NVL, số lượng cho 1 đơn vị thành phẩm)] của một BOM."""
 	bom = frappe.get_cached_doc("BOM", ten_bom)
@@ -237,8 +293,9 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 	can_mua = {}
 	nhu_cau_la = {}
 	be = {}
-	da_tham = set()
 	tang = {m: flt(sl) for m, sl in (nhu_cau or {}).items() if flt(sl) > 0}
+	# Dò vòng MỘT LẦN trên cây đi từ nhu cầu gốc, trước khi bóc — xem `_ma_trong_vong()`.
+	trong_vong = _ma_trong_vong(list(tang))
 
 	for _cap in range(CAP_BOC_TOI_DA):
 		if not tang:
@@ -258,7 +315,7 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 				fields=["name", "custom_replenishment_method"],
 			)
 		}
-		che_bien = [m for m in tang if pp.get(m) in ("Sản xuất", "Gia công") and m not in da_tham]
+		che_bien = [m for m in tang if pp.get(m) in ("Sản xuất", "Gia công") and m not in trong_vong]
 		bom_cua = _bom_mac_dinh(che_bien)
 		bom_cua_la = _bom_mac_dinh([m for m in tang if m not in che_bien])
 
@@ -274,15 +331,18 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 				# Là LÁ: chính nó là thứ phải mua. Ghi cả nhu cầu gộp lẫn phần còn thiếu.
 				if m in che_bien and not ten_bom:
 					canh_bao.append(f"{m}: chưa có định mức, tạm coi như phải mua")
-				elif m not in che_bien and m in bom_cua_la:
+				elif m not in che_bien and m in bom_cua_la and m not in trong_vong:
 					# Dấu hiệu khách quên khai Phương pháp bổ sung — hệ thống sẽ đi MUA CHÍNH NÓ
 					# thay vì mua nguyên vật liệu, sai hoàn toàn mà không báo gì.
 					canh_bao.append(
 						f"{m}: Phương pháp bổ sung đang là {pp.get(m) or 'trống'} nên coi như phải mua, "
 						f"nhưng mặt hàng này CÓ định mức ({bom_cua_la[m]}) — kiểm lại xem có phải hàng sản xuất"
 					)
-				if m in da_tham:
-					canh_bao.append(f"{m}: định mức lặp vòng, dừng bóc tại đây")
+				if m in trong_vong:
+					canh_bao.append(
+						f"{m}: định mức lặp vòng (mặt hàng này nằm trong định mức của chính nó), "
+						f"dừng bóc tại đây"
+					)
 				nhu_cau_la[m] = flt(nhu_cau_la.get(m, 0)) + sl
 				if thieu > 1e-9:
 					can_mua[m] = flt(can_mua.get(m, 0)) + thieu
@@ -294,7 +354,6 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 			for nvl, dinh_muc in _dong_bom(ten_bom):
 				con[nvl] = con.get(nvl, 0) + dinh_muc * thieu
 
-		da_tham.update(che_bien)
 		tang = con
 	else:
 		if tang:
