@@ -116,7 +116,7 @@ Code: `api/nhu_cau_vat_tu.py` · Màn hình: `page/tinh_nhu_cau_vat_tu/`
 | TC-PERM-01 | Đã đo vai trò nào mở được (xem `TC-QUYEN`), nhưng **ai NÊN được mở** thì đang chờ anh Thắng |
 | TC-ISO-01 | Chưa kiểm trên site không cài app khách |
 
-**Tổng: 98 ca · 97 Pass · 1 chưa chạy** (`TC-EDGE-06`).
+**Tổng: 113 ca · 112 Pass · 1 chưa chạy** (`TC-EDGE-06`).
 
 > Đếm bằng `grep -c '^| TC-.*| Pass |'`. Hai cách đếm SAI đã thử: `grep -c '| Pass |'` đếm cả dòng
 > ghi chú này (dòng dặn cách đếm lại chứa chính chuỗi bị đếm), và `grep -c '^| TC-'` đếm cả bảng
@@ -349,3 +349,93 @@ người có quyền, hoặc — tệ hơn — mở nút cho người không có
 
 ➜ **Đã hỏi anh Thắng:** quản lý sản xuất có được lập đơn mua từ màn hình này không? Nếu **có** thì
 việc cần làm là cấp quyền `Purchase Order` cho vai trò đó, **không phải** gỡ chốt chặn này.
+
+---
+
+## TC-UI2 — bấm lại toàn bộ giao diện trên dữ liệu của ngày 09/09
+
+Chạy trên cổng 8012, kỳ **mặc định** (bắt đầu hôm nay) — tức đúng thứ người dùng thấy khi mở màn
+hình lần đầu, không phải một khoảng ngày chọn riêng cho vừa ca test.
+
+Nền lúc đo **09/09 ~09:0x**: `Purchase Order` 3 · `Material Request` 10 · `Sales Order` 40 ·
+`Work Order` 44 · `Production Plan` 15.
+
+| Mã | Ca | Mong đợi | Thực tế | KQ |
+|---|---|---|---|---|
+| TC-UI2-01 | Kỳ mặc định có dữ liệu | Bảng có dòng | 3 vật tư · tổng 62 · 2 cảnh báo | Pass |
+| TC-UI2-02 | Ngày cần hàng là **hôm nay** → **không** nhãn *đã trễ* | Không nhãn | không | Pass |
+| TC-UI2-03 | Tích ô đầu bảng | Chọn hết | 3/3 · tổng **62** = khớp thẻ *Tổng còn phải mua* | Pass |
+| TC-UI2-04 | Sửa một dòng về **0** | Tự bỏ tích dòng đó | còn 2/3 · tổng 56 | Pass |
+| TC-UI2-05 | Sửa số lượng đặt 44 → **50** | Đếm lại theo số mới | tổng 62 | Pass |
+| TC-UI2-06 | Bấm *Tạo đơn mua* khi **chưa chọn** nhà cung cấp | Chặn | *"Giá trị khuyết bắt buộc: Nhà cung cấp"* | Pass |
+| TC-UI2-07 | Bấm tên trong bảng gợi ý | Điền vào ô nhà cung cấp | điền `NCC A` | Pass |
+| TC-UI2-08 | Tạo đơn thật | 1 đơn **nháp**, 2 dòng | `PO-26-00007`, `docstatus = 0` | Pass |
+| TC-UI2-09 | Đơn dùng **số người dùng chốt** | 50 và 12 | 50 và 12 | Pass |
+| TC-UI2-10 | Dòng cho về 0 **không** vào đơn | Vắng mặt | không có `NVL 3` | Pass |
+| TC-UI2-11 | 🆕 Mã **chưa khai giá mua** | Nói ra, không im | *"1 dòng chưa có đơn giá…: NVL 1. Điền giá trước khi duyệt."* · `rate = 0` | Pass |
+| TC-UI2-12 | Dòng đã lập đơn bị khoá + đánh dấu | Mờ, ghi số đơn | *"đã vào PO-26-00007"* | Pass |
+| TC-UI2-13 | Tính lại: cảnh báo đơn nháp xuất hiện | 2 → 3 cảnh báo | *"…CÒN NHÁP chứa: NVL 1 (12), NVL 2 (50)"* | Pass |
+| TC-UI2-14 | Tính lại: số thiếu **KHÔNG** giảm | Giữ nguyên | 44 · 12 · 6 y nguyên | Pass |
+| TC-UI2-15 | Dọn sạch sau test | 5 bảng về đúng số cũ | 3·10·40·44·15, không lệch bảng nào | Pass |
+
+### 🆕 `TC-UI2-11` — nhánh chờ từ hôm qua, nay chạy thật
+
+Ca *"mã chưa khai giá mua"* hôm 08/09 **không chạm tới được**: rổ hàng hôm đó mã nào cũng có lịch
+sử mua nên `rate` luôn > 0, và nhánh cảnh báo nằm im. Hôm nay `NVL 1` lọt vào rổ và nó nổ đúng.
+
+🔴 **Đây là bằng chứng thật cho câu đang hỏi anh Thắng** (đơn mua để **nháp** hay **tự duyệt**):
+đơn tạo ra có một dòng **giá 0 đồng**. Nếu chọn *tự duyệt* thì hệ thống sẽ **tự duyệt một đơn mua
+0 đồng** với nhà cung cấp. Trước hôm nay chỗ này mới chỉ là suy luận từ mã nguồn; giờ có `rate = 0`
+thật kèm câu cảnh báo thật.
+
+⚠ Vì sao đáng ghi thành ca riêng thay vì gộp: nó nhắc rằng **rổ hàng của lần test quyết định nhánh
+nào được chạy**. Hai lượt bấm giống hệt nhau về thao tác, khác nhau về dữ liệu, và chỉ một lượt
+chạm tới nhánh này.
+
+### ⚠ Số nền đổi từng ngày — so sánh phải kèm giờ đo
+
+`Work Order` trên 8012: **42 → 43 → 44** trong hai ngày. `Purchase Order` cũng đổi khi có ai lập
+đơn. Nên mọi câu *"trước/sau không lệch"* chỉ có nghĩa khi hai lần đếm **cùng một buổi** — đừng lấy
+số nền của hôm qua làm chuẩn cho hôm nay.
+## 🔒 Anh Thắng chốt ba câu — 09/09/2026 09:20
+
+Nguyên văn (`69lk5kd75e` trên PM-FEAT-00030):
+
+> *1. đơn tạo ra ở dạng nháp em nhé, **vì sau này họ cài luồng duyệt trên đơn nữa***
+> *2. người mua hàng được lập em nhé, vì chức năng này phục vụ cho phòng mua hàng*
+> *3. hạn là 11/09 em nhé*
+
+**Không phải sửa dòng code nào — hành vi đang chạy đã khớp cả ba.** Đo lại sau khi có chốt:
+
+| Chốt | Code hiện tại | Khớp |
+|---|---|---|
+| Đơn ra dạng **nháp** | `tao_don_mua` chỉ `insert()`, **không** `submit()` | ✅ |
+| Chỉ **người mua hàng** được lập | chặn bằng `has_permission("Purchase Order", "create")`; vai trò tạo được đơn = `Purchase Manager` · `Purchase User` | ✅ |
+| Hạn 11/09 | — | ✅ đã cập nhật trên PM |
+
+### 🔑 Lý do của anh Thắng MẠNH HƠN lý do của em — ghi lại kẻo người sau đảo ngược
+
+Em lập luận giữ nháp vì **đơn giá ra 0 đồng** khi mã chưa khai giá (xem `TC-UI2-11`, có ca thật).
+Anh Thắng cho một lý do khác và bền hơn: ***"vì sau này họ cài luồng duyệt trên đơn nữa"***.
+
+Khác biệt quan trọng ở chỗ **lý do của em sẽ hết hạn, lý do của anh ấy thì không**. Ngày nào khách
+khai đủ giá cho mọi mặt hàng, người đọc code sẽ nghĩ *"hết đơn 0 đồng rồi, cho tự duyệt cho nhanh"*
+— và vẫn **sai**, vì tự duyệt sẽ nhảy qua luồng duyệt mà khách sắp dựng.
+
+➜ **Đừng đổi `tao_don_mua` thành tự duyệt, kể cả khi mọi mặt hàng đã có giá.** Muốn đổi thì phải
+hỏi lại anh Thắng, vì lý do thật nằm ở luồng duyệt chứ không ở giá.
+
+### ⚠ Một chỗ anh Thắng KHÔNG nói tới — cố ý để nguyên
+
+Anh ấy nói *"người mua hàng **được lập**"*, không nói ai **được mở** màn hình. Hiện *Quản lý sản
+xuất* vẫn **xem được** bảng nhưng **không lập được đơn** (có câu giải thích ngay khi vẽ lưới, xem
+nhóm `TC-QUYEN`). Hành vi này khớp đúng lời anh ấy, nên **giữ nguyên**, không tự thắt thêm.
+
+Nếu sau này khách muốn giấu hẳn màn hình khỏi *Quản lý sản xuất* thì đó là một chốt mới, sửa ở
+`page/tinh_nhu_cau_vat_tu.json`.
+
+### Còn lại đúng một việc để đóng `testcase_passed`
+
+**Người bên khách bấm thử.** Bộ test hiện **113 ca · 112 Pass**, nhưng toàn bộ do bên làm tự chạy.
+`testcase_passed` là cổng của **người test**, không phải của tác giả — đã nêu rõ với anh Thắng
+trong `r9ehtjv95m`, anh ấy chưa trả lời phần này.
