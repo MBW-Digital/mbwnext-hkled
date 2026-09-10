@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\": \"hkled_h1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>HKLed</b></span>\", \"col\": 12}}, {\"id\": \"hkled_p1\", \"type\": \"paragraph\", \"data\": {\"text\": \"Sản xuất đèn LED — định mức BOM theo biến thể, bậc thợ và lịch sản xuất.\", \"col\": 12}}, {\"id\": \"hkled_sc0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tình Hình Làm Việc\", \"col\": 3}}, {\"id\": \"hkled_sc1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lệnh Sản Xuất\", \"col\": 3}}, {\"id\": \"hkled_sc2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lịch Làm Việc\", \"col\": 3}}, {\"id\": \"hkled_sc3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Kế Hoạch Sản Xuất\", \"col\": 3}}, {\"id\": \"hkled_sc4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Mẫu BOM\", \"col\": 3}}, {\"id\": \"hkled_sp1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hkled_card0\", \"type\": \"card\", \"data\": {\"card_name\": \"Lịch Sản Xuất\", \"col\": 4}}, {\"id\": \"hkled_card1\", \"type\": \"card\", \"data\": {\"card_name\": \"Định Mức & BOM\", \"col\": 4}}, {\"id\": \"hkled_card2\", \"type\": \"card\", \"data\": {\"card_name\": \"Sản Xuất\", \"col\": 4}}, {\"id\": \"hkled_card3\", \"type\": \"card\", \"data\": {\"card_name\": \"Nhân Công\", \"col\": 4}}]",
+ "content": "[{\"id\": \"hkled_h1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>HKLed</b></span>\", \"col\": 12}}, {\"id\": \"hkled_p1\", \"type\": \"paragraph\", \"data\": {\"text\": \"Sản xuất đèn LED — định mức BOM theo biến thể, bậc thợ và lịch sản xuất.\", \"col\": 12}}, {\"id\": \"hkled_sc0\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tình Hình Làm Việc\", \"col\": 3}}, {\"id\": \"hkled_sc1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lệnh Sản Xuất\", \"col\": 3}}, {\"id\": \"hkled_sc2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Lịch Làm Việc\", \"col\": 3}}, {\"id\": \"hkled_sc3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Kế Hoạch Sản Xuất\", \"col\": 3}}, {\"id\": \"hkled_sc4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Mẫu BOM\", \"col\": 3}}, {\"id\": \"sc-bang-gia-niem-yet\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Bảng Giá Niêm Yết\", \"col\": 3}}, {\"id\": \"sc-tinh-nhu-cau-vat-tu\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Tính Nhu Cầu Vật Tư\", \"col\": 3}}, {\"id\": \"hkled_sp1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"hkled_card0\", \"type\": \"card\", \"data\": {\"card_name\": \"Lịch Sản Xuất\", \"col\": 4}}, {\"id\": \"hkled_card1\", \"type\": \"card\", \"data\": {\"card_name\": \"Định Mức & BOM\", \"col\": 4}}, {\"id\": \"hkled_card2\", \"type\": \"card\", \"data\": {\"card_name\": \"Sản Xuất\", \"col\": 4}}, {\"id\": \"hkled_card3\", \"type\": \"card\", \"data\": {\"card_name\": \"Nhân Công\", \"col\": 4}}, {\"id\": \"card-gia-niem-yet\", \"type\": \"card\", \"data\": {\"card_name\": \"Giá Niêm Yết\", \"col\": 4}}]",
  "creation": "2026-08-08 15:00:00.000000",
  "custom_blocks": [],
  "docstatus": 0,
@@ -113,7 +113,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Sản Xuất",
-   "link_count": 3,
+   "link_count": 4,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -150,6 +150,16 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Tính Nhu Cầu Vật Tư",
+   "link_count": 0,
+   "link_to": "tinh-nhu-cau-vat-tu",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Nhân Công",
    "link_count": 2,
    "onboard": 0,
@@ -174,9 +184,47 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Giá Niêm Yết",
+   "link_count": 3,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Bảng Giá Niêm Yết",
+   "link_count": 0,
+   "link_to": "bang-gia-niem-yet",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cài Đặt Giá Niêm Yết",
+   "link_count": 0,
+   "link_to": "HKLed Pricing Setting",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Giá Mặt Hàng",
+   "link_count": 0,
+   "link_to": "Item Price",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2026-08-08 15:00:00.000000",
+ "modified": "2026-09-10 08:59:26.322041",
  "modified_by": "Administrator",
  "module": "MBWNext HKLed",
  "name": "HKLed",
@@ -227,6 +275,22 @@
    "link_to": "BOM Template",
    "stats_filter": "[]",
    "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Bảng Giá Niêm Yết",
+   "link_to": "bang-gia-niem-yet",
+   "stats_filter": "[]",
+   "type": "Page"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "label": "Tính Nhu Cầu Vật Tư",
+   "link_to": "tinh-nhu-cau-vat-tu",
+   "stats_filter": "[]",
+   "type": "Page"
   }
  ],
  "title": "HKLed"
