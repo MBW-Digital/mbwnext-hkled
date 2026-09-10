@@ -81,6 +81,21 @@ tại.**
 bench --site hkled.mbwnext.com list-apps
 ```
 
+### Không có shell thì hỏi bằng HTTP
+
+Khi khách tự vận hành máy chủ, hoặc mình chỉ có trình duyệt, vẫn kiểm được **không cần shell**:
+
+```
+GET https://<site>/api/method/frappe.utils.change_log.get_versions
+```
+
+Hàm này duyệt `frappe.get_installed_apps()` — **app của SITE**, không phải app của bench, nên nó
+trả lời đúng câu đang hỏi. *(Đã đọc thân hàm ở `frappe/utils/change_log.py` để chắc, không suy từ
+tên hàm.)* Trên cổng thật nó chạy **không cần đăng nhập**. Thấy `mbwnext_localization` trong kết
+quả là cổng an toàn đã đóng.
+
+📌 Cách này do phiên `HKLed 3` tìm ra và dùng thật trong lượt cài 09/09/2026.
+
 Đối chiếu với bench thử nghiệm `cozy_dev`. Ba chỗ đã biết là **lệch**, ghi lại trước khi cài để
 sau này không chẩn đoán nhầm:
 
@@ -273,6 +288,31 @@ print("SẠCH" if not kiem_bat_bien() else kiem_bat_bien())
 Rồi kiểm bằng mắt: mở một Đơn Bán đã duyệt có tích **Ghim Tồn Khả Dụng** → bảng **Ghim Vật Tư**
 phải có dòng; mở một Phiếu nhập mua đã duyệt → phải thấy nút **Phân Bổ**; phiếu còn nháp thì
 **không** được có nút đó.
+
+---
+
+## Đã cài thật một lần — số liệu để lần sau lên lịch
+
+**09/09/2026, `hkled.mbwnext.com`: bắt đầu 16:30:37, xong 21:01:23 — 4 giờ 31 phút.** Cùng bộ cài
+đó trên máy dev mất **2 giờ 23 phút**.
+
+⚠ **Máy chủ Press chậm gần gấp đôi máy dev.** Ai lên lịch cho lần cài sau thì lấy con số **Press**,
+đừng lấy con số đo trên máy dev — lệch một lần rưỡi là lệch cả buổi làm việc.
+
+⚠ **Chạy qua SSH trong `tmux`, đừng bấm nút *Install App* của Press.** Job của Press có ngưỡng thời
+gian, mà 4h31 thì quá dài.
+
+📌 Bẫy `required_apps` ở Bước 2 **không nổ** trong lượt cài này: `mbwnext_localization` 1.1.1.0 và
+`mbwnext_advanced_selling` 1.0.7.0 đã có sẵn trên site, nên Frappe không phải đệ quy cài
+localization. Kiểm bằng endpoint HTTP ở Bước 2.
+
+☢️ **So tên nhóm kho bằng MÃ KÝ TỰ, đừng so bằng mắt.** Tiếng Việt có hai cách mã hoá dấu (NFC và
+NFD): `"Nhóm kho lỗi"` viết kiểu tổ hợp dấu trông **y hệt** kiểu dựng sẵn, in ra không phân biệt
+được, nhưng `==` trong Python trả `False` — và bộ lọc kho sẽ **im lặng không khớp**. Kiểm bằng cách
+dump codepoint hai đầu rồi so bằng máy, đừng nhìn. *(Phiên `HKLed 3` đã kiểm trên cổng thật
+09/09: 3/3 tên khớp từng mã, cả ba đều NFC.)*
+
+---
 
 Và chạy lại bộ **TC-REGR** của các tính năng đã nghiệm thu — vì nền tảng lệch gần 20 bản minor
 so với nơi đã test (Bước 3), và lệch theo chiều **bench cao hơn site thật**.
