@@ -191,6 +191,62 @@ def _bom_mac_dinh(ma_hang):
 	return {r["item"]: r["name"] for r in rows}
 
 
+def _ma_trong_vong(goc):
+	"""Tập mã **thật sự nằm trong một chu trình định mức**, đi từ `goc` xuống.
+
+	🔴 Vì sao phải có hàm này thay vì dùng "đã bóc ở tầng trước". Trước 10/09/2026 vòng bóc dùng
+	một tập `da_tham` gom mọi mã đã bóc ở các tầng trên, rồi coi mã gặp lại là *"định mức lặp
+	vòng"*. Hai chuyện đó **khác nhau**:
+
+	  - *nằm trên đường đi của chính nó* — A cần B, B cần A. Đây là vòng thật, bóc tiếp là lặp
+	    vô hạn, phải dừng.
+	  - *cùng một mã xuất hiện ở hai tầng* — đơn bán có cả `Thành phẩm 1` lẫn `Bán thành phẩm 1`,
+	    mà `Bán thành phẩm 1` cũng là con của `Thành phẩm 1`. **Hoàn toàn hợp lệ**, và là chuyện
+	    rất thường: khách bán kèm thành phẩm với bán thành phẩm nằm trong nó.
+
+	Gộp hai ca làm một gây ra ba hậu quả, đo được trên `SO-26-00009` ngày 10/09:
+	  ① báo *"định mức lặp vòng"* trong khi **không BOM nào chứa chính nó**;
+	  ② báo *"Phương pháp bổ sung đang là Sản xuất nên coi như phải mua"* — câu tự mâu thuẫn, và
+	     nó bảo người dùng đi sửa một khai báo **vốn đã đúng**;
+	  ③ nặng nhất: **tính sai**. 6 `Bán thành phẩm 1` sinh từ `Thành phẩm 1` rơi vào *cần mua*
+	     thay vì bóc tiếp xuống nguyên vật liệu — sai đúng thứ người mua hàng cần biết.
+
+	⚠ Chốt chặn vòng vô hạn **không nằm ở đây** mà ở `CAP_BOC_TOI_DA`. Hàm này chỉ để **gọi đúng
+	tên** cái nó chặn, và để không chặn nhầm cây hợp lệ.
+	"""
+	con_cua, xong, trong_vong = {}, set(), set()
+
+	def con(m):
+		if m not in con_cua:
+			ten = _bom_mac_dinh([m]).get(m)
+			con_cua[m] = [c for c, _sl in _dong_bom(ten)] if ten else []
+		return con_cua[m]
+
+	def di(m, duong, tren_duong):
+		if m in tren_duong:
+			# ⚠ Đánh dấu MỌI mã trên vòng, không chỉ mã vừa gặp lại. Chặn thì một mã là đủ (cắt
+			#   ở đâu vòng cũng đứt), nhưng câu cảnh báo phải nêu đúng những mã đang tạo ra vòng —
+			#   nêu mỗi một cái thì người đi sửa không biết phải sửa định mức nào.
+			trong_vong.update(duong[duong.index(m):])
+			return
+		if m in xong:
+			return
+		duong.append(m)
+		tren_duong.add(m)
+		for c in con(m):
+			di(c, duong, tren_duong)
+		duong.pop()
+		tren_duong.discard(m)
+		# ⚠ Chỉ đánh "xong" khi mã KHÔNG nằm trong vòng: mã trong vòng còn phải gặp lại từ nhánh
+		#   khác để gom đủ các mã còn lại của vòng đó.
+		if m not in trong_vong:
+			xong.add(m)
+
+	for m in goc:
+		di(m, [], set())
+	return trong_vong
+
+
 def _dong_bom(ten_bom):
 	"""[(mã NVL, số lượng cho 1 đơn vị thành phẩm)] của một BOM."""
 	bom = frappe.get_cached_doc("BOM", ten_bom)
@@ -237,8 +293,9 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 	can_mua = {}
 	nhu_cau_la = {}
 	be = {}
-	da_tham = set()
 	tang = {m: flt(sl) for m, sl in (nhu_cau or {}).items() if flt(sl) > 0}
+	# Dò vòng MỘT LẦN trên cây đi từ nhu cầu gốc, trước khi bóc — xem `_ma_trong_vong()`.
+	trong_vong = _ma_trong_vong(list(tang))
 
 	for _cap in range(CAP_BOC_TOI_DA):
 		if not tang:
@@ -258,7 +315,7 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 				fields=["name", "custom_replenishment_method"],
 			)
 		}
-		che_bien = [m for m in tang if pp.get(m) in ("Sản xuất", "Gia công") and m not in da_tham]
+		che_bien = [m for m in tang if pp.get(m) in ("Sản xuất", "Gia công") and m not in trong_vong]
 		bom_cua = _bom_mac_dinh(che_bien)
 		bom_cua_la = _bom_mac_dinh([m for m in tang if m not in che_bien])
 
@@ -274,15 +331,18 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 				# Là LÁ: chính nó là thứ phải mua. Ghi cả nhu cầu gộp lẫn phần còn thiếu.
 				if m in che_bien and not ten_bom:
 					canh_bao.append(f"{m}: chưa có định mức, tạm coi như phải mua")
-				elif m not in che_bien and m in bom_cua_la:
+				elif m not in che_bien and m in bom_cua_la and m not in trong_vong:
 					# Dấu hiệu khách quên khai Phương pháp bổ sung — hệ thống sẽ đi MUA CHÍNH NÓ
 					# thay vì mua nguyên vật liệu, sai hoàn toàn mà không báo gì.
 					canh_bao.append(
 						f"{m}: Phương pháp bổ sung đang là {pp.get(m) or 'trống'} nên coi như phải mua, "
 						f"nhưng mặt hàng này CÓ định mức ({bom_cua_la[m]}) — kiểm lại xem có phải hàng sản xuất"
 					)
-				if m in da_tham:
-					canh_bao.append(f"{m}: định mức lặp vòng, dừng bóc tại đây")
+				if m in trong_vong:
+					canh_bao.append(
+						f"{m}: định mức lặp vòng (mặt hàng này nằm trong định mức của chính nó), "
+						f"dừng bóc tại đây"
+					)
 				nhu_cau_la[m] = flt(nhu_cau_la.get(m, 0)) + sl
 				if thieu > 1e-9:
 					can_mua[m] = flt(can_mua.get(m, 0)) + thieu
@@ -294,7 +354,6 @@ def boc_dinh_muc_tru_ton(nhu_cau, kho, ghim=None, canh_bao=None):
 			for nvl, dinh_muc in _dong_bom(ten_bom):
 				con[nvl] = con.get(nvl, 0) + dinh_muc * thieu
 
-		da_tham.update(che_bien)
 		tang = con
 	else:
 		if tang:
@@ -601,7 +660,22 @@ def _phut_giao_nhau(a1, a2, b1, b2):
 def _nang_luc():
 	"""{tên nhân sự: hệ số năng lực} — chỉ nhân sự đang làm việc.
 
-	Không khai Năng Lực thì coi là 100%: đó là mức "bình thường", đoán thấp hơn sẽ báo thiếu ảo.
+	**Chưa khai** Năng Lực thì coi là 100%: đó là mức "bình thường", đoán thấp hơn sẽ báo thiếu ảo.
+
+	🔴 **Khai đúng bằng 0 KHÁC với chưa khai — đừng gộp lại.** Bản trước viết
+	`flt(...) or 100.0`; `flt(0)` là `0`, mà `0` là *falsy*, nên nó rơi vào nhánh `or` và **hệ số 0
+	thành 100%**. Hai giá trị nói hai điều ngược nhau lại cho cùng một kết quả:
+
+	  - ô trống  ⇒ *"chưa ai khai"*        ⇒ coi là 100%, đúng.
+	  - ô ghi 0  ⇒ *"người này không tham gia sản xuất"* ⇒ phải là **0**, nhưng lại thành 100%.
+
+	Hậu quả không dừng ở một ô sai: hệ số này nhân vào **toàn bộ vế cung của Bảng 3** và mọi phép
+	tính ngày giao. Một người khai 0 mà được tính đủ năng lực là **cộng thêm năng lực ảo** cho cả
+	nhà máy — Bảng 3 báo *Đủ nhân lực* trong khi thực tế không đủ, đúng loại rủi ro R2 mà chính
+	hàm `nguon_luc_nhan_su()` bên dưới sinh ra để chống.
+
+	📌 Đo 10/09/2026 trên cổng 8012: nhân sự `Thắng` khai `0` và được `_nang_luc` trả về `1.0`.
+	  Đây là ca thật, không phải giả định.
 	"""
 	rows = frappe.get_all(
 		"Employee",
@@ -610,7 +684,9 @@ def _nang_luc():
 	)
 	ra = {}
 	for r in rows:
-		he_so = flt(r.get("custom_performance_factor_")) or 100.0
+		gt = r.get("custom_performance_factor_")
+		# ⚠ Phân biệt bằng `None`/rỗng, KHÔNG bằng tính falsy — xem docstring.
+		he_so = 100.0 if gt is None or gt == "" else flt(gt)
 		# Employee Schedule/Allocation nối bằng `employee_name`, không phải mã nhân sự.
 		ra[r.get("employee_name") or r["name"]] = he_so / 100.0
 	return ra
@@ -1153,3 +1229,233 @@ def tao_yeu_cau_mua_hang(sales_order):
 		"kho_nhan": sorted({r.warehouse for r in mr.items if r.warehouse}),
 		"kho_du_phong": kho_du_phong,
 	}
+
+
+# ── Nút *Hẹn lại ngày giao* (mục 8.3) ─────────────────────────────────────────────────
+#
+# 🔒 Anh Thắng chốt 24/08 (`ssvcj7q0rq`) và chốt lại 10/09 (`9m4kvc479g`) — bốn điểm, đừng
+#    tự đổi:
+#      1. Nhân sự mô phỏng = **toàn bộ người có lịch làm việc** (không phải một Đội, không
+#         lọc theo Bậc Thợ). Lý do bên mình đưa ra và anh ấy nhận: Bảng 3 đang tính trên
+#         đúng tập đó, lấy tập khác thì **cùng một hộp thoại có hai cách đếm năng lực**.
+#      2. Làm nút trước, không đợi khách khai `Thời Gian Sản Xuất`.
+#      3. Ngày gợi ý là **hai vế NỐI TIẾP**, không phải `max()`:
+#             mốc = MAX(ngày hàng về của NVL còn thiếu)   → rồi mới xếp việc TỪ mốc đó
+#         Lấy `max()` của hai vế là ra ngày **sớm hơn thực tế** — đúng hướng nguy hiểm:
+#         hứa sớm rồi trễ hẹn.
+#      4. Bốn trạng thái, **không bao giờ trả một con số ngày trần**.
+#
+# ⚠ VÌ SAO KHÔNG GỌI `recalculate_schedule`: nó đọc `custom_start_time`,
+#   `custom_work_order_employee`, `production_item`, `qty` từ một **Lệnh sản xuất có thật**
+#   và `frappe.throw` khi thiếu — mà ở Đơn bán thì chưa có lệnh nào. Chỉ tái dùng phần lõi
+#   `simulate_workload` + `build_employee_intervals`.
+#
+# ⚠ VÌ SAO KIỂM TRƯỚC KHI GỌI CHỨ KHÔNG BẮT LỖI: `simulate_workload` `frappe.throw` khi hết
+#   năng lực (`work_order_schedule.py:180`). Bọc `try/except` quanh một `throw` là nuốt cả
+#   những lỗi khác mình chưa lường, và `frappe.throw` còn ghi vào `message_log` nên vẫn có
+#   thể rò hộp thoại ra giao diện. Cộng tổng năng lực trước rồi tự quyết là **cùng một phép
+#   tính, nhưng mình cầm câu trả lời**. Cách này cũng khiến `work_order_schedule.py` **không
+#   phải sửa một dòng nào** — màn hình *Tính Lại Lịch* của Lệnh sản xuất giữ nguyên hành vi.
+
+# Chân trời xếp việc: LẤY THẲNG từ engine Phần III, không gõ lại số 60.
+# `build_employee_intervals` cắt ở `start_dt + LOOKAHEAD_DAYS`, nên phép cộng kiểm trước
+# và câu chữ báo cho người dùng phải dùng ĐÚNG con số đó. Gõ tay một bản sao thì ngày ai
+# đổi hằng số bên kia, câu "trong 60 ngày tới" của mình thành nói dối mà không ai biết.
+from mbwnext_hkled.api.work_order_schedule import LOOKAHEAD_DAYS as CHAN_TROI_XEP_VIEC
+
+
+def _tru_cam_ket(khoang, cam_ket):
+	"""Bớt phần đã cam kết ở Lệnh sản xuất khác ra khỏi các khoảng rảnh của một người."""
+	ra = []
+	for tu, den in khoang:
+		manh = [(tu, den)]
+		for c_tu, c_den in cam_ket:
+			moi = []
+			for a, b in manh:
+				if c_den <= a or c_tu >= b:
+					moi.append((a, b))
+					continue
+				if c_tu > a:
+					moi.append((a, c_tu))
+				if c_den < b:
+					moi.append((c_den, b))
+			manh = moi
+		ra.extend(m for m in manh if (m[1] - m[0]).total_seconds() > 0)
+	return ra
+
+
+def _nhan_su_mo_phong(moc_bat_dau):
+	"""Toàn bộ nhân sự có lịch, quy về dạng `simulate_workload` nhận.
+
+	Trả `(danh_sách, tổng_phút_chuẩn_khả_dụng)`. Tổng ở đây dùng để **kiểm trước** xem có đủ
+	năng lực không — xem ghi chú đầu mục.
+	"""
+	from mbwnext_hkled.api.work_order_schedule import build_employee_intervals
+
+	nang_luc = _nang_luc()
+	co_lich = {
+		r["employee_name"]
+		for r in frappe.get_all(
+			"Employee Schedule",
+			filters={"end_time": [">", moc_bat_dau]},
+			fields=["employee_name"],
+		)
+		if r["employee_name"] in nang_luc
+	}
+
+	ds, tong = [], 0.0
+	for ten in sorted(co_lich):
+		he_so = flt(nang_luc.get(ten))
+		if he_so <= 0:
+			# Khai Năng Lực = 0 nghĩa là KHÔNG tham gia sản xuất (tách khỏi "để trống" từ
+			# 10/09). Giữ lại trong danh sách thì `simulate_workload` cộng capacity 0 —
+			# vô hại nhưng làm nặng vòng quét, nên bỏ hẳn.
+			continue
+		cam_ket = [
+			(get_datetime(r["start_time"]), get_datetime(r["end_time"]))
+			for r in frappe.get_all(
+				"Employee Allocation",
+				filters={"employee_name": ten, "end_time": [">", moc_bat_dau]},
+				fields=["start_time", "end_time"],
+			)
+		]
+		khoang = _tru_cam_ket(build_employee_intervals(ten, moc_bat_dau, None), cam_ket)
+		if not khoang:
+			continue
+		ds.append({"employee": ten, "capacity": he_so, "intervals": khoang})
+		tong += sum((b - a).total_seconds() / 60.0 for a, b in khoang) * he_so
+	return ds, tong
+
+
+@frappe.whitelist()
+def ngay_giao_du_kien(sales_order=None, doc=None):
+	"""Ngày gợi ý cho nút *Hẹn lại ngày giao*. Bốn trạng thái, không bao giờ trả ngày trần.
+
+	    du              → có ngày, kèm cách ra ngày đó
+	    thieu_dinh_muc  → có ngày nhưng MỚI TÍNH PHẦN VẬT TƯ, ngày thật sẽ muộn hơn
+	    thieu_ngay_ve   → KHÔNG có ngày: vật tư thiếu mà chưa ai đặt mua
+	    thieu_nang_luc  → KHÔNG có ngày: lịch làm việc hiện có không kham nổi khối lượng
+	"""
+	kq = kiem_tra(sales_order=sales_order, doc=doc)
+	b2, b3 = kq["bang2"], kq["bang3"]
+	hom_nay = getdate(nowdate())
+
+	# ── Vế 1: mốc vật tư ──────────────────────────────────────────────────────────
+	# Chỉ xét dòng CÒN THIẾU. Dòng đã đủ tồn thì không chờ hàng về.
+	thieu = [d for d in b2 if flt(d.get("thieu")) > 0]
+	chua_dat = sorted(d["ma"] for d in thieu if not d.get("ngay_hang_ve"))
+	if chua_dat:
+		return {
+			"trang_thai": "thieu_ngay_ve",
+			"ngay": None,
+			"vat_tu_chua_dat": chua_dat,
+			"ly_do": _(
+				"Chưa hẹn được ngày. {0} vật tư còn thiếu mà chưa có đơn mua nào đang mở, nên"
+				" không có căn cứ nào để đoán ngày hàng về: {1}."
+			).format(len(chua_dat), ", ".join(chua_dat)),
+		}
+
+	ngay_ve = [getdate(d["ngay_hang_ve"]) for d in thieu if d.get("ngay_hang_ve")]
+	# Ngày hàng về ở quá khứ nghĩa là đơn mua ĐÃ TRỄ — kẹp về hôm nay và nói ra ở `dien_giai`,
+	# đúng cách tab Lập kế hoạch của Phần V xử lý *Ngày cần hàng* quá khứ.
+	moc_goc = max(ngay_ve) if ngay_ve else hom_nay
+	moc = max(moc_goc, hom_nay)
+	moc_dt = get_datetime(f"{moc} 00:00:00")
+
+	# ── Vế 2: xếp khối lượng TỪ mốc ───────────────────────────────────────────────
+	khoi_luong = flt(b3.get("don_can"))
+	thieu_dm = list(b3.get("thieu_dinh_muc") or [])
+
+	if khoi_luong <= 0:
+		# Không có phần tự làm nào đo được: ngày chính là mốc vật tư. Có mặt hàng thiếu định
+		# mức thì đây là ngày SỚM NHẤT có thể, không phải ngày thật — trạng thái 2 nói rõ.
+		return {
+			"trang_thai": "thieu_dinh_muc" if thieu_dm else "du",
+			"ngay": str(moc),
+			"moc_vat_tu": str(moc_goc),
+			"phut_can": 0.0,
+			"thieu_dinh_muc": thieu_dm,
+			"ly_do": _(
+				"Mới tính được phần vật tư. {0} mặt hàng chưa khai Thời Gian Sản Xuất nên chưa"
+				" cộng được phần công — NGÀY THẬT SẼ MUỘN HƠN: {1}."
+			).format(len(thieu_dm), ", ".join(thieu_dm[:8]) + ("…" if len(thieu_dm) > 8 else ""))
+			if thieu_dm
+			else _("Đơn này không có phần tự sản xuất, ngày gợi ý chính là ngày hàng về."),
+		}
+
+	nhan_su, tong_kha_dung = _nhan_su_mo_phong(moc_dt)
+	if not nhan_su:
+		return {
+			"trang_thai": "thieu_nang_luc",
+			"ngay": None,
+			"phut_can": khoi_luong,
+			"phut_co": 0.0,
+			"ly_do": _(
+				"Chưa hẹn được ngày. Từ {0} trở đi chưa có nhân sự nào được xếp lịch làm việc,"
+				" nên không tính được thời gian sản xuất."
+			).format(frappe.format(moc, {"fieldtype": "Date"})),
+		}
+
+	if tong_kha_dung < khoi_luong - 1e-6:
+		return {
+			"trang_thai": "thieu_nang_luc",
+			"ngay": None,
+			"phut_can": round(khoi_luong, 1),
+			"phut_co": round(tong_kha_dung, 1),
+			"so_ngay_nhin_toi": CHAN_TROI_XEP_VIEC,
+			"ly_do": _(
+				"Chưa hẹn được ngày. Đơn này cần {0} phút chuẩn, nhưng lịch làm việc hiện có"
+				" trong {1} ngày tới chỉ còn {2} phút. Cần xếp thêm ca hoặc thêm người rồi tính lại."
+			).format(_so(khoi_luong), CHAN_TROI_XEP_VIEC, _so(tong_kha_dung)),
+		}
+
+	from mbwnext_hkled.api.work_order_schedule import simulate_workload
+
+	ket_thuc, tong_phut = simulate_workload(nhan_su, khoi_luong)
+	if not ket_thuc:
+		# Không nên tới được: đã kiểm tổng năng lực ở trên. Nhưng sweep-line còn phụ thuộc
+		# CÁCH các khoảng chồng nhau, nên vẫn có thể không xếp nổi dù tổng đủ — trả lời thay
+		# vì để `None` chảy ra giao diện thành "Invalid Date".
+		return {
+			"trang_thai": "thieu_nang_luc",
+			"ngay": None,
+			"phut_can": round(khoi_luong, 1),
+			"phut_co": round(tong_kha_dung, 1),
+			"ly_do": _(
+				"Chưa hẹn được ngày: tổng năng lực đủ nhưng các khoảng làm việc không xếp liền"
+				" được khối lượng này. Kiểm lại lịch làm việc."
+			),
+		}
+
+	ngay = getdate(ket_thuc)
+	# ⚠ HAI ĐƠN VỊ KHÁC NHAU, ĐỪNG GỘP:
+	#   `khoi_luong`  = phút CHUẨN — khối lượng việc, đúng con số Bảng 3 ghi ở cột *Đơn này cần*.
+	#   `tong_phut`   = phút ĐỒNG HỒ mà `simulate_workload` trả về — đã chia cho tổng Năng Lực
+	#                   của những người làm song song, nên NHỎ HƠN nhiều.
+	# Bản đầu tôi viết "cộng {tong_phut} phút chuẩn" ➜ nút ghi 3,448 trong khi Bảng 3 ngay bên
+	# trên ghi 10, lệch 3 lần trên cùng một hộp thoại. Bắt được bằng đúng phép kiểm chéo đã hẹn:
+	# *tập nhân sự và con số của nút phải khớp Bảng 3*. Nêu cả hai và gọi đúng tên từng cái.
+	ra = {
+		"trang_thai": "thieu_dinh_muc" if thieu_dm else "du",
+		"ngay": str(ngay),
+		"moc_vat_tu": str(moc_goc),
+		"phut_chuan_can": round(khoi_luong, 1),
+		"phut_dong_ho": round(tong_phut, 1),
+		"so_nhan_su": len(nhan_su),
+		"thieu_dinh_muc": thieu_dm,
+	}
+	dien_giai = _(
+		"Hàng về {0}, cộng {1} phút chuẩn — khớp cột *Đơn này cần* của Bảng 3. {2} nhân sự làm"
+		" song song nên hết khoảng {3} phút đồng hồ."
+	).format(
+		frappe.format(moc_goc, {"fieldtype": "Date"}), _so(khoi_luong), len(nhan_su), _so(tong_phut)
+	)
+	if moc_goc < hom_nay:
+		dien_giai += _(" (Ngày hàng về đã ở quá khứ — đơn mua ĐANG TRỄ, nên tính từ hôm nay.)")
+	if thieu_dm:
+		dien_giai += _(
+			" ⚠ Mới cộng phần công của mặt hàng ĐÃ khai Thời Gian Sản Xuất; {0} mặt hàng chưa"
+			" khai nên NGÀY THẬT SẼ MUỘN HƠN: {1}."
+		).format(len(thieu_dm), ", ".join(thieu_dm[:8]) + ("…" if len(thieu_dm) > 8 else ""))
+	ra["ly_do"] = dien_giai
+	return ra

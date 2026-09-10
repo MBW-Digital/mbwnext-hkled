@@ -538,3 +538,96 @@ xin gì chưa"*. Trước đây chỉ có câu [1].
 trừ luôn phiếu đang chờ, hay **(B)** giữ nguyên + cảnh báo. Nếu anh ấy chọn **(A)** thì Bảng 2
 cũng phải trừ theo, kẻo hai màn hình nói ngược nhau — lúc đó câu [2] này thành thừa. Thêm bây giờ
 vì nó **đúng dưới cả hai lựa chọn** và không đảo chốt nào.
+
+---
+
+# Sửa 10/09/2026 — "định mức lặp vòng" báo nhầm, và tính sai thứ cần mua
+
+> **Phát hiện:** phiên `cozy-dev-10` bắt được khi viết HDSD; tôi đo lại rồi mới sửa.
+> **Đơn dính:** `SO-26-00009` — chính đơn anh Thắng dùng để test.
+
+## Lỗi
+
+Đơn có hai dòng: `Bán thành phẩm 1` (5) và `Thành phẩm 1` (6). Mà `Bán thành phẩm 1` **cũng là
+con** trong định mức của `Thành phẩm 1`. Nó bị bóc ở tầng 0 (vì là dòng trên đơn) rồi gặp lại ở
+tầng 1 (vì là con) — tập `da_tham` coi đó là **lặp vòng**.
+
+**Không có vòng nào.** Đã kiểm từng định mức: không cái nào chứa chính nó.
+
+| Hậu quả | Nặng dần |
+|---|---|
+| Câu *"định mức lặp vòng"* | sai — đây là cùng một mã ở hai tầng, không phải chu trình |
+| Câu *"Phương pháp bổ sung đang là **Sản xuất** nên coi như phải mua"* | tự mâu thuẫn, và bảo người dùng đi sửa một khai báo **vốn đã đúng** |
+| 🔴 **Tính sai** | 6 `Bán thành phẩm 1` sinh từ `Thành phẩm 1` rơi vào *cần mua* thay vì bóc xuống NVL |
+
+## Sửa
+
+Thay `da_tham` (*"đã bóc ở tầng trước"*) bằng `_ma_trong_vong()` (*"nằm trên đường đi của chính
+nó"*). Chốt chặn vòng vô hạn vốn **không nằm ở đây** mà ở `CAP_BOC_TOI_DA`; `da_tham` chỉ là chốt
+thứ hai, và nó thô đến mức chặn nhầm cây hợp lệ.
+
+| ID | Kiểm | Đo được | KQ |
+|---|---|---|---|
+| TC-VONG-01 | Cây hợp lệ 2 tầng không bị coi là vòng | `_ma_trong_vong` trên cây thật → **rỗng** | ✅ |
+| TC-VONG-02 | Vòng trực tiếp `A→A` | `{A}` | ✅ |
+| TC-VONG-03 | Vòng 2 bước `A→B→A` | `{A, B}` — **đủ cả hai mã**, không chỉ mã vào cửa | ✅ |
+| TC-VONG-04 | Vòng 3 bước `A→B→C→A` | `{A, B, C}` | ✅ |
+| TC-VONG-05 | Kim cương `A→B→D`, `A→C→D` — KHÔNG vòng | rỗng | ✅ |
+| TC-VONG-06 | Vòng ở nhánh con `A→B→C→B` | `{B, C}` — không lôi `A` vào | ✅ |
+| TC-VONG-07 | Cùng mã ở hai tầng, KHÔNG vòng | rỗng | ✅ |
+| TC-VONG-08 | `SO-26-00009` sau khi sửa | **0 cảnh báo**; Bảng 2 chỉ còn NVL: `11 · 22 · 18` | ✅ |
+| TC-VONG-09 | Không đơn nào nổ lỗi | **32/32 đơn** `docstatus < 2` chạy sạch | ✅ |
+
+⚠ **TC-VONG-03 bắt được thiếu sót trong chính bản sửa đầu của tôi:** hàm chỉ đánh dấu **một** mã
+của vòng (mã vừa gặp lại), trong khi docstring nói *"tập mã nằm trong chu trình"*. Chặn thì một mã
+là đủ — cắt ở đâu vòng cũng đứt — nhưng **câu cảnh báo sẽ nêu thiếu**, và người đi sửa không biết
+phải sửa định mức nào. Đã sửa để gom đủ mọi mã trên vòng.
+
+📌 Số cộng lại đúng cả hai đường: 5 `Bán thành phẩm 1` từ dòng đơn + 6 sinh từ `Thành phẩm 1` = 11
+⇒ `NVL 1` 11, `NVL 2` 22; và 6 `Bán thành phẩm 2` ⇒ `NVL 3` 18.
+
+---
+
+# Sửa 10/09/2026 — hệ số năng lực khai đúng bằng 0 bị hiểu thành 100%
+
+> **Phát hiện:** phiên `cozy-dev-10`. **Mã:** `_nang_luc()` trong `kiem_tra_ton_kho.py`.
+
+`flt(r.get("custom_performance_factor_")) or 100.0` — `flt(0)` ra `0`, mà `0` là **falsy**, nên nó
+rơi vào nhánh `or` và **hệ số 0 thành 100%**. Hai giá trị nói hai điều ngược nhau lại cho cùng
+một kết quả:
+
+| Ô Năng Lực | Nghĩa | Trước | Sau |
+|---|---|---|---|
+| để trống | *chưa ai khai* → coi là bình thường | 100% ✅ | 100% ✅ |
+| ghi `0` | *người này không tham gia sản xuất* | **100%** ❌ | **0%** ✅ |
+
+**Vì sao không dừng ở một ô sai:** hệ số này nhân vào **toàn bộ vế cung của Bảng 3** và mọi phép
+tính ngày giao. Một người khai 0 mà được tính đủ năng lực là **cộng năng lực ảo cho cả nhà máy** —
+Bảng 3 báo *Đủ nhân lực* trong khi thực tế không đủ. Đúng loại rủi ro R2 mà chính
+`nguon_luc_nhan_su()` sinh ra để chống.
+
+| ID | Kiểm | Đo được | KQ |
+|---|---|---|---|
+| TC-NL-01 | Khai `0` ra hệ số `0` | `Thắng`: `khai=0 → 0.0` (trước: `1.0`) | ✅ |
+| TC-NL-02 | Khai `90` không đổi | `Anh C`: `0.9` | ✅ |
+| TC-NL-03 | Khai `100` không đổi | `Anh A`, `Anh B`: `1.0` | ✅ |
+| TC-NL-04 | Để trống vẫn là 100% | không có ca thật trên site — **chưa chạy**, đã chặn bằng `gt is None or gt == ""` | ⏳ |
+| TC-NL-05 | Không đơn nào nổ lỗi | **32/32** đơn `docstatus < 2` chạy sạch | ✅ |
+
+## 🔴 Bản sửa này KHÔNG đổi con số nào hôm nay — và đó là điều phải đo, không phải đoán
+
+Lý do tôi hoãn sửa ban đầu: sợ `Thắng` tụt 100% → 0% làm **đổi số Bảng 3 ngay giữa vòng nghiệm
+thu**. Đo lại thì điều đó **không xảy ra**:
+
+```
+Lịch làm việc từ hôm nay:  Anh A 36 dòng · Anh B 36 · Anh C 36
+Thắng:  0 dòng lịch · 0 Employee Allocation
+```
+
+`tong_theo_lich` chỉ cộng từ người **có dòng lịch**, mà `Thắng` không có dòng nào — nên hệ số của
+anh ấy chưa từng được nhân vào đâu cả. Kiểm chéo trên `SO-26-00026`: `tổng theo lịch 9.135 phút`,
+`đơn cần 400`, kết luận *đủ* — y như trước.
+
+⚠ **Nhưng nó sẽ cắn ngay khi người khai hệ số 0 được xếp lịch.** Đây là lỗi ngủ, không phải lỗi
+vô hại: sửa lúc chưa ai dính là lúc rẻ nhất, và cũng là lúc **an toàn nhất để sửa giữa vòng
+nghiệm thu** — vì không con số nào trên màn hình người test nhúc nhích.

@@ -108,6 +108,7 @@ function lan_toa_ghi_chu(frm) {
      điền sẵn, người dùng vẫn phải tự bấm Lưu.                                          */
 
 const NHAN_NUT_PHIEU = "Tạo Yêu Cầu Mặt Hàng";
+const NHAN_NUT_NGAY = "Hẹn lại ngày giao";
 
 // Đơn CHƯA LƯU LẦN NÀO thì `frm.doc.name` đang là `new-sales-order-…` — một cái tên không có
 // trong cơ sở dữ liệu. Gửi tên đó sang là máy chủ ném lỗi và người dùng chỉ thấy ô số không
@@ -524,7 +525,58 @@ function ve_popup(frm, kq) {
 		$(this).find(".hkled-mui").text(mo ? "▾" : "▸");
 	});
 
+	// Nút *Hẹn lại ngày giao* — anh Thắng chốt 24/08 (`ssvcj7q0rq`), chốt lại 10/09
+	// (`9m4kvc479g`). Đặt ở chân, CẠNH nút tạo phiếu chứ không thay nó: hai nút trả lời hai
+	// câu khác nhau — "đặt mua phần thiếu" và "bao giờ giao được".
+	d.add_custom_action(__(NHAN_NUT_NGAY), () => hen_lai_ngay(frm, d));
+
 	d.show();
+}
+
+// ⚠ KHÔNG BAO GIỜ hiện một con số ngày trần. Bốn trạng thái, ba trong bốn phải kèm lời giải
+//   thích, và HAI trong bốn cố ý KHÔNG có ngày. Đặc tả 8.3: *"một ô trống có giải thích thì
+//   sale còn đi hỏi mua hàng; một ngày sai thì sale hứa thẳng với khách"*.
+function hen_lai_ngay(frm, dialog) {
+	frappe.call({
+		method: "mbwnext_hkled.api.kiem_tra_ton_kho.ngay_giao_du_kien",
+		args: tham_so_don(frm),
+		freeze: true,
+		freeze_message: __("Đang tính ngày giao dự kiến…"),
+		callback: (r) => {
+			const kq = r.message;
+			if (!kq) return;
+			const co_ngay = Boolean(kq.ngay);
+			const nen = co_ngay
+				? kq.trang_thai === "du"
+					? "alert-success"
+					: "alert-warning"
+				: "alert-danger";
+
+			let than = "";
+			if (co_ngay) {
+				than =
+					`<div style="font-size:1.6em;font-weight:600;margin-bottom:6px">` +
+					`${frappe.datetime.str_to_user(kq.ngay)}</div>` +
+					`<div class="small">${frappe.utils.escape_html(kq.ly_do || "")}</div>`;
+			} else {
+				than =
+					`<div style="font-weight:600;margin-bottom:6px">${__("Chưa hẹn được ngày")}</div>` +
+					`<div class="small">${frappe.utils.escape_html(kq.ly_do || "")}</div>`;
+			}
+
+			const hop = new frappe.ui.Dialog({
+				title: __(NHAN_NUT_NGAY),
+				fields: [{ fieldtype: "HTML", fieldname: "than" }],
+			});
+			hop.fields_dict.than.$wrapper.html(
+				`<div class="alert ${nen}" style="margin-bottom:8px">${than}</div>` +
+					`<p class="text-muted small">${__(
+						"Ngày này <b>chỉ để tham khảo</b> — bấm nút không sửa Ngày Giao Hàng trên đơn. Muốn đổi thì tự sửa ô đó."
+					)}</p>`
+			);
+			hop.show();
+		},
+	});
 }
 
 function tao_phieu(frm, dialog) {
