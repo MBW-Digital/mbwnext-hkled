@@ -171,7 +171,12 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 		return n === null || n === undefined ? "—" : format_number(n, null, 0);
 	}
 
-	ve() {
+	// 🔴 Tách riêng khỏi `ve()` vì `dem()` cũng phải gọi. Trước 10/09 ô "đang giữ N mã" chỉ được
+	//    dựng trong `ve()`, mà tick một dòng chỉ gọi `dem()` — nên ô đếm và dòng cảnh báo
+	//    "có mã không nằm trên trang này" **không hiện ra lúc người dùng tick**, phải đổi trang
+	//    hoặc tìm lại mới thấy. Bấm tay trên giao diện mới lộ; chạy lệnh không bắt được vì hai
+	//    hàm đều trả về đúng dữ liệu.
+	ve_tom() {
 		const k = this.kq;
 		const tinh_duoc = this.dong.filter((d) => d.gia_niem_yet !== null).length;
 		const lech = this.dong.filter((d) => d.lech).length;
@@ -214,6 +219,14 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 			)}</div>`;
 		}
 		this.$than.find(".bgny-tom").html(tom);
+		// ⚠ Vừa thay HTML của ô tóm tắt ⇒ mọi handler gắn trên nó ĐÃ MẤT. Phải gắn lại ngay,
+		//   không thì ô "đang giữ N mã" và nút "Bỏ chọn tất cả" hiện ra mà bấm không ăn —
+		//   hỏng theo kiểu nhìn thì thấy đủ. `gan_chung()` dùng `.off()` trước nên gọi lại an toàn.
+		this.gan_chung();
+	}
+
+	ve() {
+		this.ve_tom();
 
 		if (!this.dong.length) {
 			this.$than.find(".bgny-bang").html(
@@ -459,6 +472,8 @@ mbwnext_hkled.BangGiaNiemYet = class BangGiaNiemYet {
 	}
 
 	dem() {
+		// Vẽ lại phần tóm tắt: ô "đang giữ N mã", nút bỏ chọn, và dòng cảnh báo mã ngoài trang.
+		this.ve_tom();
 		const n = this.chon.size;
 		const co = this.dong.filter((d) => d.gia_niem_yet !== null);
 		this.$than

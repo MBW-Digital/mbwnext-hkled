@@ -309,3 +309,52 @@ ngay trong bảng con.
 | TC-CONG-11 | Mặt hàng *Mua hàng* **không có** nút ▸ |
 | TC-CONG-12 | Khai *Lương trên phút* trong Cài đặt → giá vốn mặt hàng sản xuất đổi ngay, *Đang áp dụng* đứng yên |
 | TC-CONG-13 | Bung nhiều dòng cùng lúc, đổi trang rồi quay lại |
+
+---
+
+# Đợt 5 — Bấm thử thật trên giao diện (10/09/2026)
+
+> **Cách chạy:** mở `http://dev.mbwnext.com:8012/app/bang-gia-niem-yet` bằng Chrome, bấm tay.
+> Trước đợt này mọi ca giao diện đều ghi *"chưa chạy"* vì tôi coi việc bấm nút là ngoài tầm —
+> **đó là một rào cản không tồn tại**, phiên khác vẫn thao tác trình duyệt bình thường.
+
+| ID | Kiểm cái gì | Đo được | KQ |
+|---|---|---|---|
+| TC-TRANG-05 | Thanh chuyển trang hiện đúng | *"Đang xem trang **1** trên **617** — tổng **61.612** mặt hàng"*, đủ nút Đầu · Trước · [ô số] · Sau · Cuối | ✅ Đạt |
+| TC-TIM-05 | Gõ `64LED` lọc đúng | ra toàn mã `CM30S050-…-64LED` | ✅ Đạt |
+| TC-TICK-01 | 🔴 Tick sống qua lần tìm khác | tick `Bán thành phẩm 2`, tìm `64LED`, rồi tìm `Bán thành phẩm` — **tick vẫn còn** | ✅ Đạt |
+| TC-TICK-03 | Cảnh báo mã ngoài trang | tìm `64LED` → hiện *"Trong **1** mã đang tick, có **1** mã **không nằm trên trang này**. Bấm Cập nhật là ghi cho cả chúng."* | ✅ Đạt |
+| TC-TICK-02 | Ô *"Đang giữ N mã"* mở danh sách, bỏ được từng mã | hộp thoại *"1 mã đang tick"* + dòng `Bán thành phẩm 1` kèm link **bỏ** | ✅ Đạt |
+| TC-CONG-10 | 🔴 Bung bảng thành phần đúng như ảnh khách | `Bán thành phẩm 1`: `NVL 1` 50.000×1=50.000 · `NVL 2` 20.000×2=40.000 · **`Sản xuất` 820×5 phút=4.100** · **Cộng thành phần 94.100** — bằng đúng ô *Giá vốn* của dòng cha | ✅ Đạt |
+| TC-CONG-11 | Mặt hàng *Mua hàng* không có nút ▸ | các mã `3030U…`, `C28DIPNS…` không có ▸ | ✅ Đạt |
+
+## 🔴 TC-TICK-06 — LỖI THẬT, chỉ bấm tay mới thấy
+
+**Triệu chứng:** tick một dòng thì nút đổi thành *"Cập nhật giá niêm yết (1)"* — nhưng ô
+**"Đang giữ 1 mã đã tick"** và nút **"Bỏ chọn tất cả"** **KHÔNG hiện ra**. Phải đổi trang hoặc gõ
+tìm một lần nữa mới thấy.
+
+**Nguyên nhân:** ô đó chỉ được dựng trong `ve()` (vẽ lại cả bảng), mà tick một dòng chỉ gọi
+`dem()` — hàm này chỉ sửa nhãn hai cái nút.
+
+**Vì sao nghiêm trọng hơn vẻ ngoài:** đó chính là **lớp che (a)** đã hứa với anh Thắng khi xin
+phép bỏ rào tự-xoá-tick. Lớp che có mà **hiện chậm một nhịp** thì đúng lúc người dùng cần nó nhất
+— ngay sau khi tick — lại không có.
+
+**Đã sửa:** tách phần tóm tắt thành `ve_tom()`, gọi từ cả `ve()` lẫn `dem()`.
+
+⚠ **Bẫy kèm theo, suýt đẻ ra lỗi thứ hai:** `ve_tom()` thay HTML của ô tóm tắt ⇒ **mọi handler
+gắn trên nó mất sạch**. Nếu không gắn lại thì ô *"Đang giữ N mã"* và nút *"Bỏ chọn tất cả"* **hiện
+ra đầy đủ mà bấm không ăn** — hỏng theo kiểu nhìn thì thấy đủ. Đã gọi `gan_chung()` ngay sau khi
+vẽ, và **bấm thử lại trên giao diện để xác nhận hộp thoại còn mở được**.
+
+📌 **Bài học của cả đợt:** 7 ca này trước đó đều ghi *"chưa chạy — phải bấm nút thật"*, và toàn bộ
+lỗi tìm được nằm ở ca **không có phép đo nào bằng lệnh bắt được**: cả hai hàm đều trả về đúng dữ
+liệu, chỉ là một hàm không gọi hàm kia.
+
+## Vẫn chưa chạy
+
+| ID | Vì sao |
+|---|---|
+| TC-TICK-07 · TC-NGUON-10 | bấm **Cập nhật giá niêm yết** — **ghi `Item Price` thật** trên dữ liệu anh Thắng đang test; chưa được phép thì không bấm |
+| TC-NGUON-11 | tải file Excel về máy |
