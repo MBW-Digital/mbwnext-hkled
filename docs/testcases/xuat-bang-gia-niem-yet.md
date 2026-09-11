@@ -223,6 +223,10 @@ tổng số vẫn ra một con số trông hợp lý.
 
 ## Chưa chạy — phải bấm nút thật
 
+> ⚠ **Đây là trạng thái LÚC ĐÓ, không phải trạng thái cuối.** Phần lớn các ca dưới đây đã được
+> bấm thật trong **Đợt 5 (10/09)**. Trạng thái cuối cùng của từng mã ca: xem
+> [Tổng kết cuối](#tổng-kết-cuối--trạng-thái-thật-của-từng-mã-ca) ở cuối file.
+
 | ID | Kiểm cái gì | Vì sao chưa chạy |
 |---|---|---|
 | TC-TICK-01 | Tick mã A, tìm mã B, tick B → **cả hai còn tick** | thao tác giao diện |
@@ -265,6 +269,10 @@ Ai thử đúng hai mã đó sẽ kết luận *"hai cách như nhau"*. **Phải
 
 ## Chưa chạy — phải bấm nút thật
 
+> ⚠ **Đây là trạng thái LÚC ĐÓ, không phải trạng thái cuối.** Phần lớn các ca dưới đây đã được
+> bấm thật trong **Đợt 5 (10/09)**. Trạng thái cuối cùng của từng mã ca: xem
+> [Tổng kết cuối](#tổng-kết-cuối--trạng-thái-thật-của-từng-mã-ca) ở cuối file.
+
 | ID | Kiểm cái gì | Vì sao chưa chạy |
 |---|---|---|
 | TC-NGUON-08 | Đổi ô *Giá vốn mặt hàng mua* trên màn hình → bảng tính lại, chip hiện *"đang xem tạm"* | thao tác giao diện |
@@ -302,6 +310,10 @@ phải *vật tư miễn phí*; định giá bán chỉ dựa vào tiền công 
 ngay trong bảng con.
 
 ## Chưa chạy — phải bấm nút thật
+
+> ⚠ **Đây là trạng thái LÚC ĐÓ, không phải trạng thái cuối.** Phần lớn các ca dưới đây đã được
+> bấm thật trong **Đợt 5 (10/09)**. Trạng thái cuối cùng của từng mã ca: xem
+> [Tổng kết cuối](#tổng-kết-cuối--trạng-thái-thật-của-từng-mã-ca) ở cuối file.
 
 | ID | Kiểm cái gì |
 |---|---|
@@ -417,3 +429,66 @@ mang giá của **nguồn đang xem tạm**, giống nút Cập nhật.
 thư mục tải riêng. Tôi **không kết luận** đây là lỗi tính năng — hàm xuất trả về đủ
 `filename` / `type: binary` / **5.260 byte** hợp lệ, đúng cơ chế tải của Frappe; nhiều khả năng do
 cấu hình tải của trình duyệt đang tự động hoá. **Người test thật cần bấm và xác nhận file về máy.**
+
+---
+
+# Tổng kết cuối — trạng thái thật của từng mã ca
+
+> **Viết ngày 11/09/2026, trước khi đưa file lên PM.**
+> File này là **nhật ký 5 đợt**, không phải một bảng chụp một lần. Ba mục *"Chưa chạy — phải bấm
+> nút thật"* ở giữa file là trạng thái của **đợt đó**, và phần lớn đã được giải quyết ở Đợt 5.
+> Bảng dưới đây là **trạng thái cuối cùng**, và là chỗ duy nhất nên tin khi cần một con số.
+
+**Tổng 80 mã ca · 71 đạt · 9 chưa chạy được · 0 còn Fail.**
+
+| Nhóm | Số ca | Đạt | Còn lại |
+|---|---|---|---|
+| TC-CT — công thức | 8 | 8 | — |
+| TC-HAPPY — luồng đúng | 8 | 8 | — |
+| TC-VALID — ràng buộc | 7 | 7 | — |
+| TC-EDGE — biên, ngoại lệ | 6 | 5 | `TC-EDGE-06` |
+| TC-PERM — phân quyền | 3 | 2 | `TC-PERM-03` |
+| TC-ISO — cách ly app khách | 3 | 3 | — |
+| TC-REGR — không làm hỏng cái đang chạy | 3 | 3 | — |
+| TC-TRANG — chuyển trang | 5 | 5 | — |
+| TC-TIM — ô tìm kiếm | 5 | 5 | — |
+| TC-TICK — tick sống qua trang | 7 | 5 | `TC-TICK-04` (một phần) · `TC-TICK-05` |
+| TC-XEM — không sửa được trên bảng | 1 | 0 | `TC-XEM-01` |
+| TC-NGUON — nguồn giá vốn | 11 | 9 | `TC-NGUON-09` · `TC-NGUON-11` (một phần) |
+| TC-CONG — tiền công, bảng thành phần | 13 | 11 | `TC-CONG-12` · `TC-CONG-13` |
+
+## Chín ca chưa chạy được — lý do từng ca
+
+| Mã | Kiểm cái gì | Vì sao chưa chạy |
+|---|---|---|
+| `TC-EDGE-06` | Đơn mua theo đơn vị khác đơn vị kho | Cổng 8012 **không có** dòng đơn mua nào `conversion_factor ≠ 1`. Dựng một dòng là **ghi dữ liệu thật vào chứng từ mua** — không tự làm. Đã đọc kỹ mã, nhưng *đọc không phải đo* |
+| `TC-PERM-03` | `Sales User` mở được trang, không bấm được Cập nhật | Chưa đăng nhập bằng tài khoản `Sales User` thật. **Tôi không nhập mật khẩu vào bất kỳ ô nào** — cần người test tự đăng nhập |
+| `TC-TICK-04` | Hộp thoại liệt kê từng mã, **đánh dấu mã ngoài trang** | Nửa đầu đã xác nhận ở `TC-TICK-07` (hộp thoại liệt kê rõ `Bán thành phẩm 1`). Nửa sau **chưa** — lần bấm đó chỉ tick 1 mã và mã đó nằm ngay trên trang |
+| `TC-TICK-05` | Nút *Bỏ chọn tất cả* xoá sạch tick | Nút này có hiện ra sau khi sửa `TC-TICK-06`, nhưng **chưa bấm riêng để xác nhận nó xoá sạch** |
+| `TC-XEM-01` | R&D / Lợi nhuận trên bảng **không sửa được** | Chốt của anh Thắng 09/09: *"chỉ được sửa ở bản ghi mặt hàng"*. Mã nguồn không phát ô nhập, nhưng chưa thử bấm vào ô đó trên giao diện |
+| `TC-NGUON-09` | Đổi trong **Cài đặt tỷ lệ** → mở lại bảng thấy theo cài đặt mới | Phải ghi vào `HKLED Pricing Setting` — **cài đặt dùng chung cho cả cổng 8012**, đổi là đổi cho mọi người đang mở bảng |
+| `TC-NGUON-11` | Xuất Excel khi đang xem tạm | **Nội dung file đã kiểm đủ** (mở workbook đọc từng ô, 5.260 byte, công thức sống ở C4). Chỉ còn bước **file về tới máy** — bấm *Xuất file* xong không thấy file nào trong `~/Downloads`, nhiều khả năng do cấu hình tải của trình duyệt tự động hoá |
+| `TC-CONG-12` | Khai *Lương trên phút* → giá vốn đổi ngay, *Đang áp dụng* đứng yên | Cùng lý do `TC-NGUON-09` — ghi vào cài đặt dùng chung |
+| `TC-CONG-13` | Bung nhiều dòng cùng lúc, đổi trang rồi quay lại | Chưa bấm |
+
+**Bảy ca trong số này (`TICK-04/05`, `XEM-01`, `NGUON-09/11`, `CONG-12/13`) chỉ cần bấm tay** —
+không vướng dữ liệu thật, chỉ là chưa chạy tới. Hai ca còn lại (`EDGE-06`, `PERM-03`) thì **không
+nên** để Claude chạy: một ca phải ghi chứng từ mua thật, một ca phải nhập mật khẩu người khác.
+
+## Sáu mã cố ý để lệch, dành cho vòng test của anh Thắng
+
+`Test BTP 1` · `Test Gia Công` · `Test NVL 1` · `Test NVL 2` · `Test Tp` · `Thành phẩm 1`
+(mã cuối đang 750.000 so với 50.000 đang áp dụng).
+
+Tick rồi bấm **Cập nhật giá niêm yết** là thấy được cả hộp thoại xác nhận lẫn kết quả ghi.
+Đây là dữ liệu **cố ý không đụng**, không phải sót.
+
+## Một điều phải làm khi mang tính năng sang site khác
+
+`TC-REGR-03` ban đầu ghi *"0 patch chờ"* — **sai**. App có **1 patch chờ**
+(`mbwnext_hkled.patches.them_ty_le_gia_niem_yet`); hai Custom Field có trên 8012 là vì hồi làm tôi
+gọi `execute()` bằng tay, mà gọi tay thì **không ghi vào `Patch Log`**.
+
+➜ **Cài tính năng này lên site khác thì BẮT BUỘC chạy `bench migrate`.**
+Patch an toàn khi chạy lại: `create_custom_fields(update=True)`, phần khai mặc định có rào
+`if not …` nên không đè số của khách.
