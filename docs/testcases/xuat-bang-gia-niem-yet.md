@@ -434,12 +434,15 @@ cấu hình tải của trình duyệt đang tự động hoá. **Người test 
 
 # Tổng kết cuối — trạng thái thật của từng mã ca
 
-> **Viết ngày 11/09/2026, trước khi đưa file lên PM.**
-> File này là **nhật ký 5 đợt**, không phải một bảng chụp một lần. Ba mục *"Chưa chạy — phải bấm
-> nút thật"* ở giữa file là trạng thái của **đợt đó**, và phần lớn đã được giải quyết ở Đợt 5.
+> **Viết ngày 11/09/2026.**
+> File này là **nhật ký 6 đợt**, không phải một bảng chụp một lần. Ba mục *"Chưa chạy — phải bấm
+> nút thật"* ở giữa file là trạng thái của **đợt đó**, và đã được giải quyết hết ở Đợt 5 và 6.
 > Bảng dưới đây là **trạng thái cuối cùng**, và là chỗ duy nhất nên tin khi cần một con số.
 
-**Tổng 80 mã ca · 71 đạt · 9 chưa chạy được · 0 còn Fail.**
+**Tổng 80 mã ca · 76 đạt · 4 chưa chạy được · 0 còn Fail.**
+
+> Cập nhật **11/09 (Đợt 6)**: đã bấm nốt `TC-XEM-01` · `TC-TICK-04` · `TC-TICK-05` · `TC-CONG-13`
+> · `TC-NGUON-11` — **cả 5 đạt**. Bảng ngay dưới đã tính theo kết quả đó.
 
 | Nhóm | Số ca | Đạt | Còn lại |
 |---|---|---|---|
@@ -452,28 +455,25 @@ cấu hình tải của trình duyệt đang tự động hoá. **Người test 
 | TC-REGR — không làm hỏng cái đang chạy | 3 | 3 | — |
 | TC-TRANG — chuyển trang | 5 | 5 | — |
 | TC-TIM — ô tìm kiếm | 5 | 5 | — |
-| TC-TICK — tick sống qua trang | 7 | 5 | `TC-TICK-04` (một phần) · `TC-TICK-05` |
-| TC-XEM — không sửa được trên bảng | 1 | 0 | `TC-XEM-01` |
-| TC-NGUON — nguồn giá vốn | 11 | 9 | `TC-NGUON-09` · `TC-NGUON-11` (một phần) |
-| TC-CONG — tiền công, bảng thành phần | 13 | 11 | `TC-CONG-12` · `TC-CONG-13` |
+| TC-TICK — tick sống qua trang | 7 | **7** | — |
+| TC-XEM — không sửa được trên bảng | 1 | **1** | — |
+| TC-NGUON — nguồn giá vốn | 11 | **10** | `TC-NGUON-09` |
+| TC-CONG — tiền công, bảng thành phần | 13 | **12** | `TC-CONG-12` |
 
-## Chín ca chưa chạy được — lý do từng ca
+## Bốn ca chưa chạy được — lý do từng ca
 
 | Mã | Kiểm cái gì | Vì sao chưa chạy |
 |---|---|---|
 | `TC-EDGE-06` | Đơn mua theo đơn vị khác đơn vị kho | Cổng 8012 **không có** dòng đơn mua nào `conversion_factor ≠ 1`. Dựng một dòng là **ghi dữ liệu thật vào chứng từ mua** — không tự làm. Đã đọc kỹ mã, nhưng *đọc không phải đo* |
 | `TC-PERM-03` | `Sales User` mở được trang, không bấm được Cập nhật | Chưa đăng nhập bằng tài khoản `Sales User` thật. **Tôi không nhập mật khẩu vào bất kỳ ô nào** — cần người test tự đăng nhập |
-| `TC-TICK-04` | Hộp thoại liệt kê từng mã, **đánh dấu mã ngoài trang** | Nửa đầu đã xác nhận ở `TC-TICK-07` (hộp thoại liệt kê rõ `Bán thành phẩm 1`). Nửa sau **chưa** — lần bấm đó chỉ tick 1 mã và mã đó nằm ngay trên trang |
-| `TC-TICK-05` | Nút *Bỏ chọn tất cả* xoá sạch tick | Nút này có hiện ra sau khi sửa `TC-TICK-06`, nhưng **chưa bấm riêng để xác nhận nó xoá sạch** |
-| `TC-XEM-01` | R&D / Lợi nhuận trên bảng **không sửa được** | Chốt của anh Thắng 09/09: *"chỉ được sửa ở bản ghi mặt hàng"*. Mã nguồn không phát ô nhập, nhưng chưa thử bấm vào ô đó trên giao diện |
 | `TC-NGUON-09` | Đổi trong **Cài đặt tỷ lệ** → mở lại bảng thấy theo cài đặt mới | Phải ghi vào `HKLED Pricing Setting` — **cài đặt dùng chung cho cả cổng 8012**, đổi là đổi cho mọi người đang mở bảng |
-| `TC-NGUON-11` | Xuất Excel khi đang xem tạm | **Nội dung file đã kiểm đủ** (mở workbook đọc từng ô, 5.260 byte, công thức sống ở C4). Chỉ còn bước **file về tới máy** — bấm *Xuất file* xong không thấy file nào trong `~/Downloads`, nhiều khả năng do cấu hình tải của trình duyệt tự động hoá |
 | `TC-CONG-12` | Khai *Lương trên phút* → giá vốn đổi ngay, *Đang áp dụng* đứng yên | Cùng lý do `TC-NGUON-09` — ghi vào cài đặt dùng chung |
-| `TC-CONG-13` | Bung nhiều dòng cùng lúc, đổi trang rồi quay lại | Chưa bấm |
 
-**Bảy ca trong số này (`TICK-04/05`, `XEM-01`, `NGUON-09/11`, `CONG-12/13`) chỉ cần bấm tay** —
-không vướng dữ liệu thật, chỉ là chưa chạy tới. Hai ca còn lại (`EDGE-06`, `PERM-03`) thì **không
-nên** để Claude chạy: một ca phải ghi chứng từ mua thật, một ca phải nhập mật khẩu người khác.
+**Không ca nào trong bốn ca này Claude chạy được**, và mỗi ca vướng một thứ khác nhau:
+`EDGE-06` phải ghi chứng từ mua thật · `PERM-03` phải nhập mật khẩu người khác ·
+`NGUON-09` và `CONG-12` phải ghi vào cài đặt dùng chung của cả cổng 8012.
+
+Chi tiết cách chạy hai ca cài đặt: xem cuối **Đợt 6**.
 
 ## Sáu mã cố ý để lệch, dành cho vòng test của anh Thắng
 
@@ -492,3 +492,64 @@ gọi `execute()` bằng tay, mà gọi tay thì **không ghi vào `Patch Log`**
 ➜ **Cài tính năng này lên site khác thì BẮT BUỘC chạy `bench migrate`.**
 Patch an toàn khi chạy lại: `create_custom_fields(update=True)`, phần khai mặc định có rào
 `if not …` nên không đè số của khách.
+
+---
+
+# Đợt 6 — Bấm nốt các ca giao diện còn treo (11/09/2026)
+
+> **Cách chạy:** mở `http://dev.mbwnext.com:8012/app/bang-gia-niem-yet` bằng Chrome, bấm tay.
+> **Nền:** frappe 15.120.0 · erpnext 15.112.0 · HEAD `aa4c399`
+> **Không ghi gì vào CSDL.** Hộp thoại Cập nhật có mở nhưng bấm **Không**; đã kiểm lại
+> `HKLed Pricing Setting` sau buổi: `modified` vẫn **10/09 08:58:53**, bốn giá trị y nguyên.
+
+| ID | Kiểm cái gì | Đo được | KQ |
+|---|---|---|---|
+| TC-XEM-01 | R&D / Lợi nhuận trên bảng **không sửa được** | Bấm đúp vào ô *R&D* của `Bán thành phẩm 1`: **không** hiện ô nhập, `contenteditable` = null, số ô `input` trong ô đó = **0**, focus vẫn nằm ở `BODY`. Cả bảng chỉ có **3** `input`, đều là ô tick | ✅ Đạt |
+| TC-TICK-04 | Hộp thoại **liệt kê từng mã** và **đánh dấu mã ngoài trang** | Tick `Bán thành phẩm 1` → tìm `Test NVL` (mã kia rơi khỏi trang) → bấm **Cập nhật**. Hộp thoại: *"Đẩy giá niêm yết mới của **1** mặt hàng sang bảng giá **Standard Selling**?"*, dải vàng *"Trong đó **1** mã **không nằm trên trang đang xem**."*, và dòng `Bán thành phẩm 1` kèm chữ nghiêng **`không trên trang này`** | ✅ Đạt |
+| TC-TICK-05 | Nút *Bỏ chọn tất cả* xoá sạch tick | Bấm xong: ô tick đang check **0**, hai nút trở lại *Xuất Excel* / *Cập nhật giá niêm yết* (mất hậu tố `(1)`), và **biến mất cả ba**: chip *Đang giữ*, dòng cảnh báo *không nằm trên trang này*, link *Bỏ chọn tất cả* | ✅ Đạt |
+| TC-CONG-13 | Bung nhiều dòng cùng lúc, đổi trang rồi quay lại | Bung cả `Bán thành phẩm 1` và `2` — hai bảng con mở đồng thời, không chọi nhau, mỗi bảng tự cộng đúng dòng cha (**94.100** và **123.280**). Sang trang 2: **0** bảng con, 100 dòng sạch. Quay lại trang 1: **2** bảng con mở lại, 2 nút `▾` / 70 nút `▸`, số không đổi | ✅ Đạt |
+| TC-NGUON-11 | Xuất Excel — **file về tới máy** | Xem mục riêng dưới | ✅ Đạt |
+
+🔑 **TC-CONG-13 ra kết quả tốt hơn mức tôi định kiểm.** Ca này chỉ hỏi *"đổi trang rồi quay lại có
+vỡ không"*; hoá ra trạng thái bung **sống qua vòng đổi trang** — quay về trang 1 thì hai bảng con
+tự mở lại đúng như lúc rời đi. Cùng một nguyên tắc với tick sống qua lần tìm (`TC-TICK-01`).
+
+## TC-NGUON-11 — đã khép, và lý do lần trước tưởng hỏng
+
+**Lần trước (10/09) tôi ghi *"không có file nào xuất hiện trong `~/Downloads`"* — đó là kết quả của
+một phép tìm SAI, không phải của một tính năng hỏng.** Tôi quét `*.xlsx`; file thật nằm đó với tên
+**`Unconfirmed 835544.crdownload`**.
+
+| Kiểm | Đo được | KQ |
+|---|---|---|
+| File về tới đĩa | `~/Downloads/Unconfirmed 835544.crdownload`, **5.272 byte**, `file` nhận dạng **Microsoft Excel 2007+** | ✅ |
+| A1 · B1 · C1 | `Tỷ lệ chiết khấu` · **0,68** · *"← gõ số vào ô bên trái, cột Giá bán tự tính"* | ✅ |
+| A3 · B3 · C3 | `Mã mặt hàng` · `Giá niêm yết (VND)` · `Giá bán (VND)` — đúng **3 cột** | ✅ |
+| A4 · B4 | `Bán thành phẩm 1` · **325000** — đúng giá đang xem trên màn hình | ✅ |
+| 🔴 C4 là **công thức sống**, không phải số tính sẵn | `=B4*(1-$B$1)`; mở lại bằng `data_only=True` ra **`None`** — đúng dấu hiệu công thức chưa được Excel tính | ✅ |
+
+⚠ **Chrome giữ file lại chờ người bấm, chứ không phải tính năng chặn.** Đuôi `.crdownload` +
+tiền tố `Unconfirmed` nghĩa là tải xong byte nhưng đang chờ người dùng quyết định giữ hay bỏ —
+gần như chắc chắn vì site đang chạy **HTTP trần** (`dev.mbwnext.com:8012`), mà Chrome chặn tải tệp
+qua kết nối không mã hoá. **Trên site thật chạy HTTPS sẽ không gặp.** Người test nên bấm một lần
+trên site thật để xác nhận nốt bước này.
+
+📌 **Bài học trùng đúng loại đã ghi:** *kết quả rỗng có hai nguyên nhân — không có thật, hoặc chỗ
+mình nhìn không phải chỗ nó nằm.* Lần trước tôi đã cẩn thận không kết luận "tính năng hỏng", nhưng
+vẫn để ca này treo thêm một ngày chỉ vì quét sai đuôi file.
+
+## Hai ca vẫn chưa chạy được — bị chặn quyền, không phải bị bỏ
+
+`TC-NGUON-09` và `TC-CONG-12` đều phải **ghi vào `HKLed Pricing Setting`** — bản ghi Single dùng
+chung cho cả cổng 8012. Tôi đã mở form, chụp lại toàn bộ giá trị cũ để hoàn nguyên
+(`hao_phi=3` · `tinh_gia=30` · `nguon=Đơn mua gần nhất` · `luong_tren_phut=820`), nhưng thao tác
+điền bị **lớp kiểm quyền chặn ở mục *sửa tài nguyên dùng chung***. Đã dừng, không tìm đường vòng.
+
+Còn lại cần ai đó có quyền chạy:
+
+| Mã | Làm gì | Mong đợi |
+|---|---|---|
+| `TC-CONG-12` | Đổi *Lương Trên Phút* `820` → `1.000`, mở lại bảng | `Bán thành phẩm 1`: giá vốn `94.100` → **95.000** (tiền công `4.100` → `5.000`), Cộng → **97.850**, Giá niêm yết → **330.000**; cột *Đang áp dụng* **đứng yên ở 325.000** |
+| `TC-NGUON-09` | Đổi *Nguồn giá vốn cho mặt hàng mua hàng* → `Giá vốn tồn kho trung bình`, mở lại bảng | `Test NVL 1` giá vốn `10.000` → **6.000**, niêm yết `35.000` → **20.000**, và chip **KHÔNG** báo *"đang xem tạm"* (vì giờ đúng bằng cài đặt chung) |
+
+Cả hai **phải trả lại giá trị cũ** ngay sau khi đo.
