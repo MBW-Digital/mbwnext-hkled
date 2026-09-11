@@ -435,14 +435,15 @@ cấu hình tải của trình duyệt đang tự động hoá. **Người test 
 # Tổng kết cuối — trạng thái thật của từng mã ca
 
 > **Viết ngày 11/09/2026.**
-> File này là **nhật ký 6 đợt**, không phải một bảng chụp một lần. Ba mục *"Chưa chạy — phải bấm
-> nút thật"* ở giữa file là trạng thái của **đợt đó**, và đã được giải quyết hết ở Đợt 5 và 6.
+> File này là **nhật ký 7 đợt**, không phải một bảng chụp một lần. Ba mục *"Chưa chạy — phải bấm
+> nút thật"* ở giữa file là trạng thái của **đợt đó**, và đã được giải quyết hết ở Đợt 5, 6 và 7.
 > Bảng dưới đây là **trạng thái cuối cùng**, và là chỗ duy nhất nên tin khi cần một con số.
 
-**Tổng 80 mã ca · 76 đạt · 4 chưa chạy được · 0 còn Fail.**
+**Tổng 80 mã ca · 78 đạt · 2 chưa chạy được · 0 còn Fail.**
 
-> Cập nhật **11/09 (Đợt 6)**: đã bấm nốt `TC-XEM-01` · `TC-TICK-04` · `TC-TICK-05` · `TC-CONG-13`
-> · `TC-NGUON-11` — **cả 5 đạt**. Bảng ngay dưới đã tính theo kết quả đó.
+> Cập nhật **11/09**: Đợt 6 bấm nốt `TC-XEM-01` · `TC-TICK-04` · `TC-TICK-05` · `TC-CONG-13` ·
+> `TC-NGUON-11`; Đợt 7 chạy `TC-CONG-12` · `TC-NGUON-09` (hai ca ghi vào cài đặt dùng chung).
+> **Cả 7 đạt.** Bảng ngay dưới đã tính theo kết quả đó.
 
 | Nhóm | Số ca | Đạt | Còn lại |
 |---|---|---|---|
@@ -457,23 +458,22 @@ cấu hình tải của trình duyệt đang tự động hoá. **Người test 
 | TC-TIM — ô tìm kiếm | 5 | 5 | — |
 | TC-TICK — tick sống qua trang | 7 | **7** | — |
 | TC-XEM — không sửa được trên bảng | 1 | **1** | — |
-| TC-NGUON — nguồn giá vốn | 11 | **10** | `TC-NGUON-09` |
-| TC-CONG — tiền công, bảng thành phần | 13 | **12** | `TC-CONG-12` |
+| TC-NGUON — nguồn giá vốn | 11 | **11** | — |
+| TC-CONG — tiền công, bảng thành phần | 13 | **13** | — |
 
-## Bốn ca chưa chạy được — lý do từng ca
+## Hai ca chưa chạy được — lý do từng ca
 
 | Mã | Kiểm cái gì | Vì sao chưa chạy |
 |---|---|---|
 | `TC-EDGE-06` | Đơn mua theo đơn vị khác đơn vị kho | Cổng 8012 **không có** dòng đơn mua nào `conversion_factor ≠ 1`. Dựng một dòng là **ghi dữ liệu thật vào chứng từ mua** — không tự làm. Đã đọc kỹ mã, nhưng *đọc không phải đo* |
 | `TC-PERM-03` | `Sales User` mở được trang, không bấm được Cập nhật | Chưa đăng nhập bằng tài khoản `Sales User` thật. **Tôi không nhập mật khẩu vào bất kỳ ô nào** — cần người test tự đăng nhập |
-| `TC-NGUON-09` | Đổi trong **Cài đặt tỷ lệ** → mở lại bảng thấy theo cài đặt mới | Phải ghi vào `HKLED Pricing Setting` — **cài đặt dùng chung cho cả cổng 8012**, đổi là đổi cho mọi người đang mở bảng |
-| `TC-CONG-12` | Khai *Lương trên phút* → giá vốn đổi ngay, *Đang áp dụng* đứng yên | Cùng lý do `TC-NGUON-09` — ghi vào cài đặt dùng chung |
 
-**Không ca nào trong bốn ca này Claude chạy được**, và mỗi ca vướng một thứ khác nhau:
-`EDGE-06` phải ghi chứng từ mua thật · `PERM-03` phải nhập mật khẩu người khác ·
-`NGUON-09` và `CONG-12` phải ghi vào cài đặt dùng chung của cả cổng 8012.
+**Hai ca này Claude không nên chạy, kể cả khi có quyền:** `EDGE-06` phải ghi một dòng
+chứng từ mua thật vào cổng có dữ liệu khách; `PERM-03` phải nhập mật khẩu của người khác.
+Cả hai chờ người test.
 
-Chi tiết cách chạy hai ca cài đặt: xem cuối **Đợt 6**.
+*(Hai ca `NGUON-09` và `CONG-12` từng nằm ở đây vì phải ghi vào cài đặt dùng chung —
+đã chạy xong ở **Đợt 7** ngày 11/09, có nhật ký ghi và đối chiếu hoàn nguyên.)*
 
 ## Sáu mã cố ý để lệch, dành cho vòng test của anh Thắng
 
@@ -549,7 +549,101 @@ Còn lại cần ai đó có quyền chạy:
 
 | Mã | Làm gì | Mong đợi |
 |---|---|---|
-| `TC-CONG-12` | Đổi *Lương Trên Phút* `820` → `1.000`, mở lại bảng | `Bán thành phẩm 1`: giá vốn `94.100` → **95.000** (tiền công `4.100` → `5.000`), Cộng → **97.850**, Giá niêm yết → **330.000**; cột *Đang áp dụng* **đứng yên ở 325.000** |
-| `TC-NGUON-09` | Đổi *Nguồn giá vốn cho mặt hàng mua hàng* → `Giá vốn tồn kho trung bình`, mở lại bảng | `Test NVL 1` giá vốn `10.000` → **6.000**, niêm yết `35.000` → **20.000**, và chip **KHÔNG** báo *"đang xem tạm"* (vì giờ đúng bằng cài đặt chung) |
 
 Cả hai **phải trả lại giá trị cũ** ngay sau khi đo.
+
+---
+
+# Đợt 7 — Hai ca ghi vào cài đặt dùng chung (11/09/2026, 10:55–11:10)
+
+> **Tuấn đổi chế độ quyền sang `manual` để tôi chạy được hai ca này.**
+> Trước đó ở chế độ `auto`, thao tác điền form lên `HKLed Pricing Setting` bị chặn thẳng ở mục
+> *sửa tài nguyên dùng chung*.
+
+## Nhật ký ghi vào `HKLed Pricing Setting` — 3 lượt, đã hoàn nguyên đủ
+
+| Giờ | Ghi gì | Vì sao |
+|---|---|---|
+| 11:05:50 | `luong_tren_phut` 820 → **1.000** | TC-CONG-12 vòng 1 |
+| 11:07 | `luong_tren_phut` 1.000 → **2.000** | vòng 1 chưa đủ sắc — xem dưới |
+| 11:08:10 | `luong_tren_phut` → **820** *(trả lại)* · `nguon_gia_von_mua_hang` → **Giá vốn tồn kho trung bình** | TC-NGUON-09 |
+| 11:09:56 | `nguon_gia_von_mua_hang` → **Đơn mua gần nhất** *(trả lại)* | dọn |
+
+**Đối chiếu với bản chụp lúc 10:55, trước khi động vào:**
+
+```
+trước: {"ty_le_hao_phi": 3.0, "ty_le_tinh_gia_niem_yet": 30.0,
+        "nguon_gia_von_mua_hang": "Đơn mua gần nhất", "luong_tren_phut": 820.0}
+sau  : {"ty_le_hao_phi": 3.0, "ty_le_tinh_gia_niem_yet": 30.0,
+        "nguon_gia_von_mua_hang": "Đơn mua gần nhất", "luong_tren_phut": 820.0}
+```
+
+Bốn giá trị **trùng khít**. Vết còn lại duy nhất: `modified` từ `10/09 08:58:53 · hkled@gmail.com`
+thành `11/09 11:09:56 · Administrator`. Không gỡ được, và cũng không nên gỡ.
+
+**`Item Price` trên `Standard Selling`: 0 dòng bị ghi hôm nay.** Dòng mới nhất vẫn là lượt bấm
+`Bán thành phẩm 1` ngày 10/09 lúc 09:46:10.
+
+## TC-CONG-12 — ✅ Đạt
+
+| Kiểm | Lương 820 (gốc) | Lương **2.000** | KQ |
+|---|---|---|---|
+| Giá vốn `Bán thành phẩm 1` | 94.100 | **100.000** | ✅ đổi ngay |
+| Cộng (sau hao phí 3%) | 96.923 | **103.000** | ✅ |
+| Giá niêm yết | 325.000 | **345.000** | ✅ |
+| 🔴 **Đang áp dụng** | 325.000 | **325.000 ▲** | ✅ **đứng yên**, hiện mũi tên báo lệch |
+
+Tiền công = `5 phút × 2.000` = 10.000 thay cho `5 × 820` = 4.100 ⇒ giá vốn `90.000 + 10.000`.
+
+⚠ **Vòng 1 của ca này gần như vô giá trị, phải chạy lại.** Đặt lương `1.000` thì giá vốn lên
+95.000, Cộng 97.850, nhưng **giá niêm yết vẫn 325.000** — nên vế *"Đang áp dụng đứng yên"* đúng một
+cách rỗng: nó đứng yên vì **chẳng có gì chuyển động cả**. Phải đẩy lương lên `2.000` để giá niêm yết
+thật sự nhảy sang 345.000 thì phép thử mới phân biệt được hai cột.
+
+📌 **Một ca test vẫn xanh khi cả hai vế cùng không đổi.** Chọn dữ liệu sao cho vế *phải đổi* thật sự
+đổi, rồi mới nói được gì về vế *phải đứng yên*.
+
+## ❌ Số tôi dự đoán sai — luật làm tròn là GẦN NHẤT, không phải LÊN
+
+Trước khi chạy, tôi ghi vào tài liệu là lương `1.000` sẽ cho giá niêm yết **330.000**. Đo ra
+**325.000**. Kiểm lại thì **mã nguồn đúng, dự đoán của tôi sai**:
+
+```python
+def lam_tron_5000(x):   # "Làm tròn tới bội 5.000 gần nhất"
+    return int((flt(x) + BOI_LAM_TRON / 2) // BOI_LAM_TRON) * BOI_LAM_TRON
+```
+
+`97.850 / 30 × 100 = 326.166,67` → bội gần nhất là **325.000** (cách 1.166, trong khi 330.000 cách
+3.834). Tôi đọc *"Làm tròn đến 5000"* trong đầu bài thành *làm tròn lên* vì ví dụ của khách viết
+*"tính ra 197800 thì sẽ làm trong lên 200000"* — mà **ví dụ đó không phân biệt được hai luật**:
+197.800 ra 200.000 theo cả hai.
+
+🔑 **Ví dụ THỨ NHẤT của khách mới là ví dụ phân biệt được, và nó chốt luật gần nhất:**
+
+> *"cost 50000, hao phí 3, tỷ lệ 30, R&D 5, lợi nhuận 10 ⇒ giá niêm yết = **195000**"*
+
+`50.000 × 1,18 / 30 × 100 = 196.666,67`. Gần nhất → **195.000** ✓ (đúng số khách viết).
+Làm tròn lên → 200.000 ✗.
+
+➜ **Mã nguồn khớp đầu bài. Không có gì phải sửa.** Ghi lại đây vì ca sau đọc *"làm tròn đến 5.000"*
+rất dễ hiểu thành *làm tròn lên*, và ví dụ hay được trích lại (197.800) thì **không cãi được**.
+
+## TC-NGUON-09 — ✅ Đạt
+
+Đổi *Nguồn giá vốn cho mặt hàng mua hàng* sang **Giá vốn tồn kho trung bình** rồi mở lại bảng:
+
+| Kiểm | Đo được | KQ |
+|---|---|---|
+| Bảng theo cài đặt mới | `Test NVL 1` giá vốn `10.000` → **6.000**, niêm yết `35.000` → **20.000** | ✅ |
+| Chip đầu bảng | *"Giá vốn mặt hàng mua **Giá vốn tồn kho trung bình**"* | ✅ |
+| 🔴 **KHÔNG** có chữ *"đang xem tạm"* | `innerText.includes('đang xem tạm')` = **false** | ✅ |
+| Thẻ *Đang lệch* tính lại | `Test NVL 1` hết lệch (20.000 = 20.000) ⇒ **Đang lệch 1** | ✅ |
+| Mặt hàng tự làm không bị ảnh hưởng | `Bán thành phẩm 1` vẫn **94.100 / 325.000** | ✅ |
+
+🔑 **Vế "không có chữ *đang xem tạm*" mới là vế đáng giá.** Cùng ra số 20.000, nhưng
+`TC-NGUON-08` là **xem tạm** (đổi ô trên màn hình, cài đặt chung không đổi) nên **phải** có chip
+cảnh báo; `TC-NGUON-09` là **cài đặt chung đã đổi thật** nên **không được** có. Nếu màn hình không
+phân biệt hai trạng thái này thì người dùng không biết con số mình đang nhìn có bền hay không.
+
+Sau khi trả cài đặt về `Đơn mua gần nhất`: chip về *"Đơn mua gần nhất"*, `Bán thành phẩm 1` về
+`94.100 / 96.923 / 325.000`, `Bán thành phẩm 2` về `123.280 / 126.978 / 425.000`, *Đang lệch* về **0**.
